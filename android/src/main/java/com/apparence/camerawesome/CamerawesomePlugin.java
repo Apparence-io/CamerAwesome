@@ -288,8 +288,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       mCameraPicture.takePicture(
               mCameraStateManager.getCameraDevice(),
               path,
-              mCameraSetup.getCurrentOrientation(),
-              size,
+              mCameraSetup.getJpegOrientation(),
               createTakePhotoResultListener(result)
       );
     } catch (CameraAccessException e) {

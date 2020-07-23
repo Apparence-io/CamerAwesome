@@ -42,7 +42,11 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         this.mCameraSession = cameraSession;
     }
 
-
+    /**
+     * captureSize size of photo to use (must be in the available set of size) use CameraSetup to get all
+     * @param width
+     * @param height
+     */
     public void setSize(int width, int height) {
         this.size = new Size(width, height);
         pictureImageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);
@@ -54,17 +58,21 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
      * @param cameraDevice the cameraDevice that
      * @param filePath the path where to save the picture
      * @param orientation orientation to use to save the image
-     * @param captureSize size of photo to use (must be in the available set of size) use CameraSetup to get all
      * @param onResultListener fires on success / failure
      * @throws CameraAccessException if camera is not available
      */
-    public void takePicture(final CameraDevice cameraDevice, final String filePath, final int orientation, final Size captureSize, final OnImageResult onResultListener) throws CameraAccessException {
+    public void takePicture(final CameraDevice cameraDevice, final String filePath, final int orientation, final OnImageResult onResultListener) throws CameraAccessException {
         final File file = new File(filePath);
         if (file.exists()) {
             //FIXME throw here
             return;
         }
+        if(size == null) {
+            //FIXME throw here
+            return;
+        }
         if(mCaptureSession == null) {
+            //FIXME throw here
             Log.e(TAG, "takePicture: mCaptureSession is null");
             return;
         }
@@ -86,7 +94,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         CaptureRequest.Builder takePhotoRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 //        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
 //        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-//        takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
+        takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         takePhotoRequestBuilder.addTarget(pictureImageReader.getSurface());
         mCaptureSession.capture(takePhotoRequestBuilder.build(), mCaptureCallback, null);
     }

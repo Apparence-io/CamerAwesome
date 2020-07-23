@@ -30,6 +30,8 @@ class _MyAppState extends State<MyApp> {
 
   double bestSizeRatio;
 
+  String _lastPhotoPath;
+
   @override
   void initState() {
     super.initState();
@@ -105,6 +107,12 @@ class _MyAppState extends State<MyApp> {
                   },
                 ),
               ),
+            if(_lastPhotoPath != null)
+              Positioned(
+                bottom: 52,
+                left: 32,
+                child: Image.file(new File(_lastPhotoPath), width: 128),
+              ),
             Positioned(
               bottom: 0,
               left: 0,
@@ -117,6 +125,9 @@ class _MyAppState extends State<MyApp> {
                   var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                   final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await Camerawesome.takePhoto(bestSize.width, bestSize.height, filePath);
+                  setState(() {
+                    _lastPhotoPath = filePath;
+                  });
                   print("----------------------------------");
                   print("TAKE PHOTO CALLED");
                   print("==> hastakePhoto : ${await File(filePath).exists()}");

@@ -6,6 +6,7 @@ import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.util.Log;
@@ -30,7 +31,11 @@ class CameraSetup {
 
     private int currentOrientation = ORIENTATION_UNKNOWN;
 
+    private int sensorOrientation;
+
     private OrientationEventListener orientationEventListener;
+
+    private boolean facingFront;
 
     CameraSetup(Context context, Activity activity) {
         this.context = context;
@@ -42,6 +47,7 @@ class CameraSetup {
         if(mCameraManager == null) {
             throw new CameraAccessException(CameraAccessException.CAMERA_ERROR, "cannot init CameraStateManager");
         }
+        facingFront = sensor.equals(CameraSensor.FRONT);
         for (String cameraId : mCameraManager.getCameraIdList()) {
             CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(cameraId);
             Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
@@ -54,6 +60,7 @@ class CameraSetup {
             if (map == null) {
                 continue;
             }
+            sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
             mCameraId = cameraId;
             return;
         }
@@ -73,6 +80,8 @@ class CameraSetup {
                     return;
                 }
                 currentOrientation = (i + 45) / 90 * 90;
+                if(currentOrientation == 360)
+                    currentOrientation = 0;
             }
         };
         orientationEventListener.enable();
@@ -86,6 +95,23 @@ class CameraSetup {
         StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         return map.getOutputSizes(ImageFormat.JPEG);
     }
+
+    /**
+     * calculate orientation for exiv
+     * @see CaptureRequest#JPEG_ORIENTATION
+     * @return
+     */
+    public int getJpegOrientation() {
+        final int sensorOrientationOffset =
+                (currentOrientation == ORIENTATION_UNKNOWN)
+                        ? 0
+                        : (facingFront) ? -currentOrientation : currentOrientation;
+        return (sensorOrientationOffset + sensorOrientation + 360) % 360;
+    }
+
+    // --------------------------------------------
+    // GETTERS
+    // --------------------------------------------
 
     public String getCameraId() {
         return mCameraId;
