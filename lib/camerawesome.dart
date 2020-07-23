@@ -66,7 +66,6 @@ class Camerawesome {
   }
 
   // TODO add flash handle
-  // TODO add orientation change stream
   // TODO add autofocus on / off
   // TODO add zoom level
 

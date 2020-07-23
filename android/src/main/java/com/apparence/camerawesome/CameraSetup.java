@@ -15,6 +15,8 @@ import android.view.OrientationEventListener;
 
 import androidx.annotation.RequiresApi;
 
+import io.flutter.plugin.common.EventChannel;
+
 import static android.view.OrientationEventListener.ORIENTATION_UNKNOWN;
 
 
@@ -36,6 +38,8 @@ class CameraSetup {
     private OrientationEventListener orientationEventListener;
 
     private boolean facingFront;
+
+    private EventChannel.EventSink orientationEvent;
 
     CameraSetup(Context context, Activity activity) {
         this.context = context;
@@ -73,7 +77,7 @@ class CameraSetup {
         if(orientationEventListener != null) {
             return;
         }
-        OrientationEventListener orientationEventListener = new OrientationEventListener(activity.getApplicationContext()) {
+        final OrientationEventListener orientationEventListener = new OrientationEventListener(activity.getApplicationContext()) {
             @Override
             public void onOrientationChanged(int i) {
                 if (i == ORIENTATION_UNKNOWN) {
@@ -82,6 +86,9 @@ class CameraSetup {
                 currentOrientation = (i + 45) / 90 * 90;
                 if(currentOrientation == 360)
                     currentOrientation = 0;
+                if(orientationEvent != null) {
+                    orientationEvent.success(currentOrientation);
+                }
             }
         };
         orientationEventListener.enable();
