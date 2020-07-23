@@ -112,6 +112,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       case "setPreviewSize":
         _handlePreviewSize(call, result);
         break;
+      case "setPhotoSize":
+        _handlePhotoSize(call, result);
+        break;
       case "takePhoto":
         _handleTakePhoto(call, result);
         break;
@@ -183,13 +186,17 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       mCameraSetup = new CameraSetup(applicationContext, pluginActivity);
       mCameraSetup.chooseCamera(sensor);
       mCameraSetup.listenOrientation();
+      // init camera session builder
+      CameraSession cameraSession = new CameraSession();
       // init preview
-      mCameraPreview = new CameraPreview();
+      mCameraPreview = new CameraPreview(cameraSession);
       mCameraPreview.setFlutterTexture(textureRegistry.createSurfaceTexture());
       // init state listener
-      mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview);
+      mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, cameraSession);
       // init picture recorder
-      mCameraPicture = new CameraPicture(mCameraStateManager.getBackgroundThread(), mCameraPreview.getCaptureSession());
+      mCameraPicture = new CameraPicture(cameraSession);
+      // set camera sessions listeners
+      cameraSession.setOnCaptureSessionListenerList(Arrays.asList(mCameraPreview, mCameraPicture));
       result.success(true);
     } catch (CameraAccessException e) {
       result.error("", e.getMessage(), e.getStackTrace());
@@ -229,6 +236,18 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     mCameraPreview.setPreviewSize(width, height);
     result.success(null);
   }
+
+  private void _handlePhotoSize(MethodCall call, Result result) {
+    if(!call.hasArgument("width") || !call.hasArgument("height")) {
+      result.error("NO_SIZE_SET", "width and height must be set", "");
+      return;
+    }
+    int width = call.argument("width");
+    int height = call.argument("height");
+    mCameraPicture.setSize(width, height);
+    result.success(null);
+  }
+
 
   private void _handleStart(final MethodCall call, final Result result) {
     if(throwIfCameraNotInit(result)) {

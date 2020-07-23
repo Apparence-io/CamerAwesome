@@ -36,12 +36,11 @@ import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class CameraPreview implements StreamHandler {
+public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private static final String TAG = CameraPreview.class.getName();
 
-    // time between two image to not block UI Thread on flutter side
-    public static final int IMAGE_THRESHOLD = 50;
+    private final CameraSession mCameraSession;
 
     private TextureRegistry.SurfaceTextureEntry flutterTexture;
 
@@ -59,25 +58,11 @@ public class CameraPreview implements StreamHandler {
 
     private CaptureRequest mPreviewRequest;
 
-    private Semaphore mCameraOpenCloseLock = new Semaphore(1);
 
-    private EventChannel.EventSink events;
-
-    private Date lastImageSentTime;
-
-
-    public CameraPreview() {}
-
-
-    public void onListen(Object arguments, final EventChannel.EventSink events) {
-        Log.d(TAG, "....onListen: ");
-        this.events = events;
+    public CameraPreview(CameraSession cameraSession) {
+        this.mCameraSession = cameraSession;
     }
 
-    @Override
-    public void onCancel(Object arguments) {
-        cancelStream();
-    }
 
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
         // create image reader
@@ -92,28 +77,9 @@ public class CameraPreview implements StreamHandler {
 //        mPreviewRequestBuilder.addTarget(mImageReader.getSurface());
         mPreviewRequestBuilder.addTarget(flutterSurface);
 //        List<Surface> surfaces = Arrays.asList(flutterSurface, mImageReader.getSurface());
-        List<Surface> surfaces = Arrays.asList(flutterSurface);
-        cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
-            @Override
-            public void onConfigured(@NonNull CameraCaptureSession session) {
-                mCaptureSession = session;
-                try {
-                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                    mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
-                    mPreviewRequest = mPreviewRequestBuilder.build();
-                    mCaptureSession.setRepeatingRequest(mPreviewRequest, null, mBackgroundHandler);
-                } catch (CameraAccessException e) {
-                    Log.e(TAG, "onConfigureSession", e);
-                }
-            }
-
-            @Override
-            public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-                if(mCaptureSession != null) {
-                    mCaptureSession.close();
-                }
-            }
-        }, mBackgroundHandler);
+//        List<Surface> surfaces = Arrays.asList(flutterSurface);
+        mCameraSession.addSurface(flutterSurface);
+        mCameraSession.createCameraCaptureSession(cameraDevice);
     }
     
     public CameraCaptureSession getCaptureSession() {
@@ -129,7 +95,7 @@ public class CameraPreview implements StreamHandler {
     }
 
     public void dispose() {
-        cancelStream();
+//        cancelStream();
         mImageReader.close();
         if(mCaptureSession != null) {
             mCaptureSession.close();
@@ -138,6 +104,28 @@ public class CameraPreview implements StreamHandler {
 
     public void setPreviewSize(int width, int height) {
         this.previewSize = new Size(width, height);
+    }
+
+    // --------------------------------------------------
+    // CameraSession.OnCaptureSession
+    // --------------------------------------------------
+
+    @Override
+    public void onConfigured(@NonNull CameraCaptureSession session) {
+        mCaptureSession = session;
+        try {
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+            mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
+            mPreviewRequest = mPreviewRequestBuilder.build();
+            mCaptureSession.setRepeatingRequest(mPreviewRequest, null, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "onConfigureSession", e);
+        }
+    }
+
+    @Override
+    public void onConfigureFailed() {
+        this.mCaptureSession = null;
     }
 
 
@@ -153,14 +141,14 @@ public class CameraPreview implements StreamHandler {
                     if(img == null) {
                         return;
                     }
-                    if(events != null) {
-                        ByteBuffer buffer = img.getPlanes()[0].getBuffer();
-
-                        final byte[] bytes = new byte[buffer.capacity()];
-                        buffer.get(bytes);
-                        sendData(bytes);
-                        return;
-                    }
+//                    if(events != null) {
+//                        ByteBuffer buffer = img.getPlanes()[0].getBuffer();
+//
+//                        final byte[] bytes = new byte[buffer.capacity()];
+//                        buffer.get(bytes);
+//                        sendData(bytes);
+//                        return;
+//                    }
                     img.close();
                     //Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
                     //previewObs.onNext(img);
@@ -173,40 +161,33 @@ public class CameraPreview implements StreamHandler {
     }
 
 
-    private void sendImageFormat(final Image img) {
-        Runnable sendDataRunner = new Runnable() {
-            @Override
-            public void run() {
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("height", img.getHeight());
-                map.put("width", img.getWidth());
-                events.success(map);
-            }
-        };
-        uiThreadHandler.post(sendDataRunner);
-    }
-
-
-    private void sendData(final byte[] bytes) {
-        Runnable sendDataRunner = new Runnable() {
-            @Override
-            public void run() {
-                if (bytes.length > 0) {
-                    HashMap<String, Object> map = new HashMap<>();
-                    map.put("data", bytes);
-                    events.success(map);
-                }
-            }
-        };
-        uiThreadHandler.post(sendDataRunner);
-    }
-
-    private void cancelStream() {
-        if(this.events != null) {
-            this.events.endOfStream();
-            this.events = null;
-        }
-    }
+//    private void sendImageFormat(final Image img) {
+//        Runnable sendDataRunner = new Runnable() {
+//            @Override
+//            public void run() {
+//                HashMap<String, Object> map = new HashMap<>();
+//                map.put("height", img.getHeight());
+//                map.put("width", img.getWidth());
+//                events.success(map);
+//            }
+//        };
+//        uiThreadHandler.post(sendDataRunner);
+//    }
+//
+//
+//    private void sendData(final byte[] bytes) {
+//        Runnable sendDataRunner = new Runnable() {
+//            @Override
+//            public void run() {
+//                if (bytes.length > 0) {
+//                    HashMap<String, Object> map = new HashMap<>();
+//                    map.put("data", bytes);
+//                    events.success(map);
+//                }
+//            }
+//        };
+//        uiThreadHandler.post(sendDataRunner);
+//    }
 
 
 

@@ -47,12 +47,14 @@ class _MyAppState extends State<MyApp> {
       _selectBestSize();
 //      camerasSizes.forEach((element) => print("   ...${element.width} / ${element.height}"));
       await Camerawesome.setPreviewSize(bestSize.width, bestSize.height);
+      await Camerawesome.setPhotoSize(bestSize.width, bestSize.height);
 //      await Camerawesome.setPreviewSize(
 //        MediaQuery.of(context).size.width.toInt(),
 //        MediaQuery.of(context).size.height.toInt());
       await Camerawesome.start();
-      _hasInit = true;
-
+      setState(() {
+        _hasInit = true;
+      });
     } on PlatformException catch(e) {
       platformVersion = 'Failed to init Camerawesome. ';
       print("error: " + e.toString());
@@ -114,7 +116,11 @@ class _MyAppState extends State<MyApp> {
                   final Directory extDir = await getTemporaryDirectory();
                   var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                   final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                  await Camerawesome.takePhoto(bestSize.width, bestSize.height);
+                  await Camerawesome.takePhoto(bestSize.width, bestSize.height, filePath);
+                  print("----------------------------------");
+                  print("TAKE PHOTO CALLED");
+                  print("==> hastakePhoto : ${await File(filePath).exists()}");
+                  print("----------------------------------");
                 }
               ),
             )

@@ -50,10 +50,18 @@ class Camerawesome {
     });
   }
 
-  static takePhoto(int width, int height) {
+  static Future<void> setPhotoSize(int width, int height) {
+    return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic> {
+      'width': width,
+      'height': height,
+    });
+  }
+
+  static takePhoto(int width, int height, String path) {
     return _channel.invokeMethod<void>('takePhoto', <String, dynamic> {
       'width': width,
       'height': height,
+      'path': path,
     });
   }
 

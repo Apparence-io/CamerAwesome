@@ -14,8 +14,10 @@ import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.Size;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.io.File;
@@ -24,17 +26,27 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class CameraPicture {
+public class CameraPicture implements CameraSession.OnCaptureSession {
 
-    private Handler mBackgroundHandler;
+    private static String TAG = CameraPicture.class.getName();
 
-    private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+    private final CameraSession mCameraSession;
 
     private CameraCaptureSession mCaptureSession;
 
-    public CameraPicture(Handler mBackgroundHandler, CameraCaptureSession mCaptureSession) {
-        this.mBackgroundHandler = mBackgroundHandler;
-        this.mCaptureSession = mCaptureSession;
+    private ImageReader pictureImageReader;
+
+    private Size size;
+
+    public CameraPicture(CameraSession cameraSession) {
+        this.mCameraSession = cameraSession;
+    }
+
+
+    public void setSize(int width, int height) {
+        this.size = new Size(width, height);
+        pictureImageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);
+        mCameraSession.addSurface(pictureImageReader.getSurface());
     }
 
     /**
@@ -52,29 +64,35 @@ public class CameraPicture {
             //FIXME throw here
             return;
         }
-        ImageReader pictureImageReader = ImageReader
-                .newInstance(captureSize.getWidth(), captureSize.getHeight(), ImageFormat.JPEG, 2);
+        if(mCaptureSession == null) {
+            Log.e(TAG, "takePicture: mCaptureSession is null");
+            return;
+        }
         pictureImageReader.setOnImageAvailableListener(
                 new ImageReader.OnImageAvailableListener() {
                     @Override
                     public void onImageAvailable(ImageReader reader) {
                         try (Image image = reader.acquireLatestImage()) {
                             ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                            writeToFile(buffer, file);
+                            CameraPicture.this.writeToFile(buffer, file);
                             onResultListener.onSuccess();
                         } catch (IOException e) {
                             onResultListener.onFailure("IOError");
                         }
                     }
-                },
-                null);
+                }, null);
 
+//      FIXME pictureImageReader must be added to surfaces of camerasession
         CaptureRequest.Builder takePhotoRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);;
-        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-        takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
+//        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
+//        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+//        takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         takePhotoRequestBuilder.addTarget(pictureImageReader.getSurface());
-        mCaptureSession.capture(takePhotoRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
+        mCaptureSession.capture(takePhotoRequestBuilder.build(), mCaptureCallback, null);
+    }
+
+    public void setPreviewSession(CameraCaptureSession captureSession) {
+        this.mCaptureSession = captureSession;
     }
 
     private void writeToFile(ByteBuffer buffer, File file) throws IOException {
@@ -111,6 +129,24 @@ public class CameraPicture {
             super.onCaptureStarted(session, request, timestamp, frameNumber);
         }
     };
+
+    // --------------------------------------------------
+    // CameraSession.OnCaptureSession
+    // --------------------------------------------------
+
+    @Override
+    public void onConfigured(@NonNull CameraCaptureSession session) {
+        this.mCaptureSession = session;
+    }
+
+    @Override
+    public void onConfigureFailed() {
+        this.mCaptureSession = null;
+    }
+
+    // --------------------------------------------------
+    // OnImageResult interface
+    // --------------------------------------------------
 
     public interface OnImageResult {
 
