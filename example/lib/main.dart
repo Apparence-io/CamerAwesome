@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -29,6 +30,8 @@ class _MyAppState extends State<MyApp> {
   double scale;
 
   double bestSizeRatio;
+
+  String _lastPhotoPath;
 
   @override
   void initState() {
@@ -77,56 +80,79 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     checkPermissions();
     return Scaffold(
-        body: Stack(
-          children: <Widget>[
-            if(_hasInit != null)
-              Positioned(
-                child: FutureBuilder(
-                  future: Camerawesome.getPreviewTexture(),
-                  builder: (context, snapshot) {
-                    if(!snapshot.hasData)
-                      return Container();
-                    return Container(
-                      color: Colors.black,
-                      child: Transform.scale(
-                        scale: scale,
-                        child: Center(
-                          child: AspectRatio(
-                            aspectRatio: bestSizeRatio,
-                            child: Container(
-                              child: SizedBox(
-                                height: bestSize.height.toDouble(),
-                                width: bestSize.width.toDouble(),
-                                child: Texture(textureId: snapshot.data)
+        body: OrientationBuilder(
+          builder: (context, orientation) {
+            // recalculate for rotation handled here
+            final size = MediaQuery.of(context).size;
+            bestSizeRatio = bestSize.height / bestSize.width;
+            scale = bestSizeRatio / size.aspectRatio;
+            if (bestSizeRatio < size.aspectRatio) {
+              scale = 1 / scale;
+            }
+            return Stack(
+            children: <Widget>[
+              if(_hasInit != null)
+                Positioned(
+                  child: FutureBuilder(
+                    future: Camerawesome.getPreviewTexture(),
+                    builder: (context, snapshot) {
+                      if(!snapshot.hasData)
+                        return Container();
+                      return Transform.rotate(
+                        angle: orientation == Orientation.portrait ? 0 : -pi/2,
+                        child: Container(
+                          color: Colors.black,
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Center(
+                              child: AspectRatio(
+                                aspectRatio: bestSizeRatio,
+                                child: SizedBox(
+                                  height: orientation == Orientation.portrait ? bestSize.height.toDouble() : bestSize.width.toDouble(),
+                                  width: orientation == Orientation.portrait ? bestSize.width.toDouble() : bestSize.width.toDouble(),
+//                                  height: orientation == Orientation.portrait ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width,
+//                                  width: orientation == Orientation.portrait ? MediaQuery.of(context).size.width : MediaQuery.of(context).size.height,
+                                  child: Texture(textureId: snapshot.data)
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: FlatButton(
-                color: Colors.blue,
-                child: Text("take photo"),
-                onPressed: () async {
-                  final Directory extDir = await getTemporaryDirectory();
-                  var testDir = await Directory('${extDir.path}/test').create(recursive: true);
-                  final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                  await Camerawesome.takePhoto(bestSize.width, bestSize.height, filePath);
-                  print("----------------------------------");
-                  print("TAKE PHOTO CALLED");
-                  print("==> hastakePhoto : ${await File(filePath).exists()}");
-                  print("----------------------------------");
-                }
-              ),
-            )
-          ],
+              if(_lastPhotoPath != null)
+                Positioned(
+                  bottom: 52,
+                  left: 32,
+                  child: Image.file(new File(_lastPhotoPath), width: 128),
+                ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: FlatButton(
+                  color: Colors.blue,
+                  child: Text("take photo"),
+                  onPressed: () async {
+                    final Directory extDir = await getTemporaryDirectory();
+                    var testDir = await Directory('${extDir.path}/test').create(recursive: true);
+                    final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                    await Camerawesome.takePhoto(bestSize.width, bestSize.height, filePath);
+                    setState(() {
+                      _lastPhotoPath = filePath;
+                    });
+                    print("----------------------------------");
+                    print("TAKE PHOTO CALLED");
+                    print("==> hastakePhoto : ${await File(filePath).exists()}");
+                    print("----------------------------------");
+                  }
+                ),
+              )
+            ],
+          );
+          },
         )
       );
   }

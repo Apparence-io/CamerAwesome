@@ -54,9 +54,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   // Flutter texture registry
   private TextureRegistry textureRegistry;
 
-  /// used by the [CameraPreview] to send images of camera with a stream into Flutter
-  private EventChannel previewChannel;
-
   // handle setup of camera (get size, init...)
   private CameraSetup mCameraSetup;
 
@@ -133,13 +130,11 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
-    previewChannel.setStreamHandler(null);
   }
 
   private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger, TextureRegistry textureRegistry) {
     this.applicationContext = applicationContext;
     channel = new MethodChannel(messenger, "camerawesome");
-    previewChannel = new EventChannel(messenger, "camerawesome/live");
     channel.setMethodCallHandler(this);
     this.textureRegistry = textureRegistry;
   }
@@ -288,8 +283,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       mCameraPicture.takePicture(
               mCameraStateManager.getCameraDevice(),
               path,
-              mCameraSetup.getCurrentOrientation(),
-              size,
+              mCameraSetup.getJpegOrientation(),
               createTakePhotoResultListener(result)
       );
     } catch (CameraAccessException e) {
