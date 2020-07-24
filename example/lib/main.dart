@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> checkPermissions() async {
     try {
-      var missingPermissions = await Camerawesome.checkPermissions();
+      var missingPermissions = await Camerawesome.checkAndroidPermissions();
       if (missingPermissions != null && missingPermissions.length > 0) {
         await Camerawesome.requestPermissions();
       }
@@ -93,10 +93,12 @@ class _MyAppState extends State<MyApp> {
                         child: Center(
                           child: AspectRatio(
                             aspectRatio: bestSizeRatio,
-                            child: SizedBox(
-                              height: bestSize.height.toDouble(),
-                              width: bestSize.width.toDouble(),
-                              child: Texture(textureId: snapshot.data)
+                            child: Container(
+                              child: SizedBox(
+                                height: bestSize.height.toDouble(),
+                                width: bestSize.width.toDouble(),
+                                child: Texture(textureId: snapshot.data)
+                              ),
                             ),
                           ),
                         ),

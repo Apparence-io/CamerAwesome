@@ -18,7 +18,9 @@ class Camerawesome {
     return version;
   }
 
-  static Future<List<String>> checkPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<String>());
+  // TODO: Shadow permissions for iOS & Android
+  static Future<List<String>> checkAndroidPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<String>());
+  static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<bool>());
 
   static Future<List<String>> requestPermissions() =>_channel.invokeMethod("requestPermissions");
 
@@ -40,6 +42,11 @@ class Camerawesome {
   }
 
   static Future<num> getPreviewTexture() {
+    _channel.invokeMethod<num>('previewTexture').then((value) {
+      print(value);
+      print(value);
+      print(value);
+    });
     return _channel.invokeMethod<num>('previewTexture');
   }
 
