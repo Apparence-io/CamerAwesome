@@ -15,7 +15,7 @@
     self = [super init];
     
     _captureSession = [[AVCaptureSession alloc] init];
-    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self availableBackCamera]];
+    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
     
     NSError *localError = nil;
     _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&localError];
@@ -111,7 +111,7 @@
                                            result:result]];
 }
 
-- (NSString *)availableBackCamera {
+- (NSString *)selectAvailableCamera:(CameraSensor)sensor {
     NSArray<AVCaptureDevice *> *devices = [[NSArray alloc] init];
     if (@available(iOS 10.0, *)) {
         AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
@@ -123,13 +123,13 @@
         // Fallback on earlier versions
     }
     
-    NSString *backCameraId;
+    NSInteger cameraType = (sensor == Front) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
     for (AVCaptureDevice *device in devices) {
-        if ([device position] == AVCaptureDevicePositionBack) {
-            backCameraId = [device uniqueID];
+        if ([device position] == cameraType) {
+            return [device uniqueID];
         }
     }
-    return backCameraId;
+    return nil;
 }
 
 # pragma mark - Camera Delegates
