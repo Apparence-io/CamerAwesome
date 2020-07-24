@@ -33,6 +33,8 @@ class _MyAppState extends State<MyApp> {
 
   String _lastPhotoPath;
 
+  bool focus = false;
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +53,7 @@ class _MyAppState extends State<MyApp> {
 //      camerasSizes.forEach((element) => print("   ...${element.width} / ${element.height}"));
       await Camerawesome.setPreviewSize(bestSize.width, bestSize.height);
       await Camerawesome.setPhotoSize(bestSize.width, bestSize.height);
+      await Camerawesome.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
 //      await Camerawesome.setPreviewSize(
 //        MediaQuery.of(context).size.width.toInt(),
 //        MediaQuery.of(context).size.height.toInt());
@@ -83,11 +86,13 @@ class _MyAppState extends State<MyApp> {
         body: OrientationBuilder(
           builder: (context, orientation) {
             // recalculate for rotation handled here
-            final size = MediaQuery.of(context).size;
-            bestSizeRatio = bestSize.height / bestSize.width;
-            scale = bestSizeRatio / size.aspectRatio;
-            if (bestSizeRatio < size.aspectRatio) {
-              scale = 1 / scale;
+            if(bestSize != null) {
+              final size = MediaQuery.of(context).size;
+              bestSizeRatio = bestSize.height / bestSize.width;
+              scale = bestSizeRatio / size.aspectRatio;
+              if (bestSizeRatio < size.aspectRatio) {
+                scale = 1 / scale;
+              }
             }
             return Stack(
             children: <Widget>[
@@ -147,6 +152,19 @@ class _MyAppState extends State<MyApp> {
                     print("TAKE PHOTO CALLED");
                     print("==> hastakePhoto : ${await File(filePath).exists()}");
                     print("----------------------------------");
+                  }
+                ),
+              ),
+              Positioned(
+                bottom: 100,
+                left: 0,
+                right: 0,
+                child: FlatButton(
+                  color: Colors.blue,
+                  child: Text("release focus"),
+                  onPressed: () async {
+                    this.focus = !focus;
+                    await Camerawesome.startAutoFocus();
                   }
                 ),
               )

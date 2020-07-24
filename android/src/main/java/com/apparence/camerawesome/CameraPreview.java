@@ -1,17 +1,13 @@
 package com.apparence.camerawesome;
 
-import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
-import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.media.Image;
-import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,19 +17,14 @@ import android.view.Surface;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.Semaphore;
+import androidx.annotation.VisibleForTesting;
 
 import io.flutter.view.TextureRegistry;
-import io.flutter.plugin.common.EventChannel;
-import io.flutter.plugin.common.EventChannel.StreamHandler;
+
+import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
+import static com.apparence.camerawesome.CameraPictureStates.STATE_RELEASE_FOCUS;
+import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
+import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_LOCK;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraPreview implements CameraSession.OnCaptureSession  {
@@ -46,11 +37,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private Size previewSize;
 
-    private ImageReader mImageReader;
-
     private Handler mBackgroundHandler;
-
-    private Handler uiThreadHandler = new Handler(Looper.getMainLooper());
 
     private CaptureRequest.Builder mPreviewRequestBuilder;
 
@@ -58,28 +45,48 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private CaptureRequest mPreviewRequest;
 
+    private boolean autoFocus;
+
+    private boolean flashMode;
+
 
     public CameraPreview(CameraSession cameraSession) {
+        this.autoFocus = true;
+        this.flashMode = false;
         this.mCameraSession = cameraSession;
+    }
+
+    public CameraPreview(CameraSession cameraSession, TextureRegistry.SurfaceTextureEntry flutterTexture) {
+        this(cameraSession);
+        this.flutterTexture = flutterTexture;
     }
 
 
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
-        // create image reader
-        mImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.JPEG, 2);
-        _createImageReader();
         // create surface
         SurfaceTexture surfaceTexture = flutterTexture.surfaceTexture();
         surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
         Surface flutterSurface = new Surface(surfaceTexture);
         // create preview
         mPreviewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-//        mPreviewRequestBuilder.addTarget(mImageReader.getSurface());
+        initPreviewRequest();
+
         mPreviewRequestBuilder.addTarget(flutterSurface);
-//        List<Surface> surfaces = Arrays.asList(flutterSurface, mImageReader.getSurface());
-//        List<Surface> surfaces = Arrays.asList(flutterSurface);
         mCameraSession.addSurface(flutterSurface);
         mCameraSession.createCameraCaptureSession(cameraDevice);
+    }
+
+    public void lockFocus() {
+        mCameraSession.setState(STATE_WAITING_LOCK);
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+        refreshConfigurationWithCallback();
+    }
+
+    public void unlockFocus() {
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+        initPreviewRequest();
+        refreshConfiguration();
+        mCameraSession.setState(null);
     }
     
     public CameraCaptureSession getCaptureSession() {
@@ -95,8 +102,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
 
     public void dispose() {
-//        cancelStream();
-        mImageReader.close();
         if(mCaptureSession != null) {
             mCaptureSession.close();
         }
@@ -106,6 +111,43 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         this.previewSize = new Size(width, height);
     }
 
+    public void setAutoFocus(boolean autoFocus) {
+        this.autoFocus = autoFocus;
+        initPreviewRequest();
+        refreshConfiguration();
+    }
+
+    // ------------------------------------------------------
+    // PRIVATES
+    // ------------------------------------------------------
+
+    private void initPreviewRequest() {
+        mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
+        mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, flashMode
+                ? CaptureRequest.FLASH_MODE_TORCH
+                : CaptureRequest.FLASH_MODE_OFF);
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, this.autoFocus
+                ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+                : CaptureRequest.CONTROL_AF_MODE_OFF);
+
+    }
+
+    private void refreshConfiguration() {
+        try {
+            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "refreshConfiguration", e);
+        }
+    }
+
+    private void refreshConfigurationWithCallback() {
+        try {
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "refreshConfigurationWithCallback", e);
+        }
+    }
+
     // --------------------------------------------------
     // CameraSession.OnCaptureSession
     // --------------------------------------------------
@@ -113,14 +155,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     @Override
     public void onConfigured(@NonNull CameraCaptureSession session) {
         mCaptureSession = session;
-        try {
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
-            mPreviewRequest = mPreviewRequestBuilder.build();
-            mCaptureSession.setRepeatingRequest(mPreviewRequest, null, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "onConfigureSession", e);
-        }
+        refreshConfiguration();
+
     }
 
     @Override
@@ -128,69 +164,68 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         this.mCaptureSession = null;
     }
 
+    @Override
+    public void onStateChanged(CameraPictureStates state) {
+        if(state !=null && state.equals(STATE_RELEASE_FOCUS)) {
+            this.unlockFocus();
+        }
+    }
 
-    /////////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////
+    // ------------------------------------------------------
+    // ON FOCUS CALLBACK
+    // ------------------------------------------------------
 
-    private void _createImageReader() {
-        ImageReader.OnImageAvailableListener mOnImageAvailableListener = new ImageReader.OnImageAvailableListener() {
-            @Override
-            public void onImageAvailable(ImageReader reader) {
-                try {
-                    Image img = reader.acquireLatestImage();
-                    if(img == null) {
-                        return;
+    private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
+        @Override
+        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+            processCapture(result);
+        }
+
+        @Override
+        public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request, CaptureResult partialResult) {
+            processCapture(partialResult);
+        }
+    };
+
+    private void processCapture(CaptureResult result) {
+        if(mCameraSession.getState() == null) {
+            Log.e(TAG, "processCapture: is null");
+            return;
+        }
+        switch (mCameraSession.getState()) {
+            case STATE_WAITING_LOCK:
+                Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                if(afState == null) {
+//                    mCameraSession.setState(STATE_READY_AFTER_FOCUS);
+                } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState) {
+                    // CONTROL_AE_STATE can be null on some devices
+                    Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
+                    if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
+                        mCameraSession.setState(STATE_READY_AFTER_FOCUS);
+                    } else {
+                        runPrecaptureSequence();
                     }
-//                    if(events != null) {
-//                        ByteBuffer buffer = img.getPlanes()[0].getBuffer();
-//
-//                        final byte[] bytes = new byte[buffer.capacity()];
-//                        buffer.get(bytes);
-//                        sendData(bytes);
-//                        return;
-//                    }
-                    img.close();
-                    //Bitmap bitmapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-                    //previewObs.onNext(img);
-                } catch (Exception e) {
-                    Log.e(TAG, "onImageAvailable: Error", e);
+                } else if (CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+
                 }
-            }
-        };
-        mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, mBackgroundHandler);
+                break;
+        }
+    }
+
+    private void runPrecaptureSequence() {
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+        refreshConfigurationWithCallback();
     }
 
 
-//    private void sendImageFormat(final Image img) {
-//        Runnable sendDataRunner = new Runnable() {
-//            @Override
-//            public void run() {
-//                HashMap<String, Object> map = new HashMap<>();
-//                map.put("height", img.getHeight());
-//                map.put("width", img.getWidth());
-//                events.success(map);
-//            }
-//        };
-//        uiThreadHandler.post(sendDataRunner);
-//    }
-//
-//
-//    private void sendData(final byte[] bytes) {
-//        Runnable sendDataRunner = new Runnable() {
-//            @Override
-//            public void run() {
-//                if (bytes.length > 0) {
-//                    HashMap<String, Object> map = new HashMap<>();
-//                    map.put("data", bytes);
-//                    events.success(map);
-//                }
-//            }
-//        };
-//        uiThreadHandler.post(sendDataRunner);
-//    }
+    // ------------------------------------------------------
+    // VISIBLE FOR TESTS
+    // ------------------------------------------------------
 
-
-
+    @VisibleForTesting
+    public CaptureRequest.Builder getPreviewRequest() {
+        return mPreviewRequestBuilder;
+    }
 }
 
 

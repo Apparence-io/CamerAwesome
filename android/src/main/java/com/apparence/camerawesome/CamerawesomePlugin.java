@@ -66,6 +66,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   // handle camera taking picture
   private CameraPicture mCameraPicture;
 
+  // handle the session between CameraPicture and CameraSession
+  private CameraSession mCameraSession;
+
   // did user has accept all permissions
   private boolean permissionGranted = false;
 
@@ -112,8 +115,14 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       case "setPhotoSize":
         _handlePhotoSize(call, result);
         break;
+      case "setPhotoParams":
+        _handlePhotoParams(call, result);
+        break;
       case "takePhoto":
         _handleTakePhoto(call, result);
+        break;
+      case "handleAutoFocus":
+        _handleAutoFocus(call, result);
         break;
       case "start":
         _handleStart(call, result);
@@ -125,6 +134,24 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
         result.notImplemented();
         break;
     }
+  }
+
+  @SuppressWarnings("ConstantConditions")
+  private void _handlePhotoParams(MethodCall call, Result result) {
+    if(mCameraPicture == null) {
+      result.error("INIT_ERROR", "", "");
+      return;
+    }
+    if(call.hasArgument("autoflash")) {
+      mCameraPicture.setAutoFlash((boolean) call.argument("autoflash"));
+    }
+    if(call.hasArgument("autoFocus")) {
+      mCameraPicture.setAutoFocus((boolean) call.argument("autoFocus"));
+    }
+    if(call.hasArgument("autoExposure")) {
+      mCameraPicture.setAutoExposure((boolean) call.argument("autoExposure"));
+    }
+    result.success(null);
   }
 
   @Override
@@ -182,16 +209,16 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       mCameraSetup.chooseCamera(sensor);
       mCameraSetup.listenOrientation();
       // init camera session builder
-      CameraSession cameraSession = new CameraSession();
+      mCameraSession = new CameraSession();
       // init preview
-      mCameraPreview = new CameraPreview(cameraSession);
+      mCameraPreview = new CameraPreview(mCameraSession);
       mCameraPreview.setFlutterTexture(textureRegistry.createSurfaceTexture());
       // init state listener
-      mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, cameraSession);
+      mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
       // init picture recorder
-      mCameraPicture = new CameraPicture(cameraSession);
+      mCameraPicture = new CameraPicture(mCameraSession);
       // set camera sessions listeners
-      cameraSession.setOnCaptureSessionListenerList(Arrays.asList(mCameraPreview, mCameraPicture));
+      mCameraSession.setOnCaptureSessionListenerList(Arrays.asList(mCameraPreview, mCameraPicture));
       result.success(true);
     } catch (CameraAccessException e) {
       result.error("", e.getMessage(), e.getStackTrace());
@@ -291,11 +318,24 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     }
   }
 
+  private void _handleAutoFocus(final MethodCall call, final Result result) {
+    try {
+      mCameraPreview.lockFocus();
+      result.success(null);
+    } catch (RuntimeException e) {
+      result.error("NOT_FOCUSING", "not in focus", "");
+    }
+  }
+
   private CameraPicture.OnImageResult createTakePhotoResultListener(final Result result) {
     return new CameraPicture.OnImageResult() {
       @Override
       public void onSuccess() {
-        result.success(null);
+        try {
+          result.success(null);
+        } catch (IllegalStateException e) {
+          Log.e(TAG, "onSuccess image error", e);
+        }
       }
       @Override
       public void onFailure(String error) {

@@ -50,6 +50,18 @@ class Camerawesome {
     });
   }
 
+  /// By default autoflash, autoFocus, autoExposure are true
+  /// [autoflash] activate flash when needed by exposure, [exposure] must be set to `true`
+  /// [autoFocus] focus of camera automatic or manual
+  /// [autoExposure] luminosity auto of photo handled auto
+  static Future<void> setPhotoParams({bool autoflash, bool autoFocus, bool autoExposure}) {
+    var params = <String, dynamic> {};
+    params["autoflash"] ??= autoflash;
+    params["autoFocus"] ??= autoFocus;
+    params["autoExposure"] ??= autoExposure;
+    return _channel.invokeMethod<void>('setPhotoParams', params);
+  }
+
   static Future<void> setPhotoSize(int width, int height) {
     return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic> {
       'width': width,
@@ -65,8 +77,8 @@ class Camerawesome {
     });
   }
 
-  // TODO add flash handle
-  // TODO add autofocus on / off
+  static startAutoFocus() => _channel.invokeMethod("handleAutoFocus");
+
   // TODO add zoom level
 
 }

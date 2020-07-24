@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^0.5.0
+  path_provider: ^1.6.11
   camerawesome:
     # When depending on this package from a real application you should use:
     #   camerawesome: ^x.y.z
