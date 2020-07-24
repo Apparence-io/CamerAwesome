@@ -42,10 +42,10 @@
     UIImage *image = [UIImage imageWithCGImage:[UIImage imageWithData:data].CGImage
                                        scale:1.0
                                  orientation:_orientation];
-    // TODO(sigurdm): Consider writing file asynchronously.
+
     bool success = [UIImageJPEGRepresentation(image, 1.0) writeToFile:_path atomically:YES];
     if (!success) {
-        _result([FlutterError errorWithCode:@"IOError" message:@"Unable to write file" details:nil]);
+        _result([FlutterError errorWithCode:@"IOError" message:@"unable to write file" details:nil]);
         return;
     }
     _result(nil);
