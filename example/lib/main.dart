@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> checkPermissions() async {
     try {
-      var missingPermissions = await Camerawesome.checkPermissions();
+      var missingPermissions = await Camerawesome.checkAndroidPermissions();
       if (missingPermissions != null && missingPermissions.length > 0) {
         await Camerawesome.requestPermissions();
       }

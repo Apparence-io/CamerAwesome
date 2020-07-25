@@ -1,0 +1,28 @@
+PODS:
+  - camerawesome (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - path_provider (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - camerawesome (from `.symlinks/plugins/camerawesome/ios`)
+  - Flutter (from `Flutter`)
+  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+
+EXTERNAL SOURCES:
+  camerawesome:
+    :path: ".symlinks/plugins/camerawesome/ios"
+  Flutter:
+    :path: Flutter
+  path_provider:
+    :path: ".symlinks/plugins/path_provider/ios"
+
+SPEC CHECKSUMS:
+  camerawesome: 0f8628efae993cb064ec4f36322e89c237e1064f
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  path_provider: f96fff6166a8867510d2c25fdcc346327cc4b259
+
+PODFILE CHECKSUM: c34e2287a9ccaa606aeceab922830efb9a6ff69a
+
+COCOAPODS: 1.9.3
