@@ -17,7 +17,4 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await Camerawesome.platformVersion, '42');
-  });
 }

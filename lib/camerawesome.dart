@@ -13,13 +13,9 @@ class Camerawesome {
 
   static const MethodChannel _channel = const MethodChannel('camerawesome');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-
   // TODO: Shadow permissions for iOS & Android
   static Future<List<String>> checkAndroidPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<String>());
+
   static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<bool>());
 
   static Future<List<String>> requestPermissions() =>_channel.invokeMethod("requestPermissions");

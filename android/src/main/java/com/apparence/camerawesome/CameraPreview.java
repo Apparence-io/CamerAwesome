@@ -122,6 +122,9 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     // ------------------------------------------------------
 
     private void initPreviewRequest() {
+        if(mPreviewRequestBuilder == null) {
+            return;
+        }
         mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
         mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, flashMode
                 ? CaptureRequest.FLASH_MODE_TORCH
@@ -133,6 +136,9 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
 
     private void refreshConfiguration() {
+        if(mCaptureSession == null) {
+            return;
+        }
         try {
             mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {

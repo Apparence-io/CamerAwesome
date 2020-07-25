@@ -21,6 +21,10 @@ import io.flutter.view.TextureRegistry;
 
 import static android.hardware.camera2.CaptureRequest.*;
 import static android.hardware.camera2.CaptureRequest.FLASH_MODE;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,6 +50,7 @@ public class CameraPreviewTest {
 
     @Before
     public void setUp() throws Exception {
+        reset(captureRequestBuilder);
         when(flutterTextureMock.surfaceTexture()).thenReturn(surfaceTexture);
         when(cameraDeviceMock.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)).thenReturn(captureRequestBuilder);
         cameraSession = new CameraSession();
@@ -71,13 +76,21 @@ public class CameraPreviewTest {
 
     }
 
-//    public void setFlashWithNoPreview() {
-//        cameraPreview.setAutoFocus(true);
-//
-//    }
+    @Test
+    public void setFlashWithNoPreview()  {
+        cameraPreview.setAutoFocus(true);
+        verify(captureRequestBuilder, never()).set(eq(CaptureRequest.CONTROL_AF_MODE), Mockito.anyInt());
+    }
 
-//    public void setFlashWithPreview() {
-//        cameraPreview.setAutoFocus(true);
-//
-//    }
+    @Test
+    public void setFlashWithPreview() throws CameraAccessException {
+        cameraPreview.setPreviewSize(640, 480);
+        cameraPreview.createCameraPreviewSession(cameraDeviceMock);
+        reset(captureRequestBuilder);
+        cameraPreview.setAutoFocus(true);
+        verify(captureRequestBuilder, atLeastOnce()).set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        reset(captureRequestBuilder);
+        cameraPreview.setAutoFocus(false);
+        verify(captureRequestBuilder, atLeastOnce()).set(eq(CaptureRequest.CONTROL_AF_MODE), eq(CONTROL_AF_MODE_OFF));
+    }
 }
