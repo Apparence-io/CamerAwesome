@@ -77,13 +77,13 @@ public class CameraPreviewTest {
     }
 
     @Test
-    public void setFlashWithNoPreview()  {
+    public void setFocusWithNoPreview()  {
         cameraPreview.setAutoFocus(true);
         verify(captureRequestBuilder, never()).set(eq(CaptureRequest.CONTROL_AF_MODE), Mockito.anyInt());
     }
 
     @Test
-    public void setFlashWithPreview() throws CameraAccessException {
+    public void setFocusWithPreview() throws CameraAccessException {
         cameraPreview.setPreviewSize(640, 480);
         cameraPreview.createCameraPreviewSession(cameraDeviceMock);
         reset(captureRequestBuilder);
