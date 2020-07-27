@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 /// Used to set a permission result callback
 typedef OnPermissionsResult = void Function(bool result);
 
-typedef OnAvailableSizes = List<Size> Function();
+/// used by [OnAvailableSizes]
+typedef SelectSize = List<Size> Function();
+
+/// used to send all avaialable side to the dart side and let user choose one
+typedef OnAvailableSizes = List<Size> Function(SelectSize selectSize);
 
 
 /// -------------------------------------------------
@@ -16,6 +20,7 @@ class CameraAwesome extends StatefulWidget {
 
   final bool testMode;
 
+  /// choose between [BACK] and [FRONT]
   final Sensors sensor;
 
   /// implement this to have a callback after CameraAwesome asked for permissions
@@ -45,7 +50,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   }
 
   initPlatformState() async {
-    hasPermissions = await checkPermissions();
+    hasPermissions = await CamerawesomePlugin.checkPermissions();
     if(widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
@@ -57,6 +62,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     // TODO on photoSize available
     await CamerawesomePlugin.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
     await CamerawesomePlugin.start();
+    // TODO call on started listener
     setState(() {});
   }
 
@@ -77,26 +83,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         );
       }
     );
-  }
-
-  Future<bool> checkPermissions() async {
-    try {
-      if(Platform.isAndroid) {
-        var missingPermissions = await CamerawesomePlugin.checkAndroidPermissions();
-        if (missingPermissions != null && missingPermissions.length > 0) {
-          return CamerawesomePlugin.requestPermissions()
-            .then((value) => value == null);
-        } else {
-          return Future.value(true);
-        }
-      } else if (Platform.isIOS) {
-        return CamerawesomePlugin.checkiOSPermissions();
-      }
-    } catch (e) {
-      print("failed to check permissions here...");
-      print(e);
-    }
-    return Future.value(false);
   }
 
   bool get hasInit => selectedSize != null
@@ -142,7 +128,7 @@ class _CameraPreviewWidget extends StatelessWidget {
                               : size.width,
                           width: orientation == Orientation.portrait
                               ? size.width
-                              : size.width,
+                              : size.height,
                           child: testMode
                               ? Container()
                               : Texture(textureId: textureId)),
