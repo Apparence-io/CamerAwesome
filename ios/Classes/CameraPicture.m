@@ -14,13 +14,15 @@
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
                  captureSize:(CGSize)pictureSize
-                      result:(FlutterResult)result {
+                      result:(FlutterResult)result
+                    callback:(OnPictureTaken)callback {
     self = [super init];
     NSAssert(self, @"super init cannot be nil");
     _path = path;
     _result = result;
     _orientation = orientation;
     _pictureSize = pictureSize;
+    _completionBlock = callback;
     selfReference = self;
     return self;
 }
@@ -49,6 +51,7 @@
         return;
     }
     _result(nil);
+    _completionBlock();
 }
 
 - (UIImageOrientation)getJpegOrientation {

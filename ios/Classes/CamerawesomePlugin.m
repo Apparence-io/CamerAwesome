@@ -1,8 +1,5 @@
 #import "CamerawesomePlugin.h"
 #import "CameraView.h"
-#import "CameraSensor.h"
-#import "CameraPermissions.h"
-#import "CameraQualities.h"
 
 @interface CamerawesomePlugin ()
 
@@ -55,12 +52,16 @@
         [self _handlePhotoSize:call result:result];
     } else if ([@"takePhoto" isEqualToString:call.method]) {
         [self _handleTakePhoto:call result:result];
+    } else if ([@"focus" isEqualToString:call.method]) {
+        [self _handleInstantFocus:call result:result];
+    }  else if ([@"setFlashMode" isEqualToString:call.method]) {
+        [self _handleFlashMode:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
     }
 }
 
--(void)_handleTakePhoto:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handleTakePhoto:(FlutterMethodCall*)call result:(FlutterResult)result {
     float width = [call.arguments[@"width"] floatValue];
     float height = [call.arguments[@"height"] floatValue];
     NSString *path = call.arguments[@"path"];
@@ -78,15 +79,19 @@
     [_camera takePictureAtPath:path size:CGSizeMake(width, height) andResult:result];
 }
 
--(void)_handleCheckPermissions:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handleInstantFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera instantFocusWithResult:result];
+}
+
+- (void)_handleCheckPermissions:(FlutterMethodCall*)call result:(FlutterResult)result {
     result(@([CameraPermissions checkPermissions]));
 }
 
--(void)_handleSizes:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handleSizes:(FlutterMethodCall*)call result:(FlutterResult)result {
     result(kCameraQualities);
 }
 
--(void)_handlePreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handlePreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
     float width = [call.arguments[@"width"] floatValue];
     float height = [call.arguments[@"height"] floatValue];
     
@@ -105,7 +110,7 @@
     result(nil);
 }
 
--(void)_handlePhotoSize:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handlePhotoSize:(FlutterMethodCall*)call result:(FlutterResult)result {
     float width = [call.arguments[@"width"] floatValue];
     float height = [call.arguments[@"height"] floatValue];
     
@@ -173,7 +178,30 @@
     result(@(YES));
 }
 
--(void)_handleGetTextures:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handleFlashMode:(FlutterMethodCall*)call result:(FlutterResult)result  {
+    NSString *flashMode = call.arguments[@"flash"];
+    
+    if (flashMode == nil || flashMode.length <= 0) {
+        result([FlutterError errorWithCode:@"FLASH_MODE_ERROR" message:@"a flash mode NONE, AUTO, ALWAYS must be provided" details:nil]);
+        return;
+    }
+
+    CameraFlashMode flash;
+    if ([flashMode isEqualToString:@"NONE"]) {
+        flash = None;
+    } else if ([flashMode isEqualToString:@"AUTO"]) {
+        flash = Auto;
+    } else if ([flashMode isEqualToString:@"ALWAYS"]) {
+        flash = Always;
+    } else {
+        flash = None;
+    }
+    
+    [_camera setFlashMode:flash];
+    result(@(YES));
+}
+
+- (void)_handleGetTextures:(FlutterMethodCall*)call result:(FlutterResult)result {
     result(@(_textureId));
 }
 

@@ -20,7 +20,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   List<CameraSize> camerasSizes;
 
   CameraSize bestSize;
@@ -32,6 +31,8 @@ class _MyAppState extends State<MyApp> {
   double bestSizeRatio;
 
   String _lastPhotoPath;
+
+  Flashs _currentFlashMode = Flashs.NONE;
 
   @override
   void initState() {
@@ -58,7 +59,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _hasInit = true;
       });
-    } on PlatformException catch(e) {
+    } on PlatformException catch (e) {
       platformVersion = 'Failed to init Camerawesome. ';
       print("error: " + e.toString());
     }
@@ -79,82 +80,148 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     checkPermissions();
-    return Scaffold(
-        body: OrientationBuilder(
-          builder: (context, orientation) {
-            // recalculate for rotation handled here
-            final size = MediaQuery.of(context).size;
-            bestSizeRatio = bestSize.height / bestSize.width;
-            scale = bestSizeRatio / size.aspectRatio;
-            if (bestSizeRatio < size.aspectRatio) {
-              scale = 1 / scale;
-            }
-            return Stack(
-            children: <Widget>[
-              if(_hasInit != null)
-                Positioned(
-                  child: FutureBuilder(
-                    future: Camerawesome.getPreviewTexture(),
-                    builder: (context, snapshot) {
-                      if(!snapshot.hasData)
-                        return Container();
-                      return Transform.rotate(
-                        angle: orientation == Orientation.portrait ? 0 : -pi/2,
-                        child: Container(
-                          color: Colors.black,
-                          child: Transform.scale(
-                            scale: scale,
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: bestSizeRatio,
-                                child: SizedBox(
-                                  height: orientation == Orientation.portrait ? bestSize.height.toDouble() : bestSize.width.toDouble(),
-                                  width: orientation == Orientation.portrait ? bestSize.width.toDouble() : bestSize.width.toDouble(),
+    return Scaffold(body: OrientationBuilder(
+      builder: (context, orientation) {
+        // recalculate for rotation handled here
+        final size = MediaQuery.of(context).size;
+        bestSizeRatio = bestSize.height / bestSize.width;
+        scale = bestSizeRatio / size.aspectRatio;
+        if (bestSizeRatio < size.aspectRatio) {
+          scale = 1 / scale;
+        }
+        return Stack(
+          children: <Widget>[
+            if (_hasInit != null)
+              Positioned(
+                child: FutureBuilder(
+                  future: Camerawesome.getPreviewTexture(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) return Container();
+                    return Transform.rotate(
+                      angle: orientation == Orientation.portrait ? 0 : -pi / 2,
+                      child: Container(
+                        color: Colors.black,
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Center(
+                            child: AspectRatio(
+                              aspectRatio: bestSizeRatio,
+                              child: SizedBox(
+                                  height: orientation == Orientation.portrait
+                                      ? bestSize.height.toDouble()
+                                      : bestSize.width.toDouble(),
+                                  width: orientation == Orientation.portrait
+                                      ? bestSize.width.toDouble()
+                                      : bestSize.width.toDouble(),
 //                                  height: orientation == Orientation.portrait ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width,
 //                                  width: orientation == Orientation.portrait ? MediaQuery.of(context).size.width : MediaQuery.of(context).size.height,
-                                  child: Texture(textureId: snapshot.data)
-                                ),
-                              ),
+                                  child: Texture(textureId: snapshot.data)),
                             ),
                           ),
                         ),
-                      );
+                      ),
+                    );
+                  },
+                ),
+              ),
+            if (_lastPhotoPath != null)
+              Positioned(
+                bottom: 52,
+                left: 32,
+                child: Image.file(new File(_lastPhotoPath), width: 128),
+              ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  FlatButton(
+                      color: Colors.blue,
+                      child: Text("take photo"),
+                      onPressed: () async {
+                        final Directory extDir = await getTemporaryDirectory();
+                        var testDir = await Directory('${extDir.path}/test')
+                            .create(recursive: true);
+                        final String filePath =
+                            '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                        await Camerawesome.takePhoto(
+                            bestSize.width, bestSize.height, filePath);
+                        setState(() {
+                          _lastPhotoPath = filePath;
+                        });
+                        print("----------------------------------");
+                        print("TAKE PHOTO CALLED");
+                        print(
+                            "==> hastakePhoto : ${await File(filePath).exists()}");
+                        print("----------------------------------");
+                      }),
+                  FlatButton(
+                    color: Colors.blue,
+                    child: Text("focus please"),
+                    onPressed: () async {
+                      await Camerawesome.focus();
+                      print("----------------------------------");
+                      print("FOCUS CALLED");
+                      print("----------------------------------");
                     },
                   ),
-                ),
-              if(_lastPhotoPath != null)
-                Positioned(
-                  bottom: 52,
-                  left: 32,
-                  child: Image.file(new File(_lastPhotoPath), width: 128),
-                ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: FlatButton(
-                  color: Colors.blue,
-                  child: Text("take photo"),
-                  onPressed: () async {
-                    final Directory extDir = await getTemporaryDirectory();
-                    var testDir = await Directory('${extDir.path}/test').create(recursive: true);
-                    final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                    await Camerawesome.takePhoto(bestSize.width, bestSize.height, filePath);
-                    setState(() {
-                      _lastPhotoPath = filePath;
-                    });
-                    print("----------------------------------");
-                    print("TAKE PHOTO CALLED");
-                    print("==> hastakePhoto : ${await File(filePath).exists()}");
-                    print("----------------------------------");
-                  }
-                ),
-              )
-            ],
-          );
-          },
-        )
-      );
+                  FlatButton(
+                    color: Colors.blue,
+                    child: Text(_displayFlashMode()),
+                    onPressed: () async {
+                      Flashs flashModeToSet;
+                      switch (_currentFlashMode) {
+                        case Flashs.NONE:
+                          flashModeToSet = Flashs.AUTO;
+                          break;
+                        case Flashs.AUTO:
+                          flashModeToSet = Flashs.ALWAYS;
+                          break;
+                        case Flashs.ALWAYS:
+                          flashModeToSet = Flashs.NONE;
+                          break;
+                        default:
+                          flashModeToSet = Flashs.NONE;
+                      }
+
+                      await Camerawesome.setFlashMode(flashModeToSet);
+
+                      setState(() {
+                        _currentFlashMode = flashModeToSet;
+                      });
+                      print("----------------------------------");
+                      print("FLASH MODE CALLED");
+                      print("----------------------------------");
+                    },
+                  ),
+                ],
+              ),
+            )
+          ],
+        );
+      },
+    ));
+  }
+
+  _displayFlashMode() {
+    String flashMode;
+    switch (_currentFlashMode) {
+      case Flashs.NONE:
+        flashMode = 'Auto';
+        break;
+      case Flashs.AUTO:
+        flashMode = 'Always';
+        break;
+      case Flashs.ALWAYS:
+        flashMode = 'None';
+        break;
+      default:
+        flashMode = 'None';
+    }
+
+    return flashMode;
   }
 
   _selectBestSize() {
@@ -162,8 +229,10 @@ class _MyAppState extends State<MyApp> {
     int screenHeight = MediaQuery.of(context).size.height.toInt();
     double screenRatio = screenWidth / screenHeight;
 
-    camerasSizes.sort((a,b) => a.width > b.width ? -1 : 1);
-    camerasSizes.forEach((element) {print("- ${element.width}/${element.height}");});
+    camerasSizes.sort((a, b) => a.width > b.width ? -1 : 1);
+    camerasSizes.forEach((element) {
+      print("- ${element.width}/${element.height}");
+    });
     bestSize = camerasSizes.first;
     // TODO select by ratio
     // TODO or use predefined from Android
@@ -171,7 +240,8 @@ class _MyAppState extends State<MyApp> {
     print("screen screenWidth: $screenWidth");
     print("screen screenHeight: $screenHeight");
     print("screen ratio: $screenRatio");
-    print("bestSize: ${bestSize.width}/${bestSize.height} => ${bestSize.width / bestSize.height}");
+    print(
+        "bestSize: ${bestSize.width}/${bestSize.height} => ${bestSize.width / bestSize.height}");
     print("----------------------------------");
 
     final size = MediaQuery.of(context).size;
@@ -182,5 +252,4 @@ class _MyAppState extends State<MyApp> {
     }
     print("rescaling : $scale");
   }
-
 }

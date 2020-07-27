@@ -4,9 +4,11 @@ import 'dart:typed_data';
 import 'package:camerawesome/models/CameraSizes.dart';
 import 'package:flutter/services.dart';
 import './sensors.dart';
+import './flashs.dart';
 import 'package:rxdart/rxdart.dart';
 
 export 'sensors.dart';
+export 'flashs.dart';
 export 'models/CameraSizes.dart';
 
 class Camerawesome {
@@ -27,6 +29,14 @@ class Camerawesome {
   static Future<bool> start() =>_channel.invokeMethod("start");
 
   static Future<bool> stop() =>_channel.invokeMethod("stop");
+
+  static Future<bool> focus() =>_channel.invokeMethod("focus");
+
+  static Future<bool> setFlashMode(Flashs flash) async {
+    return _channel.invokeMethod("setFlashMode", <String, dynamic>{
+      'flash': flash.toString().split(".")[1],
+    });
+  }
 
   static Future<bool> init(Sensors sensor) async {
     return _channel.invokeMethod("init", <String, dynamic>{
