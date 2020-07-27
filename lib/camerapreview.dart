@@ -12,12 +12,16 @@ typedef SelectSize = List<Size> Function();
 /// used to send all available sides to the dart side and let user choose one
 typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 
+/// used to send notification about camera has actually started
+typedef OnCameraStarted = void Function();
+
 
 /// -------------------------------------------------
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
 class CameraAwesome extends StatefulWidget {
 
+  /// true to wrap texture
   final bool testMode;
 
   /// choose between [BACK] and [FRONT]
@@ -29,7 +33,10 @@ class CameraAwesome extends StatefulWidget {
   /// implement this to select a size from device available size list
   final OnAvailableSizes selectSize;
 
-  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.sensor = Sensors.BACK});
+  /// notify client that camera started
+  final OnCameraStarted onCameraStarted;
+
+  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.sensor = Sensors.BACK});
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
@@ -65,7 +72,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     }
     await CamerawesomePlugin.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
     await CamerawesomePlugin.start();
-    // TODO call on started listener
+    if(widget.onCameraStarted != null) {
+      widget.onCameraStarted();
+    }
     setState(() {});
   }
 
