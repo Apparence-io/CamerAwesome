@@ -14,6 +14,8 @@ import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
+
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraSession {
@@ -26,7 +28,12 @@ public class CameraSession {
 
     private List<Surface> surfaces = new ArrayList<>();
 
+    private CameraPictureStates state;
+
+    private CameraDevice cameraDevice;
+
     void createCameraCaptureSession(final CameraDevice cameraDevice) throws CameraAccessException {
+        this.cameraDevice = cameraDevice;
         cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
             @Override
             public void onConfigured(@NonNull CameraCaptureSession session) {
@@ -68,6 +75,32 @@ public class CameraSession {
         // todo if session is active recreate session
     }
 
+    public List<Surface> getSurfaces() {
+        return surfaces;
+    }
+
+    public CameraPictureStates getState() {
+        return state;
+    }
+
+    public CameraDevice getCameraDevice() {
+        return cameraDevice;
+    }
+
+    public void setState(CameraPictureStates state) {
+        this.state = state;
+        for (OnCaptureSession onCaptureSession : onCaptureSessionListenerList) {
+            onCaptureSession.onStateChanged(this.state);
+        }
+    }
+
+    public CameraCaptureSession getCaptureSession() {
+        return mCaptureSession;
+    }
+
+    public void setCaptureSession(CameraCaptureSession mCaptureSession) {
+        this.mCaptureSession = mCaptureSession;
+    }
 
     /**
      * Used to signal that session is ready to all class using CameraSession
@@ -77,5 +110,7 @@ public class CameraSession {
         void onConfigured(@NonNull CameraCaptureSession session);
 
         void onConfigureFailed();
+
+        void onStateChanged(CameraPictureStates state);
     }
 }

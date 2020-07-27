@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:camerawesome/models/CameraSizes.dart';
@@ -7,23 +8,37 @@ import './sensors.dart';
 import './flashs.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'models/CameraFlashes.dart';
+
 export 'sensors.dart';
 export 'flashs.dart';
 export 'models/CameraSizes.dart';
+export 'camerapreview.dart';
 
-class Camerawesome {
+
+// TODO - add zoom level
+// TODO - call init to change cam while running
+// TODO - dispose method
+// TODO - Focus on a point
+// TODO - flashMode android
+
+// TODO - TESTS E2E
+// TODO - test unitaires ?
+
+// TODO documentation example usage
+// TODO - table des devices testé + (flash OK, )
+
+
+// TODO VNEXT - stream images
+class CamerawesomePlugin {
 
   static const MethodChannel _channel = const MethodChannel('camerawesome');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-
-  // TODO: Shadow permissions for iOS & Android
   static Future<List<String>> checkAndroidPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<String>());
+
   static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<bool>());
 
+  /// only available on Android
   static Future<List<String>> requestPermissions() =>_channel.invokeMethod("requestPermissions");
 
   static Future<bool> start() =>_channel.invokeMethod("start");
@@ -51,14 +66,7 @@ class Camerawesome {
     return res;
   }
 
-  static Future<num> getPreviewTexture() {
-    _channel.invokeMethod<num>('previewTexture').then((value) {
-      print(value);
-      print(value);
-      print(value);
-    });
-    return _channel.invokeMethod<num>('previewTexture');
-  }
+  static Future<num> getPreviewTexture() => _channel.invokeMethod<num>('previewTexture');
 
   static Future<void> setPreviewSize(int width, int height) {
     return _channel.invokeMethod<void>('setPreviewSize', <String, dynamic> {
@@ -67,6 +75,21 @@ class Camerawesome {
     });
   }
 
+  /// FIXME DELETE and replace by methods
+  /// By default autoflash, autoFocus, autoExposure are true
+  /// [autoflash] activate flash when needed by exposure, [exposure] must be set to `true`
+  /// [autoFocus] focus of camera automatic or manual
+  /// [autoExposure] luminosity auto of photo handled auto
+  static Future<void> setPhotoParams({bool autoflash, bool autoFocus, bool autoExposure}) {
+    var params = <String, dynamic> {};
+    params["autoflash"] ??= autoflash;
+    params["autoFocus"] ??= autoFocus;
+    params["autoExposure"] ??= autoExposure;
+    return _channel.invokeMethod<void>('setPhotoParams', params);
+  }
+
+  /// Just for android
+  /// you can set a different size for preview and for photo
   static Future<void> setPhotoSize(int width, int height) {
     return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic> {
       'width': width,
@@ -82,9 +105,34 @@ class Camerawesome {
     });
   }
 
-  // TODO add flash handle
-  // TODO add autofocus on / off
-  // TODO add zoom level
+  static Future<void> setFlashMode(CameraFlashes flashMode) => _channel.invokeMethod('setFlashMode');
+
+  /// TODO - Next step focus on a certain point
+  static startAutoFocus() => _channel.invokeMethod("handleAutoFocus");
+
+  // ---------------------------------------------------
+  // UTILITY METHODS
+  // ---------------------------------------------------
+
+  static Future<bool> checkPermissions() async {
+    try {
+      if(Platform.isAndroid) {
+        var missingPermissions = await CamerawesomePlugin.checkAndroidPermissions();
+        if (missingPermissions != null && missingPermissions.length > 0) {
+          return CamerawesomePlugin.requestPermissions()
+            .then((value) => value == null);
+        } else {
+          return Future.value(true);
+        }
+      } else if (Platform.isIOS) {
+        return CamerawesomePlugin.checkiOSPermissions();
+      }
+    } catch (e) {
+      print("failed to check permissions here...");
+      print(e);
+    }
+    return Future.value(false);
+  }
 
 }
 

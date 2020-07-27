@@ -103,10 +103,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         this.mCameraDevice = camera;
         // init cameraPreview
         try {
-            // FIXME DO NOT DO THIS HERE
             this.mCameraPreview.createCameraPreviewSession(mCameraDevice);
-            // FIXME must be done when session is configured
-//            this.mCameraPicture.setPreviewSession(mCameraPreview.getCaptureSession());
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
