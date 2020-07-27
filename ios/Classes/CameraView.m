@@ -16,7 +16,7 @@
     
     _captureSession = [[AVCaptureSession alloc] init];
     _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
-    
+
     NSError *localError = nil;
     _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&localError];
     _captureVideoOutput = [AVCaptureVideoDataOutput new];
@@ -37,8 +37,17 @@
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 
     [_captureOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
-    [_captureOutput setMetadataObjectTypes:@[AVMetadataObjectTypeAztecCode,AVMetadataObjectTypeCode39Code,
-                                    AVMetadataObjectTypeCode93Code,AVMetadataObjectTypeCode128Code, AVMetadataObjectTypeDataMatrixCode,AVMetadataObjectTypeEAN8Code,AVMetadataObjectTypeEAN13Code,AVMetadataObjectTypeITF14Code,AVMetadataObjectTypePDF417Code,AVMetadataObjectTypeQRCode,AVMetadataObjectTypeUPCECode]];
+    [_captureOutput setMetadataObjectTypes:@[AVMetadataObjectTypeAztecCode,
+                                             AVMetadataObjectTypeCode39Code,
+                                             AVMetadataObjectTypeCode93Code,
+                                             AVMetadataObjectTypeCode128Code,
+                                             AVMetadataObjectTypeDataMatrixCode,
+                                             AVMetadataObjectTypeEAN8Code,
+                                             AVMetadataObjectTypeEAN13Code,
+                                             AVMetadataObjectTypeITF14Code,
+                                             AVMetadataObjectTypePDF417Code,
+                                             AVMetadataObjectTypeQRCode,
+                                             AVMetadataObjectTypeUPCECode]];
     [_captureSession addConnection:_captureConnection];
     _capturePhotoOutput = [AVCapturePhotoOutput new];
     [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
@@ -55,25 +64,34 @@
     [self updatePreviewOrientation];
 }
 
+// TODO: Install observer on subview
+- (void) handlePinchToZoomRecognizer:(UIPinchGestureRecognizer*)pinchRecognizer {
+    const CGFloat pinchZoomScaleFactor = 2.0;
+
+    if (pinchRecognizer.state == UIGestureRecognizerStateChanged) {
+        NSError *error = nil;
+        if ([_captureDevice lockForConfiguration:&error]) {
+            _captureDevice.videoZoomFactor = 1.0 + pinchRecognizer.scale * pinchZoomScaleFactor;
+            [_captureDevice unlockForConfiguration];
+        } else {
+            NSLog(@"error: %@", error);
+        }
+    }
+}
+
 - (void)updatePreviewOrientation {
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-    
+
     AVCaptureVideoOrientation previewOrientation;
-    if (deviceOrientation == UIDeviceOrientationFaceUp) {
-        previewOrientation = AVCaptureVideoOrientationPortrait;
-    } else if (deviceOrientation == UIDeviceOrientationFaceDown) {
+    
+    
+    if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
         previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
-    } else if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
-        previewOrientation = AVCaptureVideoOrientationLandscapeRight;
-    } else if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-        previewOrientation = AVCaptureVideoOrientationLandscapeLeft;
     } else {
         previewOrientation = AVCaptureVideoOrientationPortrait;
     }
     
     [_captureConnection setVideoOrientation:previewOrientation];
-    _previewLayer.videoGravity = AVLayerVideoGravityResize;
-    // TODO: Fit screen with layer
 }
 
 // TODO: Call from Dart
