@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
 
   String _lastPhotoPath;
 
-  Flashs _currentFlashMode = Flashs.NONE;
+  Flashs _currentFlashMode = Flashs.AUTO;
 
   @override
   void initState() {

@@ -33,6 +33,9 @@
 
     _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        
+    // By default enable auto flash mode
+    _flashMode = AVCaptureFlashModeAuto;
 
     [_captureOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
     [_captureOutput setMetadataObjectTypes:@[AVMetadataObjectTypeAztecCode,
@@ -139,12 +142,11 @@
             _flashMode = AVCaptureFlashModeOn;
             break;
         default:
-            _torchMode = AVCaptureTorchModeOff;
-            _flashMode = AVCaptureFlashModeOff;
+            _torchMode = AVCaptureTorchModeAuto;
+            _flashMode = AVCaptureFlashModeAuto;
             break;
     }
     [_captureDevice setTorchMode:_torchMode];
-    
     [_captureDevice unlockForConfiguration];
 }
 
