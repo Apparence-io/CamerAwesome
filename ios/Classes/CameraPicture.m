@@ -41,7 +41,7 @@
                             previewPhotoSampleBuffer:previewPhotoSampleBuffer];
     UIImage *image = [UIImage imageWithCGImage:[UIImage imageWithData:data].CGImage
                                        scale:1.0
-                                 orientation:_orientation];
+                                 orientation:[self getJpegOrientation]];
 
     bool success = [UIImageJPEGRepresentation(image, 1.0) writeToFile:_path atomically:YES];
     if (!success) {
@@ -49,6 +49,20 @@
         return;
     }
     _result(nil);
+}
+
+- (UIImageOrientation)getJpegOrientation {
+    NSInteger sensorOrientation;
+    
+    if (_orientation == UIDeviceOrientationPortrait) {
+        sensorOrientation = UIDeviceOrientationLandscapeLeft;
+    } else if (_orientation == UIDeviceOrientationLandscapeRight) {
+        sensorOrientation = UIDeviceOrientationPortrait;
+    } else {
+        sensorOrientation = UIDeviceOrientationLandscapeRight;
+    }
+    
+    return sensorOrientation;
 }
 
 @end
