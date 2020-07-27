@@ -75,6 +75,10 @@ public class CameraSession {
         // todo if session is active recreate session
     }
 
+    public List<Surface> getSurfaces() {
+        return surfaces;
+    }
+
     public CameraPictureStates getState() {
         return state;
     }

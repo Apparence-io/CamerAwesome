@@ -194,7 +194,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
 
   private void _handleSetup(MethodCall call, Result result) {
     if(!this.permissionGranted) {
-      result.error("MISSING_PERMISSION", "you got to accept all permissions", "");
+      result.error("MISSING_PERMISSION", "you got to accept all permissions before setup", "");
       return;
     }
     if(call.argument("sensor") == null) {
@@ -228,6 +228,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   private void _handleGetTextures(MethodCall call, Result result) {
     if(mCameraPreview == null) {
       result.error("MUST_CALL_INIT", "", "");
+      return;
     }
     result.success(mCameraPreview.getFlutterTexture());
   }

@@ -6,7 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:camerawesome/camerawesome.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -35,53 +35,15 @@ class _MyAppState extends State<MyApp> {
 
   bool focus = false;
 
+  bool flashAuto = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => initPlatformState());
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    try {
-      print("--------------------------");
-      var hasInit = await Camerawesome.init(Sensors.BACK);
-      print("hasInit $hasInit");
-      camerasSizes = await Camerawesome.getSizes();
-      _selectBestSize();
-//      camerasSizes.forEach((element) => print("   ...${element.width} / ${element.height}"));
-      await Camerawesome.setPreviewSize(bestSize.width, bestSize.height);
-      await Camerawesome.setPhotoSize(bestSize.width, bestSize.height);
-      await Camerawesome.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
-//      await Camerawesome.setPreviewSize(
-//        MediaQuery.of(context).size.width.toInt(),
-//        MediaQuery.of(context).size.height.toInt());
-      await Camerawesome.start();
-      setState(() {
-        _hasInit = true;
-      });
-    } on PlatformException catch(e) {
-      platformVersion = 'Failed to init Camerawesome. ';
-      print("error: " + e.toString());
-    }
-  }
-
-  Future<void> checkPermissions() async {
-    try {
-      var missingPermissions = await Camerawesome.checkAndroidPermissions();
-      if (missingPermissions != null && missingPermissions.length > 0) {
-        await Camerawesome.requestPermissions();
-      }
-    } catch (e) {
-      print("failed to check permissions here...");
-      print(e);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    checkPermissions();
     return Scaffold(
         body: OrientationBuilder(
           builder: (context, orientation) {
@@ -96,37 +58,7 @@ class _MyAppState extends State<MyApp> {
             }
             return Stack(
             children: <Widget>[
-              if(_hasInit != null)
-                Positioned(
-                  child: FutureBuilder(
-                    future: Camerawesome.getPreviewTexture(),
-                    builder: (context, snapshot) {
-                      if(!snapshot.hasData)
-                        return Container();
-                      return Transform.rotate(
-                        angle: orientation == Orientation.portrait ? 0 : -pi/2,
-                        child: Container(
-                          color: Colors.black,
-                          child: Transform.scale(
-                            scale: scale,
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: bestSizeRatio,
-                                child: SizedBox(
-                                  height: orientation == Orientation.portrait ? bestSize.height.toDouble() : bestSize.width.toDouble(),
-                                  width: orientation == Orientation.portrait ? bestSize.width.toDouble() : bestSize.width.toDouble(),
-//                                  height: orientation == Orientation.portrait ? MediaQuery.of(context).size.height : MediaQuery.of(context).size.width,
-//                                  width: orientation == Orientation.portrait ? MediaQuery.of(context).size.width : MediaQuery.of(context).size.height,
-                                  child: Texture(textureId: snapshot.data)
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              CameraAwesome(),
               if(_lastPhotoPath != null)
                 Positioned(
                   bottom: 52,
@@ -134,17 +66,17 @@ class _MyAppState extends State<MyApp> {
                   child: Image.file(new File(_lastPhotoPath), width: 128),
                 ),
               Positioned(
-                bottom: 0,
+                bottom: -5,
                 left: 0,
                 right: 0,
                 child: FlatButton(
                   color: Colors.blue,
-                  child: Text("take photo"),
+                  child: Text("take photo", style: TextStyle(color: Colors.white),),
                   onPressed: () async {
                     final Directory extDir = await getTemporaryDirectory();
                     var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                     final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                    await Camerawesome.takePhoto(bestSize.width, bestSize.height, filePath);
+                    await CamerawesomePlugin.takePhoto(bestSize.width, bestSize.height, filePath);
                     setState(() {
                       _lastPhotoPath = filePath;
                     });
@@ -157,15 +89,26 @@ class _MyAppState extends State<MyApp> {
               ),
               Positioned(
                 bottom: 100,
-                left: 0,
-                right: 0,
-                child: FlatButton(
-                  color: Colors.blue,
-                  child: Text("release focus"),
-                  onPressed: () async {
-                    this.focus = !focus;
-                    await Camerawesome.startAutoFocus();
-                  }
+                right: 32,
+                child: Column(
+                  children: <Widget>[
+                    FlatButton(
+                      color: Colors.blue,
+                      child: Text("focus", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        this.focus = !focus;
+                        await CamerawesomePlugin.startAutoFocus();
+                      }
+                    ),
+                    FlatButton(
+                      color: Colors.blue,
+                      child: Text("flash auto", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        this.flashAuto = !flashAuto;
+                        await CamerawesomePlugin.setPhotoParams(autoflash: flashAuto);
+                      }
+                    ),
+                  ],
                 ),
               )
             ],
@@ -181,7 +124,7 @@ class _MyAppState extends State<MyApp> {
     double screenRatio = screenWidth / screenHeight;
 
     camerasSizes.sort((a,b) => a.width > b.width ? -1 : 1);
-    camerasSizes.forEach((element) {print("- ${element.width}/${element.height}");});
+//    camerasSizes.forEach((element) {print("- ${element.width}/${element.height}");});
     bestSize = camerasSizes.first;
     // TODO select by ratio
     // TODO or use predefined from Android

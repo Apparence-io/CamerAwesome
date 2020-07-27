@@ -5,6 +5,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.view.Surface;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import io.flutter.view.TextureRegistry;
 
@@ -73,7 +75,10 @@ public class CameraPreviewTest {
         // Android preview stays on portrait mode
         verify(captureRequestBuilder, times(1))
                 .set(CaptureRequest.JPEG_ORIENTATION, 270);
-
+        // check surfaces have been set
+        Assert.assertEquals(cameraSession.getSurfaces().size(), 1);
+        Assert.assertEquals(cameraSession.getCameraDevice(), cameraDeviceMock);
+        Assert.assertNotNull(cameraSession.getCaptureSession());
     }
 
     @Test

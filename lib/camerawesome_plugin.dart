@@ -8,8 +8,9 @@ import 'package:rxdart/rxdart.dart';
 
 export 'sensors.dart';
 export 'models/CameraSizes.dart';
+export 'camerapreview.dart';
 
-class Camerawesome {
+class CamerawesomePlugin {
 
   static const MethodChannel _channel = const MethodChannel('camerawesome');
 
@@ -37,14 +38,7 @@ class Camerawesome {
     return res;
   }
 
-  static Future<num> getPreviewTexture() {
-    _channel.invokeMethod<num>('previewTexture').then((value) {
-      print(value);
-      print(value);
-      print(value);
-    });
-    return _channel.invokeMethod<num>('previewTexture');
-  }
+  static Future<num> getPreviewTexture() => _channel.invokeMethod<num>('previewTexture');
 
   static Future<void> setPreviewSize(int width, int height) {
     return _channel.invokeMethod<void>('setPreviewSize', <String, dynamic> {

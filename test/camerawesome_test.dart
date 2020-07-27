@@ -1,8 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:camerawesome/camerawesome.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
+
   const MethodChannel channel = MethodChannel('camerawesome');
 
   TestWidgetsFlutterBinding.ensureInitialized();
