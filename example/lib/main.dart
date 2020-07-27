@@ -21,9 +21,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
-  List<CameraSize> camerasSizes;
+  List<Size> camerasSizes;
 
-  CameraSize bestSize;
+  Size bestSize;
 
   bool _hasInit;
 
@@ -76,7 +76,7 @@ class _MyAppState extends State<MyApp> {
                     final Directory extDir = await getTemporaryDirectory();
                     var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                     final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                    await CamerawesomePlugin.takePhoto(bestSize.width, bestSize.height, filePath);
+                    await CamerawesomePlugin.takePhoto(bestSize.width.toInt(), bestSize.height.toInt(), filePath);
                     setState(() {
                       _lastPhotoPath = filePath;
                     });

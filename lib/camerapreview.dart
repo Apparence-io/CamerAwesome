@@ -9,8 +9,8 @@ typedef OnPermissionsResult = void Function(bool result);
 /// used by [OnAvailableSizes]
 typedef SelectSize = List<Size> Function();
 
-/// used to send all avaialable side to the dart side and let user choose one
-typedef OnAvailableSizes = List<Size> Function(SelectSize selectSize);
+/// used to send all available sides to the dart side and let user choose one
+typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 
 
 /// -------------------------------------------------
@@ -37,9 +37,9 @@ class CameraAwesome extends StatefulWidget {
 
 class _CameraAwesomeState extends State<CameraAwesome> {
 
-  List<CameraSize> camerasAvailableSizes;
+  List<Size> camerasAvailableSizes;
 
-  CameraSize selectedSize;
+  Size selectedSize;
 
   bool hasPermissions = false;
 
@@ -57,9 +57,12 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     await CamerawesomePlugin.init(widget.sensor);
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
     selectedSize = camerasAvailableSizes[0];
-    await CamerawesomePlugin.setPreviewSize(selectedSize.width, selectedSize.height);
-    await CamerawesomePlugin.setPhotoSize(selectedSize.width, selectedSize.height);
-    // TODO on photoSize available
+    await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
+    await CamerawesomePlugin.setPhotoSize(selectedSize.width.toInt(), selectedSize.height.toInt());
+    if(widget.selectSize != null) {
+      selectedSize = widget.selectSize(camerasAvailableSizes);
+      assert(selectedSize !=null, "A size from the list must be selected");
+    }
     await CamerawesomePlugin.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
     await CamerawesomePlugin.start();
     // TODO call on started listener
@@ -78,7 +81,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         return _CameraPreviewWidget(
           scale: 1,
           ratio: selectedSize.height / selectedSize.width,
-          size: Size(selectedSize.width.toDouble(), selectedSize.height.toDouble()),
+          size: selectedSize,
           textureId: snapshot.data,
         );
       }
