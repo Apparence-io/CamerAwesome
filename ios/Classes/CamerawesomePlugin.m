@@ -76,11 +76,11 @@
         return;
     }
     
-    [_camera takePictureAtPath:path size:CGSizeMake(width, height) andResult:result];
+    [_camera takePictureAtPath:path size:CGSizeMake(width, height)];
 }
 
 - (void)_handleInstantFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [_camera instantFocusWithResult:result];
+    [_camera instantFocus];
 }
 
 - (void)_handleCheckPermissions:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -165,7 +165,7 @@
     }
 
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
-    self.camera = [[CameraView alloc] initWithCameraSensor:sensor];
+    self.camera = [[CameraView alloc] initWithCameraSensor:sensor andResult:result];
     [self->_registry textureFrameAvailable:_textureId];
     
     __weak typeof(self) weakSelf = self;

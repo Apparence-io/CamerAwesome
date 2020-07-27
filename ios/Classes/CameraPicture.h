@@ -18,7 +18,6 @@ typedef void(^OnPictureTaken)(void);
 @property(readonly, nonatomic) NSString *path;
 @property(readonly, nonatomic) FlutterResult result;
 @property NSInteger orientation;
-@property CGSize pictureSize;
 @property (nonatomic, copy) OnPictureTaken completionBlock;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
 @property(readonly, nonatomic) AVCaptureDevicePosition cameraPosition;

@@ -21,7 +21,6 @@
     _path = path;
     _result = result;
     _orientation = orientation;
-    _pictureSize = pictureSize;
     _completionBlock = callback;
     selfReference = self;
     return self;
@@ -38,12 +37,11 @@
         _result([FlutterError errorWithCode:@"" message:@"" details:@""]);
         return;
     }
-    NSData *data = [AVCapturePhotoOutput
-      JPEGPhotoDataRepresentationForJPEGSampleBuffer:photoSampleBuffer
-                            previewPhotoSampleBuffer:previewPhotoSampleBuffer];
+    NSData *data = [AVCapturePhotoOutput JPEGPhotoDataRepresentationForJPEGSampleBuffer:photoSampleBuffer
+                                                               previewPhotoSampleBuffer:previewPhotoSampleBuffer];
     UIImage *image = [UIImage imageWithCGImage:[UIImage imageWithData:data].CGImage
-                                       scale:1.0
-                                 orientation:[self getJpegOrientation]];
+                                         scale:1.0
+                                   orientation:[self getJpegOrientation]];
 
     bool success = [UIImageJPEGRepresentation(image, 1.0) writeToFile:_path atomically:YES];
     if (!success) {

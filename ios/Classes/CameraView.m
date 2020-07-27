@@ -9,8 +9,10 @@
 
 @implementation CameraView
 
-- (instancetype)initWithCameraSensor:(CameraSensor) sensor {
+- (instancetype)initWithCameraSensor:(CameraSensor)sensor andResult:(nonnull FlutterResult)result {
     self = [super init];
+    
+    _result = result;
     
     _captureSession = [[AVCaptureSession alloc] init];
     _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
@@ -65,21 +67,6 @@
     [self updatePreviewOrientation];
 }
 
-// TODO: Install observer on subview
-- (void) handlePinchToZoomRecognizer:(UIPinchGestureRecognizer*)pinchRecognizer {
-    const CGFloat pinchZoomScaleFactor = 2.0;
-
-    if (pinchRecognizer.state == UIGestureRecognizerStateChanged) {
-        NSError *error = nil;
-        if ([_captureDevice lockForConfiguration:&error]) {
-            _captureDevice.videoZoomFactor = 1.0 + pinchRecognizer.scale * pinchZoomScaleFactor;
-            [_captureDevice unlockForConfiguration];
-        } else {
-            NSLog(@"error: %@", error);
-        }
-    }
-}
-
 - (void)updatePreviewOrientation {
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
 
@@ -118,13 +105,13 @@
 
 - (void)setFlashMode:(CameraFlashMode)flashMode {
     if (![_captureDevice hasFlash]) {
-        // TODO: Error
+        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
     }
     
     NSError *error;
     [_captureDevice lockForConfiguration:&error];
     if (error != nil) {
-        // TODO: Error
+        _result([FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""]);
     }
     [_captureDevice setTorchMode:AVCaptureTorchModeOn];
     
@@ -150,7 +137,8 @@
     [_captureDevice unlockForConfiguration];
 }
 
-- (void)instantFocusWithResult:(nonnull FlutterResult)result {
+/// Trigger focus on device at the center of the preview
+- (void)instantFocus {
     NSError *error;
     
     // Get center point of the preview size
@@ -160,9 +148,8 @@
     CGPoint thisFocusPoint = [_previewLayer captureDevicePointOfInterestForPoint:CGPointMake(focus_x, focus_y)];
     if ([_captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] && [_captureDevice isFocusPointOfInterestSupported]) {
         if ([_captureDevice lockForConfiguration:&error]) {
-            
             if (error != nil) {
-                result([FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
+                _result([FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
             }
             
             [_captureDevice setFocusMode:AVCaptureFocusModeAutoFocus];
@@ -173,7 +160,8 @@
     }
 }
 
-- (void)takePictureAtPath:(NSString *)path size:(CGSize)size andResult:(nonnull FlutterResult)result {
+/// Take the picture into the given path
+- (void)takePictureAtPath:(NSString *)path size:(CGSize)size {
     // Get device orientation from device
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
     
@@ -181,7 +169,7 @@
     CameraPicture *cameraPicture = [[CameraPicture alloc] initWithPath:path
                                                            orientation:deviceOrientation
                                                            captureSize:size
-                                                                result:result
+                                                                result:_result
                                                               callback:^{
                                                                 // If flash mode is always on, restore it back after photo is taken
                                                                 if (self->_torchMode == AVCaptureTorchModeOn) {
@@ -202,10 +190,11 @@
     
 }
 
+/// Get the first available camera on device (front or rear)
 - (NSString *)selectAvailableCamera:(CameraSensor)sensor {
     NSArray<AVCaptureDevice *> *devices = [[NSArray alloc] init];
     AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                                                         discoverySessionWithDeviceTypes:@[AVCaptureDeviceTypeBuiltInWideAngleCamera ]
+                                                         discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera ]
                                                                                mediaType:AVMediaTypeVideo
                                                                                 position:AVCaptureDevicePositionUnspecified];
     devices = discoverySession.devices;
@@ -223,23 +212,24 @@
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (output == _captureVideoOutput) {
-           CVPixelBufferRef newBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-           CFRetain(newBuffer);
-           CVPixelBufferRef old = _latestPixelBuffer;
-           while (!OSAtomicCompareAndSwapPtrBarrier(old, newBuffer, (void **)&_latestPixelBuffer)) {
-               old = _latestPixelBuffer;
-           }
-           if (old != nil) {
-               CFRelease(old);
-           }
-           if (_onFrameAvailable) {
-               _onFrameAvailable();
-           }
+        CVPixelBufferRef newBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+        CFRetain(newBuffer);
+        CVPixelBufferRef old = _latestPixelBuffer;
+        while (!OSAtomicCompareAndSwapPtrBarrier(old, newBuffer, (void **)&_latestPixelBuffer)) {
+            old = _latestPixelBuffer;
+        }
+        if (old != nil) {
+            CFRelease(old);
+        }
+        if (_onFrameAvailable) {
+            _onFrameAvailable();
+        }
        }
 }
 
 # pragma mark - Flutter Delegates
 
+/// Used to copy pixels to in-memory buffer
 - (CVPixelBufferRef _Nullable)copyPixelBuffer {
     CVPixelBufferRef pixelBuffer = _latestPixelBuffer;
     while (!OSAtomicCompareAndSwapPtrBarrier(pixelBuffer, nil, (void **)&_latestPixelBuffer)) {

@@ -31,18 +31,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
+@property(readonly, nonatomic) FlutterResult result;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
 @property(readonly, nonatomic) CGSize previewSize;
 @property(nonatomic) FlutterEventSink eventSink;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor;
+- (instancetype)initWithCameraSensor:(CameraSensor)sensor andResult:(nonnull FlutterResult)result;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)start;
 - (void)stop;
-- (void)takePictureAtPath:(NSString *)path size:(CGSize)size andResult:(FlutterResult)result;
-- (void)instantFocusWithResult:(nonnull FlutterResult)result;
+- (void)takePictureAtPath:(NSString *)path size:(CGSize)size;
+- (void)instantFocus;
 
 @end
 
