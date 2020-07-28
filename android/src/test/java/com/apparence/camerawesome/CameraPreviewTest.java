@@ -7,6 +7,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.view.Surface;
 
+import com.apparence.camerawesome.models.FlashMode;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,5 +99,19 @@ public class CameraPreviewTest {
         reset(captureRequestBuilder);
         cameraPreview.setAutoFocus(false);
         verify(captureRequestBuilder, atLeastOnce()).set(eq(CaptureRequest.CONTROL_AF_MODE), eq(CONTROL_AF_MODE_OFF));
+    }
+
+    @Test
+    public void setFlashMode() throws CameraAccessException {
+        cameraPreview.setPreviewSize(640, 480);
+        cameraPreview.createCameraPreviewSession(cameraDeviceMock);
+        reset(captureRequestBuilder);
+        cameraPreview.setFlashMode(FlashMode.NONE);
+        verify(captureRequestBuilder, atLeastOnce()).set(FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+        reset(captureRequestBuilder);
+        cameraPreview.setFlashMode(FlashMode.AUTO);
+        verify(captureRequestBuilder, atLeastOnce()).set(eq(CaptureRequest.FLASH_MODE), eq(FLASH_MODE_SINGLE));
+        cameraPreview.setFlashMode(FlashMode.ALWAYS);
+        verify(captureRequestBuilder, atLeastOnce()).set(eq(CaptureRequest.FLASH_MODE), eq(FLASH_MODE_TORCH));
     }
 }

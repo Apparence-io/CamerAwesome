@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
+import 'models/flashmodes.dart';
+
 /// Used to set a permission result callback
 typedef OnPermissionsResult = void Function(bool result);
 
@@ -15,10 +17,10 @@ typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 /// used to send notification about camera has actually started
 typedef OnCameraStarted = void Function();
 
-
 /// -------------------------------------------------
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
+/// TODO - handle refused permissions
 class CameraAwesome extends StatefulWidget {
 
   /// true to wrap texture
@@ -36,7 +38,10 @@ class CameraAwesome extends StatefulWidget {
   /// notify client that camera started
   final OnCameraStarted onCameraStarted;
 
-  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.sensor = Sensors.BACK});
+  /// change flash mode
+  final ValueNotifier<CameraFlashes> switchFlashMode;
+
+  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.sensor = Sensors.BACK});
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
@@ -49,6 +54,8 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   Size selectedSize;
 
   bool hasPermissions = false;
+
+  bool started = false;
 
   @override
   void initState() {
@@ -77,9 +84,11 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       assert(selectedSize !=null, "A size from the list must be selected");
     }
     await CamerawesomePlugin.start();
+    started =  true;
     if(widget.onCameraStarted != null) {
       widget.onCameraStarted();
     }
+    _initFlashModeSwitcher();
     setState(() {});
   }
 
@@ -104,21 +113,34 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 
   bool get hasInit => selectedSize != null
     && camerasAvailableSizes != null
-    && camerasAvailableSizes.length > 0;
+    && camerasAvailableSizes.length > 0
+    && started;
+
+  /// inits the Flash mode switcher using [ValueNotifier]
+  /// Each time user call to switch flashMode we send a call to iOS or Android Plugins
+  _initFlashModeSwitcher() {
+    if(widget.switchFlashMode != null) {
+      widget.switchFlashMode.addListener(() async {
+        if(widget.switchFlashMode.value != null && started) {
+          await CamerawesomePlugin.setFlashMode(widget.switchFlashMode.value);
+        }
+      });
+    }
+  }
 }
 
 ///
 class _CameraPreviewWidget extends StatelessWidget {
 
-  double scale;
+  final double scale;
 
-  double ratio;
+  final double ratio;
 
-  Size size;
+  final Size size;
 
-  int textureId;
+  final int textureId;
 
-  bool testMode;
+  final bool testMode;
 
   _CameraPreviewWidget(
       {this.scale,

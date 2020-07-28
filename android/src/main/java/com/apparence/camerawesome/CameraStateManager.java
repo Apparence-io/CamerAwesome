@@ -52,11 +52,9 @@ public class CameraStateManager extends CameraDevice.StateCallback {
     }
 
     public void startCamera(String cameraId) throws CameraManagerException {
-        Log.d(TAG, "startCamera: 1");
         if(cameraId == null) {
             throw new RuntimeException("A cameraId must be selected");
         }
-        Log.d(TAG, "startCamera: 2");
         startBackgroundThread();
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
         try {
@@ -64,6 +62,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
             manager.openCamera(cameraId, this, mBackgroundHandler);
+//            manager.registerTorchCallback();
         } catch (CameraAccessException e) {
             Log.e(TAG, "CANNOT_OPEN_CAMERA: ", e);
             throw new CameraManagerException(CameraManagerException.Codes.CANNOT_OPEN_CAMERA, e);

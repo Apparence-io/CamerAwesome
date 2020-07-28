@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.apparence.camerawesome.exceptions.CameraManagerException;
+import com.apparence.camerawesome.models.FlashMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,11 +116,11 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       case "setPhotoSize":
         _handlePhotoSize(call, result);
         break;
-      case "setPhotoParams":
-        _handlePhotoParams(call, result);
-        break;
       case "takePhoto":
         _handleTakePhoto(call, result);
+        break;
+      case "setFlashMode":
+        _handleFlashMode(call, result);
         break;
       case "handleAutoFocus":
         _handleAutoFocus(call, result);
@@ -134,24 +135,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
         result.notImplemented();
         break;
     }
-  }
-
-  @SuppressWarnings("ConstantConditions")
-  private void _handlePhotoParams(MethodCall call, Result result) {
-    if(mCameraPicture == null) {
-      result.error("INIT_ERROR", "", "");
-      return;
-    }
-    if(call.hasArgument("autoflash")) {
-      mCameraPicture.setAutoFlash((boolean) call.argument("autoflash"));
-    }
-    if(call.hasArgument("autoFocus")) {
-      mCameraPicture.setAutoFocus((boolean) call.argument("autoFocus"));
-    }
-    if(call.hasArgument("autoExposure")) {
-      mCameraPicture.setAutoExposure((boolean) call.argument("autoExposure"));
-    }
-    result.success(null);
   }
 
   @Override
@@ -317,6 +300,17 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     } catch (CameraAccessException e) {
       result.error(e.getMessage(), "cannot open camera", "");
     }
+  }
+
+  private void _handleFlashMode(final MethodCall call, final Result result) {
+    if(!call.hasArgument("mode")) {
+      result.error("MODE_NOT_SET", "a mode must be set", "");
+      return;
+    }
+    FlashMode flashmode = FlashMode.valueOf((String) call.argument("mode"));
+    mCameraPreview.setFlashMode(flashmode);
+    mCameraPicture.setFlashMode(flashmode);
+    result.success(null);
   }
 
   private void _handleAutoFocus(final MethodCall call, final Result result) {
