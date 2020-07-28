@@ -34,7 +34,7 @@
     if ([@"init" isEqualToString:call.method]) {
         [self _handleSetup:call result:result];
     } else if ([@"checkPermissions" isEqualToString:call.method]) {
-        // Not neccessary on iOS
+        // Not possible on iOS
         result(FlutterMethodNotImplemented);
     } else if ([@"requestPermissions" isEqualToString:call.method]) {
         [self _handleCheckPermissions:call result:result];
@@ -52,9 +52,9 @@
         [self _handlePhotoSize:call result:result];
     } else if ([@"takePhoto" isEqualToString:call.method]) {
         [self _handleTakePhoto:call result:result];
-    } else if ([@"focus" isEqualToString:call.method]) {
-        [self _handleInstantFocus:call result:result];
-    }  else if ([@"setFlashMode" isEqualToString:call.method]) {
+    } else if ([@"handleAutoFocus" isEqualToString:call.method]) {
+        [self _handleAutoFocus:call result:result];
+    } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
@@ -79,7 +79,7 @@
     [_camera takePictureAtPath:path size:CGSizeMake(width, height)];
 }
 
-- (void)_handleInstantFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
+- (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
     [_camera instantFocus];
 }
 

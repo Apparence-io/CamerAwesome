@@ -4,8 +4,8 @@ import 'dart:typed_data';
 
 import 'package:camerawesome/models/CameraSizes.dart';
 import 'package:flutter/services.dart';
-import './sensors.dart';
-import './flashs.dart';
+import 'sensors.dart';
+import 'flashs.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'models/CameraFlashes.dart';
@@ -36,7 +36,7 @@ class CamerawesomePlugin {
 
   static Future<List<String>> checkAndroidPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<String>());
 
-  static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<bool>());
+  static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions");
 
   /// only available on Android
   static Future<List<String>> requestPermissions() =>_channel.invokeMethod("requestPermissions");
@@ -46,12 +46,6 @@ class CamerawesomePlugin {
   static Future<bool> stop() =>_channel.invokeMethod("stop");
 
   static Future<bool> focus() =>_channel.invokeMethod("focus");
-
-  static Future<bool> setFlashMode(Flashs flash) async {
-    return _channel.invokeMethod("setFlashMode", <String, dynamic>{
-      'flash': flash.toString().split(".")[1],
-    });
-  }
 
   static Future<bool> init(Sensors sensor) async {
     return _channel.invokeMethod("init", <String, dynamic>{
@@ -105,7 +99,9 @@ class CamerawesomePlugin {
     });
   }
 
-  static Future<void> setFlashMode(CameraFlashes flashMode) => _channel.invokeMethod('setFlashMode');
+  static Future<void> setFlashMode(CameraFlashes flashMode) => _channel.invokeMethod('setFlashMode', <String, dynamic>{
+    'flash': flashMode.toString().split(".")[1],
+  });
 
   /// TODO - Next step focus on a certain point
   static startAutoFocus() => _channel.invokeMethod("handleAutoFocus");
