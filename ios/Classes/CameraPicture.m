@@ -53,12 +53,14 @@
 - (UIImageOrientation)getJpegOrientation {
     NSInteger sensorOrientation;
     
-    if (_orientation == UIDeviceOrientationPortrait) {
-        sensorOrientation = UIDeviceOrientationLandscapeLeft;
+    if (_orientation == UIDeviceOrientationPortrait || _orientation == UIDeviceOrientationPortraitUpsideDown) {
+        sensorOrientation = UIImageOrientationRight;
     } else if (_orientation == UIDeviceOrientationLandscapeRight) {
-        sensorOrientation = UIDeviceOrientationPortrait;
+        sensorOrientation = UIImageOrientationDown;
+    } else if (_orientation == UIDeviceOrientationLandscapeLeft) {
+        sensorOrientation = UIImageOrientationUp;
     } else {
-        sensorOrientation = UIDeviceOrientationLandscapeRight;
+        sensorOrientation = UIImageOrientationLeft;
     }
     
     return sensorOrientation;
