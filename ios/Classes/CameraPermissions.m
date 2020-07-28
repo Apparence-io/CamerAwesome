@@ -5,7 +5,6 @@
 //  Created by Dimitri Dessus on 23/07/2020.
 //
 
-#import <AVFoundation/AVFoundation.h>
 #import "CameraPermissions.h"
 
 @implementation CameraPermissions

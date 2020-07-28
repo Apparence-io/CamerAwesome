@@ -56,6 +56,12 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     initPlatformState();
   }
 
+  @override
+  void dispose() { 
+    CamerawesomePlugin.dispose();
+    super.dispose();
+  }
+
   initPlatformState() async {
     hasPermissions = await CamerawesomePlugin.checkPermissions();
     if(widget.onPermissionsResult != null) {
@@ -70,7 +76,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       selectedSize = widget.selectSize(camerasAvailableSizes);
       assert(selectedSize !=null, "A size from the list must be selected");
     }
-    await CamerawesomePlugin.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
     await CamerawesomePlugin.start();
     if(widget.onCameraStarted != null) {
       widget.onCameraStarted();

@@ -12,17 +12,20 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void(^OnPictureTaken)(void);
+
 @interface CameraPicture : NSObject <AVCapturePhotoCaptureDelegate>
 @property(readonly, nonatomic) NSString *path;
 @property(readonly, nonatomic) FlutterResult result;
 @property NSInteger orientation;
-@property CGSize pictureSize;
+@property (nonatomic, copy) OnPictureTaken completionBlock;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
 @property(readonly, nonatomic) AVCaptureDevicePosition cameraPosition;
+
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
-                 captureSize:(CGSize)pictureSize
-                      result:(FlutterResult)result;
+                      result:(FlutterResult)result
+                    callback:(OnPictureTaken)callback;
 @end
 
 NS_ASSUME_NONNULL_END
