@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:camerawesome/models/CameraFlashes.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -78,7 +79,7 @@ class _MyAppState extends State<MyApp> {
                     final Directory extDir = await getTemporaryDirectory();
                     var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                     final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                    await CamerawesomePlugin.takePhoto(bestSize.width.toInt(), bestSize.height.toInt(), filePath);
+                    await CamerawesomePlugin.takePhoto(filePath);
                     setState(() {
                       _lastPhotoPath = filePath;
                     });

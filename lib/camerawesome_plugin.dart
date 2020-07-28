@@ -4,7 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import './sensors.dart';
+import 'sensors.dart';
+import 'flashs.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'models/flashmodes.dart';
@@ -34,7 +35,7 @@ class CamerawesomePlugin {
 
   static Future<List<String>> checkAndroidPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<String>());
 
-  static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions").then((res) => res.cast<bool>());
+  static Future<bool> checkiOSPermissions() =>_channel.invokeMethod("checkPermissions");
 
   /// only available on Android
   static Future<List<String>> requestPermissions() =>_channel.invokeMethod("requestPermissions");
@@ -42,6 +43,10 @@ class CamerawesomePlugin {
   static Future<bool> start() =>_channel.invokeMethod("start");
 
   static Future<bool> stop() =>_channel.invokeMethod("stop");
+
+  static Future<bool> focus() =>_channel.invokeMethod("focus");
+
+  static Future<void> dispose() =>_channel.invokeMethod("dispose");
 
   static Future<bool> init(Sensors sensor) async {
     return _channel.invokeMethod("init", <String, dynamic>{
@@ -78,10 +83,8 @@ class CamerawesomePlugin {
     });
   }
 
-  static takePhoto(int width, int height, String path) {
+  static takePhoto(String path) {
     return _channel.invokeMethod<void>('takePhoto', <String, dynamic> {
-      'width': width,
-      'height': height,
       'path': path,
     });
   }

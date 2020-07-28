@@ -63,6 +63,12 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     initPlatformState();
   }
 
+  @override
+  void dispose() { 
+    CamerawesomePlugin.dispose();
+    super.dispose();
+  }
+
   initPlatformState() async {
     hasPermissions = await CamerawesomePlugin.checkPermissions();
     if(widget.onPermissionsResult != null) {
