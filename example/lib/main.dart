@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:camerawesome/models/CameraFlashes.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
