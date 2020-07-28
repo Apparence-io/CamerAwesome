@@ -10,28 +10,36 @@
 @implementation CameraQualities
 
 // TODO: Improve by getting width & height from constants dict
-+ (NSString *)selectVideoCapturePressetWidth:(CGSize)size {
-    NSString *presset;
++ (NSString *)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session {
+    NSString *preset;
     if (size.width == 3840 && size.height == 2160) {
         if (@available(iOS 9.0, *)) {
-            presset = AVCaptureSessionPreset3840x2160;
+            preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset3840x2160 session:session];
         } else {
-            presset = AVCaptureSessionPreset1920x1080;
+            preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset1920x1080 session:session];
         }
     } else if (size.width == 1920 && size.height == 1080) {
-        presset = AVCaptureSessionPreset1920x1080;
+        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset1920x1080 session:session];
     } else if (size.width == 1280 && size.height == 720) {
-        presset = AVCaptureSessionPreset1280x720;
+        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset1280x720 session:session];
     } else if (size.width == 640 && size.height == 480) {
-        presset = AVCaptureSessionPreset640x480;
+        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset640x480 session:session];
     } else if (size.width == 352 && size.height == 288) {
-        presset = AVCaptureSessionPreset352x288;
+        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset352x288 session:session];
     } else {
-        // Default to low
-        presset = AVCaptureSessionPreset352x288;
+        // Default to photo mode
+        preset = AVCaptureSessionPresetPhoto;
     }
     
-    return presset;
+    return preset;
+}
+
++ (NSString *)setPresetFallback:(AVCaptureSessionPreset)preset session:(AVCaptureSession *)session {
+    if ([session canSetSessionPreset:preset]) {
+        return preset;
+    } else {
+        return AVCaptureSessionPresetPhoto;
+    }
 }
 
 @end

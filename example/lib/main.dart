@@ -95,6 +95,13 @@ class _MyAppState extends State<MyApp> {
                   children: <Widget>[
                     FlatButton(
                       color: Colors.blue,
+                      child: Text("flip camera", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        CamerawesomePlugin.flipCamera();
+                      }
+                    ),
+                    FlatButton(
+                      color: Colors.blue,
                       child: Text("focus", style: TextStyle(color: Colors.white)),
                       onPressed: () async {
                         this.focus = !focus;

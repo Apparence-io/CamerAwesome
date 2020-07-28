@@ -56,6 +56,8 @@
     [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
     [_captureSession addOutput:_capturePhotoOutput];
     
+    _cameraSensor = sensor;
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(orientationChanged:)
                                                  name:UIDeviceOrientationDidChangeNotification
@@ -71,8 +73,6 @@
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
 
     AVCaptureVideoOrientation previewOrientation;
-    
-    
     if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
         previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
     } else {
@@ -87,13 +87,15 @@
 }
 
 - (void)dispose {
+    [self stop];
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIDeviceOrientationDidChangeNotification
                                                   object:nil];
 }
 
 - (void)setPreviewSize:(CGSize)previewSize {
-    NSString *selectedPresset = [CameraQualities selectVideoCapturePressetWidth:previewSize];
+    NSString *selectedPresset = [CameraQualities selectVideoCapturePresset:previewSize session:_captureSession];
     _previewSize = previewSize;
     _captureSession.sessionPreset = selectedPresset;
 }
@@ -104,6 +106,32 @@
 
 - (void)stop {
     [_captureSession stopRunning];
+}
+
+- (void)flipCamera {
+    NSError *error;
+    
+    CameraSensor sensor = (_cameraSensor == Front) ? Back : Front;
+    
+    [_captureSession beginConfiguration];
+    AVCaptureDeviceInput *oldInput = [_captureSession.inputs firstObject];
+    [_captureSession removeInput:oldInput];
+    
+    AVCaptureDevice *newDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
+    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:newDevice error:&error];
+    if (sensor == Back) {
+        [self setPreviewSize:_previewSize];
+    } else {
+        [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
+    }
+    [_captureConnection ]
+    
+    [_captureSession addInput:input];
+    
+    // TODO: Fix preview for front device, the connection need to be updated
+    [_captureSession commitConfiguration];
+    
+    _cameraSensor = sensor;
 }
 
 - (void)setFlashMode:(CameraFlashMode)flashMode {

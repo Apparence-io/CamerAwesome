@@ -29,6 +29,8 @@ class CameraAwesome extends StatefulWidget {
   /// implement this to select a size from device available size list
   final OnAvailableSizes selectSize;
 
+  ValueNotifier<bool> onPictureTaken = ValueNotifier(false);
+
   CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.sensor = Sensors.BACK});
 
   @override

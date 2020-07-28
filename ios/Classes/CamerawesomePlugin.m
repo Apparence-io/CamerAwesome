@@ -56,9 +56,11 @@
         [self _handleAutoFocus:call result:result];
     } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
+    } else if ([@"flipCamera" isEqualToString:call.method]) {
+        [self _handleFlipCamera:call result:result];
     } else if ([@"dispose" isEqualToString:call.method]) {
-       [self _handleDispose:call result:result];
-   } else {
+        [self _handleDispose:call result:result];
+    } else {
         result(FlutterMethodNotImplemented);
     }
 }
@@ -77,6 +79,10 @@
     
     [_camera setResult:result];
     [_camera takePictureAtPath:path];
+}
+
+- (void)_handleFlipCamera:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera flipCamera];
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
