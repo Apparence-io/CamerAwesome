@@ -13,7 +13,6 @@
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
-                 captureSize:(CGSize)pictureSize
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback {
     self = [super init];
@@ -48,7 +47,6 @@
         _result([FlutterError errorWithCode:@"IOError" message:@"unable to write file" details:nil]);
         return;
     }
-    _result(nil);
     _completionBlock();
 }
 

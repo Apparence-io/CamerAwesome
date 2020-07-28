@@ -42,8 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)start;
 - (void)stop;
-- (void)takePictureAtPath:(NSString *)path size:(CGSize)size;
+- (void)takePictureAtPath:(NSString *)path;
 - (void)instantFocus;
+- (void)dispose;
+- (void)setResult:(nonnull FlutterResult)result;
 
 @end
 

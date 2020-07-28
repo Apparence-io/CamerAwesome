@@ -56,30 +56,31 @@
         [self _handleAutoFocus:call result:result];
     } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
-    } else {
+    } else if ([@"dispose" isEqualToString:call.method]) {
+       [self _handleDispose:call result:result];
+   } else {
         result(FlutterMethodNotImplemented);
     }
 }
 
+- (void)_handleDispose:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera dispose];
+}
+
 - (void)_handleTakePhoto:(FlutterMethodCall*)call result:(FlutterResult)result {
-    float width = [call.arguments[@"width"] floatValue];
-    float height = [call.arguments[@"height"] floatValue];
     NSString *path = call.arguments[@"path"];
-    
-    if (width <= 0 || height <= 0) {
-        result([FlutterError errorWithCode:@"NO_SIZE_SET" message:@"width and height must be set" details:nil]);
-        return;
-    }
     
     if (path == nil || path.length <= 0) {
         result([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
         return;
     }
     
-    [_camera takePictureAtPath:path size:CGSizeMake(width, height)];
+    [_camera setResult:result];
+    [_camera takePictureAtPath:path];
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera setResult:result];
     [_camera instantFocus];
 }
 
@@ -197,6 +198,7 @@
         flash = None;
     }
     
+    [_camera setResult:result];
     [_camera setFlashMode:flash];
     result(@(YES));
 }

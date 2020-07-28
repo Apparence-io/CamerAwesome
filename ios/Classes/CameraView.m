@@ -82,7 +82,10 @@
     [_captureConnection setVideoOrientation:previewOrientation];
 }
 
-// TODO: Call from Dart
+- (void)setResult:(nonnull FlutterResult)result {
+    _result = result;
+}
+
 - (void)dispose {
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIDeviceOrientationDidChangeNotification
@@ -135,6 +138,8 @@
     }
     [_captureDevice setTorchMode:_torchMode];
     [_captureDevice unlockForConfiguration];
+    
+    _result(nil);
 }
 
 /// Trigger focus on device at the center of the preview
@@ -161,14 +166,14 @@
 }
 
 /// Take the picture into the given path
-- (void)takePictureAtPath:(NSString *)path size:(CGSize)size {
+- (void)takePictureAtPath:(NSString *)path {
+
     // Get device orientation from device
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
     
     // Instanciate camera picture obj
     CameraPicture *cameraPicture = [[CameraPicture alloc] initWithPath:path
                                                            orientation:deviceOrientation
-                                                           captureSize:size
                                                                 result:_result
                                                               callback:^{
                                                                 // If flash mode is always on, restore it back after photo is taken
@@ -177,6 +182,8 @@
                                                                     [self->_captureDevice setTorchMode:AVCaptureTorchModeOn];
                                                                     [self->_captureDevice unlockForConfiguration];
                                                                 }
+
+                                                                self->_result(nil);
                                                             }];
     
     // Create settings instance
@@ -185,9 +192,6 @@
 
     [_capturePhotoOutput capturePhotoWithSettings:settings
                                          delegate:cameraPicture];
-    
-    
-    
 }
 
 /// Get the first available camera on device (front or rear)
@@ -224,7 +228,7 @@
         if (_onFrameAvailable) {
             _onFrameAvailable();
         }
-       }
+    }
 }
 
 # pragma mark - Flutter Delegates

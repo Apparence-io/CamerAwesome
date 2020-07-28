@@ -77,7 +77,7 @@ class CamerawesomePlugin {
     params["autoflash"] ??= autoflash;
     params["autoFocus"] ??= autoFocus;
     params["autoExposure"] ??= autoExposure;
-    return _channel.invokeMethod<void>('setPhotoParams', params);
+    // return _channel.invokeMethod<void>('setPhotoParams', params);
   }
 
   /// Just for android
@@ -89,10 +89,8 @@ class CamerawesomePlugin {
     });
   }
 
-  static takePhoto(int width, int height, String path) {
+  static takePhoto(String path) {
     return _channel.invokeMethod<void>('takePhoto', <String, dynamic> {
-      'width': width,
-      'height': height,
       'path': path,
     });
   }

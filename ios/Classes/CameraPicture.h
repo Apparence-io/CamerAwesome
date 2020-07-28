@@ -24,7 +24,6 @@ typedef void(^OnPictureTaken)(void);
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
-                 captureSize:(CGSize)pictureSize
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback;
 @end
