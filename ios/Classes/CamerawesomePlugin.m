@@ -34,10 +34,10 @@
     if ([@"init" isEqualToString:call.method]) {
         [self _handleSetup:call result:result];
     } else if ([@"checkPermissions" isEqualToString:call.method]) {
+        [self _handleCheckPermissions:call result:result];
+    } else if ([@"requestPermissions" isEqualToString:call.method]) {
         // Not possible on iOS
         result(FlutterMethodNotImplemented);
-    } else if ([@"requestPermissions" isEqualToString:call.method]) {
-        [self _handleCheckPermissions:call result:result];
     } else if ([@"start" isEqualToString:call.method]) {
         [self _handleStart:call result:result];
     } else if ([@"stop" isEqualToString:call.method]) {
