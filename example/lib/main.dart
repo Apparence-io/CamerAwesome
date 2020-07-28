@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:camerawesome/models/CameraFlashes.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -36,7 +35,7 @@ class _MyAppState extends State<MyApp> {
 
   bool focus = false;
 
-  CameraFlashes cameraFlashes = CameraFlashes.AUTO;
+  ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
   @override
   void initState() {
@@ -59,7 +58,9 @@ class _MyAppState extends State<MyApp> {
             }
             return Stack(
             children: <Widget>[
-              CameraAwesome(),
+              CameraAwesome(
+                switchFlashMode: switchFlash
+              ),
               if(_lastPhotoPath != null)
                 Positioned(
                   bottom: 52,
@@ -111,25 +112,12 @@ class _MyAppState extends State<MyApp> {
                     FlatButton(
                       color: Colors.blue,
                       child: Text("flash auto", style: TextStyle(color: Colors.white)),
-                      onPressed: () async {
-                        CameraFlashes flash;
-                        switch (cameraFlashes) {
-                          case CameraFlashes.ALWAYS:
-                            flash = CameraFlashes.AUTO;
-                            break;
-                          case CameraFlashes.AUTO:
-                            flash = CameraFlashes.NONE;
-                            break;
-                          case CameraFlashes.NONE:
-                            flash = CameraFlashes.ALWAYS;
-                            break;
-                          default:
-                            flash = CameraFlashes.AUTO;
+                      onPressed: () {
+                        if(switchFlash.value == CameraFlashes.ALWAYS) {
+                          switchFlash.value = CameraFlashes.NONE;
+                        } else {
+                          switchFlash.value = CameraFlashes.ALWAYS;
                         }
-                        await CamerawesomePlugin.setFlashMode(flash);
-                        setState(() {
-                          cameraFlashes = flash;
-                        });
                       }
                     ),
                   ],

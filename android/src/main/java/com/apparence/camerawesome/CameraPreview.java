@@ -19,6 +19,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import com.apparence.camerawesome.models.FlashMode;
+
 import io.flutter.view.TextureRegistry;
 
 import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
@@ -47,12 +49,12 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private boolean autoFocus;
 
-    private boolean flashMode;
+    private FlashMode flashMode;
 
 
     public CameraPreview(CameraSession cameraSession) {
         this.autoFocus = true;
-        this.flashMode = false;
+        this.flashMode = FlashMode.NONE;
         this.mCameraSession = cameraSession;
     }
 
@@ -60,8 +62,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         this(cameraSession);
         this.flutterTexture = flutterTexture;
     }
-
-
+    
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
         // create surface
         SurfaceTexture surfaceTexture = flutterTexture.surfaceTexture();
@@ -117,6 +118,12 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         refreshConfiguration();
     }
 
+    public void setFlashMode(FlashMode flashMode) {
+        this.flashMode = flashMode;
+        initPreviewRequest();
+        refreshConfiguration();
+    }
+
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------
@@ -126,12 +133,24 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             return;
         }
         mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
-        mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, flashMode
-                ? CaptureRequest.FLASH_MODE_TORCH
-                : CaptureRequest.FLASH_MODE_OFF);
+        switch (flashMode) {
+            case AUTO:
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                break;
+            case ALWAYS:
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+                break;
+            case NONE:
+            default:
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                break;
+        }
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, this.autoFocus
                 ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
                 : CaptureRequest.CONTROL_AF_MODE_OFF);
+
+
+
 
     }
 
