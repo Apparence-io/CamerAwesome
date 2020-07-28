@@ -7,9 +7,10 @@ import 'package:flutter/services.dart';
 import './sensors.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'models/CameraFlashes.dart';
+import 'models/flashmodes.dart';
 
 export 'sensors.dart';
+export './models/flashmodes.dart';
 export 'camerapreview.dart';
 
 
@@ -51,7 +52,11 @@ class CamerawesomePlugin {
   static Future<List<Size>> getSizes() async {
     List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
     List<Size> res = List();
-    sizes.forEach((el) => res.add(Size(el["width"], el["height"])));
+    sizes.forEach((el) {
+      int width = el["width"];
+      int height = el["height"];
+      res.add(Size(width.toDouble(), height.toDouble()));
+    });
     return res;
   }
 
@@ -62,19 +67,6 @@ class CamerawesomePlugin {
       'width': width,
       'height': height,
     });
-  }
-
-  /// FIXME DELETE and replace by methods
-  /// By default autoflash, autoFocus, autoExposure are true
-  /// [autoflash] activate flash when needed by exposure, [exposure] must be set to `true`
-  /// [autoFocus] focus of camera automatic or manual
-  /// [autoExposure] luminosity auto of photo handled auto
-  static Future<void> setPhotoParams({bool autoflash, bool autoFocus, bool autoExposure}) {
-    var params = <String, dynamic> {};
-    params["autoflash"] ??= autoflash;
-    params["autoFocus"] ??= autoFocus;
-    params["autoExposure"] ??= autoExposure;
-    return _channel.invokeMethod<void>('setPhotoParams', params);
   }
 
   /// Just for android
@@ -94,7 +86,10 @@ class CamerawesomePlugin {
     });
   }
 
-  static Future<void> setFlashMode(CameraFlashes flashMode) => _channel.invokeMethod('setFlashMode');
+  /// Switch flash mode from Android / iOS
+  static Future<void> setFlashMode(CameraFlashes flashMode) => _channel.invokeMethod('setFlashMode', <String, dynamic> {
+    'mode': flashMode.toString().split(".")[1],
+  });
 
   /// TODO - Next step focus on a certain point
   static startAutoFocus() => _channel.invokeMethod("handleAutoFocus");

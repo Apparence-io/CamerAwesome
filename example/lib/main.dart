@@ -35,7 +35,7 @@ class _MyAppState extends State<MyApp> {
 
   bool focus = false;
 
-  bool flashAuto = false;
+  ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
   @override
   void initState() {
@@ -58,7 +58,9 @@ class _MyAppState extends State<MyApp> {
             }
             return Stack(
             children: <Widget>[
-              CameraAwesome(),
+              CameraAwesome(
+                switchFlashMode: switchFlash
+              ),
               if(_lastPhotoPath != null)
                 Positioned(
                   bottom: 52,
@@ -103,9 +105,12 @@ class _MyAppState extends State<MyApp> {
                     FlatButton(
                       color: Colors.blue,
                       child: Text("flash auto", style: TextStyle(color: Colors.white)),
-                      onPressed: () async {
-                        this.flashAuto = !flashAuto;
-                        await CamerawesomePlugin.setPhotoParams(autoflash: flashAuto);
+                      onPressed: () {
+                        if(switchFlash.value == CameraFlashes.ALWAYS) {
+                          switchFlash.value = CameraFlashes.NONE;
+                        } else {
+                          switchFlash.value = CameraFlashes.ALWAYS;
+                        }
                       }
                     ),
                   ],

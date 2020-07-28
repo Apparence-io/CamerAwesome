@@ -16,6 +16,8 @@ import android.util.Size;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.apparence.camerawesome.models.FlashMode;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,16 +42,17 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
     private boolean autoExposure;
 
-    private boolean autoFlash;
-
     private CaptureRequest.Builder takePhotoRequestBuilder;
 
     private int orientation;
 
+    private FlashMode flashMode;
+
     public CameraPicture(CameraSession cameraSession) {
         this.mCameraSession = cameraSession;
         this.autoFocus = true;
-        this.autoFlash = true;
+        this.flashMode = FlashMode.NONE;
+        this.autoExposure = true;
     }
 
     /**
@@ -102,7 +105,19 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
         takePhotoRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
         takePhotoRequestBuilder.addTarget(pictureImageReader.getSurface());
-        takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, autoFlash ? CaptureRequest.FLASH_MODE_TORCH : CaptureRequest.FLASH_MODE_OFF);
+
+        switch (flashMode) {
+            case AUTO:
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                break;
+            case ALWAYS:
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+                break;
+            case NONE:
+            default:
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                break;
+        }
         takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         takePhotoRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
         mCameraSession.getCaptureSession().capture(takePhotoRequestBuilder.build(), mCaptureCallback, null);
@@ -112,15 +127,13 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         this.autoExposure = autoExposure;
     }
 
-    public void setAutoFlash(boolean autoFlash) {
-        this.autoFlash = autoFlash;
+    public void setFlashMode(FlashMode flashMode) {
+        this.flashMode = flashMode;
     }
-
 
     public void setAutoFocus(boolean autoFocus) {
         this.autoFocus = autoFocus;
     }
-
 
     public boolean isAutoFocus() {
         return autoFocus;
@@ -148,7 +161,18 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
             captureBuilder = mCameraSession.getCameraDevice().createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(pictureImageReader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            captureBuilder.set(CaptureRequest.FLASH_MODE, autoFlash ? CaptureRequest.FLASH_MODE_TORCH : CaptureRequest.FLASH_MODE_OFF);
+            switch (flashMode) {
+                case AUTO:
+                    captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                    break;
+                case ALWAYS:
+                    captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+                    break;
+                case NONE:
+                default:
+                    captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                    break;
+            }
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
 
             CameraCaptureSession.CaptureCallback CaptureCallback = new CameraCaptureSession.CaptureCallback() {

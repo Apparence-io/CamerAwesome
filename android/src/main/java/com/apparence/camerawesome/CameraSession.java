@@ -32,6 +32,7 @@ public class CameraSession {
 
     private CameraDevice cameraDevice;
 
+
     void createCameraCaptureSession(final CameraDevice cameraDevice) throws CameraAccessException {
         this.cameraDevice = cameraDevice;
         cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
