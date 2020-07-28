@@ -59,7 +59,7 @@ class _MyAppState extends State<MyApp> {
             return Stack(
             children: <Widget>[
               CameraAwesome(
-                switchFlashMode: switchFlash
+                switchFlashMode: switchFlash,
               ),
               if(_lastPhotoPath != null)
                 Positioned(
@@ -113,6 +113,20 @@ class _MyAppState extends State<MyApp> {
                         }
                       }
                     ),
+                    FlatButton(
+                      color: Colors.blue,
+                      child: Text("zoom x2", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        await CamerawesomePlugin.setZoom(0.5);
+                      }
+                    ),
+                    FlatButton(
+                      color: Colors.blue,
+                      child: Text("zoom x1", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        await CamerawesomePlugin.setZoom(0.01);
+                      }
+                    ),
                   ],
                 ),
               )
@@ -121,6 +135,11 @@ class _MyAppState extends State<MyApp> {
           },
         )
       );
+  }
+
+
+  _takePhoto() {
+
   }
 
   _selectBestSize() {

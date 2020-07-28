@@ -15,6 +15,8 @@ import android.view.OrientationEventListener;
 
 import androidx.annotation.RequiresApi;
 
+import com.apparence.camerawesome.models.CameraCharacteristicsModel;
+
 import io.flutter.plugin.common.EventChannel;
 
 import static android.view.OrientationEventListener.ORIENTATION_UNKNOWN;
@@ -41,6 +43,8 @@ class CameraSetup {
 
     private EventChannel.EventSink orientationEvent;
 
+    private CameraCharacteristicsModel characteristicsModel;
+
     CameraSetup(Context context, Activity activity) {
         this.context = context;
         this.activity = activity;
@@ -65,6 +69,10 @@ class CameraSetup {
                 continue;
             }
             sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+            this.characteristicsModel = new CameraCharacteristicsModel.Builder()
+                .withMaxZoom(characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM))
+                .withAvailablePreviewZone(characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE))
+                .build();
             mCameraId = cameraId;
             return;
         }
@@ -114,6 +122,14 @@ class CameraSetup {
                         ? 0
                         : (facingFront) ? -currentOrientation : currentOrientation;
         return (sensorOrientationOffset + sensorOrientation + 360) % 360;
+    }
+
+    /**
+     * Used to wrap CameraCharacteristics in a simpler model
+     * @return CameraCharacteristics
+     */
+    public CameraCharacteristicsModel getCharacteristicsModel() {
+        return characteristicsModel;
     }
 
     // --------------------------------------------

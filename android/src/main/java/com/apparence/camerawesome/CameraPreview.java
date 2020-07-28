@@ -1,5 +1,6 @@
 package com.apparence.camerawesome;
 
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -50,6 +51,10 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     private boolean autoFocus;
 
     private FlashMode flashMode;
+
+    private float mZoom;
+
+    private Rect mInitialCropRegion;
 
 
     public CameraPreview(CameraSession cameraSession) {
@@ -124,6 +129,12 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         refreshConfiguration();
     }
 
+    public void setZoom(float zoom, float maxZoom, Rect currentPreviewArea) {
+        this.mZoom = zoom;
+        updateZoom(maxZoom, currentPreviewArea);
+        refreshConfiguration();
+    }
+
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------
@@ -149,9 +160,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
                 ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
                 : CaptureRequest.CONTROL_AF_MODE_OFF);
 
-
-
-
     }
 
     private void refreshConfiguration() {
@@ -159,6 +167,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             return;
         }
         try {
+            mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
             mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(TAG, "refreshConfiguration", e);
@@ -170,6 +179,35 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(TAG, "refreshConfigurationWithCallback", e);
+        }
+    }
+
+    // From react nativ plugin
+    private void updateZoom(float maxZoom, Rect currentPreviewArea) {
+        if(currentPreviewArea == null) {
+            return;
+        }
+        float scaledZoom = mZoom * (maxZoom - 1.0f) + 1.0f;
+        int currentWidth = currentPreviewArea.width();
+        int currentHeight = currentPreviewArea.height();
+        int zoomedWidth = (int) (currentWidth / scaledZoom);
+        int zoomedHeight = (int) (currentHeight / scaledZoom);
+        int widthOffset = (currentWidth - zoomedWidth) / 2;
+        int heightOffset = (currentHeight - zoomedHeight) / 2;
+
+        Rect zoomPreviewArea = new Rect(
+                currentPreviewArea.left + widthOffset,
+                currentPreviewArea.top + heightOffset,
+                currentPreviewArea.right - widthOffset,
+                currentPreviewArea.bottom - heightOffset
+        );
+
+        // ¯\_(ツ)_/¯ for some devices calculating the Rect for zoom=1 results in a bit different
+        // Rect that device claims as its no-zoom crop region and the preview freezes
+        if (scaledZoom != 1.0f) {
+            mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoomPreviewArea);
+        } else {
+            mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mInitialCropRegion);
         }
     }
 
