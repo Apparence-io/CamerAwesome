@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:camerawesome/models/CameraFlashes.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -35,7 +36,7 @@ class _MyAppState extends State<MyApp> {
 
   bool focus = false;
 
-  bool flashAuto = false;
+  CameraFlashes cameraFlashes = CameraFlashes.AUTO;
 
   @override
   void initState() {
@@ -76,7 +77,7 @@ class _MyAppState extends State<MyApp> {
                     final Directory extDir = await getTemporaryDirectory();
                     var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                     final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                    await CamerawesomePlugin.takePhoto(bestSize.width.toInt(), bestSize.height.toInt(), filePath);
+                    await CamerawesomePlugin.takePhoto(filePath);
                     setState(() {
                       _lastPhotoPath = filePath;
                     });
@@ -104,8 +105,24 @@ class _MyAppState extends State<MyApp> {
                       color: Colors.blue,
                       child: Text("flash auto", style: TextStyle(color: Colors.white)),
                       onPressed: () async {
-                        this.flashAuto = !flashAuto;
-                        await CamerawesomePlugin.setPhotoParams(autoflash: flashAuto);
+                        CameraFlashes flash;
+                        switch (cameraFlashes) {
+                          case CameraFlashes.ALWAYS:
+                            flash = CameraFlashes.AUTO;
+                            break;
+                          case CameraFlashes.AUTO:
+                            flash = CameraFlashes.NONE;
+                            break;
+                          case CameraFlashes.NONE:
+                            flash = CameraFlashes.ALWAYS;
+                            break;
+                          default:
+                            flash = CameraFlashes.AUTO;
+                        }
+                        await CamerawesomePlugin.setFlashMode(flash);
+                        setState(() {
+                          cameraFlashes = flash;
+                        });
                       }
                     ),
                   ],
