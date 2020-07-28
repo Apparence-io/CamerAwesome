@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:camerawesome/models/CameraSizes.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'sensors.dart';
 import 'flashs.dart';
@@ -11,8 +11,6 @@ import 'package:rxdart/rxdart.dart';
 import 'models/CameraFlashes.dart';
 
 export 'sensors.dart';
-export 'flashs.dart';
-export 'models/CameraSizes.dart';
 export 'camerapreview.dart';
 
 
@@ -53,10 +51,10 @@ class CamerawesomePlugin {
     });
   }
 
-  static Future<List<CameraSize>> getSizes() async {
+  static Future<List<Size>> getSizes() async {
     List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
-    List<CameraSize> res = List();
-    sizes.forEach((el) => res.add(CameraSize.fromPlatform(el)));
+    List<Size> res = List();
+    sizes.forEach((el) => res.add(Size(el["width"], el["height"])));
     return res;
   }
 

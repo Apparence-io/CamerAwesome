@@ -1,141 +1,147 @@
 import 'dart:io';
 import 'dart:math';
-import 'package:camerawesome/camerawesome_plugin.dart';
+
 import 'package:flutter/material.dart';
+import 'dart:async';
 
-/// Used to set a permission result callback
-typedef OnPermissionsResult = void Function(bool result);
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 
-/// used by [OnAvailableSizes]
-typedef SelectSize = List<Size> Function();
-
-/// used to send all avaialable side to the dart side and let user choose one
-typedef OnAvailableSizes = List<Size> Function(SelectSize selectSize);
-
-
-/// -------------------------------------------------
-/// CameraAwesome preview Widget
-/// -------------------------------------------------
-class CameraAwesome extends StatefulWidget {
-
-  final bool testMode;
-
-  /// choose between [BACK] and [FRONT]
-  final Sensors sensor;
-
-  /// implement this to have a callback after CameraAwesome asked for permissions
-  final OnPermissionsResult onPermissionsResult;
-
-  /// implement this to select a size from device available size list
-  final OnAvailableSizes selectSize;
-
-  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.sensor = Sensors.BACK});
-
-  @override
-  _CameraAwesomeState createState() => _CameraAwesomeState();
+void main() {
+  runApp(MaterialApp(
+    home: MyApp(),
+  ));
 }
 
-class _CameraAwesomeState extends State<CameraAwesome> {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
 
-  List<CameraSize> camerasAvailableSizes;
+class _MyAppState extends State<MyApp> {
 
-  CameraSize selectedSize;
+  List<Size> camerasSizes;
 
-  bool hasPermissions = false;
+  Size bestSize;
+
+  bool _hasInit;
+
+  double scale;
+
+  double bestSizeRatio;
+
+  String _lastPhotoPath;
+
+  bool focus = false;
+
+  bool flashAuto = false;
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
-  }
-
-  initPlatformState() async {
-    hasPermissions = await CamerawesomePlugin.checkPermissions();
-    if(widget.onPermissionsResult != null) {
-      widget.onPermissionsResult(hasPermissions);
-    }
-    await CamerawesomePlugin.init(widget.sensor);
-    camerasAvailableSizes = await CamerawesomePlugin.getSizes();
-    selectedSize = camerasAvailableSizes[0];
-    await CamerawesomePlugin.setPreviewSize(selectedSize.width, selectedSize.height);
-    await CamerawesomePlugin.setPhotoSize(selectedSize.width, selectedSize.height);
-    // TODO on photoSize available
-    await CamerawesomePlugin.setPhotoParams(autoflash: true, autoExposure: false, autoFocus: true);
-    await CamerawesomePlugin.start();
-    // TODO call on started listener
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: CamerawesomePlugin.getPreviewTexture(),
-      builder: (context, snapshot) {
-        if(!hasPermissions)
-          return Container();
-        if(!snapshot.hasData || !hasInit)
-          return Center(child: CircularProgressIndicator());
-        return _CameraPreviewWidget(
-          scale: 1,
-          ratio: selectedSize.height / selectedSize.width,
-          size: Size(selectedSize.width.toDouble(), selectedSize.height.toDouble()),
-          textureId: snapshot.data,
-        );
-      }
-    );
-  }
-
-  bool get hasInit => selectedSize != null
-    && camerasAvailableSizes != null
-    && camerasAvailableSizes.length > 0;
-}
-
-///
-class _CameraPreviewWidget extends StatelessWidget {
-
-  double scale;
-
-  double ratio;
-
-  Size size;
-
-  int textureId;
-
-  bool testMode;
-
-  _CameraPreviewWidget(
-      {this.scale,
-      this.ratio,
-      this.size,
-      this.textureId,
-      this.testMode = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return OrientationBuilder(
-        builder: (context, orientation) => Transform.rotate(
-              angle: orientation == Orientation.portrait ? 0 : -pi / 2,
-              child: Container(
-                color: Colors.black,
-                child: Transform.scale(
-                  scale: scale,
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: ratio,
-                      child: SizedBox(
-                          height: orientation == Orientation.portrait
-                              ? size.height
-                              : size.width,
-                          width: orientation == Orientation.portrait
-                              ? size.width
-                              : size.height,
-                          child: testMode
-                              ? Container()
-                              : Texture(textureId: textureId)),
-                    ),
-                  ),
+    return Scaffold(
+        body: OrientationBuilder(
+          builder: (context, orientation) {
+            // recalculate for rotation handled here
+            if(bestSize != null) {
+              final size = MediaQuery.of(context).size;
+              bestSizeRatio = bestSize.height / bestSize.width;
+              scale = bestSizeRatio / size.aspectRatio;
+              if (bestSizeRatio < size.aspectRatio) {
+                scale = 1 / scale;
+              }
+            }
+            return Stack(
+            children: <Widget>[
+              CameraAwesome(),
+              if(_lastPhotoPath != null)
+                Positioned(
+                  bottom: 52,
+                  left: 32,
+                  child: Image.file(new File(_lastPhotoPath), width: 128),
+                ),
+              Positioned(
+                bottom: -5,
+                left: 0,
+                right: 0,
+                child: FlatButton(
+                  color: Colors.blue,
+                  child: Text("take photo", style: TextStyle(color: Colors.white),),
+                  onPressed: () async {
+                    final Directory extDir = await getTemporaryDirectory();
+                    var testDir = await Directory('${extDir.path}/test').create(recursive: true);
+                    final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                    await CamerawesomePlugin.takePhoto(bestSize.width.toInt(), bestSize.height.toInt(), filePath);
+                    setState(() {
+                      _lastPhotoPath = filePath;
+                    });
+                    print("----------------------------------");
+                    print("TAKE PHOTO CALLED");
+                    print("==> hastakePhoto : ${await File(filePath).exists()}");
+                    print("----------------------------------");
+                  }
                 ),
               ),
-            ));
+              Positioned(
+                bottom: 100,
+                right: 32,
+                child: Column(
+                  children: <Widget>[
+                    FlatButton(
+                      color: Colors.blue,
+                      child: Text("focus", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        this.focus = !focus;
+                        await CamerawesomePlugin.startAutoFocus();
+                      }
+                    ),
+                    FlatButton(
+                      color: Colors.blue,
+                      child: Text("flash auto", style: TextStyle(color: Colors.white)),
+                      onPressed: () async {
+                        this.flashAuto = !flashAuto;
+                        await CamerawesomePlugin.setPhotoParams(autoflash: flashAuto);
+                      }
+                    ),
+                  ],
+                ),
+              )
+            ],
+          );
+          },
+        )
+      );
   }
+
+  _selectBestSize() {
+    int screenWidth = MediaQuery.of(context).size.width.toInt();
+    int screenHeight = MediaQuery.of(context).size.height.toInt();
+    double screenRatio = screenWidth / screenHeight;
+
+    camerasSizes.sort((a,b) => a.width > b.width ? -1 : 1);
+//    camerasSizes.forEach((element) {print("- ${element.width}/${element.height}");});
+    bestSize = camerasSizes.first;
+    // TODO select by ratio
+    // TODO or use predefined from Android
+    print("----------------------------------");
+    print("screen screenWidth: $screenWidth");
+    print("screen screenHeight: $screenHeight");
+    print("screen ratio: $screenRatio");
+    print("bestSize: ${bestSize.width}/${bestSize.height} => ${bestSize.width / bestSize.height}");
+    print("----------------------------------");
+
+    final size = MediaQuery.of(context).size;
+    bestSizeRatio = bestSize.height / bestSize.width;
+    scale = bestSizeRatio / size.aspectRatio;
+    if (bestSizeRatio < size.aspectRatio) {
+      scale = 1 / scale;
+    }
+    print("rescaling : $scale");
+  }
+
 }
