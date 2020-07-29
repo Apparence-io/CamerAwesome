@@ -200,8 +200,8 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       mCameraSetup.listenOrientation();
       // init camera session builder
       mCameraSession = new CameraSession();
-      // init preview
-      mCameraPreview = new CameraPreview(mCameraSession);
+      // init preview with camera caracteristics we needs
+      mCameraPreview = new CameraPreview(mCameraSession, mCameraSetup.getCharacteristicsModel());
       mCameraPreview.setFlutterTexture(textureRegistry.createSurfaceTexture());
       // init state listener
       mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
@@ -327,16 +327,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       return;
     }
     double zoom;
-    if(call.argument("zoom") instanceof Integer) {
-      int zoomInt = call.argument("zoom");
-      zoom = zoomInt;
-    } else {
-      zoom = call.argument("zoom");
-    }
-    mCameraPreview.setZoom(
-            (float) zoom,
-            mCameraSetup.getCharacteristicsModel().getMaxZoom(),
-            mCameraSetup.getCharacteristicsModel().getAvailablePreviewZone());
+    // sending 0.0 will result in an int so lets force cast
+    zoom = call.argument("zoom");
+    mCameraPreview.setZoom((float) zoom);
     result.success(null);
   }
 

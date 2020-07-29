@@ -169,30 +169,43 @@ class _CameraPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var contentSize = MediaQuery.of(context).size;
     return OrientationBuilder(
-        builder: (context, orientation) => Transform.rotate(
-              angle: orientation == Orientation.portrait ? 0 : -pi / 2,
-              child: Container(
-                color: Colors.black,
-                child: Transform.scale(
-                  scale: scale,
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: ratio,
-                      child: SizedBox(
-                          height: orientation == Orientation.portrait
-                              ? size.height
-                              : size.width,
-                          width: orientation == Orientation.portrait
-                              ? size.width
-                              : size.height,
-                          child: testMode
-                              ? Container()
-                              : Texture(textureId: textureId)),
-                    ),
+      builder: (context, orientation) =>
+        Transform.rotate(
+          angle: orientation == Orientation.portrait ? 0 : -pi / 2,
+          child: Container(
+            color: Colors.black,
+            child: Center(
+              child: Transform.scale(
+                scale: _calculateScale(context, orientation),
+                child: AspectRatio(
+                  aspectRatio: orientation == Orientation.portrait ? ratio : ratio,
+                  child: SizedBox(
+                    height: orientation == Orientation.portrait
+                      ? contentSize.height
+                      : contentSize.width,
+                    width: orientation == Orientation.portrait
+                      ? contentSize.width
+                      : contentSize.height,
+                    child: testMode
+                      ? Container()
+                      : Texture(textureId: textureId),
                   ),
                 ),
               ),
-            ));
+            ),
+          ),
+        )
+    );
+  }
+
+  _calculateScale(BuildContext context, Orientation orientation) {
+    var contentSize = MediaQuery.of(context).size;
+    var scale = ratio / contentSize.aspectRatio;
+    if (ratio < contentSize.aspectRatio) {
+      scale = 1 / scale;
+    }
+    return scale;
   }
 }
