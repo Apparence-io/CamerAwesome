@@ -21,6 +21,7 @@ typedef OnCameraStarted = void Function();
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
 /// TODO - handle refused permissions
+/// TODO - try take photo with zoom
 class CameraAwesome extends StatefulWidget {
 
   /// true to wrap texture
@@ -41,7 +42,10 @@ class CameraAwesome extends StatefulWidget {
   /// change flash mode
   final ValueNotifier<CameraFlashes> switchFlashMode;
 
-  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.sensor = Sensors.BACK});
+  /// Zoom from natived side. Must be between 0 and 1
+  final ValueNotifier<double> zoom;
+
+  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.zoom, this.sensor = Sensors.BACK});
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
@@ -89,6 +93,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       widget.onCameraStarted();
     }
     _initFlashModeSwitcher();
+    _initZoom();
     setState(() {});
   }
 
@@ -124,6 +129,19 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         if(widget.switchFlashMode.value != null && started) {
           await CamerawesomePlugin.setFlashMode(widget.switchFlashMode.value);
         }
+      });
+    }
+  }
+
+  /// handle zoom notifier
+  /// Zoom value must be between 0 and 1
+  _initZoom() {
+    if(widget.zoom != null) {
+      widget.zoom.addListener(() {
+        if(widget.zoom.value < 0 || widget.zoom.value > 1) {
+          throw "Zoom value must be between 0 and 1";
+        }
+        CamerawesomePlugin.setZoom(widget.zoom.value);
       });
     }
   }

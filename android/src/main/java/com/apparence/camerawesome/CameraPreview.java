@@ -75,6 +75,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         Surface flutterSurface = new Surface(surfaceTexture);
         // create preview
         mPreviewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
         initPreviewRequest();
 
         mPreviewRequestBuilder.addTarget(flutterSurface);
@@ -167,7 +168,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             return;
         }
         try {
-            mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
             mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(TAG, "refreshConfiguration", e);
@@ -187,7 +187,10 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         if(currentPreviewArea == null) {
             return;
         }
+        Log.d(TAG, "updateZoom: maxZoom :" + maxZoom);
+        Log.d(TAG, "updateZoom: mZoom :" + mZoom);
         float scaledZoom = mZoom * (maxZoom - 1.0f) + 1.0f;
+        Log.d(TAG, "updateZoom: scaledZoom :" + scaledZoom);
         int currentWidth = currentPreviewArea.width();
         int currentHeight = currentPreviewArea.height();
         int zoomedWidth = (int) (currentWidth / scaledZoom);

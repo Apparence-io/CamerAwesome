@@ -25,8 +25,6 @@ class _MyAppState extends State<MyApp> {
 
   Size bestSize;
 
-  bool _hasInit;
-
   double scale;
 
   double bestSizeRatio;
@@ -36,6 +34,8 @@ class _MyAppState extends State<MyApp> {
   bool focus = false;
 
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
+
+  ValueNotifier<double> zoomNotifier = ValueNotifier(0);
 
   @override
   void initState() {
@@ -60,6 +60,7 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               CameraAwesome(
                 switchFlashMode: switchFlash,
+                zoom: zoomNotifier,
               ),
               if(_lastPhotoPath != null)
                 Positioned(
@@ -115,17 +116,18 @@ class _MyAppState extends State<MyApp> {
                     ),
                     FlatButton(
                       color: Colors.blue,
+                      child: Text("zoom x8", style: TextStyle(color: Colors.white)),
+                      onPressed: () => zoomNotifier.value = 1
+                    ),
+                    FlatButton(
+                      color: Colors.blue,
                       child: Text("zoom x2", style: TextStyle(color: Colors.white)),
-                      onPressed: () async {
-                        await CamerawesomePlugin.setZoom(0.5);
-                      }
+                      onPressed: () => zoomNotifier.value = 0.1
                     ),
                     FlatButton(
                       color: Colors.blue,
                       child: Text("zoom x1", style: TextStyle(color: Colors.white)),
-                      onPressed: () async {
-                        await CamerawesomePlugin.setZoom(0.01);
-                      }
+                      onPressed: () => zoomNotifier.value = 0
                     ),
                   ],
                 ),

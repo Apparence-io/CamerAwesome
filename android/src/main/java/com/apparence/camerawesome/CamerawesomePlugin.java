@@ -326,7 +326,13 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       result.error("ZOOM_NOT_SET", "a float zoom must be set", "");
       return;
     }
-    double zoom = call.argument("zoom");
+    double zoom;
+    if(call.argument("zoom") instanceof Integer) {
+      int zoomInt = call.argument("zoom");
+      zoom = zoomInt;
+    } else {
+      zoom = call.argument("zoom");
+    }
     mCameraPreview.setZoom(
             (float) zoom,
             mCameraSetup.getCharacteristicsModel().getMaxZoom(),
