@@ -13,6 +13,7 @@
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
+                      sensor:(CameraSensor)sensor
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback {
     self = [super init];
@@ -21,6 +22,7 @@
     _result = result;
     _orientation = orientation;
     _completionBlock = callback;
+    _sensor = sensor;
     selfReference = self;
     return self;
 }
@@ -51,19 +53,20 @@
 }
 
 - (UIImageOrientation)getJpegOrientation {
-    NSInteger sensorOrientation;
-    
-    if (_orientation == UIDeviceOrientationPortrait || _orientation == UIDeviceOrientationPortraitUpsideDown) {
-        sensorOrientation = UIImageOrientationRight;
-    } else if (_orientation == UIDeviceOrientationLandscapeRight) {
-        sensorOrientation = UIImageOrientationDown;
-    } else if (_orientation == UIDeviceOrientationLandscapeLeft) {
-        sensorOrientation = UIImageOrientationUp;
-    } else {
-        sensorOrientation = UIImageOrientationLeft;
+    switch (_orientation) {
+        case UIDeviceOrientationPortrait:
+            return UIImageOrientationRight;
+            break;
+        case UIDeviceOrientationLandscapeRight:
+            return (_sensor == Back) ? UIImageOrientationDown : UIImageOrientationUp;
+            break;
+        case UIDeviceOrientationLandscapeLeft:
+            return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
+            break;
+        default:
+            return UIImageOrientationLeft;
+            break;
     }
-    
-    return sensorOrientation;
 }
 
 @end

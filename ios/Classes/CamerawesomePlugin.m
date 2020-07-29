@@ -38,6 +38,7 @@
     } else if ([@"requestPermissions" isEqualToString:call.method]) {
         // Not possible on iOS
         result(FlutterMethodNotImplemented);
+        return;
     } else if ([@"start" isEqualToString:call.method]) {
         [self _handleStart:call result:result];
     } else if ([@"stop" isEqualToString:call.method]) {
@@ -56,10 +57,13 @@
         [self _handleAutoFocus:call result:result];
     } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
+    } else if ([@"flipCamera" isEqualToString:call.method]) {
+        [self _handleFlipCamera:call result:result];
     } else if ([@"dispose" isEqualToString:call.method]) {
-       [self _handleDispose:call result:result];
-   } else {
+        [self _handleDispose:call result:result];
+    } else {
         result(FlutterMethodNotImplemented);
+        return;
     }
 }
 
@@ -77,6 +81,10 @@
     
     [_camera setResult:result];
     [_camera takePictureAtPath:path];
+}
+
+- (void)_handleFlipCamera:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera flipCamera];
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -180,7 +188,7 @@
 }
 
 - (void)_handleFlashMode:(FlutterMethodCall*)call result:(FlutterResult)result  {
-    NSString *flashMode = call.arguments[@"flash"];
+    NSString *flashMode = call.arguments[@"mode"];
     
     if (flashMode == nil || flashMode.length <= 0) {
         result([FlutterError errorWithCode:@"FLASH_MODE_ERROR" message:@"a flash mode NONE, AUTO, ALWAYS must be provided" details:nil]);

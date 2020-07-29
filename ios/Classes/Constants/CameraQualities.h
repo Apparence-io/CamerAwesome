@@ -9,24 +9,24 @@
 
 #define kCameraQualities @[\
     @{\
-        @"width": @3840.0,\
-        @"height": @2160.0\
+        @"width": @3840,\
+        @"height": @2160\
     },\
     @{\
-        @"width": @1920.0,\
-        @"height": @1080.0\
+        @"width": @1920,\
+        @"height": @1080\
     },\
     @{\
-        @"width": @1280.0,\
-        @"height": @720.0\
+        @"width": @1280,\
+        @"height": @720\
     },\
     @{\
-        @"width": @640.0,\
-        @"height": @480.0\
+        @"width": @640,\
+        @"height": @480\
     },\
     @{\
-        @"width": @352.0,\
-        @"height": @288.0\
+        @"width": @352,\
+        @"height": @288\
     }\
 ]
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CameraQualities : NSObject
 
-+ (NSString *)selectVideoCapturePressetWidth:(CGSize)size;
++ (NSString *)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session;
 
 @end
 

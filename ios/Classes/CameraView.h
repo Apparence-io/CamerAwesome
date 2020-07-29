@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CameraView : NSObject<FlutterTexture, AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
-@property(readonly, nonatomic) AVCaptureMetadataOutput *captureOutput;
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
 @property(readonly, nonatomic) AVCaptureInput *captureVideoInput;
@@ -31,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
+@property(readonly, nonatomic) CameraSensor cameraSensor;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
 @property(readonly, nonatomic) CGSize previewSize;
@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)instantFocus;
 - (void)dispose;
 - (void)setResult:(nonnull FlutterResult)result;
+- (void)flipCamera;
 
 @end
 

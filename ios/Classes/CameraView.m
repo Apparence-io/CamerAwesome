@@ -14,53 +14,72 @@
     
     _result = result;
     
+    // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
-    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
     
-    NSError *localError = nil;
-    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&localError];
+    // Creating video output
     _captureVideoOutput = [AVCaptureVideoDataOutput new];
     _captureVideoOutput.videoSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
     [_captureVideoOutput setAlwaysDiscardsLateVideoFrames:YES];
     [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-
-    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports output:_captureVideoOutput];
-    [self updatePreviewOrientation];
-    
-    _captureOutput = [[AVCaptureMetadataOutput alloc] init];
-    _captureOutput.metadataObjectTypes = _captureOutput.availableMetadataObjectTypes;
-    [_captureSession addInputWithNoConnections:_captureVideoInput];
     [_captureSession addOutputWithNoConnections:_captureVideoOutput];
-    [_captureSession addOutput:_captureOutput];
 
-    _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
-    _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        
+    // Creating input device
+    [self initCamera:sensor];
+    
+    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+    
     // By default enable auto flash mode
     _flashMode = AVCaptureFlashModeAuto;
-
-    [_captureOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
-    [_captureOutput setMetadataObjectTypes:@[AVMetadataObjectTypeAztecCode,
-                                             AVMetadataObjectTypeCode39Code,
-                                             AVMetadataObjectTypeCode93Code,
-                                             AVMetadataObjectTypeCode128Code,
-                                             AVMetadataObjectTypeDataMatrixCode,
-                                             AVMetadataObjectTypeEAN8Code,
-                                             AVMetadataObjectTypeEAN13Code,
-                                             AVMetadataObjectTypeITF14Code,
-                                             AVMetadataObjectTypePDF417Code,
-                                             AVMetadataObjectTypeQRCode,
-                                             AVMetadataObjectTypeUPCECode]];
-    [_captureSession addConnection:_captureConnection];
-    _capturePhotoOutput = [AVCapturePhotoOutput new];
-    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
-    [_captureSession addOutput:_capturePhotoOutput];
+    
+    _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
+    _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    
+    _cameraSensor = sensor;
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(orientationChanged:)
                                                  name:UIDeviceOrientationDidChangeNotification
                                                object:nil];
+    
+    [self updatePreviewOrientation];
+    
     return self;
+}
+
+- (void)initCamera:(CameraSensor)sensor {
+    NSError *error;
+    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
+    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error];
+    
+    if (error != nil) {
+        _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
+        return;
+    }
+    
+    // Set preset
+    if (sensor == Back) {
+        [self setPreviewSize:_previewSize];
+    } else {
+        [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
+    }
+    
+    // Create connection
+    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
+                                                                output:_captureVideoOutput];
+    
+    // Attaching to session
+    [_captureSession addInputWithNoConnections:_captureVideoInput];
+    [_captureSession addConnection:_captureConnection];
+    
+    // Creating photo output
+    _capturePhotoOutput = [AVCapturePhotoOutput new];
+    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+    [_captureSession addOutput:_capturePhotoOutput];
+    
+    // Mirror the preview only on portrait mode
+    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+    [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
 }
 
 - (void)orientationChanged:(NSNotification *)notification {
@@ -71,12 +90,20 @@
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
 
     AVCaptureVideoOrientation previewOrientation;
-    
-    
-    if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-        previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+    if (_cameraSensor == Back) {
+        if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
+            previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+        } else {
+            previewOrientation = AVCaptureVideoOrientationPortrait;
+        }
     } else {
-        previewOrientation = AVCaptureVideoOrientationPortrait;
+        if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
+            previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+        } else if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
+            previewOrientation = AVCaptureVideoOrientationPortrait;
+        } else {
+            previewOrientation = AVCaptureVideoOrientationPortrait;
+        }
     }
     
     [_captureConnection setVideoOrientation:previewOrientation];
@@ -87,13 +114,15 @@
 }
 
 - (void)dispose {
+    [self stop];
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIDeviceOrientationDidChangeNotification
                                                   object:nil];
 }
 
 - (void)setPreviewSize:(CGSize)previewSize {
-    NSString *selectedPresset = [CameraQualities selectVideoCapturePressetWidth:previewSize];
+    NSString *selectedPresset = [CameraQualities selectVideoCapturePresset:previewSize session:_captureSession];
     _previewSize = previewSize;
     _captureSession.sessionPreset = selectedPresset;
 }
@@ -106,17 +135,43 @@
     [_captureSession stopRunning];
 }
 
+- (void)flipCamera {
+    CameraSensor sensor = (_cameraSensor == Front) ? Back : Front;
+    
+    // First remove all input & output
+    [_captureSession beginConfiguration];
+    AVCaptureDeviceInput *oldInput = [_captureSession.inputs firstObject];
+    [_captureSession removeInput:oldInput];
+    [_captureSession removeOutput:_capturePhotoOutput];
+    [_captureSession removeConnection:_captureConnection];
+    
+    // Init the camera with the selected sensor
+    [self initCamera:sensor];
+
+    [_captureSession commitConfiguration];
+    
+    [self updatePreviewOrientation];
+    
+    _cameraSensor = sensor;
+}
+
 - (void)setFlashMode:(CameraFlashMode)flashMode {
     if (![_captureDevice hasFlash]) {
         _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
+        return;
+    }
+    
+    if (_cameraSensor == Front) {
+        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""]);
+        return;
     }
     
     NSError *error;
     [_captureDevice lockForConfiguration:&error];
     if (error != nil) {
         _result([FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""]);
+        return;
     }
-    [_captureDevice setTorchMode:AVCaptureTorchModeOn];
     
     switch (flashMode) {
         case None:
@@ -155,6 +210,7 @@
         if ([_captureDevice lockForConfiguration:&error]) {
             if (error != nil) {
                 _result([FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
+                return;
             }
             
             [_captureDevice setFocusMode:AVCaptureFocusModeAutoFocus];
@@ -174,6 +230,7 @@
     // Instanciate camera picture obj
     CameraPicture *cameraPicture = [[CameraPicture alloc] initWithPath:path
                                                            orientation:deviceOrientation
+                                                                sensor:_cameraSensor
                                                                 result:_result
                                                               callback:^{
                                                                 // If flash mode is always on, restore it back after photo is taken
