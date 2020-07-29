@@ -38,6 +38,7 @@
     } else if ([@"requestPermissions" isEqualToString:call.method]) {
         // Not possible on iOS
         result(FlutterMethodNotImplemented);
+        return;
     } else if ([@"start" isEqualToString:call.method]) {
         [self _handleStart:call result:result];
     } else if ([@"stop" isEqualToString:call.method]) {
@@ -62,6 +63,7 @@
         [self _handleDispose:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
+        return;
     }
 }
 

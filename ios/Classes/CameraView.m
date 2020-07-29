@@ -54,6 +54,7 @@
     
     if (error != nil) {
         _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
+        return;
     }
     
     // Set preset
@@ -155,16 +156,22 @@
 }
 
 - (void)setFlashMode:(CameraFlashMode)flashMode {
-//    if (![_captureDevice hasFlash]) {
-//        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
-//    }
+    if (![_captureDevice hasFlash]) {
+        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
+        return;
+    }
+    
+    if (_cameraSensor == Front) {
+        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""]);
+        return;
+    }
     
     NSError *error;
     [_captureDevice lockForConfiguration:&error];
     if (error != nil) {
         _result([FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""]);
+        return;
     }
-    [_captureDevice setTorchMode:AVCaptureTorchModeOn];
     
     switch (flashMode) {
         case None:
@@ -203,6 +210,7 @@
         if ([_captureDevice lockForConfiguration:&error]) {
             if (error != nil) {
                 _result([FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
+                return;
             }
             
             [_captureDevice setFocusMode:AVCaptureFocusModeAutoFocus];
