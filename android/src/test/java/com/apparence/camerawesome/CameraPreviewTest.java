@@ -5,9 +5,11 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.util.Size;
 import android.view.Surface;
 
 import com.apparence.camerawesome.models.FlashMode;
+import com.apparence.camerawesome.surface.SurfaceFactory;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,6 +27,7 @@ import io.flutter.view.TextureRegistry;
 
 import static android.hardware.camera2.CaptureRequest.*;
 import static android.hardware.camera2.CaptureRequest.FLASH_MODE;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
@@ -43,10 +46,10 @@ public class CameraPreviewTest {
     Builder captureRequestBuilder;
 
     @Mock
-    TextureRegistry.SurfaceTextureEntry flutterTextureMock;
+    SurfaceFactory surfaceFactoryMock;
 
     @Mock
-    SurfaceTexture surfaceTexture;
+    Surface surfaceMock;
 
     CameraSession cameraSession;
 
@@ -55,10 +58,10 @@ public class CameraPreviewTest {
     @Before
     public void setUp() throws Exception {
         reset(captureRequestBuilder);
-        when(flutterTextureMock.surfaceTexture()).thenReturn(surfaceTexture);
+        when(surfaceFactoryMock.build(any(Size.class))).thenReturn(surfaceMock);
         when(cameraDeviceMock.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)).thenReturn(captureRequestBuilder);
         cameraSession = new CameraSession();
-        cameraPreview = new CameraPreview(cameraSession, null, flutterTextureMock);
+        cameraPreview = new CameraPreview(cameraSession, null, surfaceFactoryMock);
         cameraSession.setOnCaptureSessionListenerList(
                 Collections.<CameraSession.OnCaptureSession>singletonList(cameraPreview));
     }

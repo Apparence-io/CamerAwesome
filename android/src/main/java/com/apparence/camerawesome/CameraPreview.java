@@ -22,6 +22,8 @@ import androidx.annotation.VisibleForTesting;
 
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
+import com.apparence.camerawesome.surface.FlutterSurfaceFactory;
+import com.apparence.camerawesome.surface.SurfaceFactory;
 
 import io.flutter.view.TextureRegistry;
 
@@ -37,7 +39,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private final CameraSession mCameraSession;
 
-    private TextureRegistry.SurfaceTextureEntry flutterTexture;
+    private final SurfaceFactory surfaceFactory;
 
     private Size previewSize;
 
@@ -59,32 +61,30 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private CameraCharacteristicsModel cameraCharacteristics;
 
+    private Surface previewSurface;
 
-    public CameraPreview(CameraSession cameraSession, CameraCharacteristicsModel cameraCharacteristics) {
+    private SurfaceTexture surfaceTexture;
+
+
+    public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel cameraCharacteristics, final SurfaceFactory surfaceFactory) {
         this.autoFocus = true;
         this.flashMode = FlashMode.NONE;
         this.mCameraSession = cameraSession;
         this.cameraCharacteristics = cameraCharacteristics;
-    }
-
-    public CameraPreview(CameraSession cameraSession, CameraCharacteristicsModel cameraCharacteristics, TextureRegistry.SurfaceTextureEntry flutterTexture) {
-        this(cameraSession, cameraCharacteristics);
-        this.flutterTexture = flutterTexture;
+        this.surfaceFactory = surfaceFactory;
     }
     
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
         // create surface
-        SurfaceTexture surfaceTexture = flutterTexture.surfaceTexture();
-        surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
-        Surface flutterSurface = new Surface(surfaceTexture);
+        previewSurface = surfaceFactory.build(previewSize);
         // create preview
         mPreviewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
         // save initial region for zoom management
         mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
         initPreviewRequest();
 
-        mPreviewRequestBuilder.addTarget(flutterSurface);
-        mCameraSession.addSurface(flutterSurface);
+        mPreviewRequestBuilder.addTarget(previewSurface);
+        mCameraSession.addSurface(previewSurface);
         mCameraSession.createCameraCaptureSession(cameraDevice);
     }
 
@@ -105,22 +105,29 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         return mCaptureSession;
     }
 
-    public void setFlutterTexture(TextureRegistry.SurfaceTextureEntry flutterTexture) {
-        this.flutterTexture = flutterTexture;
-    }
-
     public Long getFlutterTexture() {
-        return this.flutterTexture.id();
+        return this.surfaceFactory.getSurfaceId();
     }
 
     public void dispose() {
         if(mCaptureSession != null) {
+            // release surface
+            mCameraSession.clearSurface();
+            previewSurface.release();
             mCaptureSession.close();
         }
     }
 
     public void setPreviewSize(int width, int height) {
-        this.previewSize = new Size(width, height);
+        if(width > 1920 || height > 1080) {
+            this.previewSize = new Size(1920, 1080);
+        } else {
+            this.previewSize = new Size(width, height);
+        }
+    }
+
+    public void setCameraCharacteristics(CameraCharacteristicsModel cameraCharacteristics) {
+        this.cameraCharacteristics = cameraCharacteristics;
     }
 
     public void setAutoFocus(boolean autoFocus) {
@@ -173,8 +180,9 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             return;
         }
         try {
-            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
-        } catch (CameraAccessException e) {
+            Log.d(TAG, "### refreshConfiguration: called");
+            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
+        } catch (CameraAccessException | IllegalStateException | IllegalArgumentException e) {
             Log.e(TAG, "refreshConfiguration", e);
         }
     }
@@ -225,7 +233,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     public void onConfigured(@NonNull CameraCaptureSession session) {
         mCaptureSession = session;
         refreshConfiguration();
-
     }
 
     @Override

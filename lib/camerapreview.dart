@@ -27,9 +27,6 @@ class CameraAwesome extends StatefulWidget {
   /// true to wrap texture
   final bool testMode;
 
-  /// choose between [BACK] and [FRONT]
-  final Sensors sensor;
-
   /// implement this to have a callback after CameraAwesome asked for permissions
   final OnPermissionsResult onPermissionsResult;
 
@@ -42,10 +39,17 @@ class CameraAwesome extends StatefulWidget {
   /// change flash mode
   final ValueNotifier<CameraFlashes> switchFlashMode;
 
-  /// Zoom from natived side. Must be between 0 and 1
+  /// Zoom from native side. Must be between 0 and 1
   final ValueNotifier<double> zoom;
 
-  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.zoom, this.sensor = Sensors.BACK});
+  /// choose between [BACK] and [FRONT]
+  final ValueNotifier<Sensors> sensor;
+
+  CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.zoom,
+    @required this.sensor})
+    : assert(sensor != null),
+      super(key: key);
+
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
@@ -78,7 +82,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     if(widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
-    await CamerawesomePlugin.init(widget.sensor);
+    await CamerawesomePlugin.init(widget.sensor.value);
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
     selectedSize = camerasAvailableSizes[0];
     await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
@@ -94,6 +98,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     }
     _initFlashModeSwitcher();
     _initZoom();
+    _initSensor();
     setState(() {});
   }
 
@@ -144,6 +149,14 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         CamerawesomePlugin.setZoom(widget.zoom.value);
       });
     }
+  }
+
+  /// handle sensor changes
+  _initSensor() {
+    widget.sensor.addListener(() async {
+      await CamerawesomePlugin.setSensor(widget.sensor.value);
+      setState(() {});
+    });
   }
 }
 

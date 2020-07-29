@@ -62,6 +62,10 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
      */
     public void setSize(int width, int height) {
         this.size = new Size(width, height);
+        refresh();
+    }
+
+    public void refresh() {
         pictureImageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);
         mCameraSession.addSurface(pictureImageReader.getSurface());
     }
@@ -139,6 +143,12 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         return autoFocus;
     }
 
+    public void dispose() {
+        if(pictureImageReader != null) {
+            pictureImageReader.close();
+            pictureImageReader = null;
+        }
+    }
     // ---------------------------------------------------
     // PRIVATES
     // ---------------------------------------------------

@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 
 import com.apparence.camerawesome.exceptions.CameraManagerException;
 import com.apparence.camerawesome.models.FlashMode;
+import com.apparence.camerawesome.surface.FlutterSurfaceFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +104,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
         break;
       case "init":
         _handleSetup(call, result);
+        break;
+      case "setSensor":
+        _handleSwitchSensor(call, result);
         break;
       case "previewTexture":
         _handleGetTextures(call, result);
@@ -201,17 +205,34 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       // init camera session builder
       mCameraSession = new CameraSession();
       // init preview with camera caracteristics we needs
-      mCameraPreview = new CameraPreview(mCameraSession, mCameraSetup.getCharacteristicsModel());
-      mCameraPreview.setFlutterTexture(textureRegistry.createSurfaceTexture());
-      // init state listener
-      mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
+      mCameraPreview = new CameraPreview(
+              mCameraSession,
+              mCameraSetup.getCharacteristicsModel(),
+              new FlutterSurfaceFactory(textureRegistry));
       // init picture recorder
       mCameraPicture = new CameraPicture(mCameraSession);
+      // init state listener
+      mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
       // set camera sessions listeners
       mCameraSession.setOnCaptureSessionListenerList(Arrays.asList(mCameraPreview, mCameraPicture));
       result.success(true);
     } catch (CameraAccessException e) {
       result.error("", e.getMessage(), e.getStackTrace());
+    }
+  }
+
+  private void _handleSwitchSensor(MethodCall call, Result result) {
+    if(throwIfCameraNotInit(result)) {
+      return;
+    }
+    CameraSensor sensor = CameraSensor.valueOf((String) call.argument("sensor"));
+    Log.d(TAG, "_handleSwitchSensor: " + sensor.name() + " => " +  ((String) call.argument("sensor")));
+    try {
+      mCameraSetup.chooseCamera(sensor);
+      mCameraStateManager.switchCamera(mCameraSetup.getCameraId(), mCameraSetup.getCharacteristicsModel());
+      result.success(null);
+    } catch (CameraAccessException | CameraManagerException e) {
+      result.error("SWITCH_CAMERA_SENSOR_ERROR", e.getMessage(), e.getStackTrace());
     }
   }
 
@@ -279,7 +300,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     if(throwIfCameraNotInit(result))
       return;
     mCameraStateManager.stopCamera();
-
   }
 
   private void _handleTakePhoto(final MethodCall call, final Result result) {
@@ -427,6 +447,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   public void onDetachedFromActivity() {
     Log.d(TAG, "onDetachedFromActivity: ");
     this.pluginActivity = null;
-
+    this.mCameraStateManager.stopCamera();
   }
 }
