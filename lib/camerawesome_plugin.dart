@@ -15,7 +15,7 @@ export './models/flashmodes.dart';
 export 'camerapreview.dart';
 
 
-// TODO - add zoom level
+// TODO - add zoom level - iOS
 // TODO - call init to change cam while running
 // TODO - dispose method
 // TODO - Focus on a point
@@ -98,6 +98,14 @@ class CamerawesomePlugin {
 
   /// TODO - Next step focus on a certain point
   static startAutoFocus() => _channel.invokeMethod("handleAutoFocus");
+
+  /// calls zoom from Android / iOS --
+  /// TODO iOS side
+  static Future<void> setZoom(num zoom) => _channel.invokeMethod('setZoom', <String, dynamic> {
+    'zoom': zoom,
+  });
+
+  static Future<num> getMaxZoom() =>_channel.invokeMethod("getMaxZoom");
 
   // ---------------------------------------------------
   // UTILITY METHODS

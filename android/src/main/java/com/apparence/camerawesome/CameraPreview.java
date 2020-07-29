@@ -1,5 +1,6 @@
 package com.apparence.camerawesome;
 
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -19,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
 
 import io.flutter.view.TextureRegistry;
@@ -51,15 +53,22 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private FlashMode flashMode;
 
+    private float mZoom;
 
-    public CameraPreview(CameraSession cameraSession) {
+    private Rect mInitialCropRegion;
+
+    private CameraCharacteristicsModel cameraCharacteristics;
+
+
+    public CameraPreview(CameraSession cameraSession, CameraCharacteristicsModel cameraCharacteristics) {
         this.autoFocus = true;
         this.flashMode = FlashMode.NONE;
         this.mCameraSession = cameraSession;
+        this.cameraCharacteristics = cameraCharacteristics;
     }
 
-    public CameraPreview(CameraSession cameraSession, TextureRegistry.SurfaceTextureEntry flutterTexture) {
-        this(cameraSession);
+    public CameraPreview(CameraSession cameraSession, CameraCharacteristicsModel cameraCharacteristics, TextureRegistry.SurfaceTextureEntry flutterTexture) {
+        this(cameraSession, cameraCharacteristics);
         this.flutterTexture = flutterTexture;
     }
     
@@ -70,6 +79,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         Surface flutterSurface = new Surface(surfaceTexture);
         // create preview
         mPreviewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        // save initial region for zoom management
+        mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
         initPreviewRequest();
 
         mPreviewRequestBuilder.addTarget(flutterSurface);
@@ -124,6 +135,12 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         refreshConfiguration();
     }
 
+    public void setZoom(float zoom) {
+        this.mZoom = zoom;
+        updateZoom();
+        refreshConfiguration();
+    }
+
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------
@@ -149,9 +166,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
                 ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
                 : CaptureRequest.CONTROL_AF_MODE_OFF);
 
-
-
-
     }
 
     private void refreshConfiguration() {
@@ -170,6 +184,36 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(TAG, "refreshConfigurationWithCallback", e);
+        }
+    }
+
+    // Inspired by react nativ plugin
+    private void updateZoom() {
+        float maxZoom = this.cameraCharacteristics.getMaxZoom();
+        Rect currentPreviewArea = this.cameraCharacteristics.getAvailablePreviewZone();
+        if(currentPreviewArea == null) {
+            return;
+        }
+        float scaledZoom = mZoom * (maxZoom - 1.0f) + 1.0f;
+        int currentWidth = currentPreviewArea.width();
+        int currentHeight = currentPreviewArea.height();
+        int zoomedWidth = (int) (currentWidth / scaledZoom);
+        int zoomedHeight = (int) (currentHeight / scaledZoom);
+        int widthOffset = (currentWidth - zoomedWidth) / 2;
+        int heightOffset = (currentHeight - zoomedHeight) / 2;
+
+        Rect zoomPreviewArea = new Rect(
+                currentPreviewArea.left + widthOffset,
+                currentPreviewArea.top + heightOffset,
+                currentPreviewArea.right - widthOffset,
+                currentPreviewArea.bottom - heightOffset
+        );
+        // ¯\_(ツ)_/¯ for some devices calculating the Rect for zoom=1 results in a bit different
+        // Rect that device claims as its no-zoom crop region and the preview freezes
+        if (scaledZoom != 1.0f) {
+            mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoomPreviewArea);
+        } else {
+            mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mInitialCropRegion);
         }
     }
 
