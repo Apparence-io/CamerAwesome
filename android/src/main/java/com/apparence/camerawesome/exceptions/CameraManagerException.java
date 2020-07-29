@@ -5,7 +5,8 @@ public class CameraManagerException extends Exception {
     public enum Codes {
         MISSING_PERMISSION,
         INTERRUPTED,
-        CANNOT_OPEN_CAMERA
+        CANNOT_OPEN_CAMERA,
+        LOCKED
     }
 
     public CameraManagerException() {

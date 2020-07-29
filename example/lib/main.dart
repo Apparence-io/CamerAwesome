@@ -37,6 +37,8 @@ class _MyAppState extends State<MyApp> {
 
   ValueNotifier<double> zoomNotifier = ValueNotifier(0);
 
+  ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
+
   @override
   void initState() {
     super.initState();
@@ -70,6 +72,7 @@ class _MyAppState extends State<MyApp> {
               bottom: 0,
               right: 0,
               child: CameraAwesome(
+                sensor: sensor,
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
               )
@@ -148,6 +151,13 @@ class _MyAppState extends State<MyApp> {
                     color: Colors.blue,
                     child: Text("zoom x1", style: TextStyle(color: Colors.white)),
                     onPressed: () => zoomNotifier.value = 0
+                  ),
+                  FlatButton(
+                    color: Colors.blue[200],
+                    child: Text("switch sensor", style: TextStyle(color: Colors.white)),
+                    onPressed: () => sensor.value == Sensors.BACK
+                      ? sensor.value = Sensors.FRONT
+                      : sensor.value = Sensors.BACK
                   ),
                 ],
               ),

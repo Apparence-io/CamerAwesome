@@ -71,8 +71,8 @@ public class CameraSession {
         // todo if session is active recreate session
     }
 
-    public void clearSurface(Surface surface) {
-        this.surfaces.remove(surface);
+    public void clearSurface() {
+        this.surfaces.clear();
         // todo if session is active recreate session
     }
 

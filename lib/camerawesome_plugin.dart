@@ -105,6 +105,11 @@ class CamerawesomePlugin {
     'zoom': zoom,
   });
 
+  /// switch camera sensor between [Sensors.BACK] and [Sensors.FRONT]
+  static Future<void> setSensor(Sensors sensor) => _channel.invokeMethod('setSensor', <String, dynamic> {
+    'sensor': sensor.toString().split(".")[1],
+  });
+
   static Future<num> getMaxZoom() =>_channel.invokeMethod("getMaxZoom");
 
   // ---------------------------------------------------
@@ -130,6 +135,8 @@ class CamerawesomePlugin {
     }
     return Future.value(false);
   }
+
+
 
 }
 
