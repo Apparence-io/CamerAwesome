@@ -58,7 +58,7 @@ public class CameraPreviewTest {
         when(flutterTextureMock.surfaceTexture()).thenReturn(surfaceTexture);
         when(cameraDeviceMock.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)).thenReturn(captureRequestBuilder);
         cameraSession = new CameraSession();
-        cameraPreview = new CameraPreview(cameraSession, flutterTextureMock);
+        cameraPreview = new CameraPreview(cameraSession, null, flutterTextureMock);
         cameraSession.setOnCaptureSessionListenerList(
                 Collections.<CameraSession.OnCaptureSession>singletonList(cameraPreview));
     }

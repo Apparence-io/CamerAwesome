@@ -128,6 +128,12 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       case "start":
         _handleStart(call, result);
         break;
+      case "getMaxZoom":
+        _handleGetMaxZoom(call, result);
+        break;
+      case "setZoom":
+        _handleZoom(call, result);
+        break;
       case "stop":
         _handleStop(call, result);
         break;
@@ -136,6 +142,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
         break;
     }
   }
+
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
@@ -193,8 +200,8 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       mCameraSetup.listenOrientation();
       // init camera session builder
       mCameraSession = new CameraSession();
-      // init preview
-      mCameraPreview = new CameraPreview(mCameraSession);
+      // init preview with camera caracteristics we needs
+      mCameraPreview = new CameraPreview(mCameraSession, mCameraSetup.getCharacteristicsModel());
       mCameraPreview.setFlutterTexture(textureRegistry.createSurfaceTexture());
       // init state listener
       mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
@@ -311,6 +318,30 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     mCameraPreview.setFlashMode(flashmode);
     mCameraPicture.setFlashMode(flashmode);
     result.success(null);
+  }
+
+  @SuppressWarnings("ConstantConditions")
+  private void _handleZoom(final MethodCall call, final Result result) {
+    if(!call.hasArgument("zoom")) {
+      result.error("ZOOM_NOT_SET", "a float zoom must be set", "");
+      return;
+    }
+    double zoom;
+    // sending 0.0 will result in an int so lets force cast
+    zoom = call.argument("zoom");
+    mCameraPreview.setZoom((float) zoom);
+    result.success(null);
+  }
+
+  /**
+   * Returns the max available zoom from device
+   * @param call FLutter method call
+   * @param result Flutter Result method
+   */
+  private void _handleGetMaxZoom(MethodCall call, Result result) {
+    if(throwIfCameraNotInit(result))
+      return;
+    result.success(mCameraSetup.getCharacteristicsModel().getMaxZoom());
   }
 
   private void _handleAutoFocus(final MethodCall call, final Result result) {
