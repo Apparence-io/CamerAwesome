@@ -27,6 +27,8 @@
     // Creating input device
     [self initCamera:sensor];
     
+    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+    
     // By default enable auto flash mode
     _flashMode = AVCaptureFlashModeAuto;
     
@@ -73,6 +75,10 @@
     _capturePhotoOutput = [AVCapturePhotoOutput new];
     [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
     [_captureSession addOutput:_capturePhotoOutput];
+    
+    // Mirror the preview only on portrait mode
+    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+    [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
 }
 
 - (void)orientationChanged:(NSNotification *)notification {
@@ -83,10 +89,20 @@
     UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
 
     AVCaptureVideoOrientation previewOrientation;
-    if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-        previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+    if (_cameraSensor == Back) {
+        if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
+            previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+        } else {
+            previewOrientation = AVCaptureVideoOrientationPortrait;
+        }
     } else {
-        previewOrientation = AVCaptureVideoOrientationPortrait;
+        if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
+            previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
+        } else if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
+            previewOrientation = AVCaptureVideoOrientationPortrait;
+        } else {
+            previewOrientation = AVCaptureVideoOrientationPortrait;
+        }
     }
     
     [_captureConnection setVideoOrientation:previewOrientation];
@@ -206,6 +222,7 @@
     // Instanciate camera picture obj
     CameraPicture *cameraPicture = [[CameraPicture alloc] initWithPath:path
                                                            orientation:deviceOrientation
+                                                                sensor:_cameraSensor
                                                                 result:_result
                                                               callback:^{
                                                                 // If flash mode is always on, restore it back after photo is taken

@@ -13,6 +13,7 @@
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
+                      sensor:(CameraSensor)sensor
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback {
     self = [super init];
@@ -21,6 +22,7 @@
     _result = result;
     _orientation = orientation;
     _completionBlock = callback;
+    _sensor = sensor;
     selfReference = self;
     return self;
 }
@@ -53,15 +55,39 @@
 - (UIImageOrientation)getJpegOrientation {
     NSInteger sensorOrientation;
     
-    if (_orientation == UIDeviceOrientationPortrait || _orientation == UIDeviceOrientationPortraitUpsideDown) {
-        sensorOrientation = UIImageOrientationRight;
-    } else if (_orientation == UIDeviceOrientationLandscapeRight) {
-        sensorOrientation = UIImageOrientationDown;
-    } else if (_orientation == UIDeviceOrientationLandscapeLeft) {
-        sensorOrientation = UIImageOrientationUp;
+    if (_sensor == Back) {
+        switch (_orientation) {
+            case UIDeviceOrientationPortrait:
+                sensorOrientation = UIImageOrientationRight;
+                break;
+            case UIDeviceOrientationLandscapeRight:
+                sensorOrientation = UIImageOrientationDown;
+                break;
+            case UIDeviceOrientationLandscapeLeft:
+                sensorOrientation = UIImageOrientationUp;
+                break;
+            default:
+                sensorOrientation = UIImageOrientationLeft;
+                break;
+        }
     } else {
-        sensorOrientation = UIImageOrientationLeft;
+        switch (_orientation) {
+            case UIDeviceOrientationPortrait:
+                sensorOrientation = UIImageOrientationRight;
+                break;
+            case UIDeviceOrientationLandscapeRight:
+                sensorOrientation = UIImageOrientationUp;
+                break;
+            case UIDeviceOrientationLandscapeLeft:
+                sensorOrientation = UIImageOrientationDown;
+                break;
+            default:
+                sensorOrientation = UIImageOrientationLeft;
+                break;
+        }
     }
+    
+    
     
     return sensorOrientation;
 }

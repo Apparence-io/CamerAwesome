@@ -10,6 +10,8 @@
 #import <Foundation/Foundation.h>
 #import <CoreMotion/CoreMotion.h>
 
+#import "CameraSensor.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 typedef void(^OnPictureTaken)(void);
@@ -17,6 +19,7 @@ typedef void(^OnPictureTaken)(void);
 @interface CameraPicture : NSObject <AVCapturePhotoCaptureDelegate>
 @property(readonly, nonatomic) NSString *path;
 @property(readonly, nonatomic) FlutterResult result;
+@property(readonly, nonatomic) CameraSensor sensor;
 @property NSInteger orientation;
 @property (nonatomic, copy) OnPictureTaken completionBlock;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
@@ -24,6 +27,7 @@ typedef void(^OnPictureTaken)(void);
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
+                      sensor:(CameraSensor)sensor
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback;
 @end
