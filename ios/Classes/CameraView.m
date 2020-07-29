@@ -49,8 +49,8 @@
 
 - (void)initCamera:(CameraSensor)sensor {
     NSError *error;
-    AVCaptureDevice *newDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
-    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:newDevice error:&error];
+    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
+    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error];
     
     if (error != nil) {
         _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
@@ -155,9 +155,9 @@
 }
 
 - (void)setFlashMode:(CameraFlashMode)flashMode {
-    if (![_captureDevice hasFlash]) {
-        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
-    }
+//    if (![_captureDevice hasFlash]) {
+//        _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
+//    }
     
     NSError *error;
     [_captureDevice lockForConfiguration:&error];

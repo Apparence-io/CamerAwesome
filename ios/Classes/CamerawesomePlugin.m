@@ -186,7 +186,7 @@
 }
 
 - (void)_handleFlashMode:(FlutterMethodCall*)call result:(FlutterResult)result  {
-    NSString *flashMode = call.arguments[@"flash"];
+    NSString *flashMode = call.arguments[@"mode"];
     
     if (flashMode == nil || flashMode.length <= 0) {
         result([FlutterError errorWithCode:@"FLASH_MODE_ERROR" message:@"a flash mode NONE, AUTO, ALWAYS must be provided" details:nil]);
