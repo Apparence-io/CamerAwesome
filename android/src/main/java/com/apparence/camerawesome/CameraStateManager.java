@@ -16,9 +16,14 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.apparence.camerawesome.exceptions.CameraManagerException;
+import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
+import io.flutter.view.TextureRegistry;
+
+import static com.apparence.camerawesome.exceptions.CameraManagerException.Codes.LOCKED;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraStateManager extends CameraDevice.StateCallback {
@@ -43,26 +48,31 @@ public class CameraStateManager extends CameraDevice.StateCallback {
 
     private OnCameraState mOnCameraStateListener;
 
+    private boolean opened;
 
-    public CameraStateManager(Context context, CameraPreview mCameraPreview, CameraPicture mCameraPicture, CameraSession cameraSession) {
+    private String cameraId;
+
+
+    public CameraStateManager(Context context, final CameraPreview mCameraPreview, final CameraPicture mCameraPicture, CameraSession cameraSession) {
         this.mCameraPreview = mCameraPreview;
         this.mCameraPicture = mCameraPicture;
         this.mCameraSession = cameraSession;
         this.context = context;
+        this.opened = false;
     }
 
     public void startCamera(String cameraId) throws CameraManagerException {
         if(cameraId == null) {
             throw new RuntimeException("A cameraId must be selected");
         }
+        this.cameraId = cameraId;
         startBackgroundThread();
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                throw new RuntimeException("Time out waiting to lock camera opening.");
+                throw new CameraManagerException(LOCKED);
             }
-            manager.openCamera(cameraId, this, mBackgroundHandler);
-//            manager.registerTorchCallback();
+            manager.openCamera(cameraId, this, null);
         } catch (CameraAccessException e) {
             Log.e(TAG, "CANNOT_OPEN_CAMERA: ", e);
             throw new CameraManagerException(CameraManagerException.Codes.CANNOT_OPEN_CAMERA, e);
@@ -72,23 +82,40 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         }
     }
 
+    public void switchCamera(String cameraId, CameraCharacteristicsModel characteristicsModel) throws CameraManagerException {
+        if(this.cameraId.equals(cameraId)) {
+            return;
+        }
+        stopCamera();
+        mCameraPreview.setCameraCharacteristics(characteristicsModel);
+        startCamera(cameraId);
+        mCameraPicture.refresh();
+        Log.d(TAG, "switchCamera: finished");
+    }
+
     public void stopCamera() {
-        Log.d(TAG, "stopCamera: ");
         try {
-            mCameraOpenCloseLock.acquire();
-            if(mCameraPreview != null)
+            if(mCameraSession != null) {
+                mCameraSession.getCaptureSession().stopRepeating();
+                mCameraSession.getCaptureSession().abortCaptures();
+                mCameraSession.getCaptureSession().close();
+            }
+            if(mCameraPicture != null) {
+                mCameraPicture.dispose();
+            }
+            if(mCameraPreview != null) {
                 mCameraPreview.dispose();
+            }
             if (mCameraDevice != null) {
                 mCameraDevice.close();
                 mCameraDevice = null;
             }
             releaseSemaphore();
-            stopBackgroundThread();
-            Log.d(TAG, "... closed successfully");
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
         } finally {
             mCameraOpenCloseLock.release();
+            this.opened = false;
         }
     }
 
@@ -99,6 +126,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
 
     @Override
     public void onOpened(@NonNull CameraDevice camera) {
+        this.opened = true;
         this.mCameraDevice = camera;
         // init cameraPreview
         try {
@@ -125,11 +153,18 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         return mCameraDevice;
     }
 
+    public void dispose() {
+        stopBackgroundThread();
+    }
+
     // -----------------------------------------
     // Manage thread
     // -----------------------------------------
 
     private void startBackgroundThread() {
+        if(mBackgroundThread != null) {
+            return;
+        }
         mBackgroundThread = new HandlerThread("CameraBackground");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
