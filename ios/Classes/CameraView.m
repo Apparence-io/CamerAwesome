@@ -155,6 +155,23 @@
     _cameraSensor = sensor;
 }
 
+- (CGFloat)getMaxZoom {
+    return _captureDevice.activeFormat.videoMaxZoomFactor;
+}
+
+- (void)setZoom:(float)value {
+    CGFloat maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
+    CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
+    
+    NSError *error;
+    if ([_captureDevice lockForConfiguration:&error]) {
+        _captureDevice.videoZoomFactor = scaledZoom;
+        [_captureDevice unlockForConfiguration];
+    } else {
+        NSLog(@"error: %@", error);
+    }
+}
+
 - (void)setFlashMode:(CameraFlashMode)flashMode {
     if (![_captureDevice hasFlash]) {
         _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);

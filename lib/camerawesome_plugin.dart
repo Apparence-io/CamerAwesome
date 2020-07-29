@@ -100,7 +100,6 @@ class CamerawesomePlugin {
   static startAutoFocus() => _channel.invokeMethod("handleAutoFocus");
 
   /// calls zoom from Android / iOS --
-  /// TODO iOS side
   static Future<void> setZoom(num zoom) => _channel.invokeMethod('setZoom', <String, dynamic> {
     'zoom': zoom,
   });
