@@ -41,7 +41,10 @@ class CameraAwesome extends StatefulWidget {
   /// change flash mode
   final ValueNotifier<CameraFlashes> switchFlashMode;
 
-  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.sensor = Sensors.BACK});
+  /// on photo taken
+  final ValueNotifier<void> photoTaken;
+
+  CameraAwesome({this.testMode = false, this.selectSize, this.onPermissionsResult, this.photoTaken, this.onCameraStarted, this.switchFlashMode, this.sensor = Sensors.BACK});
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();

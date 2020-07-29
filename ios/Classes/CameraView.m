@@ -24,7 +24,8 @@
     [_captureVideoOutput setAlwaysDiscardsLateVideoFrames:YES];
     [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
 
-    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports output:_captureVideoOutput];
+    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
+                                                                output:_captureVideoOutput];
     [self updatePreviewOrientation];
     
     _captureOutput = [[AVCaptureMetadataOutput alloc] init];
@@ -35,7 +36,7 @@
 
     _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        
+    
     // By default enable auto flash mode
     _flashMode = AVCaptureFlashModeAuto;
 
@@ -116,6 +117,8 @@
     [_captureSession beginConfiguration];
     AVCaptureDeviceInput *oldInput = [_captureSession.inputs firstObject];
     [_captureSession removeInput:oldInput];
+    [_captureSession removeOutput:_capturePhotoOutput];
+    [_captureSession removeConnection:_captureConnection];
     
     AVCaptureDevice *newDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:newDevice error:&error];
@@ -124,12 +127,19 @@
     } else {
         [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
     }
-    [_captureConnection ]
     
-    [_captureSession addInput:input];
+    [_captureSession addInputWithNoConnections:input];
     
+    _captureConnection = [AVCaptureConnection connectionWithInputPorts:input.ports
+                                                                output:_captureVideoOutput];
+    
+    [_captureSession addConnection:_captureConnection];
+    _capturePhotoOutput = [AVCapturePhotoOutput new];
+    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+    [_captureSession addOutput:_capturePhotoOutput];
     // TODO: Fix preview for front device, the connection need to be updated
     [_captureSession commitConfiguration];
+    [self updatePreviewOrientation];
     
     _cameraSensor = sensor;
 }
