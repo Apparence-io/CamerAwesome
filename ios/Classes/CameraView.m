@@ -14,48 +14,24 @@
     
     _result = result;
     
+    // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
-    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
     
-    NSError *localError = nil;
-    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&localError];
+    // Creating video output
     _captureVideoOutput = [AVCaptureVideoDataOutput new];
     _captureVideoOutput.videoSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
     [_captureVideoOutput setAlwaysDiscardsLateVideoFrames:YES];
     [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-
-    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
-                                                                output:_captureVideoOutput];
-    [self updatePreviewOrientation];
-    
-    _captureOutput = [[AVCaptureMetadataOutput alloc] init];
-    _captureOutput.metadataObjectTypes = _captureOutput.availableMetadataObjectTypes;
-    [_captureSession addInputWithNoConnections:_captureVideoInput];
     [_captureSession addOutputWithNoConnections:_captureVideoOutput];
-    [_captureSession addOutput:_captureOutput];
 
-    _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
-    _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    // Creating input device
+    [self initCamera:sensor];
     
     // By default enable auto flash mode
     _flashMode = AVCaptureFlashModeAuto;
-
-    [_captureOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
-    [_captureOutput setMetadataObjectTypes:@[AVMetadataObjectTypeAztecCode,
-                                             AVMetadataObjectTypeCode39Code,
-                                             AVMetadataObjectTypeCode93Code,
-                                             AVMetadataObjectTypeCode128Code,
-                                             AVMetadataObjectTypeDataMatrixCode,
-                                             AVMetadataObjectTypeEAN8Code,
-                                             AVMetadataObjectTypeEAN13Code,
-                                             AVMetadataObjectTypeITF14Code,
-                                             AVMetadataObjectTypePDF417Code,
-                                             AVMetadataObjectTypeQRCode,
-                                             AVMetadataObjectTypeUPCECode]];
-    [_captureSession addConnection:_captureConnection];
-    _capturePhotoOutput = [AVCapturePhotoOutput new];
-    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
-    [_captureSession addOutput:_capturePhotoOutput];
+    
+    _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
+    _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     
     _cameraSensor = sensor;
     
@@ -63,7 +39,40 @@
                                              selector:@selector(orientationChanged:)
                                                  name:UIDeviceOrientationDidChangeNotification
                                                object:nil];
+    
+    [self updatePreviewOrientation];
+    
     return self;
+}
+
+- (void)initCamera:(CameraSensor)sensor {
+    NSError *error;
+    AVCaptureDevice *newDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
+    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:newDevice error:&error];
+    
+    if (error != nil) {
+        _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
+    }
+    
+    // Set preset
+    if (sensor == Back) {
+        [self setPreviewSize:_previewSize];
+    } else {
+        [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
+    }
+    
+    // Create connection
+    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
+                                                                output:_captureVideoOutput];
+    
+    // Attaching to session
+    [_captureSession addInputWithNoConnections:_captureVideoInput];
+    [_captureSession addConnection:_captureConnection];
+    
+    // Creating photo output
+    _capturePhotoOutput = [AVCapturePhotoOutput new];
+    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+    [_captureSession addOutput:_capturePhotoOutput];
 }
 
 - (void)orientationChanged:(NSNotification *)notification {
@@ -110,35 +119,20 @@
 }
 
 - (void)flipCamera {
-    NSError *error;
-    
     CameraSensor sensor = (_cameraSensor == Front) ? Back : Front;
     
+    // First remove all input & output
     [_captureSession beginConfiguration];
     AVCaptureDeviceInput *oldInput = [_captureSession.inputs firstObject];
     [_captureSession removeInput:oldInput];
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
     
-    AVCaptureDevice *newDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
-    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:newDevice error:&error];
-    if (sensor == Back) {
-        [self setPreviewSize:_previewSize];
-    } else {
-        [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
-    }
-    
-    [_captureSession addInputWithNoConnections:input];
-    
-    _captureConnection = [AVCaptureConnection connectionWithInputPorts:input.ports
-                                                                output:_captureVideoOutput];
-    
-    [_captureSession addConnection:_captureConnection];
-    _capturePhotoOutput = [AVCapturePhotoOutput new];
-    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
-    [_captureSession addOutput:_capturePhotoOutput];
-    // TODO: Fix preview for front device, the connection need to be updated
+    // Init the camera with the selected sensor
+    [self initCamera:sensor];
+
     [_captureSession commitConfiguration];
+    
     [self updatePreviewOrientation];
     
     _cameraSensor = sensor;

@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CameraView : NSObject<FlutterTexture, AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
-@property(readonly, nonatomic) AVCaptureMetadataOutput *captureOutput;
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
 @property(readonly, nonatomic) AVCaptureInput *captureVideoInput;
