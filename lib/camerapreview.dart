@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome/picture_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -90,7 +91,14 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     if(widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
+
+    // Init orientation stream
+    CamerawesomePlugin.getNativeOrientation()
+      .listen(_orientationChanged);
+
+    // Init camera plugin method
     await CamerawesomePlugin.init(widget.sensor.value);
+    
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
     selectedSize = camerasAvailableSizes[0];
     await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
@@ -166,6 +174,10 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       await CamerawesomePlugin.setSensor(widget.sensor.value);
       setState(() {});
     });
+  }
+
+  _orientationChanged(CameraOrientations orientation) {
+    print(orientation);
   }
 }
 

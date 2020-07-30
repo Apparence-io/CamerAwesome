@@ -9,10 +9,12 @@
 
 @implementation CameraView
 
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor andResult:(nonnull FlutterResult)result {
+- (instancetype)initWithCameraSensor:(CameraSensor)sensor result:(nonnull FlutterResult)result messenger:(NSObject<FlutterBinaryMessenger> *)messenger event:(FlutterEventSink)eventSink {
     self = [super init];
     
     _result = result;
+    _messenger = messenger;
+    _eventSink = eventSink;
     
     // Creating motion detection
     _motionManager = [[CMMotionManager alloc] init];
@@ -49,13 +51,37 @@
     // TODO: Add weakself
     [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
                                         withHandler:^(CMDeviceMotion *data, NSError *error) {
+        UIDeviceOrientation newOrientation;
         if(fabs(data.gravity.x) > fabs(data.gravity.y)) {
             // Landscape
-            self->_deviceOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
+            newOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
         } else {
             // Portrait
-            self->_deviceOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
-        }}];
+            newOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
+        }
+        if (self->_deviceOrientation != newOrientation) {
+            self->_deviceOrientation = newOrientation;
+            
+            NSString *orientationString;
+            switch (newOrientation) {
+                case UIDeviceOrientationLandscapeLeft:
+                    orientationString = @"LANDSCAPE_LEFT";
+                    break;
+                case UIDeviceOrientationLandscapeRight:
+                    orientationString = @"LANDSCAPE_RIGHT";
+                    break;
+                case UIDeviceOrientationPortrait:
+                    orientationString = @"PORTRAIT_UP";
+                    break;
+                case UIDeviceOrientationPortraitUpsideDown:
+                    orientationString = @"PORTRAIT_DOWN";
+                    break;
+                default:
+                    break;
+            }
+            self->_eventSink(orientationString);
+        }
+    }];
 }
 
 - (void)initCamera:(CameraSensor)sensor {
