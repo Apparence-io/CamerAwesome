@@ -48,7 +48,7 @@ class CamerawesomePlugin {
   static Future<bool> focus() =>_channel.invokeMethod("focus");
 
   // TODO
-//  static Future<void> dispose() =>_channel.invokeMethod("dispose");
+  //  static Future<void> dispose() =>_channel.invokeMethod("dispose");
 
   static Future<void> flipCamera() =>_channel.invokeMethod("flipCamera");
 
@@ -111,6 +111,7 @@ class CamerawesomePlugin {
     'sensor': sensor.toString().split(".")[1],
   });
 
+  /// returns the max zoom available on device
   static Future<num> getMaxZoom() =>_channel.invokeMethod("getMaxZoom");
 
   // ---------------------------------------------------

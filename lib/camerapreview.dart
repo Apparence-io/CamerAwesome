@@ -23,7 +23,6 @@ typedef OnCameraStarted = void Function();
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
 /// TODO - handle refused permissions
-/// TODO - try take photo with zoom
 class CameraAwesome extends StatefulWidget {
 
   /// true to wrap texture
