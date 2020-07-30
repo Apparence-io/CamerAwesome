@@ -59,12 +59,26 @@
         [self _handleFlashMode:call result:result];
     } else if ([@"flipCamera" isEqualToString:call.method]) {
         [self _handleFlipCamera:call result:result];
+    } else if ([@"setZoom" isEqualToString:call.method]) {
+        [self _handleSetZoom:call result:result];
+    } else if ([@"getMaxZoom" isEqualToString:call.method]) {
+        [self _handleGetMaxZoom:call result:result];
     } else if ([@"dispose" isEqualToString:call.method]) {
         [self _handleDispose:call result:result];
     } else {
         result(FlutterMethodNotImplemented);
         return;
     }
+}
+
+- (void)_handleSetZoom:(FlutterMethodCall*)call result:(FlutterResult)result {
+    float value = [call.arguments[@"zoom"] floatValue];
+    
+    [_camera setZoom:value];
+}
+
+- (NSInteger)_handleGetMaxZoom:(FlutterMethodCall*)call result:(FlutterResult)result {
+    return [_camera getMaxZoom];
 }
 
 - (void)_handleDispose:(FlutterMethodCall*)call result:(FlutterResult)result {

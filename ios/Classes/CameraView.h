@@ -47,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dispose;
 - (void)setResult:(nonnull FlutterResult)result;
 - (void)flipCamera;
+- (void)setZoom:(float)value;
+- (CGFloat)getMaxZoom;
 
 @end
 
