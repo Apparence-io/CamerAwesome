@@ -303,19 +303,10 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   }
 
   private void _handleTakePhoto(final MethodCall call, final Result result) {
-    if(!call.hasArgument("width") || !call.hasArgument("height")) {
-      result.error("NO_SIZE_SET", "width and height must be set", "");
-      return;
-    }
     if(!call.hasArgument("path")) {
       result.error("PATH_NOT_SET", "a file path must be set", "");
       return;
     }
-    @SuppressWarnings("ConstantConditions")
-    int width = call.argument("width");
-    @SuppressWarnings("ConstantConditions")
-    int height = call.argument("height");
-    Size size = new Size(width, height);
     String path = call.argument("path");
     try {
       mCameraPicture.takePicture(

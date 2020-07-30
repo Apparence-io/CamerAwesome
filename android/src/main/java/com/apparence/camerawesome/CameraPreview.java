@@ -65,6 +65,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private SurfaceTexture surfaceTexture;
 
+    private int orientation;
+
 
     public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel cameraCharacteristics, final SurfaceFactory surfaceFactory) {
         this.autoFocus = true;
@@ -72,6 +74,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         this.mCameraSession = cameraSession;
         this.cameraCharacteristics = cameraCharacteristics;
         this.surfaceFactory = surfaceFactory;
+        this.orientation = 270;
     }
     
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
@@ -148,6 +151,11 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         refreshConfiguration();
     }
 
+    public void setOrientation(int orientation) {
+        this.orientation = orientation;
+        this.refreshConfiguration();
+    }
+
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------
@@ -156,7 +164,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         if(mPreviewRequestBuilder == null) {
             return;
         }
-        mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 270);
+        mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         switch (flashMode) {
             case AUTO:
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
@@ -180,7 +188,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             return;
         }
         try {
-            Log.d(TAG, "### refreshConfiguration: called");
             mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
         } catch (CameraAccessException | IllegalStateException | IllegalArgumentException e) {
             Log.e(TAG, "refreshConfiguration", e);

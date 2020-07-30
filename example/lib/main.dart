@@ -21,23 +21,21 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
 
-  List<Size> camerasSizes;
-
-  Size bestSize;
-
-  double scale;
-
   double bestSizeRatio;
 
   String _lastPhotoPath;
 
   bool focus = false;
 
+  bool fullscreen = true;
+
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
   ValueNotifier<double> zoomNotifier = ValueNotifier(0);
 
   ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
+
+  PictureController _pictureController = new PictureController();
 
   @override
   void initState() {
@@ -46,36 +44,17 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // recalculate for rotation handled here
-    if(bestSize != null) {
-      final size = MediaQuery.of(context).size;
-      bestSizeRatio = bestSize.height / bestSize.width;
-      scale = bestSizeRatio / size.aspectRatio;
-      if (bestSizeRatio < size.aspectRatio) {
-        scale = 1 / scale;
-      }
-    }
-
     return Scaffold(
         body: Stack(
           children: <Widget>[
+            fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
             Positioned(
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0,
-              child: Container(color: Colors.lightGreen,)
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0,
-              child: CameraAwesome(
-                sensor: sensor,
-                switchFlashMode: switchFlash,
-                zoom: zoomNotifier,
-              )
+              bottom: 64,
+              left: 16,
+              child: IconButton(
+                icon: Icon(fullscreen ? Icons.fullscreen_exit : Icons.fullscreen, color: Colors.white),
+                onPressed: () => setState(() => fullscreen = !fullscreen),
+              ),
             ),
             if(_lastPhotoPath != null)
               Positioned(
@@ -94,7 +73,7 @@ class _MyAppState extends State<MyApp> {
                   final Directory extDir = await getTemporaryDirectory();
                   var testDir = await Directory('${extDir.path}/test').create(recursive: true);
                   final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                  await CamerawesomePlugin.takePhoto(filePath);
+                  await _pictureController.takePicture(filePath);
                   setState(() {
                     _lastPhotoPath = filePath;
                   });
@@ -167,35 +146,41 @@ class _MyAppState extends State<MyApp> {
       );
   }
 
-
-  _takePhoto() {
-
+  Widget buildFullscreenCamera() {
+    return Positioned(
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            child: CameraAwesome(
+              sensor: sensor,
+              switchFlashMode: switchFlash,
+              zoom: zoomNotifier,
+            )
+          );
   }
 
-  _selectBestSize() {
-    int screenWidth = MediaQuery.of(context).size.width.toInt();
-    int screenHeight = MediaQuery.of(context).size.height.toInt();
-    double screenRatio = screenWidth / screenHeight;
-
-    camerasSizes.sort((a,b) => a.width > b.width ? -1 : 1);
-//    camerasSizes.forEach((element) {print("- ${element.width}/${element.height}");});
-    bestSize = camerasSizes.first;
-    // TODO select by ratio
-    // TODO or use predefined from Android
-    print("----------------------------------");
-    print("screen screenWidth: $screenWidth");
-    print("screen screenHeight: $screenHeight");
-    print("screen ratio: $screenRatio");
-    print("bestSize: ${bestSize.width}/${bestSize.height} => ${bestSize.width / bestSize.height}");
-    print("----------------------------------");
-
-    final size = MediaQuery.of(context).size;
-    bestSizeRatio = bestSize.height / bestSize.width;
-    scale = bestSizeRatio / size.aspectRatio;
-    if (bestSizeRatio < size.aspectRatio) {
-      scale = 1 / scale;
-    }
-    print("rescaling : $scale");
+  Widget buildSizedScreenCamera() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      child: Container(
+        color: Colors.black,
+        child: Center(
+          child: FractionallySizedBox(
+            heightFactor: 0.6,
+            child: CameraAwesome(
+              sensor: sensor,
+              switchFlashMode: switchFlash,
+              zoom: zoomNotifier,
+            ),
+          ),
+        ),
+      )
+    );
   }
+
 
 }

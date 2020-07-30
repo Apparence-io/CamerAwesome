@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/picture_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'models/flashmodes.dart';
 
@@ -45,7 +47,12 @@ class CameraAwesome extends StatefulWidget {
   /// choose between [BACK] and [FRONT]
   final ValueNotifier<Sensors> sensor;
 
-  CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.zoom,
+  /// initial orientation
+  final DeviceOrientation orientation;
+
+  CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode,
+    this.orientation = DeviceOrientation.portraitUp,
+    this.zoom,
     @required this.sensor})
     : assert(sensor != null),
       super(key: key);
@@ -68,12 +75,13 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([widget.orientation]);
     initPlatformState();
   }
 
   @override
   void dispose() { 
-    CamerawesomePlugin.dispose();
+    CamerawesomePlugin.stop();
     super.dispose();
   }
 
@@ -152,6 +160,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   }
 
   /// handle sensor changes
+  /// refresh state because we have to change TextureId
   _initSensor() {
     widget.sensor.addListener(() async {
       await CamerawesomePlugin.setSensor(widget.sensor.value);

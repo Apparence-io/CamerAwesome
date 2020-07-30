@@ -13,6 +13,7 @@ import 'models/flashmodes.dart';
 export 'sensors.dart';
 export './models/flashmodes.dart';
 export 'camerapreview.dart';
+export 'picture_controller.dart';
 
 
 // TODO - add zoom level - iOS
@@ -46,7 +47,8 @@ class CamerawesomePlugin {
 
   static Future<bool> focus() =>_channel.invokeMethod("focus");
 
-  static Future<void> dispose() =>_channel.invokeMethod("dispose");
+  // TODO
+//  static Future<void> dispose() =>_channel.invokeMethod("dispose");
 
   static Future<void> flipCamera() =>_channel.invokeMethod("flipCamera");
 
