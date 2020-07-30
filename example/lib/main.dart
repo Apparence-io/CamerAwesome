@@ -171,7 +171,7 @@ class _MyAppState extends State<MyApp> {
         child: Center(
           child: SizedBox(
             height: 200,
-            width: 200,
+            width: 400,
             child: CameraAwesome(
               sensor: sensor,
               switchFlashMode: switchFlash,

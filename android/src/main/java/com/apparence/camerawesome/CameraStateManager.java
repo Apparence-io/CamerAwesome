@@ -95,11 +95,6 @@ public class CameraStateManager extends CameraDevice.StateCallback {
 
     public void stopCamera() {
         try {
-            if(mCameraSession != null) {
-                mCameraSession.getCaptureSession().stopRepeating();
-                mCameraSession.getCaptureSession().abortCaptures();
-                mCameraSession.getCaptureSession().close();
-            }
             if(mCameraPicture != null) {
                 mCameraPicture.dispose();
             }

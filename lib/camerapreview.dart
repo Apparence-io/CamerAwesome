@@ -119,8 +119,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         if(!snapshot.hasData || !hasInit)
           return Center(child: CircularProgressIndicator());
         return _CameraPreviewWidget(
-          scale: 1,
-          ratio: selectedSize.height / selectedSize.width,
           size: selectedSize,
           textureId: snapshot.data,
         );
@@ -171,9 +169,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 ///
 class _CameraPreviewWidget extends StatelessWidget {
 
-  final double scale;
-
-  final double ratio;
 
   final Size size;
 
@@ -182,9 +177,7 @@ class _CameraPreviewWidget extends StatelessWidget {
   final bool testMode;
 
   _CameraPreviewWidget(
-      {this.scale,
-      this.ratio,
-      this.size,
+      {this.size,
       this.textureId,
       this.testMode = false});
 
@@ -192,21 +185,24 @@ class _CameraPreviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var contentSize = MediaQuery.of(context).size;
     return OrientationBuilder(
-      builder: (context, orientation) =>
-        Container(
+      builder: (context, orientation) {
+        double ratio = orientation == Orientation.portrait
+          ? size.height / size.width
+          : size.height / size.width;
+        return Container(
           color: Colors.black,
           child: Center(
             child: Transform.scale(
-              scale: _calculateScale(context, orientation),
+              scale: _calculateScale(context, ratio, orientation),
                 child: AspectRatio(
                   aspectRatio: ratio,
                   child: SizedBox(
                     height: orientation == Orientation.portrait
-                      ? contentSize.height
-                      : contentSize.width,
+                      ? size.height
+                      : size.width,
                     width: orientation == Orientation.portrait
-                      ? contentSize.width
-                      : contentSize.height,
+                      ? size.width
+                      : size.height,
                     child: testMode
                       ? Container()
                       : Texture(textureId: textureId),
@@ -214,11 +210,12 @@ class _CameraPreviewWidget extends StatelessWidget {
                 ),
             ),
           ),
-        )
+        );
+      }
     );
   }
 
-  _calculateScale(BuildContext context, Orientation orientation) {
+  _calculateScale(BuildContext context, double ratio, Orientation orientation) {
     var contentSize = MediaQuery.of(context).size;
     var scale = ratio / contentSize.aspectRatio;
     if (ratio < contentSize.aspectRatio) {
