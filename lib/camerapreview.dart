@@ -193,15 +193,13 @@ class _CameraPreviewWidget extends StatelessWidget {
     var contentSize = MediaQuery.of(context).size;
     return OrientationBuilder(
       builder: (context, orientation) =>
-        Transform.rotate(
-          angle: orientation == Orientation.portrait ? 0 : -pi / 2,
-          child: Container(
-            color: Colors.black,
-            child: Center(
-              child: Transform.scale(
-                scale: _calculateScale(context, orientation),
+        Container(
+          color: Colors.black,
+          child: Center(
+            child: Transform.scale(
+              scale: _calculateScale(context, orientation),
                 child: AspectRatio(
-                  aspectRatio: orientation == Orientation.portrait ? ratio : ratio,
+                  aspectRatio: ratio,
                   child: SizedBox(
                     height: orientation == Orientation.portrait
                       ? contentSize.height
@@ -214,7 +212,6 @@ class _CameraPreviewWidget extends StatelessWidget {
                       : Texture(textureId: textureId),
                   ),
                 ),
-              ),
             ),
           ),
         )

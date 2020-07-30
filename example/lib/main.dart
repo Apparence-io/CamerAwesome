@@ -169,8 +169,9 @@ class _MyAppState extends State<MyApp> {
       child: Container(
         color: Colors.black,
         child: Center(
-          child: FractionallySizedBox(
-            heightFactor: 0.6,
+          child: SizedBox(
+            height: 200,
+            width: 200,
             child: CameraAwesome(
               sensor: sensor,
               switchFlashMode: switchFlash,
