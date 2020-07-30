@@ -23,11 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
+@property(readonly, nonatomic) CMMotionManager *motionManager;
 @property(readonly, nonatomic) AVCaptureInput *captureVideoInput;
 @property(readonly, nonatomic) AVCaptureConnection *captureConnection;
 @property(readonly, nonatomic) AVCaptureVideoDataOutput *captureVideoOutput;
 @property(readonly, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
 @property(readonly, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
+@property(readonly, nonatomic) UIDeviceOrientation deviceOrientation;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) CameraSensor cameraSensor;

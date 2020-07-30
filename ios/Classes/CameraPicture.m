@@ -58,10 +58,10 @@
             return UIImageOrientationRight;
             break;
         case UIDeviceOrientationLandscapeRight:
-            return (_sensor == Back) ? UIImageOrientationDown : UIImageOrientationUp;
+            return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
             break;
         case UIDeviceOrientationLandscapeLeft:
-            return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
+            return (_sensor == Back) ? UIImageOrientationDown : UIImageOrientationUp;
             break;
         default:
             return UIImageOrientationLeft;

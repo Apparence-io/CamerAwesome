@@ -14,6 +14,11 @@
     
     _result = result;
     
+    // Creating motion detection
+    _motionManager = [[CMMotionManager alloc] init];
+    _motionManager.deviceMotionUpdateInterval = 0.2f;
+    [self startMyMotionDetect];
+
     // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
     
@@ -37,14 +42,20 @@
     
     _cameraSensor = sensor;
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(orientationChanged:)
-                                                 name:UIDeviceOrientationDidChangeNotification
-                                               object:nil];
-    
-    [self updatePreviewOrientation];
-    
     return self;
+}
+
+- (void)startMyMotionDetect {
+    // TODO: Add weakself
+    [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
+                                        withHandler:^(CMDeviceMotion *data, NSError *error) {
+        if(fabs(data.gravity.x) > fabs(data.gravity.y)) {
+            // Landscape
+            self->_deviceOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
+        } else {
+            // Portrait
+            self->_deviceOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
+        }}];
 }
 
 - (void)initCamera:(CameraSensor)sensor {
@@ -80,33 +91,7 @@
     // Mirror the preview only on portrait mode
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
     [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
-}
-
-- (void)orientationChanged:(NSNotification *)notification {
-    [self updatePreviewOrientation];
-}
-
-- (void)updatePreviewOrientation {
-    UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
-
-    AVCaptureVideoOrientation previewOrientation;
-    if (_cameraSensor == Back) {
-        if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-            previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
-        } else {
-            previewOrientation = AVCaptureVideoOrientationPortrait;
-        }
-    } else {
-        if (deviceOrientation == UIDeviceOrientationLandscapeRight) {
-            previewOrientation = AVCaptureVideoOrientationPortraitUpsideDown;
-        } else if (deviceOrientation == UIDeviceOrientationLandscapeLeft) {
-            previewOrientation = AVCaptureVideoOrientationPortrait;
-        } else {
-            previewOrientation = AVCaptureVideoOrientationPortrait;
-        }
-    }
-    
-    [_captureConnection setVideoOrientation:previewOrientation];
+    [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
 }
 
 - (void)setResult:(nonnull FlutterResult)result {
@@ -115,10 +100,6 @@
 
 - (void)dispose {
     [self stop];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIDeviceOrientationDidChangeNotification
-                                                  object:nil];
 }
 
 - (void)setPreviewSize:(CGSize)previewSize {
@@ -149,8 +130,6 @@
     [self initCamera:sensor];
 
     [_captureSession commitConfiguration];
-    
-    [self updatePreviewOrientation];
     
     _cameraSensor = sensor;
 }
@@ -240,13 +219,10 @@
 
 /// Take the picture into the given path
 - (void)takePictureAtPath:(NSString *)path {
-
-    // Get device orientation from device
-    UIDeviceOrientation deviceOrientation = [[UIDevice currentDevice] orientation];
     
     // Instanciate camera picture obj
     CameraPicture *cameraPicture = [[CameraPicture alloc] initWithPath:path
-                                                           orientation:deviceOrientation
+                                                           orientation:_deviceOrientation
                                                                 sensor:_cameraSensor
                                                                 result:_result
                                                               callback:^{
