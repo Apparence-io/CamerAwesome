@@ -49,8 +49,12 @@ class CameraAwesome extends StatefulWidget {
   /// initial orientation
   final DeviceOrientation orientation;
 
+  /// whether camera preview must be as big as it needs or cropped to fill with. false by default
+  final bool fitted;
+
   CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode,
     this.orientation = DeviceOrientation.portraitUp,
+    this.fitted = false,
     this.zoom,
     @required this.sensor})
     : assert(sensor != null),
@@ -91,13 +95,16 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     }
     await CamerawesomePlugin.init(widget.sensor.value);
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
-    selectedSize = camerasAvailableSizes[0];
-    await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
-    await CamerawesomePlugin.setPhotoSize(selectedSize.width.toInt(), selectedSize.height.toInt());
     if(widget.selectSize != null) {
       selectedSize = widget.selectSize(camerasAvailableSizes);
       assert(selectedSize !=null, "A size from the list must be selected");
+    } else {
+      selectedSize = camerasAvailableSizes[0];
     }
+    await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
+    await CamerawesomePlugin.setPhotoSize(selectedSize.width.toInt(), selectedSize.height.toInt());
+    // android has a limits on preview size and fallback to 1920x1080 if preview is too big
+    selectedSize = await CamerawesomePlugin.getEffectivPreviewSize();
     await CamerawesomePlugin.start();
     started =  true;
     if(widget.onCameraStarted != null) {
@@ -120,6 +127,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
           return Center(child: CircularProgressIndicator());
         return _CameraPreviewWidget(
           size: selectedSize,
+          fitted: widget.fitted,
           textureId: snapshot.data,
         );
       }
@@ -169,50 +177,70 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 ///
 class _CameraPreviewWidget extends StatelessWidget {
 
-
   final Size size;
 
   final int textureId;
+
+  final bool fitted;
 
   final bool testMode;
 
   _CameraPreviewWidget(
       {this.size,
       this.textureId,
+      this.fitted = false,
       this.testMode = false});
 
   @override
   Widget build(BuildContext context) {
-    var contentSize = MediaQuery.of(context).size;
     return OrientationBuilder(
       builder: (context, orientation) {
-        double ratio = orientation == Orientation.portrait
-          ? size.height / size.width
-          : size.height / size.width;
-        return Container(
-          color: Colors.black,
-          child: Center(
-            child: Transform.scale(
-              scale: _calculateScale(context, ratio, orientation),
-                child: AspectRatio(
-                  aspectRatio: ratio,
-                  child: SizedBox(
-                    height: orientation == Orientation.portrait
-                      ? size.height
-                      : size.width,
-                    width: orientation == Orientation.portrait
-                      ? size.width
-                      : size.height,
-                    child: testMode
-                      ? Container()
-                      : Texture(textureId: textureId),
-                  ),
-                ),
-            ),
-          ),
-        );
+        double ratio = size.height / size.width;
+        return fitted ? buildFittedBox(orientation) : buildFull(context, ratio, orientation);
       }
     );
+  }
+
+  Widget buildFull(BuildContext context, double ratio, Orientation orientation) {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Transform.scale(
+          scale: _calculateScale(context, ratio, orientation),
+          child: AspectRatio(
+            aspectRatio: ratio,
+            child: SizedBox(
+              height: orientation == Orientation.portrait
+                ? size.height
+                : size.width,
+              width: orientation == Orientation.portrait
+                ? size.width
+                : size.height,
+              child: testMode
+                ? Container()
+                : Texture(textureId: textureId),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildFittedBox(Orientation orientation) {
+    return FittedBox(
+        fit: BoxFit.fitWidth,
+        child: SizedBox(
+          height: orientation == Orientation.portrait
+            ? size.height
+            : size.width,
+          width: orientation == Orientation.portrait
+            ? size.width
+            : size.height,
+          child: testMode
+            ? Container()
+            : Texture(textureId: textureId),
+        ),
+      );
   }
 
   _calculateScale(BuildContext context, double ratio, Orientation orientation) {
@@ -223,4 +251,6 @@ class _CameraPreviewWidget extends StatelessWidget {
     }
     return scale;
   }
+
+
 }

@@ -78,6 +78,15 @@ class CamerawesomePlugin {
     });
   }
 
+  /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
+  /// So to prevent having different ratio we get the real preview Size directly from nativ side
+  static Future<Size> getEffectivPreviewSize() async {
+    Map<dynamic, dynamic> sizeMap = await _channel.invokeMethod("getEffectivPreviewSize");
+    int width = sizeMap["width"];
+    int height = sizeMap["height"];
+    return Size(width.toDouble(), height.toDouble());
+  }
+
   /// Just for android
   /// you can set a different size for preview and for photo
   static Future<void> setPhotoSize(int width, int height) {

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -27,7 +28,7 @@ class _MyAppState extends State<MyApp> {
 
   bool focus = false;
 
-  bool fullscreen = true;
+  bool fullscreen = false;
 
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
@@ -152,10 +153,12 @@ class _MyAppState extends State<MyApp> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: CameraAwesome(
-              sensor: sensor,
-              switchFlashMode: switchFlash,
-              zoom: zoomNotifier,
+            child: Center(
+              child: CameraAwesome(
+                sensor: sensor,
+                switchFlashMode: switchFlash,
+                zoom: zoomNotifier,
+              ),
             )
           );
   }
@@ -169,11 +172,12 @@ class _MyAppState extends State<MyApp> {
       child: Container(
         color: Colors.black,
         child: Center(
-          child: SizedBox(
-            height: 200,
-            width: 400,
+          child: Container(
+            height: 300,
+            width: MediaQuery.of(context).size.width,
             child: CameraAwesome(
               sensor: sensor,
+              fitted: true,
               switchFlashMode: switchFlash,
               zoom: zoomNotifier,
             ),
