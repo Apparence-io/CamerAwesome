@@ -20,13 +20,15 @@ typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 /// used to send notification about camera has actually started
 typedef OnCameraStarted = void Function();
 
+/// used to send notification when the device rotate
+typedef OnOrientationChanged = void Function(CameraOrientations);
+
 /// -------------------------------------------------
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
 /// TODO - handle refused permissions
 /// TODO - try take photo with zoom
 class CameraAwesome extends StatefulWidget {
-
   /// true to wrap texture
   final bool testMode;
 
@@ -38,6 +40,9 @@ class CameraAwesome extends StatefulWidget {
 
   /// notify client that camera started
   final OnCameraStarted onCameraStarted;
+
+  /// notify client that orientation changed
+  final OnOrientationChanged onOrientationChanged;
 
   /// change flash mode
   final ValueNotifier<CameraFlashes> switchFlashMode;
@@ -51,20 +56,25 @@ class CameraAwesome extends StatefulWidget {
   /// initial orientation
   final DeviceOrientation orientation;
 
-  CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode,
-    this.orientation = DeviceOrientation.portraitUp,
-    this.zoom,
-    @required this.sensor})
-    : assert(sensor != null),
-      super(key: key);
-
+  CameraAwesome(
+      {Key key,
+      this.testMode = false,
+      this.selectSize,
+      this.onPermissionsResult,
+      this.onCameraStarted,
+      this.onOrientationChanged,
+      this.switchFlashMode,
+      this.orientation = DeviceOrientation.portraitUp,
+      this.zoom,
+      @required this.sensor})
+      : assert(sensor != null),
+        super(key: key);
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
 }
 
 class _CameraAwesomeState extends State<CameraAwesome> {
-
   List<Size> camerasAvailableSizes;
 
   Size selectedSize;
@@ -81,35 +91,36 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   }
 
   @override
-  void dispose() { 
+  void dispose() {
     CamerawesomePlugin.stop();
     super.dispose();
   }
 
   initPlatformState() async {
     hasPermissions = await CamerawesomePlugin.checkPermissions();
-    if(widget.onPermissionsResult != null) {
+    if (widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
 
     // Init orientation stream
-    CamerawesomePlugin.getNativeOrientation()
-      .listen(_orientationChanged);
+    CamerawesomePlugin.getNativeOrientation().listen(_orientationChanged);
 
     // Init camera plugin method
     await CamerawesomePlugin.init(widget.sensor.value);
-    
+
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
     selectedSize = camerasAvailableSizes[0];
-    await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
-    await CamerawesomePlugin.setPhotoSize(selectedSize.width.toInt(), selectedSize.height.toInt());
-    if(widget.selectSize != null) {
+    await CamerawesomePlugin.setPreviewSize(
+        selectedSize.width.toInt(), selectedSize.height.toInt());
+    await CamerawesomePlugin.setPhotoSize(
+        selectedSize.width.toInt(), selectedSize.height.toInt());
+    if (widget.selectSize != null) {
       selectedSize = widget.selectSize(camerasAvailableSizes);
-      assert(selectedSize !=null, "A size from the list must be selected");
+      assert(selectedSize != null, "A size from the list must be selected");
     }
     await CamerawesomePlugin.start();
-    started =  true;
-    if(widget.onCameraStarted != null) {
+    started = true;
+    if (widget.onCameraStarted != null) {
       widget.onCameraStarted();
     }
     _initFlashModeSwitcher();
@@ -121,33 +132,32 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: CamerawesomePlugin.getPreviewTexture(),
-      builder: (context, snapshot) {
-        if(!hasPermissions)
-          return Container();
-        if(!snapshot.hasData || !hasInit)
-          return Center(child: CircularProgressIndicator());
-        return _CameraPreviewWidget(
-          scale: 1,
-          ratio: selectedSize.height / selectedSize.width,
-          size: selectedSize,
-          textureId: snapshot.data,
-        );
-      }
-    );
+        future: CamerawesomePlugin.getPreviewTexture(),
+        builder: (context, snapshot) {
+          if (!hasPermissions) return Container();
+          if (!snapshot.hasData || !hasInit)
+            return Center(child: CircularProgressIndicator());
+          return _CameraPreviewWidget(
+            scale: 1,
+            ratio: selectedSize.height / selectedSize.width,
+            size: selectedSize,
+            textureId: snapshot.data,
+          );
+        });
   }
 
-  bool get hasInit => selectedSize != null
-    && camerasAvailableSizes != null
-    && camerasAvailableSizes.length > 0
-    && started;
+  bool get hasInit =>
+      selectedSize != null &&
+      camerasAvailableSizes != null &&
+      camerasAvailableSizes.length > 0 &&
+      started;
 
   /// inits the Flash mode switcher using [ValueNotifier]
   /// Each time user call to switch flashMode we send a call to iOS or Android Plugins
   _initFlashModeSwitcher() {
-    if(widget.switchFlashMode != null) {
+    if (widget.switchFlashMode != null) {
       widget.switchFlashMode.addListener(() async {
-        if(widget.switchFlashMode.value != null && started) {
+        if (widget.switchFlashMode.value != null && started) {
           await CamerawesomePlugin.setFlashMode(widget.switchFlashMode.value);
         }
       });
@@ -157,9 +167,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   /// handle zoom notifier
   /// Zoom value must be between 0 and 1
   _initZoom() {
-    if(widget.zoom != null) {
+    if (widget.zoom != null) {
       widget.zoom.addListener(() {
-        if(widget.zoom.value < 0 || widget.zoom.value > 1) {
+        if (widget.zoom.value < 0 || widget.zoom.value > 1) {
           throw "Zoom value must be between 0 and 1";
         }
         CamerawesomePlugin.setZoom(widget.zoom.value);
@@ -177,13 +187,14 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   }
 
   _orientationChanged(CameraOrientations orientation) {
-    print(orientation);
+    if (widget.onOrientationChanged != null) {
+      widget.onOrientationChanged(orientation);
+    }
   }
 }
 
 ///
 class _CameraPreviewWidget extends StatelessWidget {
-
   final double scale;
 
   final double ratio;
@@ -205,33 +216,32 @@ class _CameraPreviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var contentSize = MediaQuery.of(context).size;
     return OrientationBuilder(
-      builder: (context, orientation) =>
-        Transform.rotate(
-          angle: orientation == Orientation.portrait ? 0 : -pi / 2,
-          child: Container(
-            color: Colors.black,
-            child: Center(
-              child: Transform.scale(
-                scale: _calculateScale(context, orientation),
-                child: AspectRatio(
-                  aspectRatio: orientation == Orientation.portrait ? ratio : ratio,
-                  child: SizedBox(
-                    height: orientation == Orientation.portrait
-                      ? contentSize.height
-                      : contentSize.width,
-                    width: orientation == Orientation.portrait
-                      ? contentSize.width
-                      : contentSize.height,
-                    child: testMode
-                      ? Container()
-                      : Texture(textureId: textureId),
+        builder: (context, orientation) => Transform.rotate(
+              angle: orientation == Orientation.portrait ? 0 : -pi / 2,
+              child: Container(
+                color: Colors.black,
+                child: Center(
+                  child: Transform.scale(
+                    scale: _calculateScale(context, orientation),
+                    child: AspectRatio(
+                      aspectRatio:
+                          orientation == Orientation.portrait ? ratio : ratio,
+                      child: SizedBox(
+                        height: orientation == Orientation.portrait
+                            ? contentSize.height
+                            : contentSize.width,
+                        width: orientation == Orientation.portrait
+                            ? contentSize.width
+                            : contentSize.height,
+                        child: testMode
+                            ? Container()
+                            : Texture(textureId: textureId),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
-        )
-    );
+            ));
   }
 
   _calculateScale(BuildContext context, Orientation orientation) {
