@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
 
   bool focus = false;
 
-  bool fullscreen = false;
+  bool fullscreen = true;
 
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
@@ -47,9 +47,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    photoSize.addListener(() {
-      setState(() {});
-    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override

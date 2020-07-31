@@ -16,6 +16,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.apparence.camerawesome.exceptions.CameraManagerException;
+import com.apparence.camerawesome.exceptions.CameraPreviewException;
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 
 import java.util.concurrent.Semaphore;
@@ -95,13 +96,13 @@ public class CameraStateManager extends CameraDevice.StateCallback {
 
     public void stopCamera() {
         try {
-            if(mCameraSession != null) {
+            if(mCameraSession != null && mCameraSession.getCaptureSession() != null) {
                 try {
                     mCameraSession.getCaptureSession().stopRepeating();
                     mCameraSession.getCaptureSession().abortCaptures();
                     mCameraSession.getCaptureSession().close();
                 } catch (CameraAccessException | IllegalStateException e) {
-                    Log.e(TAG, "close camera session: failed", e);
+                    Log.e(TAG, "close camera session: failed");
                 }
             }
             if(mCameraPicture != null) {
@@ -116,7 +117,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
             }
             releaseSemaphore();
         } catch (IllegalStateException e) {
-            Log.e(TAG, "stopCamera: failed", e);
+            Log.e(TAG, "stopCamera: failed");
         } finally {
             mCameraOpenCloseLock.release();
             this.opened = false;
