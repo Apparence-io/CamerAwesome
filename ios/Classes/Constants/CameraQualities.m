@@ -9,36 +9,72 @@
 
 @implementation CameraQualities
 
-// TODO: Improve by getting width & height from constants dict
 + (NSString *)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session {
-    NSString *preset;
-    if (size.width == 3840 && size.height == 2160) {
-        if (@available(iOS 9.0, *)) {
-            preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset3840x2160 session:session];
-        } else {
-            preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset1920x1080 session:session];
+    if (!CGSizeEqualToSize(CGSizeZero, size)) {
+        NSString *bestPresset = [CameraQualities selectPresetForSize:size];
+        if ([session canSetSessionPreset:bestPresset]) {
+            return bestPresset;
         }
-    } else if (size.width == 1920 && size.height == 1080) {
-        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset1920x1080 session:session];
-    } else if (size.width == 1280 && size.height == 720) {
-        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset1280x720 session:session];
-    } else if (size.width == 640 && size.height == 480) {
-        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset640x480 session:session];
-    } else if (size.width == 352 && size.height == 288) {
-        preset = [CameraQualities setPresetFallback:AVCaptureSessionPreset352x288 session:session];
-    } else {
-        // Default to photo mode
-        preset = AVCaptureSessionPresetPhoto;
     }
     
-    return preset;
+    return [self computeBestPressetWithSession:session];
 }
 
-+ (NSString *)setPresetFallback:(AVCaptureSessionPreset)preset session:(AVCaptureSession *)session {
-    if ([session canSetSessionPreset:preset]) {
-        return preset;
++ (NSString *)selectVideoCapturePresset:(AVCaptureSession *)session {
+    return [self computeBestPressetWithSession:session];
+}
+
++ (CGSize)getSizeForPresset:(NSString *)presset {
+    if (presset == AVCaptureSessionPreset3840x2160) {
+        return CGSizeMake(3840, 2160);
+    } else if (presset == AVCaptureSessionPreset1920x1080) {
+        return CGSizeMake(1920, 1080);
+    } else if (presset == AVCaptureSessionPreset1280x720) {
+        return CGSizeMake(1280, 720);
+    } else if (presset == AVCaptureSessionPreset1280x720) {
+        return CGSizeMake(1280, 720);
+    } else if (presset == AVCaptureSessionPreset640x480) {
+        return CGSizeMake(640, 480);
+    } else if (presset == AVCaptureSessionPreset352x288) {
+        return CGSizeMake(352, 288);
     } else {
-        return AVCaptureSessionPresetPhoto;
+        // Default to HD
+        return CGSizeMake(1280, 720);
+    }
+}
+
++ (NSString *)computeBestPressetWithSession:(AVCaptureSession *)session {
+    for (NSDictionary *quality in kCameraQualities) {
+        CGSize qualitySize = CGSizeMake([quality[@"width"] floatValue], [quality[@"height"] floatValue]);
+        NSString *currentPresset = [CameraQualities selectPresetForSize:qualitySize];
+        
+        if ([session canSetSessionPreset:currentPresset]) {
+            return currentPresset;
+        }
+    }
+    
+    // Default to HD
+    return AVCaptureSessionPreset1280x720;
+}
+
++ (NSString *)selectPresetForSize:(CGSize)size {
+    if (size.width == 3840 && size.height == 2160) {
+        if (@available(iOS 9.0, *)) {
+            return AVCaptureSessionPreset3840x2160;
+        } else {
+            return AVCaptureSessionPreset1920x1080;
+        }
+    } else if (size.width == 1920 && size.height == 1080) {
+        return AVCaptureSessionPreset1920x1080;
+    } else if (size.width == 1280 && size.height == 720) {
+        return AVCaptureSessionPreset1280x720;
+    } else if (size.width == 640 && size.height == 480) {
+        return AVCaptureSessionPreset640x480;
+    } else if (size.width == 352 && size.height == 288) {
+        return AVCaptureSessionPreset352x288;
+    } else {
+        // Default to HD
+        return AVCaptureSessionPreset1280x720;
     }
 }
 
