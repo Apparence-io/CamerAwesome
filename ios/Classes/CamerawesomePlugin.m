@@ -5,6 +5,7 @@
 
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
+@property FlutterEventSink eventSink;
 @property int64_t textureId;
 @property CameraView *camera;
 
@@ -15,19 +16,35 @@
 @implementation CamerawesomePlugin
 - (instancetype)initWithRegistry:(NSObject<FlutterTextureRegistry> *)registry
                        messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
-  self = [super init];
-  NSAssert(self, @"super init cannot be nil");
-  _registry = registry;
-  _messenger = messenger;
+    self = [super init];
+    NSAssert(self, @"super init cannot be nil");
+    _registry = registry;
+    _messenger = messenger;
+
     return self;
 }
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-    FlutterMethodChannel* channel = [FlutterMethodChannel
-                                     methodChannelWithName:@"camerawesome"
-                                     binaryMessenger:[registrar messenger]];
-    CamerawesomePlugin* instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
-    [registrar addMethodCallDelegate:instance channel:channel];
+    CamerawesomePlugin *instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
+    
+    FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
+    binaryMessenger:[registrar messenger]];
+    [eventChannel setStreamHandler:instance];
+    
+    // TODO: Change to "camerawesome/methods"
+    FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"camerawesome" binaryMessenger:[registrar messenger]];
+    [registrar addMethodCallDelegate:instance channel:methodChannel];
+}
+
+- (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
+                                       eventSink:(FlutterEventSink)events {
+    _eventSink = events;
+    return nil;
+}
+
+- (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments {
+    _eventSink = nil;
+    return nil;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -49,6 +66,8 @@
         [self _handleGetTextures:call result:result];
     } else if ([@"setPreviewSize" isEqualToString:call.method]) {
         [self _handlePreviewSize:call result:result];
+    } else if ([@"getEffectivPreviewSize" isEqualToString:call.method]) {
+        [self _handleGetEffectivPreviewSize:call result:result];
     } else if ([@"setPhotoSize" isEqualToString:call.method]) {
         [self _handlePhotoSize:call result:result];
     } else if ([@"takePhoto" isEqualToString:call.method]) {
@@ -69,6 +88,14 @@
         result(FlutterMethodNotImplemented);
         return;
     }
+}
+
+- (void)_handleGetEffectivPreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
+    CGSize previewSize = [_camera getEffectivPreviewSize];
+    result(@{
+        @"width": [NSNumber numberWithInt:previewSize.width],
+        @"height": [NSNumber numberWithInt:previewSize.height],
+    });
 }
 
 - (void)_handleSetZoom:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -188,7 +215,10 @@
     }
 
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
-    self.camera = [[CameraView alloc] initWithCameraSensor:sensor andResult:result];
+    self.camera = [[CameraView alloc] initWithCameraSensor:sensor
+                                                    result:result
+                                                 messenger:_messenger
+                                                     event:_eventSink];
     [self->_registry textureFrameAvailable:_textureId];
     
     __weak typeof(self) weakSelf = self;

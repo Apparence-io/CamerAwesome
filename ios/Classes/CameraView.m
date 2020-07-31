@@ -9,15 +9,12 @@
 
 @implementation CameraView
 
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor andResult:(nonnull FlutterResult)result {
+- (instancetype)initWithCameraSensor:(CameraSensor)sensor result:(nonnull FlutterResult)result messenger:(NSObject<FlutterBinaryMessenger> *)messenger event:(FlutterEventSink)eventSink {
     self = [super init];
     
     _result = result;
-    
-    // Creating motion detection
-    _motionManager = [[CMMotionManager alloc] init];
-    _motionManager.deviceMotionUpdateInterval = 0.2f;
-    [self startMyMotionDetect];
+    _messenger = messenger;
+    _eventSink = eventSink;
 
     // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
@@ -42,6 +39,11 @@
     
     _cameraSensor = sensor;
     
+    // Creating motion detection
+    _motionManager = [[CMMotionManager alloc] init];
+    _motionManager.deviceMotionUpdateInterval = 0.2f;
+    [self startMyMotionDetect];
+    
     return self;
 }
 
@@ -49,16 +51,45 @@
     // TODO: Add weakself
     [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
                                         withHandler:^(CMDeviceMotion *data, NSError *error) {
+        UIDeviceOrientation newOrientation;
         if(fabs(data.gravity.x) > fabs(data.gravity.y)) {
             // Landscape
-            self->_deviceOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
+            newOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
         } else {
             // Portrait
-            self->_deviceOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
-        }}];
+            newOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
+        }
+        if (self->_deviceOrientation != newOrientation) {
+            self->_deviceOrientation = newOrientation;
+            
+            NSString *orientationString;
+            switch (newOrientation) {
+                case UIDeviceOrientationLandscapeLeft:
+                    orientationString = @"LANDSCAPE_LEFT";
+                    break;
+                case UIDeviceOrientationLandscapeRight:
+                    orientationString = @"LANDSCAPE_RIGHT";
+                    break;
+                case UIDeviceOrientationPortrait:
+                    orientationString = @"PORTRAIT_UP";
+                    break;
+                case UIDeviceOrientationPortraitUpsideDown:
+                    orientationString = @"PORTRAIT_DOWN";
+                    break;
+                default:
+                    break;
+            }
+            if (self->_eventSink != nil) {
+                self->_eventSink(orientationString);
+            }
+        }
+    }];
 }
 
 - (void)initCamera:(CameraSensor)sensor {
+    // Here we set a preset which wont crash the device before switching to front or back
+    [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
+    
     NSError *error;
     _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
     _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error];
@@ -66,13 +97,6 @@
     if (error != nil) {
         _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
         return;
-    }
-    
-    // Set preset
-    if (sensor == Back) {
-        [self setPreviewSize:_previewSize];
-    } else {
-        [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
     }
     
     // Create connection
@@ -92,6 +116,28 @@
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
     [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
     [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+    
+    [self setCameraPresset:CGSizeMake(0, 0)];
+}
+
+- (void)setCameraPresset:(CGSize)currentPreviewSize {
+    NSString *presetSelected;
+    if (!CGSizeEqualToSize(CGSizeZero, currentPreviewSize)) {
+        // Try to get the quality requested
+        presetSelected = [CameraQualities selectVideoCapturePresset:currentPreviewSize session:_captureSession];
+    } else {
+        // Compute the best quality supported by the camera device
+        presetSelected = [CameraQualities selectVideoCapturePresset:_captureSession];
+    }
+    [_captureSession setSessionPreset:presetSelected];
+    _currentPresset = presetSelected;
+    
+    // Get preview size according to presset selected
+    _currentPreviewSize = [CameraQualities getSizeForPresset:presetSelected];
+}
+
+- (CGSize)getEffectivPreviewSize {
+    return _currentPreviewSize;
 }
 
 - (void)setResult:(nonnull FlutterResult)result {
@@ -103,9 +149,7 @@
 }
 
 - (void)setPreviewSize:(CGSize)previewSize {
-    NSString *selectedPresset = [CameraQualities selectVideoCapturePresset:previewSize session:_captureSession];
-    _previewSize = previewSize;
-    _captureSession.sessionPreset = selectedPresset;
+    [self setCameraPresset:previewSize];
 }
 
 - (void)start {
@@ -147,7 +191,7 @@
         _captureDevice.videoZoomFactor = scaledZoom;
         [_captureDevice unlockForConfiguration];
     } else {
-        NSLog(@"error: %@", error);
+        _result([FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[error localizedDescription]]);
     }
 }
 
@@ -198,8 +242,8 @@
     NSError *error;
     
     // Get center point of the preview size
-    double focus_x = _previewSize.width / 2;
-    double focus_y = _previewSize.height / 2;
+    double focus_x = _currentPreviewSize.width / 2;
+    double focus_y = _currentPreviewSize.height / 2;
 
     CGPoint thisFocusPoint = [_previewLayer captureDevicePointOfInterestForPoint:CGPointMake(focus_x, focus_y)];
     if ([_captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] && [_captureDevice isFocusPointOfInterestSupported]) {

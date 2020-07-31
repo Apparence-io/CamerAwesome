@@ -34,12 +34,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) CameraSensor cameraSensor;
 @property(readonly, nonatomic) FlutterResult result;
+@property(readonly, nonatomic) NSString *currentPresset;
+@property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
-@property(readonly, nonatomic) CGSize previewSize;
+@property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(nonatomic) FlutterEventSink eventSink;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor andResult:(nonnull FlutterResult)result;
+- (instancetype)initWithCameraSensor:(CameraSensor)sensor
+                              result:(nonnull FlutterResult)result
+                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger
+                               event:(FlutterEventSink)eventSink;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)start;
@@ -51,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)flipCamera;
 - (void)setZoom:(float)value;
 - (CGFloat)getMaxZoom;
+- (CGSize)getEffectivPreviewSize;
 
 @end
 

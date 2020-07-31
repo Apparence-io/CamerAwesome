@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome/picture_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,12 +20,14 @@ typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 /// used to send notification about camera has actually started
 typedef OnCameraStarted = void Function();
 
+/// used to send notification when the device rotate
+typedef OnOrientationChanged = void Function(CameraOrientations);
+
 /// -------------------------------------------------
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
 /// TODO - handle refused permissions
 class CameraAwesome extends StatefulWidget {
-
   /// true to wrap texture
   final bool testMode;
 
@@ -36,6 +39,9 @@ class CameraAwesome extends StatefulWidget {
 
   /// notify client that camera started
   final OnCameraStarted onCameraStarted;
+
+  /// notify client that orientation changed
+  final OnOrientationChanged onOrientationChanged;
 
   /// change flash mode
   final ValueNotifier<CameraFlashes> switchFlashMode;
@@ -65,17 +71,16 @@ class CameraAwesome extends StatefulWidget {
     this.orientation = DeviceOrientation.portraitUp,
     this.fitted = false,
     this.zoom,
+    this.onOrientationChanged,
     @required this.sensor})
     : assert(sensor != null),
       super(key: key);
-
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
 }
 
 class _CameraAwesomeState extends State<CameraAwesome> {
-
   List<Size> camerasAvailableSizes;
 
   bool hasPermissions = false;
@@ -109,6 +114,13 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     if(widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
+
+    // Init orientation stream
+    if (widget.onOrientationChanged != null) {
+      CamerawesomePlugin.getNativeOrientation()
+        .listen(widget.onOrientationChanged);
+    }
+
     await CamerawesomePlugin.init(widget.sensor.value);
     _initAndroidPhotoSize();
     _initPhotoSize();
@@ -159,9 +171,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   /// inits the Flash mode switcher using [ValueNotifier]
   /// Each time user call to switch flashMode we send a call to iOS or Android Plugins
   _initFlashModeSwitcher() {
-    if(widget.switchFlashMode != null) {
+    if (widget.switchFlashMode != null) {
       widget.switchFlashMode.addListener(() async {
-        if(widget.switchFlashMode.value != null && started) {
+        if (widget.switchFlashMode.value != null && started) {
           await CamerawesomePlugin.setFlashMode(widget.switchFlashMode.value);
         }
       });
@@ -171,9 +183,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   /// handle zoom notifier
   /// Zoom value must be between 0 and 1
   _initZoom() {
-    if(widget.zoom != null) {
+    if (widget.zoom != null) {
       widget.zoom.addListener(() {
-        if(widget.zoom.value < 0 || widget.zoom.value > 1) {
+        if (widget.zoom.value < 0 || widget.zoom.value > 1) {
           throw "Zoom value must be between 0 and 1";
         }
         CamerawesomePlugin.setZoom(widget.zoom.value);
@@ -295,6 +307,4 @@ class _CameraPreviewWidget extends StatelessWidget {
     }
     return scale;
   }
-
-
 }

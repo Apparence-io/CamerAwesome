@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:camerawesome/models/orientations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -156,13 +157,6 @@ class _MyAppState extends State<MyApp> {
                     child: Text("zoom x1", style: TextStyle(color: Colors.white)),
                     onPressed: () => zoomNotifier.value = 0
                   ),
-                  FlatButton(
-                    color: Colors.blue[200],
-                    child: Text("switch sensor", style: TextStyle(color: Colors.white)),
-                    onPressed: () => sensor.value == Sensors.BACK
-                      ? sensor.value = Sensors.FRONT
-                      : sensor.value = Sensors.BACK
-                  ),
                 ],
               ),
             )
@@ -187,6 +181,10 @@ class _MyAppState extends State<MyApp> {
                 sensor: sensor,
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
+                onOrientationChanged: (CameraOrientations orientation) {
+                  // TODO: Orientation change here
+                  print(orientation);
+                },
               ),
             )
           );
@@ -214,12 +212,14 @@ class _MyAppState extends State<MyApp> {
               fitted: true,
               switchFlashMode: switchFlash,
               zoom: zoomNotifier,
+              onOrientationChanged: (CameraOrientations orientation) {
+                print('-- ORIENTATION CHANGED --');
+                print(orientation);
+              },
             ),
           ),
         ),
       )
     );
   }
-
-
 }

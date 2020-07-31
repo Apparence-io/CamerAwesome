@@ -1,9 +1,8 @@
 <p align="center">
-	<a href="https://google.fr/">
-		<img src="https://via.placeholder.com/456x180" width="456" alt="camerawesome_logo">
+	<a href="https://apparence.io/">
+		<img src="logo/banner.png" width="456" alt="camerawesome_logo">
 	</a>
 </p>
-<br />
 
 ## 🚀&nbsp; Overview
 
