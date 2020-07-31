@@ -1,34 +1,56 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
-class OptionButton extends StatelessWidget {
+class OptionButton extends StatefulWidget {
   final IconData icon;
   final Function onTapCallback;
+  final AnimationController rotationController;
   const OptionButton({
     Key key,
     this.icon,
     this.onTapCallback,
+    this.rotationController,
   }) : super(key: key);
 
   @override
+  _OptionButtonState createState() => _OptionButtonState();
+}
+
+class _OptionButtonState extends State<OptionButton>
+    with SingleTickerProviderStateMixin {
+  Animation _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _animation = Tween(begin: 0.0, end: 0.25).chain(CurveTween(curve: Curves.easeInOut))
+      .animate(widget.rotationController);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ClipOval(
-      child: Material(
-        color: Color(0xFF4F6AFF),
-        child: InkWell(
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24.0,
+    return RotationTransition(
+      turns: _animation,
+      child: ClipOval(
+        child: Material(
+          color: Color(0xFF4F6AFF),
+          child: InkWell(
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(
+                widget.icon,
+                color: Colors.white,
+                size: 24.0,
+              ),
             ),
+            onTap: () {
+              if (widget.onTapCallback != null) {
+                widget.onTapCallback();
+              }
+            },
           ),
-          onTap: () {
-            if (onTapCallback != null) {
-              onTapCallback();
-            }
-          },
         ),
       ),
     );

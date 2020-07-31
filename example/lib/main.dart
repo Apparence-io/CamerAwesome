@@ -1,19 +1,17 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
   runApp(MaterialApp(
     home: MyApp(),
+    debugShowCheckedModeBanner: false,
   ));
 }
 
@@ -22,7 +20,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   double bestSizeRatio;
 
   String _lastPhotoPath;
@@ -46,12 +44,38 @@ class _MyAppState extends State<MyApp> {
   /// list of available sizes
   List<Size> availableSizes;
 
+  AnimationController _controller;
+
+  // TODO: Get first time orientation from device
+  CameraOrientations _oldOrientation = CameraOrientations.PORTRAIT_UP;
+
+  CameraOrientations _currentOrientation = CameraOrientations.PORTRAIT_UP;
+
+  bool animationPlaying = false;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _oldOrientation = _currentOrientation;
+        animationPlaying = false;
+      }
+    });
+
     photoSize.addListener(() {
       setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -74,7 +98,6 @@ class _MyAppState extends State<MyApp> {
                     Radius.circular(15),
                   ),
                   boxShadow: [
-                    // to make elevation
                     BoxShadow(
                       color: Colors.black45,
                       offset: Offset(2, 2),
@@ -135,6 +158,7 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               OptionButton(
                 icon: Icons.switch_camera,
+                rotationController: _controller,
                 onTapCallback: () async {
                   this.focus = !focus;
                   await CamerawesomePlugin.flipCamera();
@@ -144,6 +168,7 @@ class _MyAppState extends State<MyApp> {
                 width: 20.0,
               ),
               OptionButton(
+                rotationController: _controller,
                 icon: (switchFlash.value == CameraFlashes.ALWAYS)
                     ? Icons.flash_off
                     : Icons.flash_on,
@@ -153,6 +178,8 @@ class _MyAppState extends State<MyApp> {
                   } else {
                     switchFlash.value = CameraFlashes.ALWAYS;
                   }
+                  _controller.forward();
+
                   setState(() {});
                 },
               ),
@@ -174,6 +201,7 @@ class _MyAppState extends State<MyApp> {
             children: <Widget>[
               OptionButton(
                 icon: Icons.zoom_out,
+                rotationController: _controller,
                 onTapCallback: () {
                   if (zoomNotifier.value >= 0.1) {
                     zoomNotifier.value -= 0.1;
@@ -200,6 +228,7 @@ class _MyAppState extends State<MyApp> {
               ),
               OptionButton(
                 icon: Icons.zoom_in,
+                rotationController: _controller,
                 onTapCallback: () {
                   if (zoomNotifier.value <= 0.9) {
                     zoomNotifier.value += 0.1;
@@ -249,10 +278,7 @@ class _MyAppState extends State<MyApp> {
             sensor: sensor,
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
-            onOrientationChanged: (CameraOrientations orientation) {
-              // TODO: Orientation change here
-              print(orientation);
-            },
+            onOrientationChanged: (CameraOrientations orientation) {},
           ),
         ));
   }
@@ -279,9 +305,42 @@ class _MyAppState extends State<MyApp> {
                 fitted: true,
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
-                onOrientationChanged: (CameraOrientations orientation) {
-                  print('-- ORIENTATION CHANGED --');
-                  print(orientation);
+                onOrientationChanged: (CameraOrientations newOrientation) {
+                  _currentOrientation = newOrientation;
+
+                  double from;
+                  bool reverse;
+
+                  switch (_oldOrientation) {
+                    case CameraOrientations.PORTRAIT_UP:
+                      reverse =
+                          newOrientation == CameraOrientations.LANDSCAPE_LEFT;
+                      from = 0;
+                      break;
+                    case CameraOrientations.PORTRAIT_DOWN:
+                      reverse =
+                          newOrientation == CameraOrientations.LANDSCAPE_RIGHT;
+                      from = 0.25;
+                      break;
+                    case CameraOrientations.LANDSCAPE_LEFT:
+                      reverse =
+                          newOrientation == CameraOrientations.PORTRAIT_DOWN;
+                      from = 0.25;
+                      break;
+                    case CameraOrientations.LANDSCAPE_RIGHT:
+                      reverse =
+                          newOrientation == CameraOrientations.PORTRAIT_UP;
+                      from = 0.5;
+                      break;
+                    default:
+                  }
+
+                  _controller.reset();
+                  if (reverse) {
+                    _controller.reverse(from: from);
+                  } else {
+                    _controller.forward(from: from);
+                  }
                 },
               ),
             ),
@@ -289,3 +348,5 @@ class _MyAppState extends State<MyApp> {
         ));
   }
 }
+
+class OptionButtonState {}
