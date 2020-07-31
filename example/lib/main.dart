@@ -155,13 +155,6 @@ class _MyAppState extends State<MyApp> {
                     child: Text("zoom x1", style: TextStyle(color: Colors.white)),
                     onPressed: () => zoomNotifier.value = 0
                   ),
-                  FlatButton(
-                    color: Colors.blue[200],
-                    child: Text("switch sensor", style: TextStyle(color: Colors.white)),
-                    onPressed: () => sensor.value == Sensors.BACK
-                      ? sensor.value = Sensors.FRONT
-                      : sensor.value = Sensors.BACK
-                  ),
                 ],
               ),
             )
