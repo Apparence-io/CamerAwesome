@@ -53,6 +53,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   bool animationPlaying = false;
 
+  ValueNotifier<CameraOrientations> _orientation =
+      ValueNotifier(CameraOrientations.PORTRAIT_UP);
+
   @override
   void initState() {
     super.initState();
@@ -159,6 +162,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               OptionButton(
                 icon: Icons.switch_camera,
                 rotationController: _controller,
+                orientation: _orientation,
                 onTapCallback: () async {
                   this.focus = !focus;
                   await CamerawesomePlugin.flipCamera();
@@ -172,6 +176,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 icon: (switchFlash.value == CameraFlashes.ALWAYS)
                     ? Icons.flash_off
                     : Icons.flash_on,
+                orientation: _orientation,
                 onTapCallback: () {
                   if (switchFlash.value == CameraFlashes.ALWAYS) {
                     switchFlash.value = CameraFlashes.NONE;
@@ -202,6 +207,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               OptionButton(
                 icon: Icons.zoom_out,
                 rotationController: _controller,
+                orientation: _orientation,
                 onTapCallback: () {
                   if (zoomNotifier.value >= 0.1) {
                     zoomNotifier.value -= 0.1;
@@ -229,6 +235,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               OptionButton(
                 icon: Icons.zoom_in,
                 rotationController: _controller,
+                orientation: _orientation,
                 onTapCallback: () {
                   if (zoomNotifier.value <= 0.9) {
                     zoomNotifier.value += 0.1;
@@ -306,41 +313,43 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
                 onOrientationChanged: (CameraOrientations newOrientation) {
-                  _currentOrientation = newOrientation;
+                  _orientation.value = newOrientation;
 
-                  double from;
-                  bool reverse;
+                  // _currentOrientation = newOrientation;
 
-                  switch (_oldOrientation) {
-                    case CameraOrientations.PORTRAIT_UP:
-                      reverse =
-                          newOrientation == CameraOrientations.LANDSCAPE_LEFT;
-                      from = 0;
-                      break;
-                    case CameraOrientations.PORTRAIT_DOWN:
-                      reverse =
-                          newOrientation == CameraOrientations.LANDSCAPE_RIGHT;
-                      from = 0.25;
-                      break;
-                    case CameraOrientations.LANDSCAPE_LEFT:
-                      reverse =
-                          newOrientation == CameraOrientations.PORTRAIT_DOWN;
-                      from = 0.25;
-                      break;
-                    case CameraOrientations.LANDSCAPE_RIGHT:
-                      reverse =
-                          newOrientation == CameraOrientations.PORTRAIT_UP;
-                      from = 0.5;
-                      break;
-                    default:
-                  }
+                  // double from;
+                  // bool reverse;
 
-                  _controller.reset();
-                  if (reverse) {
-                    _controller.reverse(from: from);
-                  } else {
-                    _controller.forward(from: from);
-                  }
+                  // switch (_oldOrientation) {
+                  //   case CameraOrientations.PORTRAIT_UP:
+                  //     reverse =
+                  //         newOrientation == CameraOrientations.LANDSCAPE_LEFT;
+                  //     from = 0;
+                  //     break;
+                  //   case CameraOrientations.PORTRAIT_DOWN:
+                  //     reverse =
+                  //         newOrientation == CameraOrientations.LANDSCAPE_RIGHT;
+                  //     from = 0.25;
+                  //     break;
+                  //   case CameraOrientations.LANDSCAPE_LEFT:
+                  //     reverse =
+                  //         newOrientation == CameraOrientations.PORTRAIT_DOWN;
+                  //     from = 0.25;
+                  //     break;
+                  //   case CameraOrientations.LANDSCAPE_RIGHT:
+                  //     reverse =
+                  //         newOrientation == CameraOrientations.PORTRAIT_UP;
+                  //     from = 0.5;
+                  //     break;
+                  //   default:
+                  // }
+
+                  // _controller.reset();
+                  // if (reverse) {
+                  //   _controller.reverse(from: from);
+                  // } else {
+                  //   _controller.forward(from: from);
+                  // }
                 },
               ),
             ),
