@@ -210,6 +210,10 @@ class _MyAppState extends State<MyApp> {
               fitted: true,
               switchFlashMode: switchFlash,
               zoom: zoomNotifier,
+              onOrientationChanged: (CameraOrientations orientation) {
+                print('-- ORIENTATION CHANGED --');
+                print(orientation);
+              },
             ),
           ),
         ),
