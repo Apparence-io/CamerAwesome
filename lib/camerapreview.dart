@@ -31,8 +31,8 @@ class CameraAwesome extends StatefulWidget {
   /// implement this to have a callback after CameraAwesome asked for permissions
   final OnPermissionsResult onPermissionsResult;
 
-  /// implement this to select a size from device available size list
-  final OnAvailableSizes selectSize;
+  /// implement this to select a default size from device available size list
+  final OnAvailableSizes selectDefaultSize;
 
   /// notify client that camera started
   final OnCameraStarted onCameraStarted;
@@ -46,13 +46,22 @@ class CameraAwesome extends StatefulWidget {
   /// choose between [BACK] and [FRONT]
   final ValueNotifier<Sensors> sensor;
 
+  /// choose your photo size from the [selectDefaultSize] method
+  final ValueNotifier<Size> photoSize;
+
   /// initial orientation
   final DeviceOrientation orientation;
 
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
-  CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode,
+  CameraAwesome({Key key,
+    this.testMode = false,
+    this.onPermissionsResult,
+    @required this.photoSize,
+    this.selectDefaultSize,
+    this.onCameraStarted,
+    this.switchFlashMode,
     this.orientation = DeviceOrientation.portraitUp,
     this.fitted = false,
     this.zoom,
@@ -69,11 +78,15 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 
   List<Size> camerasAvailableSizes;
 
-  Size selectedSize;
-
   bool hasPermissions = false;
 
   bool started = false;
+
+  /// choose preview size, default to the first available size in the list (MAX) or use [selectDefaultSize]
+  final ValueNotifier<Size> selectedPreviewSize = ValueNotifier(null);
+
+  /// Only for Android, Preview and Photo size can be different. Android preview can't be higher than 1980x1024
+  final ValueNotifier<Size> selectedAndroidPhotoSize = ValueNotifier(null);
 
   @override
   void initState() {
@@ -94,17 +107,15 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       widget.onPermissionsResult(hasPermissions);
     }
     await CamerawesomePlugin.init(widget.sensor.value);
+    _initAndroidPhotoSize();
+    _initPhotoSize();
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
-    if(widget.selectSize != null) {
-      selectedSize = widget.selectSize(camerasAvailableSizes);
-      assert(selectedSize !=null, "A size from the list must be selected");
+    if(widget.selectDefaultSize != null) {
+      widget.photoSize.value = widget.selectDefaultSize(camerasAvailableSizes);
+      assert(widget.photoSize.value !=null, "A size from the list must be selected");
     } else {
-      selectedSize = camerasAvailableSizes[0];
+      widget.photoSize.value = camerasAvailableSizes[0];
     }
-    await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
-    await CamerawesomePlugin.setPhotoSize(selectedSize.width.toInt(), selectedSize.height.toInt());
-    // android has a limits on preview size and fallback to 1920x1080 if preview is too big
-    selectedSize = await CamerawesomePlugin.getEffectivPreviewSize();
     await CamerawesomePlugin.start();
     started =  true;
     if(widget.onCameraStarted != null) {
@@ -126,7 +137,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         if(!snapshot.hasData || !hasInit)
           return Center(child: CircularProgressIndicator());
         return _CameraPreviewWidget(
-          size: selectedSize,
+          size: selectedPreviewSize.value,
           fitted: widget.fitted,
           textureId: snapshot.data,
         );
@@ -134,7 +145,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     );
   }
 
-  bool get hasInit => selectedSize != null
+  bool get hasInit => selectedPreviewSize.value != null
     && camerasAvailableSizes != null
     && camerasAvailableSizes.length > 0
     && started;
@@ -172,6 +183,31 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       setState(() {});
     });
   }
+
+  _initAndroidPhotoSize() {
+    selectedAndroidPhotoSize.addListener(() async {
+      if(selectedAndroidPhotoSize.value == null || !Platform.isAndroid) {
+        return;
+      }
+      await CamerawesomePlugin.setPhotoSize(selectedAndroidPhotoSize.value.width.toInt(), selectedAndroidPhotoSize.value.height.toInt());
+    });
+  }
+
+  _initPhotoSize() {
+    if(widget.photoSize == null) {
+      return;
+    }
+    widget.photoSize.addListener(() async {
+      if(widget.photoSize == null) {
+        return;
+      }
+      selectedAndroidPhotoSize.value = widget.photoSize.value;
+      await CamerawesomePlugin.setPreviewSize(widget.photoSize.value.width.toInt(), widget.photoSize.value.height.toInt());
+      selectedPreviewSize.value = await CamerawesomePlugin.getEffectivPreviewSize();
+      setState(() {});
+    });
+  }
+
 }
 
 ///

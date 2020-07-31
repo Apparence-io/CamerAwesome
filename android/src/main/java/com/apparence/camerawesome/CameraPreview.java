@@ -37,6 +37,10 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private static final String TAG = CameraPreview.class.getName();
 
+    public static final int MAX_PREVIEW_WIDTH = 1920;
+
+    public static final int MAX_PREVIEW_HEIGHT = 1080;
+
     private final CameraSession mCameraSession;
 
     private final SurfaceFactory surfaceFactory;
@@ -125,7 +129,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
 
     public void setPreviewSize(int width, int height) {
-        if(width > 1920 || height > 1080) {
+        if(width > MAX_PREVIEW_WIDTH || height > MAX_PREVIEW_HEIGHT) {
             this.previewSize = new Size(1920, 1080);
         } else {
             this.previewSize = new Size(width, height);
