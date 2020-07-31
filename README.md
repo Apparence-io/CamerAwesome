@@ -10,21 +10,35 @@ Flutter plugin to add Camera support inside your project.
 
 CamerAwesome include a lot of useful features like:
 
-- Live camera **flip** (switch between **rear** & **front** camera without rebuild).
+- Live camera **flip** ( switch between **rear** & **front** camera without rebuild ).
 - No init needed, just add CameraAwesome widget !
 - Instant **focus**.
 - Device **flash** support.
 - **Zoom**.
-- Taking a **picture** (of course 😃).
+- Taking a **picture** ( of course 😃 ).
 
 ## 📖&nbsp; Installation and usage
 
-1. Import the package
+### Set permissions
+   - **iOS** add these on ```ios/Runner/Info.plist``` file
+
+```
+<key>NSCameraUsageDescription</key>
+<string>Your own description</string>
+```
+
+  - **Android** 
+
+```
+TODO
+```
+
+### Import the package
 ```
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
-2. Create your camera
+### Create your camera
 
 ```
 CameraAwesome(
@@ -55,10 +69,8 @@ Feel free to **contribute** to improve this **compatibility list**.
 
 | Devices       | Flash | Focus | Flash |
 | ------------- | ----- | ----- | ----- |
-| iPhone X      | ✅    | ✅    | ⛔️    |
-| Pixel 3       | ✅    | ⛔️    | ✅    |
+| iPhone X      | ✅    | ✅    | ✅    |
 | One Plus 6T   | ✅    | ⛔️    | ✅    |
-| One Plus 3    | ⛔️    | ⛔️    | ✅    |
 
 </p>
 </details>
