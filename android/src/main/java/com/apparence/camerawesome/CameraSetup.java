@@ -41,13 +41,14 @@ class CameraSetup {
 
     private boolean facingFront;
 
-    private EventChannel.EventSink orientationEvent;
-
     private CameraCharacteristicsModel characteristicsModel;
 
-    CameraSetup(Context context, Activity activity) {
+    private SensorOrientation sensorOrientationListener;
+
+    CameraSetup(Context context, Activity activity, SensorOrientation sensorOrientationListener) {
         this.context = context;
         this.activity = activity;
+        this.sensorOrientationListener = sensorOrientationListener;
     }
 
     void chooseCamera(CameraSensor sensor) throws CameraAccessException {
@@ -94,9 +95,8 @@ class CameraSetup {
                 currentOrientation = (i + 45) / 90 * 90;
                 if(currentOrientation == 360)
                     currentOrientation = 0;
-                if(orientationEvent != null) {
-                    orientationEvent.success(currentOrientation);
-                }
+                if(sensorOrientationListener != null)
+                    sensorOrientationListener.notify(currentOrientation);
             }
         };
         orientationEventListener.enable();

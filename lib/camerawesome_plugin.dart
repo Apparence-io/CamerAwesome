@@ -15,18 +15,10 @@ export './models/flashmodes.dart';
 export 'camerapreview.dart';
 export 'picture_controller.dart';
 
-// TODO - add zoom level - iOS
-// TODO - call init to change cam while running
 // TODO - dispose method
 // TODO - Focus on a point
-// TODO - flashMode android
 
 // TODO - TESTS E2E
-// TODO - test unitaires ?
-
-// TODO documentation example usage
-// TODO - table des devices testé + (flash OK, )
-
 // TODO VNEXT - stream images
 class CamerawesomePlugin {
   static const MethodChannel _channel = const MethodChannel('camerawesome');

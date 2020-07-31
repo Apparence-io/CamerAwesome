@@ -57,6 +57,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    photoSize.addListener(() {
+      if(mounted)
+        setState(() {});
+    });
     return Scaffold(
         body: Stack(
           children: <Widget>[
