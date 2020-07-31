@@ -35,13 +35,22 @@ class _MyAppState extends State<MyApp> {
 
   ValueNotifier<double> zoomNotifier = ValueNotifier(0);
 
+  ValueNotifier<Size> photoSize = ValueNotifier(null);
+
   ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
 
+  /// use this to call a take picture
   PictureController _pictureController = new PictureController();
+
+  /// list of available sizes
+  List<Size> availableSizes;
 
   @override
   void initState() {
     super.initState();
+    photoSize.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -51,13 +60,26 @@ class _MyAppState extends State<MyApp> {
           children: <Widget>[
             fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
             Positioned(
-              bottom: 64,
-              left: 16,
+              top: 32,
+              right: 16,
               child: IconButton(
                 icon: Icon(fullscreen ? Icons.fullscreen_exit : Icons.fullscreen, color: Colors.white),
                 onPressed: () => setState(() => fullscreen = !fullscreen),
               ),
             ),
+            if(photoSize.value != null)
+              Positioned(
+                top: 32,
+                left: 16,
+                child: FlatButton(
+                  color: Colors.transparent,
+                  child: Text(
+                    "${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}",
+                    style: TextStyle(color: Colors.white)
+                  ),
+                  onPressed: () => setState(() => fullscreen = !fullscreen),
+                ),
+              ),
             if(_lastPhotoPath != null)
               Positioned(
                 bottom: 52,
@@ -156,6 +178,11 @@ class _MyAppState extends State<MyApp> {
             right: 0,
             child: Center(
               child: CameraAwesome(
+                selectDefaultSize: (availableSizes) {
+                  this.availableSizes = availableSizes;
+                  return availableSizes[0];
+                },
+                photoSize: photoSize,
                 sensor: sensor,
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
@@ -181,6 +208,11 @@ class _MyAppState extends State<MyApp> {
             height: 300,
             width: MediaQuery.of(context).size.width,
             child: CameraAwesome(
+              selectDefaultSize: (availableSizes) {
+                this.availableSizes = availableSizes;
+                return availableSizes[0];
+              },
+              photoSize: photoSize,
               sensor: sensor,
               fitted: true,
               switchFlashMode: switchFlash,

@@ -150,7 +150,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     }
   }
 
-
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
