@@ -117,6 +117,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       case "setPreviewSize":
         _handlePreviewSize(call, result);
         break;
+      case "getEffectivPreviewSize":
+        _handleGetEffectivPreviewSize(call, result);
+        break;
       case "setPhotoSize":
         _handlePhotoSize(call, result);
         break;
@@ -241,7 +244,12 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
       result.error("MUST_CALL_INIT", "", "");
       return;
     }
-    result.success(mCameraPreview.getFlutterTexture());
+    try {
+        long id = mCameraPreview.getFlutterTexture();
+        result.success(id);
+    } catch (RuntimeException e) {
+        result.error("TEXTURE_NOT_FOUND", "cannot find texture", "");
+    }
   }
 
   private void _handleSizes(MethodCall call, Result result) {
@@ -269,6 +277,16 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     int height = call.argument("height");
     mCameraPreview.setPreviewSize(width, height);
     result.success(null);
+  }
+
+  private void _handleGetEffectivPreviewSize(MethodCall call, Result result) {
+      if(throwIfCameraNotInit(result))
+          return;
+      Size size = mCameraPreview.getPreviewSize();
+      Map<String, Object> resMap = new HashMap<>();
+      resMap.put("width", size.getWidth());
+      resMap.put("height", size.getHeight());
+      result.success(resMap);
   }
 
   private void _handlePhotoSize(MethodCall call, Result result) {

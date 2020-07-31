@@ -109,6 +109,9 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
 
     public Long getFlutterTexture() {
+        if(this.surfaceFactory == null) {
+            throw new RuntimeException("surface factory null");
+        }
         return this.surfaceFactory.getSurfaceId();
     }
 
@@ -127,6 +130,10 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         } else {
             this.previewSize = new Size(width, height);
         }
+    }
+
+    public Size getPreviewSize() {
+        return this.previewSize;
     }
 
     public void setCameraCharacteristics(CameraCharacteristicsModel cameraCharacteristics) {

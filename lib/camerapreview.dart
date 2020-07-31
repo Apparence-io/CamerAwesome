@@ -27,7 +27,6 @@ typedef OnOrientationChanged = void Function(CameraOrientations);
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
 /// TODO - handle refused permissions
-/// TODO - try take photo with zoom
 class CameraAwesome extends StatefulWidget {
   /// true to wrap texture
   final bool testMode;
@@ -56,19 +55,16 @@ class CameraAwesome extends StatefulWidget {
   /// initial orientation
   final DeviceOrientation orientation;
 
-  CameraAwesome(
-      {Key key,
-      this.testMode = false,
-      this.selectSize,
-      this.onPermissionsResult,
-      this.onCameraStarted,
-      this.onOrientationChanged,
-      this.switchFlashMode,
-      this.orientation = DeviceOrientation.portraitUp,
-      this.zoom,
-      @required this.sensor})
-      : assert(sensor != null),
-        super(key: key);
+  /// whether camera preview must be as big as it needs or cropped to fill with. false by default
+  final bool fitted;
+
+  CameraAwesome({Key key, this.testMode = false, this.selectSize, this.onPermissionsResult, this.onCameraStarted, this.switchFlashMode, this.orientation = DeviceOrientation.portraitUp,
+    this.fitted = false,
+    this.zoom,
+    this.onOrientationChanged,
+    @required this.sensor})
+    : assert(sensor != null),
+      super(key: key);
 
   @override
   _CameraAwesomeState createState() => _CameraAwesomeState();
@@ -98,29 +94,31 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 
   initPlatformState() async {
     hasPermissions = await CamerawesomePlugin.checkPermissions();
-    if (widget.onPermissionsResult != null) {
+    if(widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
 
     // Init orientation stream
-    CamerawesomePlugin.getNativeOrientation().listen(_orientationChanged);
-
-    // Init camera plugin method
-    await CamerawesomePlugin.init(widget.sensor.value);
-
-    camerasAvailableSizes = await CamerawesomePlugin.getSizes();
-    selectedSize = camerasAvailableSizes[0];
-    await CamerawesomePlugin.setPreviewSize(
-        selectedSize.width.toInt(), selectedSize.height.toInt());
-    await CamerawesomePlugin.setPhotoSize(
-        selectedSize.width.toInt(), selectedSize.height.toInt());
-    if (widget.selectSize != null) {
-      selectedSize = widget.selectSize(camerasAvailableSizes);
-      assert(selectedSize != null, "A size from the list must be selected");
+    if (widget.onOrientationChanged != null) {
+      CamerawesomePlugin.getNativeOrientation()
+        .listen(widget.onOrientationChanged);
     }
+
+    await CamerawesomePlugin.init(widget.sensor.value);
+    camerasAvailableSizes = await CamerawesomePlugin.getSizes();
+    if(widget.selectSize != null) {
+      selectedSize = widget.selectSize(camerasAvailableSizes);
+      assert(selectedSize !=null, "A size from the list must be selected");
+    } else {
+      selectedSize = camerasAvailableSizes[0];
+    }
+    await CamerawesomePlugin.setPreviewSize(selectedSize.width.toInt(), selectedSize.height.toInt());
+    await CamerawesomePlugin.setPhotoSize(selectedSize.width.toInt(), selectedSize.height.toInt());
+    // android has a limits on preview size and fallback to 1920x1080 if preview is too big
+    selectedSize = await CamerawesomePlugin.getEffectivPreviewSize();
     await CamerawesomePlugin.start();
-    started = true;
-    if (widget.onCameraStarted != null) {
+    started =  true;
+    if(widget.onCameraStarted != null) {
       widget.onCameraStarted();
     }
     _initFlashModeSwitcher();
@@ -132,18 +130,19 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: CamerawesomePlugin.getPreviewTexture(),
-        builder: (context, snapshot) {
-          if (!hasPermissions) return Container();
-          if (!snapshot.hasData || !hasInit)
-            return Center(child: CircularProgressIndicator());
-          return _CameraPreviewWidget(
-            scale: 1,
-            ratio: selectedSize.height / selectedSize.width,
-            size: selectedSize,
-            textureId: snapshot.data,
-          );
-        });
+      future: CamerawesomePlugin.getPreviewTexture(),
+      builder: (context, snapshot) {
+        if(!hasPermissions)
+          return Container();
+        if(!snapshot.hasData || !hasInit)
+          return Center(child: CircularProgressIndicator());
+        return _CameraPreviewWidget(
+          size: selectedSize,
+          fitted: widget.fitted,
+          textureId: snapshot.data,
+        );
+      }
+    );
   }
 
   bool get hasInit =>
@@ -185,66 +184,78 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       setState(() {});
     });
   }
-
-  _orientationChanged(CameraOrientations orientation) {
-    if (widget.onOrientationChanged != null) {
-      widget.onOrientationChanged(orientation);
-    }
-  }
 }
 
 ///
 class _CameraPreviewWidget extends StatelessWidget {
-  final double scale;
-
-  final double ratio;
 
   final Size size;
 
   final int textureId;
 
+  final bool fitted;
+
   final bool testMode;
 
   _CameraPreviewWidget(
-      {this.scale,
-      this.ratio,
-      this.size,
+      {this.size,
       this.textureId,
+      this.fitted = false,
       this.testMode = false});
 
   @override
   Widget build(BuildContext context) {
-    var contentSize = MediaQuery.of(context).size;
     return OrientationBuilder(
-        builder: (context, orientation) => Transform.rotate(
-              angle: orientation == Orientation.portrait ? 0 : -pi / 2,
-              child: Container(
-                color: Colors.black,
-                child: Center(
-                  child: Transform.scale(
-                    scale: _calculateScale(context, orientation),
-                    child: AspectRatio(
-                      aspectRatio:
-                          orientation == Orientation.portrait ? ratio : ratio,
-                      child: SizedBox(
-                        height: orientation == Orientation.portrait
-                            ? contentSize.height
-                            : contentSize.width,
-                        width: orientation == Orientation.portrait
-                            ? contentSize.width
-                            : contentSize.height,
-                        child: testMode
-                            ? Container()
-                            : Texture(textureId: textureId),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ));
+      builder: (context, orientation) {
+        double ratio = size.height / size.width;
+        return fitted ? buildFittedBox(orientation) : buildFull(context, ratio, orientation);
+      }
+    );
   }
 
-  _calculateScale(BuildContext context, Orientation orientation) {
+  Widget buildFull(BuildContext context, double ratio, Orientation orientation) {
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: Transform.scale(
+          scale: _calculateScale(context, ratio, orientation),
+          child: AspectRatio(
+            aspectRatio: ratio,
+            child: SizedBox(
+              height: orientation == Orientation.portrait
+                ? size.height
+                : size.width,
+              width: orientation == Orientation.portrait
+                ? size.width
+                : size.height,
+              child: testMode
+                ? Container()
+                : Texture(textureId: textureId),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildFittedBox(Orientation orientation) {
+    return FittedBox(
+        fit: BoxFit.fitWidth,
+        child: SizedBox(
+          height: orientation == Orientation.portrait
+            ? size.height
+            : size.width,
+          width: orientation == Orientation.portrait
+            ? size.width
+            : size.height,
+          child: testMode
+            ? Container()
+            : Texture(textureId: textureId),
+        ),
+      );
+  }
+
+  _calculateScale(BuildContext context, double ratio, Orientation orientation) {
     var contentSize = MediaQuery.of(context).size;
     var scale = ratio / contentSize.aspectRatio;
     if (ratio < contentSize.aspectRatio) {

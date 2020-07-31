@@ -66,6 +66,8 @@
         [self _handleGetTextures:call result:result];
     } else if ([@"setPreviewSize" isEqualToString:call.method]) {
         [self _handlePreviewSize:call result:result];
+    } else if ([@"getEffectivPreviewSize" isEqualToString:call.method]) {
+        [self _handleGetEffectivPreviewSize:call result:result];
     } else if ([@"setPhotoSize" isEqualToString:call.method]) {
         [self _handlePhotoSize:call result:result];
     } else if ([@"takePhoto" isEqualToString:call.method]) {
@@ -86,6 +88,14 @@
         result(FlutterMethodNotImplemented);
         return;
     }
+}
+
+- (void)_handleGetEffectivPreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
+    CGSize previewSize = [_camera getEffectivPreviewSize];
+    result(@{
+        @"width": [NSNumber numberWithInt:previewSize.width],
+        @"height": [NSNumber numberWithInt:previewSize.height],
+    });
 }
 
 - (void)_handleSetZoom:(FlutterMethodCall*)call result:(FlutterResult)result {

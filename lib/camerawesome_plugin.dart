@@ -85,7 +85,7 @@ class CamerawesomePlugin {
   }
 
   // TODO
-//  static Future<void> dispose() =>_channel.invokeMethod("dispose");
+  //  static Future<void> dispose() =>_channel.invokeMethod("dispose");
 
   static Future<void> flipCamera() => _channel.invokeMethod("flipCamera");
 
@@ -114,6 +114,15 @@ class CamerawesomePlugin {
       'width': width,
       'height': height,
     });
+  }
+
+  /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
+  /// So to prevent having different ratio we get the real preview Size directly from nativ side
+  static Future<Size> getEffectivPreviewSize() async {
+    Map<dynamic, dynamic> sizeMap = await _channel.invokeMethod("getEffectivPreviewSize");
+    int width = sizeMap["width"];
+    int height = sizeMap["height"];
+    return Size(width.toDouble(), height.toDouble());
   }
 
   /// Just for android
@@ -152,6 +161,7 @@ class CamerawesomePlugin {
         'sensor': sensor.toString().split(".")[1],
       });
 
+  /// returns the max zoom available on device
   static Future<num> getMaxZoom() => _channel.invokeMethod("getMaxZoom");
 
   // ---------------------------------------------------

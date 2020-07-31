@@ -96,9 +96,13 @@ public class CameraStateManager extends CameraDevice.StateCallback {
     public void stopCamera() {
         try {
             if(mCameraSession != null) {
-                mCameraSession.getCaptureSession().stopRepeating();
-                mCameraSession.getCaptureSession().abortCaptures();
-                mCameraSession.getCaptureSession().close();
+                try {
+                    mCameraSession.getCaptureSession().stopRepeating();
+                    mCameraSession.getCaptureSession().abortCaptures();
+                    mCameraSession.getCaptureSession().close();
+                } catch (CameraAccessException | IllegalStateException e) {
+                    Log.e(TAG, "close camera session: failed", e);
+                }
             }
             if(mCameraPicture != null) {
                 mCameraPicture.dispose();
@@ -111,8 +115,8 @@ public class CameraStateManager extends CameraDevice.StateCallback {
                 mCameraDevice = null;
             }
             releaseSemaphore();
-        } catch (Exception e) {
-            throw new RuntimeException("Interrupted while trying to lock camera closing.", e);
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "stopCamera: failed", e);
         } finally {
             mCameraOpenCloseLock.release();
             this.opened = false;
