@@ -69,15 +69,19 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       vsync: this,
       duration: Duration(milliseconds: 300),
     )..addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        animationPlaying = false;
-      }
-    });
+        if (status == AnimationStatus.completed) {
+          animationPlaying = false;
+        }
+      });
 
     _previewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1300),
       vsync: this,
-    );
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          setState(() {});
+        }
+      });
     _previewAnimation = Tween<Offset>(
       begin: const Offset(-2.0, 0.0),
       end: Offset.zero,
@@ -127,7 +131,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           child: Align(
             alignment: alignment,
             child: Padding(
-              padding: const EdgeInsets.all(35.0),
+              padding: OrientationUtils.isOnPortraitMode(_orientation.value)
+                  ? EdgeInsets.symmetric(horizontal: 35.0)
+                  : EdgeInsets.symmetric(vertical: 65.0),
               child: Transform.rotate(
                 angle: OrientationUtils.convertOrientationToRadian(
                   _orientation.value,
@@ -135,9 +141,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 child: Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(mirror ? pi : 0.0),
-                  child: SlideTransition(
-                    position: _previewAnimation,
-                    child: _buildPreviewPicture(reverseImage: mirror),
+                  child: Dismissible(
+                    onDismissed: (direction) {},
+                    key: UniqueKey(),
+                    child: SlideTransition(
+                      position: _previewAnimation,
+                      child: _buildPreviewPicture(reverseImage: mirror),
+                    ),
                   ),
                 ),
               ),
@@ -173,11 +183,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
                   child: Image.file(
                     new File(_lastPhotoPath),
-                    width: 128,
+                    width: OrientationUtils.isOnPortraitMode(_orientation.value)
+                        ? 128
+                        : 256,
                   ),
                 )
               : Container(
-                  width: 128,
+                  width: OrientationUtils.isOnPortraitMode(_orientation.value)
+                      ? 128
+                      : 256,
                   height: 228,
                   decoration: BoxDecoration(
                     color: Colors.black38,
@@ -280,21 +294,22 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
                   setState(() {
                     _lastPhotoPath = filePath;
-
-                    // TODO: Display loading on preview
-                    // Display preview box
-                    if (_previewDismissTimer != null) {
-                      _previewDismissTimer.cancel();
-                    }
-                    _previewDismissTimer =
-                        Timer(Duration(milliseconds: 4500), () {
-                      _previewAnimationController.reverse();
-                    });
-                    _previewAnimationController.forward();
                   });
+
+                  // TODO: Display loading on preview
+                  // Display preview box
+                  if (_previewDismissTimer != null) {
+                    _previewDismissTimer.cancel();
+                  }
+                  _previewDismissTimer =
+                      Timer(Duration(milliseconds: 4500), () {
+                    _previewAnimationController.reverse();
+                  });
+                  _previewAnimationController.forward();
                   print("----------------------------------");
                   print("TAKE PHOTO CALLED");
                   print("==> hastakePhoto : ${await File(filePath).exists()}");
+                  print("==> path : $filePath");
                   print("----------------------------------");
                 },
               ),
@@ -384,8 +399,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 onOrientationChanged: (CameraOrientations newOrientation) {
                   _orientation.value = newOrientation;
                   _previewDismissTimer.cancel();
-                  _previewAnimationController.reset();
-                  setState(() {});
+                  _previewAnimationController.reverse();
+                  // setState(() {});
                 },
               ),
             ),

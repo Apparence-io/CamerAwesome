@@ -36,4 +36,8 @@ class OrientationUtils {
     }
     return radians;
   }
+
+  static bool isOnPortraitMode(CameraOrientations orientation) {
+    return (orientation == CameraOrientations.PORTRAIT_DOWN || orientation == CameraOrientations.PORTRAIT_UP);
+  }
 }
