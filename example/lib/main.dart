@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
+import 'package:camerawesome_example/widgets/take_photo_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -292,8 +293,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 FlatButton(
                   color: Colors.transparent,
                   child: Text(
-                      "${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}",
-                      style: TextStyle(color: Colors.white)),
+                    'res: ${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   onPressed: () => setState(() => fullscreen = !fullscreen),
                 ),
             ],
@@ -350,7 +352,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 zoom: zoomNotifier,
                 onOrientationChanged: (CameraOrientations newOrientation) {
                   _orientation.value = newOrientation;
-      
+
                   // switch (_orientation.value) {
                   //   case CameraOrientations.PORTRAIT_UP:
                   //   case CameraOrientations.PORTRAIT_DOWN:
