@@ -4,6 +4,7 @@ import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -183,7 +184,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   } else {
                     switchFlash.value = CameraFlashes.ALWAYS;
                   }
-                  _controller.forward();
 
                   setState(() {});
                 },
@@ -223,6 +223,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   final String filePath =
                       '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await _pictureController.takePicture(filePath);
+                  HapticFeedback.heavyImpact();
                   setState(() {
                     _lastPhotoPath = filePath;
                   });
