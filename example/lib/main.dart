@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:camerawesome/models/orientations.dart';
+import 'package:camerawesome_example/utils/orientation_utils.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
 import 'package:camerawesome_example/widgets/take_photo_button.dart';
 import 'package:flutter/cupertino.dart';
@@ -46,15 +49,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   /// list of available sizes
   List<Size> availableSizes;
 
-  AnimationController _controller;
+  AnimationController _iconsAnimationController;
 
   AnimationController _previewAnimationController;
 
   Animation<Offset> _previewAnimation;
 
-  Tween<Offset> _previewAnimationTween;
-
   bool animationPlaying = false;
+
+  Timer _previewDismissTimer;
 
   ValueNotifier<CameraOrientations> _orientation =
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
@@ -62,11 +65,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _iconsAnimationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 300),
-    );
-    _controller.addStatusListener((status) {
+    )..addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         animationPlaying = false;
       }
@@ -76,20 +78,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1300),
       vsync: this,
     );
-    _previewAnimationController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        // Then dismiss it after 4.5 seconds
-        Future.delayed(const Duration(milliseconds: 4500), () {
-          _previewAnimationController.reverse();
-        });
-      }
-    });
-
-    _previewAnimationTween = Tween<Offset>(
+    _previewAnimation = Tween<Offset>(
       begin: const Offset(-2.0, 0.0),
       end: Offset.zero,
-    );
-    _previewAnimation = _previewAnimationTween.animate(CurvedAnimation(
+    ).animate(CurvedAnimation(
         parent: _previewAnimationController,
         curve: Curves.elasticOut,
         reverseCurve: Curves.elasticIn));
@@ -101,26 +93,54 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    Alignment alignment;
+    bool mirror;
+    switch (_orientation.value) {
+      case CameraOrientations.PORTRAIT_UP:
+      case CameraOrientations.PORTRAIT_DOWN:
+        alignment = _orientation.value == CameraOrientations.PORTRAIT_UP
+            ? Alignment.bottomLeft
+            : Alignment.topLeft;
+        mirror = _orientation.value == CameraOrientations.PORTRAIT_DOWN;
+        break;
+      case CameraOrientations.LANDSCAPE_LEFT:
+      case CameraOrientations.LANDSCAPE_RIGHT:
+        alignment = Alignment.topLeft;
+        mirror = _orientation.value == CameraOrientations.LANDSCAPE_LEFT;
+        break;
+    }
+
     return Scaffold(
         body: Stack(
       fit: StackFit.expand,
       children: <Widget>[
         fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
         _buildInterface(),
-        Align(
-          alignment: Alignment.bottomLeft,
-          child: Padding(
-            padding: const EdgeInsets.all(35.0),
-            child: SlideTransition(
-              position: _previewAnimation,
-              child: _buildPreviewPicture(),
+        SafeArea(
+          child: Align(
+            alignment: alignment,
+            child: Padding(
+              padding: const EdgeInsets.all(35.0),
+              child: Transform.rotate(
+                angle: OrientationUtils.convertOrientationToRadian(
+                  _orientation.value,
+                ),
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(mirror ? pi : 0.0),
+                  child: SlideTransition(
+                    position: _previewAnimation,
+                    child: _buildPreviewPicture(reverseImage: mirror),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -128,7 +148,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     ));
   }
 
-  Widget _buildPreviewPicture() {
+  Widget _buildPreviewPicture({bool reverseImage = false}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -148,9 +168,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(13.0),
           child: _lastPhotoPath != null
-              ? Image.file(
-                  new File(_lastPhotoPath),
-                  width: 128,
+              ? Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
+                  child: Image.file(
+                    new File(_lastPhotoPath),
+                    width: 128,
+                  ),
                 )
               : Container(
                   width: 128,
@@ -191,7 +215,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             children: <Widget>[
               OptionButton(
                 icon: Icons.switch_camera,
-                rotationController: _controller,
+                rotationController: _iconsAnimationController,
                 orientation: _orientation,
                 onTapCallback: () async {
                   this.focus = !focus;
@@ -202,7 +226,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 width: 20.0,
               ),
               OptionButton(
-                rotationController: _controller,
+                rotationController: _iconsAnimationController,
                 icon: (switchFlash.value == CameraFlashes.ALWAYS)
                     ? Icons.flash_off
                     : Icons.flash_on,
@@ -235,7 +259,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             children: <Widget>[
               OptionButton(
                 icon: Icons.zoom_out,
-                rotationController: _controller,
+                rotationController: _iconsAnimationController,
                 orientation: _orientation,
                 onTapCallback: () {
                   if (zoomNotifier.value >= 0.1) {
@@ -259,6 +283,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
                     // TODO: Display loading on preview
                     // Display preview box
+                    if (_previewDismissTimer != null) {
+                      _previewDismissTimer.cancel();
+                    }
+                    _previewDismissTimer =
+                        Timer(Duration(milliseconds: 4500), () {
+                      _previewAnimationController.reverse();
+                    });
                     _previewAnimationController.forward();
                   });
                   print("----------------------------------");
@@ -269,7 +300,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               ),
               OptionButton(
                 icon: Icons.zoom_in,
-                rotationController: _controller,
+                rotationController: _iconsAnimationController,
                 orientation: _orientation,
                 onTapCallback: () {
                   if (zoomNotifier.value <= 0.9) {
@@ -352,21 +383,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 zoom: zoomNotifier,
                 onOrientationChanged: (CameraOrientations newOrientation) {
                   _orientation.value = newOrientation;
-
-                  // switch (_orientation.value) {
-                  //   case CameraOrientations.PORTRAIT_UP:
-                  //   case CameraOrientations.PORTRAIT_DOWN:
-                  //     _previewAnimationTween.begin = Offset(-2.0, 0.0);
-                  //     _previewAnimationTween.end = Offset.zero;
-
-                  //     break;
-                  //   case CameraOrientations.LANDSCAPE_LEFT:
-                  //   case CameraOrientations.LANDSCAPE_RIGHT:
-                  //     _previewAnimationTween.begin = Offset(-0.5, -0.8);
-                  //     _previewAnimationTween.end = Offset(-0.5, -0.8);
-                  //     break;
-                  // }
-
+                  _previewDismissTimer.cancel();
+                  _previewAnimationController.reset();
                   setState(() {});
                 },
               ),
