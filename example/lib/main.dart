@@ -47,10 +47,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   AnimationController _controller;
 
-  // TODO: Get first time orientation from device
-  CameraOrientations _oldOrientation = CameraOrientations.PORTRAIT_UP;
+  AnimationController _previewAnimationController;
 
-  CameraOrientations _currentOrientation = CameraOrientations.PORTRAIT_UP;
+  Animation<Offset> _previewAnimation;
+
+  Tween<Offset> _previewAnimationTween;
 
   bool animationPlaying = false;
 
@@ -66,10 +67,31 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     );
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _oldOrientation = _currentOrientation;
         animationPlaying = false;
       }
     });
+
+    _previewAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1300),
+      vsync: this,
+    );
+    _previewAnimationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // Then dismiss it after 4.5 seconds
+        Future.delayed(const Duration(milliseconds: 4500), () {
+          _previewAnimationController.reverse();
+        });
+      }
+    });
+
+    _previewAnimationTween = Tween<Offset>(
+      begin: const Offset(-2.0, 0.0),
+      end: Offset.zero,
+    );
+    _previewAnimation = _previewAnimationTween.animate(CurvedAnimation(
+        parent: _previewAnimationController,
+        curve: Curves.elasticOut,
+        reverseCurve: Curves.elasticIn));
 
     photoSize.addListener(() {
       setState(() {});
@@ -79,6 +101,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   @override
   void dispose() {
     _controller.dispose();
+    _previewAnimationController.dispose();
     super.dispose();
   }
 
@@ -90,55 +113,60 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       children: <Widget>[
         fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
         _buildInterface(),
-        if (_lastPhotoPath != null)
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              padding: const EdgeInsets.all(35.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(15),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black45,
-                      offset: Offset(2, 2),
-                      blurRadius: 25,
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(3.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(13.0),
-                    child: Image.file(
-                      new File(_lastPhotoPath),
-                      width: 128,
-                    ),
-                  ),
-                ),
-              ),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.all(35.0),
+            child: SlideTransition(
+              position: _previewAnimation,
+              child: _buildPreviewPicture(),
             ),
           ),
-        Positioned(
-          bottom: 100,
-          right: 32,
-          child: Column(
-            children: <Widget>[
-              // FlatButton(
-              //     color: Colors.blue,
-              //     child: Text("focus", style: TextStyle(color: Colors.white)),
-              //     onPressed: () async {
-              //       this.focus = !focus;
-              //       await CamerawesomePlugin.startAutoFocus();
-              //     }),
-            ],
-          ),
-        )
+        ),
       ],
     ));
+  }
+
+  Widget _buildPreviewPicture() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(
+          Radius.circular(15),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black45,
+            offset: Offset(2, 2),
+            blurRadius: 25,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(13.0),
+          child: _lastPhotoPath != null
+              ? Image.file(
+                  new File(_lastPhotoPath),
+                  width: 128,
+                )
+              : Container(
+                  width: 128,
+                  height: 228,
+                  decoration: BoxDecoration(
+                    color: Colors.black38,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.photo,
+                      color: Colors.white,
+                    ),
+                  ),
+                ), // TODO: Placeholder here
+        ),
+      ),
+    );
   }
 
   Widget _buildInterface() {
@@ -223,9 +251,14 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   final String filePath =
                       '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await _pictureController.takePicture(filePath);
-                  HapticFeedback.heavyImpact();
+                  HapticFeedback.mediumImpact();
+
                   setState(() {
                     _lastPhotoPath = filePath;
+
+                    // TODO: Display loading on preview
+                    // Display preview box
+                    _previewAnimationController.forward();
                   });
                   print("----------------------------------");
                   print("TAKE PHOTO CALLED");
@@ -286,7 +319,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             sensor: sensor,
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
-            onOrientationChanged: (CameraOrientations orientation) {},
+            onOrientationChanged: (CameraOrientations orientation) {
+              setState(() {});
+            },
           ),
         ));
   }
@@ -315,42 +350,22 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 zoom: zoomNotifier,
                 onOrientationChanged: (CameraOrientations newOrientation) {
                   _orientation.value = newOrientation;
-
-                  // _currentOrientation = newOrientation;
-
-                  // double from;
-                  // bool reverse;
-
-                  // switch (_oldOrientation) {
+      
+                  // switch (_orientation.value) {
                   //   case CameraOrientations.PORTRAIT_UP:
-                  //     reverse =
-                  //         newOrientation == CameraOrientations.LANDSCAPE_LEFT;
-                  //     from = 0;
-                  //     break;
                   //   case CameraOrientations.PORTRAIT_DOWN:
-                  //     reverse =
-                  //         newOrientation == CameraOrientations.LANDSCAPE_RIGHT;
-                  //     from = 0.25;
+                  //     _previewAnimationTween.begin = Offset(-2.0, 0.0);
+                  //     _previewAnimationTween.end = Offset.zero;
+
                   //     break;
                   //   case CameraOrientations.LANDSCAPE_LEFT:
-                  //     reverse =
-                  //         newOrientation == CameraOrientations.PORTRAIT_DOWN;
-                  //     from = 0.25;
-                  //     break;
                   //   case CameraOrientations.LANDSCAPE_RIGHT:
-                  //     reverse =
-                  //         newOrientation == CameraOrientations.PORTRAIT_UP;
-                  //     from = 0.5;
+                  //     _previewAnimationTween.begin = Offset(-0.5, -0.8);
+                  //     _previewAnimationTween.end = Offset(-0.5, -0.8);
                   //     break;
-                  //   default:
                   // }
 
-                  // _controller.reset();
-                  // if (reverse) {
-                  //   _controller.reverse(from: from);
-                  // } else {
-                  //   _controller.forward(from: from);
-                  // }
+                  setState(() {});
                 },
               ),
             ),

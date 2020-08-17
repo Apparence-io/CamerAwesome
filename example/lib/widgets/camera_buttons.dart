@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:camerawesome/models/orientations.dart';
+import 'package:camerawesome_example/utils/orientation_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,12 +36,12 @@ class _OptionButtonState extends State<OptionButton>
         .animate(widget.rotationController)
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
-              _oldOrientation = _convertRadianToOrientation(_angle);
+              _oldOrientation = OrientationUtils.convertRadianToOrientation(_angle);
             }
           });
 
     widget.orientation.addListener(() {
-      _angle = _convertOrientationToRadian(widget.orientation.value);
+      _angle = OrientationUtils.convertOrientationToRadian(widget.orientation.value);
 
       // TODO: be able to rotate on portrait down mode to landscape
       if (widget.orientation.value == CameraOrientations.PORTRAIT_UP) {
@@ -119,40 +120,6 @@ class _OptionButtonState extends State<OptionButton>
         );
       },
     );
-  }
-
-  CameraOrientations _convertRadianToOrientation(double radians) {
-    CameraOrientations orientation;
-    if (radians == -pi / 2) {
-      orientation = CameraOrientations.LANDSCAPE_LEFT;
-    } else if (radians == pi / 2) {
-      orientation = CameraOrientations.LANDSCAPE_RIGHT;
-    } else if (radians == 0.0) {
-      orientation = CameraOrientations.PORTRAIT_UP;
-    } else if (radians == pi) {
-      orientation = CameraOrientations.PORTRAIT_DOWN;
-    }
-    return orientation;
-  }
-
-  double _convertOrientationToRadian(CameraOrientations orientation) {
-    double radians;
-    switch (orientation) {
-      case CameraOrientations.LANDSCAPE_LEFT:
-        radians = -pi / 2;
-        break;
-      case CameraOrientations.LANDSCAPE_RIGHT:
-        radians = pi / 2;
-        break;
-      case CameraOrientations.PORTRAIT_UP:
-        radians = 0.0;
-        break;
-      case CameraOrientations.PORTRAIT_DOWN:
-        radians = pi;
-        break;
-      default:
-    }
-    return radians;
   }
 }
 
