@@ -53,6 +53,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   // Flutter channel to send method results
   private MethodChannel channel;
 
+  // Flutter event channel to listen orientation changes from sensor
+  private EventChannel sensorOrientationChannel;
+
   // Flutter texture registry
   private TextureRegistry textureRegistry;
 
@@ -70,6 +73,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
 
   // handle the session between CameraPicture and CameraSession
   private CameraSession mCameraSession;
+
+  // listen sensor orientation
+  private SensorOrientationListener mSensorOrientation = new SensorOrientationListener();
 
   // did user has accept all permissions
   private boolean permissionGranted = false;
@@ -158,7 +164,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger, TextureRegistry textureRegistry) {
     this.applicationContext = applicationContext;
     channel = new MethodChannel(messenger, "camerawesome");
+    sensorOrientationChannel = new EventChannel(messenger, "camerawesome/orientation");
     channel.setMethodCallHandler(this);
+    sensorOrientationChannel.setStreamHandler(mSensorOrientation);
     this.textureRegistry = textureRegistry;
   }
 
@@ -201,7 +209,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     CameraSensor sensor = sensorArg.equals("FRONT") ? CameraSensor.FRONT : CameraSensor.BACK;
     try {
       // init setup
-      mCameraSetup = new CameraSetup(applicationContext, pluginActivity);
+      mCameraSetup = new CameraSetup(applicationContext, pluginActivity, mSensorOrientation);
       mCameraSetup.chooseCamera(sensor);
       mCameraSetup.listenOrientation();
       // init camera session builder

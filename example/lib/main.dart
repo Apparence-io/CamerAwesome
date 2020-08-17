@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   bool focus = false;
 
-  bool fullscreen = false;
+  bool fullscreen = true;
 
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
@@ -96,6 +96,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
@@ -121,6 +126,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         break;
     }
 
+    photoSize.addListener(() {
+      if (mounted) setState(() {});
+    });
     return Scaffold(
         body: Stack(
       fit: StackFit.expand,
@@ -326,29 +334,34 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(
-                    fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                    color: Colors.white),
-                onPressed: () => setState(() => fullscreen = !fullscreen),
-              ),
-              if (photoSize.value != null)
-                FlatButton(
-                  color: Colors.transparent,
-                  child: Text(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                      fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                      color: Colors.white),
+                  onPressed: () => setState(() => fullscreen = !fullscreen),
+                ),
+                if (photoSize.value != null)
+                  Text(
                     'res: ${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () => setState(() => fullscreen = !fullscreen),
-                ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  _onOrientationChange(CameraOrientations newOrientation) {
+    _orientation.value = newOrientation;
+    _previewDismissTimer.cancel();
+    _previewAnimationController.reverse();
   }
 
   Widget buildFullscreenCamera() {
@@ -367,9 +380,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             sensor: sensor,
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
-            onOrientationChanged: (CameraOrientations orientation) {
-              setState(() {});
-            },
+            onOrientationChanged: _onOrientationChange,
           ),
         ));
   }
@@ -396,12 +407,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 fitted: true,
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
-                onOrientationChanged: (CameraOrientations newOrientation) {
-                  _orientation.value = newOrientation;
-                  _previewDismissTimer.cancel();
-                  _previewAnimationController.reverse();
-                  // setState(() {});
-                },
+                onOrientationChanged: _onOrientationChange,
               ),
             ),
           ),

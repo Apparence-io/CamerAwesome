@@ -103,6 +103,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   @override
   void dispose() {
     CamerawesomePlugin.stop();
+    selectedAndroidPhotoSize.dispose();
+    selectedPreviewSize.dispose();
+    widget.photoSize.value = null;
     super.dispose();
   }
 
@@ -144,6 +147,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     return FutureBuilder(
       future: CamerawesomePlugin.getPreviewTexture(),
       builder: (context, snapshot) {
+        if(snapshot.hasError) {
+          return Container(); //TODO retry ?
+        }
         if(!hasPermissions)
           return Container();
         if(!snapshot.hasData || !hasInit)
@@ -210,13 +216,15 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       return;
     }
     widget.photoSize.addListener(() async {
-      if(widget.photoSize == null) {
+      if(widget.photoSize.value == null) {
         return;
       }
       selectedAndroidPhotoSize.value = widget.photoSize.value;
       await CamerawesomePlugin.setPreviewSize(widget.photoSize.value.width.toInt(), widget.photoSize.value.height.toInt());
       selectedPreviewSize.value = await CamerawesomePlugin.getEffectivPreviewSize();
-      setState(() {});
+      if(mounted) {
+        setState(() {});
+      }
     });
   }
 

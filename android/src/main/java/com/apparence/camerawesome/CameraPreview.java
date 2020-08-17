@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import com.apparence.camerawesome.exceptions.CameraPreviewException;
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
 import com.apparence.camerawesome.surface.FlutterSurfaceFactory;
@@ -82,6 +83,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
     
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
+        if(previewSize == null)
+            this.previewSize = new Size(MAX_PREVIEW_WIDTH, MAX_PREVIEW_HEIGHT);
         // create surface
         previewSurface = surfaceFactory.build(previewSize);
         // create preview
