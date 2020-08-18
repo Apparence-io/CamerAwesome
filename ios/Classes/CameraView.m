@@ -161,22 +161,18 @@
 }
 
 - (void)setSensor:(CameraSensor)sensor {
-    // CameraSensor sensor = (_cameraSensor == Front) ? Back : Front;
-    
     // First remove all input & output
     [_captureSession beginConfiguration];
     AVCaptureDeviceInput *oldInput = [_captureSession.inputs firstObject];
     [_captureSession removeInput:oldInput];
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
-    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-    [_captureConnection setVideoMirrored:(sensor == Back)];
-    
+
     // Init the camera with the selected sensor
     [self initCamera:sensor];
 
     [_captureSession commitConfiguration];
-    
+
     _cameraSensor = sensor;
 }
 

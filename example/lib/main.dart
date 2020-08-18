@@ -246,7 +246,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   } else {
                     sensor.value = Sensors.FRONT;
                   }
-                  await CamerawesomePlugin.setSensor(sensor.value);
                 },
               ),
               SizedBox(
