@@ -160,21 +160,19 @@
     [_captureSession stopRunning];
 }
 
-- (void)flipCamera {
-    CameraSensor sensor = (_cameraSensor == Front) ? Back : Front;
-    
+- (void)setSensor:(CameraSensor)sensor {
     // First remove all input & output
     [_captureSession beginConfiguration];
     AVCaptureDeviceInput *oldInput = [_captureSession.inputs firstObject];
     [_captureSession removeInput:oldInput];
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
-    
+
     // Init the camera with the selected sensor
     [self initCamera:sensor];
 
     [_captureSession commitConfiguration];
-    
+
     _cameraSensor = sensor;
 }
 

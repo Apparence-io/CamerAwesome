@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)instantFocus;
 - (void)dispose;
 - (void)setResult:(nonnull FlutterResult)result;
-- (void)flipCamera;
+- (void)setSensor:(CameraSensor)sensor;
 - (void)setZoom:(float)value;
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;

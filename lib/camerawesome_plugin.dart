@@ -79,8 +79,6 @@ class CamerawesomePlugin {
   // TODO
   //  static Future<void> dispose() =>_channel.invokeMethod("dispose");
 
-  static Future<void> flipCamera() => _channel.invokeMethod("flipCamera");
-
   static Future<bool> init(Sensors sensor) async {
     return _channel.invokeMethod("init", <String, dynamic>{
       'sensor': sensor.toString().split(".")[1],
