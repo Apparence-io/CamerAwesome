@@ -49,7 +49,7 @@ CamerAwesome include a lot of useful features like:
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
-### Define notifiers (if needed)
+### Define notifiers (if needed) & controller
 ```
 class MyApp extends StatefulWidget {
   @override
@@ -58,9 +58,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   // [...]
+  // Notifiers
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<Size> _photoSize = ValueNotifier(null);
+
+  // Controller
+  PictureController _pictureController = new PictureController();
   // [...]
 }
 ```
@@ -73,18 +77,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return CameraAwesome(
       testMode: false,
-      onPermissionsResult: (bool result) {
-        // Check if CamerAwesome granted
-      }
-      selectDefaultSize: (List<Size> availableSizes) {
-        return Size(1920, 1080);
-      },
-      onCameraStarted: () {
-        // Called when camera is started
-      },
-      onOrientationChanged: (CameraOrientations newOrientation) {
-        // Called when device rotation change
-      },
+      onPermissionsResult: (bool result) { }
+      selectDefaultSize: (List<Size> availableSizes) => Size(1920, 1080),
+      onCameraStarted: () { },
+      onOrientationChanged: (CameraOrientations newOrientation) { },
       zoom: 0.64,
       sensor: _sensor,
       photoSize: _photoSize,
@@ -95,6 +91,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   };
 // [...]
 ```
+
+
+<details>
+<summary>Reveal parameters list</summary>
+<p>
 
 | Param | Type  | Description | Required |
 | ---   | ---   | ---         | --- |
@@ -109,6 +110,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 | photoSize | ```ValueNotifier<Size>``` | choose your photo size from the [selectDefaultSize] method |  |
 | orientation | ```DeviceOrientation``` | initial orientation |  |
 | fitted | ```bool``` | whether camera preview must be as big as it needs or cropped to fill with. false by default |  |
+
+</p>
+</details>
+
+### Take a photo 🎉
+
+```
+await _pictureController.takePicture('THE_IMAGE_PATH/myimage.jpg');
+```
 
 ## 📱&nbsp; Tested devices
 
