@@ -86,9 +86,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       begin: const Offset(-2.0, 0.0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
-        parent: _previewAnimationController,
-        curve: Curves.elasticOut,
-        reverseCurve: Curves.elasticIn));
+      parent: _previewAnimationController,
+      curve: Curves.elasticOut,
+      reverseCurve: Curves.elasticIn,
+    ));
 
     photoSize.addListener(() {
       setState(() {});
@@ -149,13 +150,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 child: Transform(
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(mirror ? pi : 0.0),
-                  child: Dismissible(
-                    onDismissed: (direction) {},
-                    key: UniqueKey(),
-                    child: SlideTransition(
-                      position: _previewAnimation,
-                      child: _buildPreviewPicture(reverseImage: mirror),
-                    ),
+                  child: SlideTransition(
+                    position: _previewAnimation,
+                    child: _buildPreviewPicture(reverseImage: mirror),
                   ),
                 ),
               ),
@@ -183,34 +180,38 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       ),
       child: Padding(
         padding: const EdgeInsets.all(3.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(13.0),
-          child: _lastPhotoPath != null
-              ? Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
-                  child: Image.file(
-                    new File(_lastPhotoPath),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: 105),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(13.0),
+            child: _lastPhotoPath != null
+                ? Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
+                    child: Image.file(
+                      new File(_lastPhotoPath),
+                      width:
+                          OrientationUtils.isOnPortraitMode(_orientation.value)
+                              ? 128
+                              : 256,
+                    ),
+                  )
+                : Container(
                     width: OrientationUtils.isOnPortraitMode(_orientation.value)
                         ? 128
                         : 256,
-                  ),
-                )
-              : Container(
-                  width: OrientationUtils.isOnPortraitMode(_orientation.value)
-                      ? 128
-                      : 256,
-                  height: 228,
-                  decoration: BoxDecoration(
-                    color: Colors.black38,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.photo,
-                      color: Colors.white,
+                    height: 228,
+                    decoration: BoxDecoration(
+                      color: Colors.black38,
                     ),
-                  ),
-                ), // TODO: Placeholder here
+                    child: Center(
+                      child: Icon(
+                        Icons.photo,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ), // TODO: Placeholder here
+          ),
         ),
       ),
     );
@@ -314,7 +315,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                     _previewDismissTimer.cancel();
                   }
                   _previewDismissTimer =
-                      Timer(Duration(milliseconds: 4500), () {
+                      Timer(Duration(milliseconds: 5000), () {
                     _previewAnimationController.reverse();
                   });
                   _previewAnimationController.forward();
