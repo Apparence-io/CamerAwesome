@@ -84,6 +84,8 @@ Feel free to help by submitting PR !
 - [ ] Record video
 - [ ] Focus on specific point
 - [ ] Add e2e tests
+- [x] ~~Fullscreen/SizedBox support~~
+- [x] ~~Complete example~~
 - [x] ~~Take a picture~~
 - [x] ~~Zoom level~~
 - [x] ~~Live switching camera~~
