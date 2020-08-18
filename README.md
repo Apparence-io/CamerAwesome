@@ -24,7 +24,7 @@ CamerAwesome include a lot of useful features like:
 ### Set permissions
    - **iOS** add these on ```ios/Runner/Info.plist``` file
 
-```
+```xml
 <key>NSCameraUsageDescription</key>
 <string>Your own description</string>
 ```
@@ -32,25 +32,26 @@ CamerAwesome include a lot of useful features like:
   - **Android** 
     - Set permissions before ```<application>```
     <br />
-    ```
+
+    ```xml
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     ```
     
     - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
     <br />
-  
+
     ```
     minSdkVersion 21
     ```
 
 ### Import the package
-```
+```dart
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
 ### Define notifiers (if needed) & controller
-```
+```dart
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
@@ -71,7 +72,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
 ### Create your camera
 
-```
+```dart
 // [...]
 @override
   Widget build(BuildContext context) {
@@ -116,7 +117,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
 ### Take a photo 🎉
 
-```
+```dart
 await _pictureController.takePicture('THE_IMAGE_PATH/myimage.jpg');
 ```
 
