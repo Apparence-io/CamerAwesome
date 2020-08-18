@@ -76,8 +76,8 @@
         [self _handleAutoFocus:call result:result];
     } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
-    } else if ([@"flipCamera" isEqualToString:call.method]) {
-        [self _handleFlipCamera:call result:result];
+    } else if ([@"setSensor" isEqualToString:call.method]) {
+        [self _handleSetSensor:call result:result];
     } else if ([@"setZoom" isEqualToString:call.method]) {
         [self _handleSetZoom:call result:result];
     } else if ([@"getMaxZoom" isEqualToString:call.method]) {
@@ -124,8 +124,12 @@
     [_camera takePictureAtPath:path];
 }
 
-- (void)_handleFlipCamera:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [_camera flipCamera];
+- (void)_handleSetSensor:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *sensorName = call.arguments[@"sensor"];
+    // TODO: Return a list of all available cameras to front & then choice in a list the device ID wanted
+    CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
+
+    [_camera setSensor:sensor];
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {

@@ -241,7 +241,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 orientation: _orientation,
                 onTapCallback: () async {
                   this.focus = !focus;
-                  await CamerawesomePlugin.flipCamera();
+                  if (sensor.value == Sensors.FRONT) {
+                    sensor.value = Sensors.BACK;
+                  } else {
+                    sensor.value = Sensors.FRONT;
+                  }
+                  await CamerawesomePlugin.setSensor(sensor.value);
                 },
               ),
               SizedBox(
@@ -360,8 +365,34 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   _onOrientationChange(CameraOrientations newOrientation) {
     _orientation.value = newOrientation;
-    _previewDismissTimer.cancel();
+    if (_previewDismissTimer != null) {
+      _previewDismissTimer.cancel();
+    }
     _previewAnimationController.reverse();
+  }
+
+  _onPermissionsResult(bool granted) {
+    if (!granted) {
+      AlertDialog alert = AlertDialog(
+        title: Text('Error'),
+        content: Text(
+            'It seems you doesn\'t authorized some permissions. Please check on your settings and try again.'),
+        actions: [
+          FlatButton(
+            child: Text('OK'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      );
+
+      // show the dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
   }
 
   Widget buildFullscreenCamera() {
@@ -372,6 +403,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         right: 0,
         child: Center(
           child: CameraAwesome(
+            onPermissionsResult: _onPermissionsResult,
             selectDefaultSize: (availableSizes) {
               this.availableSizes = availableSizes;
               return availableSizes[0];
@@ -398,6 +430,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               height: 300,
               width: MediaQuery.of(context).size.width,
               child: CameraAwesome(
+                onPermissionsResult: _onPermissionsResult,
                 selectDefaultSize: (availableSizes) {
                   this.availableSizes = availableSizes;
                   return availableSizes[0];
