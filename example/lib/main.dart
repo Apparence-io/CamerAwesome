@@ -1,18 +1,22 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:camerawesome/models/orientations.dart';
+import 'package:camerawesome_example/utils/orientation_utils.dart';
+import 'package:camerawesome_example/widgets/camera_buttons.dart';
+import 'package:camerawesome_example/widgets/take_photo_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-
 import 'package:flutter/services.dart';
+
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
   runApp(MaterialApp(
     home: MyApp(),
+    debugShowCheckedModeBanner: false,
   ));
 }
 
@@ -21,8 +25,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
-
+class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   double bestSizeRatio;
 
   String _lastPhotoPath;
@@ -33,6 +36,7 @@ class _MyAppState extends State<MyApp> {
 
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
+  // TODO: Add zoom smooth animation
   ValueNotifier<double> zoomNotifier = ValueNotifier(0);
 
   ValueNotifier<Size> photoSize = ValueNotifier(null);
@@ -45,9 +49,50 @@ class _MyAppState extends State<MyApp> {
   /// list of available sizes
   List<Size> availableSizes;
 
+  AnimationController _iconsAnimationController;
+
+  AnimationController _previewAnimationController;
+
+  Animation<Offset> _previewAnimation;
+
+  bool animationPlaying = false;
+
+  Timer _previewDismissTimer;
+
+  ValueNotifier<CameraOrientations> _orientation =
+      ValueNotifier(CameraOrientations.PORTRAIT_UP);
+
   @override
   void initState() {
     super.initState();
+    _iconsAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          animationPlaying = false;
+        }
+      });
+
+    _previewAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1300),
+      vsync: this,
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          setState(() {});
+        }
+      });
+    _previewAnimation = Tween<Offset>(
+      begin: const Offset(-2.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+        parent: _previewAnimationController,
+        curve: Curves.elasticOut,
+        reverseCurve: Curves.elasticIn));
+
+    photoSize.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -56,126 +101,302 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    _iconsAnimationController.dispose();
+    _previewAnimationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    Alignment alignment;
+    bool mirror;
+    switch (_orientation.value) {
+      case CameraOrientations.PORTRAIT_UP:
+      case CameraOrientations.PORTRAIT_DOWN:
+        alignment = _orientation.value == CameraOrientations.PORTRAIT_UP
+            ? Alignment.bottomLeft
+            : Alignment.topLeft;
+        mirror = _orientation.value == CameraOrientations.PORTRAIT_DOWN;
+        break;
+      case CameraOrientations.LANDSCAPE_LEFT:
+      case CameraOrientations.LANDSCAPE_RIGHT:
+        alignment = Alignment.topLeft;
+        mirror = _orientation.value == CameraOrientations.LANDSCAPE_LEFT;
+        break;
+    }
+
     photoSize.addListener(() {
-      if(mounted)
-        setState(() {});
+      if (mounted) setState(() {});
     });
     return Scaffold(
         body: Stack(
-          children: <Widget>[
-            fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
-            Positioned(
-              top: 32,
-              right: 16,
-              child: IconButton(
-                icon: Icon(fullscreen ? Icons.fullscreen_exit : Icons.fullscreen, color: Colors.white),
-                onPressed: () => setState(() => fullscreen = !fullscreen),
-              ),
-            ),
-            if(photoSize.value != null)
-              Positioned(
-                top: 32,
-                left: 16,
-                child: FlatButton(
-                  color: Colors.transparent,
-                  child: Text(
-                    "${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}",
-                    style: TextStyle(color: Colors.white)
+      fit: StackFit.expand,
+      children: <Widget>[
+        fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+        _buildInterface(),
+        SafeArea(
+          child: Align(
+            alignment: alignment,
+            child: Padding(
+              padding: OrientationUtils.isOnPortraitMode(_orientation.value)
+                  ? EdgeInsets.symmetric(horizontal: 35.0)
+                  : EdgeInsets.symmetric(vertical: 65.0),
+              child: Transform.rotate(
+                angle: OrientationUtils.convertOrientationToRadian(
+                  _orientation.value,
+                ),
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(mirror ? pi : 0.0),
+                  child: Dismissible(
+                    onDismissed: (direction) {},
+                    key: UniqueKey(),
+                    child: SlideTransition(
+                      position: _previewAnimation,
+                      child: _buildPreviewPicture(reverseImage: mirror),
+                    ),
                   ),
-                  onPressed: () => setState(() => fullscreen = !fullscreen),
                 ),
               ),
-            if(_lastPhotoPath != null)
-              Positioned(
-                bottom: 52,
-                left: 32,
-                child: Image.file(new File(_lastPhotoPath), width: 128),
+            ),
+          ),
+        ),
+      ],
+    ));
+  }
+
+  Widget _buildPreviewPicture({bool reverseImage = false}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(
+          Radius.circular(15),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black45,
+            offset: Offset(2, 2),
+            blurRadius: 25,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(13.0),
+          child: _lastPhotoPath != null
+              ? Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
+                  child: Image.file(
+                    new File(_lastPhotoPath),
+                    width: OrientationUtils.isOnPortraitMode(_orientation.value)
+                        ? 128
+                        : 256,
+                  ),
+                )
+              : Container(
+                  width: OrientationUtils.isOnPortraitMode(_orientation.value)
+                      ? 128
+                      : 256,
+                  height: 228,
+                  decoration: BoxDecoration(
+                    color: Colors.black38,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.photo,
+                      color: Colors.white,
+                    ),
+                  ),
+                ), // TODO: Placeholder here
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInterface() {
+    return SafeArea(
+      child: Stack(
+        children: <Widget>[
+          _buildTopBar(),
+          _buildBottomBar(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              OptionButton(
+                icon: Icons.switch_camera,
+                rotationController: _iconsAnimationController,
+                orientation: _orientation,
+                onTapCallback: () async {
+                  this.focus = !focus;
+                  await CamerawesomePlugin.flipCamera();
+                },
               ),
-            Positioned(
-              bottom: -5,
-              left: 0,
-              right: 0,
-              child: FlatButton(
-                color: Colors.blue,
-                child: Text("take photo", style: TextStyle(color: Colors.white),),
-                onPressed: () async {
+              SizedBox(
+                width: 20.0,
+              ),
+              OptionButton(
+                rotationController: _iconsAnimationController,
+                icon: (switchFlash.value == CameraFlashes.ALWAYS)
+                    ? Icons.flash_off
+                    : Icons.flash_on,
+                orientation: _orientation,
+                onTapCallback: () {
+                  if (switchFlash.value == CameraFlashes.ALWAYS) {
+                    switchFlash.value = CameraFlashes.NONE;
+                  } else {
+                    switchFlash.value = CameraFlashes.ALWAYS;
+                  }
+
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              OptionButton(
+                icon: Icons.zoom_out,
+                rotationController: _iconsAnimationController,
+                orientation: _orientation,
+                onTapCallback: () {
+                  if (zoomNotifier.value >= 0.1) {
+                    zoomNotifier.value -= 0.1;
+                  }
+                  setState(() {});
+                },
+              ),
+              TakePhotoButton(
+                onTap: () async {
                   final Directory extDir = await getTemporaryDirectory();
-                  var testDir = await Directory('${extDir.path}/test').create(recursive: true);
-                  final String filePath = '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                  var testDir = await Directory('${extDir.path}/test')
+                      .create(recursive: true);
+                  final String filePath =
+                      '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await _pictureController.takePicture(filePath);
+                  HapticFeedback.mediumImpact();
+
                   setState(() {
                     _lastPhotoPath = filePath;
                   });
+
+                  // TODO: Display loading on preview
+                  // Display preview box
+                  if (_previewDismissTimer != null) {
+                    _previewDismissTimer.cancel();
+                  }
+                  _previewDismissTimer =
+                      Timer(Duration(milliseconds: 4500), () {
+                    _previewAnimationController.reverse();
+                  });
+                  _previewAnimationController.forward();
                   print("----------------------------------");
                   print("TAKE PHOTO CALLED");
                   print("==> hastakePhoto : ${await File(filePath).exists()}");
+                  print("==> path : $filePath");
                   print("----------------------------------");
-                }
+                },
               ),
+              OptionButton(
+                icon: Icons.zoom_in,
+                rotationController: _iconsAnimationController,
+                orientation: _orientation,
+                onTapCallback: () {
+                  if (zoomNotifier.value <= 0.9) {
+                    zoomNotifier.value += 0.1;
+                  }
+                  setState(() {});
+                },
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                      fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                      color: Colors.white),
+                  onPressed: () => setState(() => fullscreen = !fullscreen),
+                ),
+                if (photoSize.value != null)
+                  Text(
+                    'res: ${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
+                    style: TextStyle(color: Colors.white),
+                  ),
+              ],
             ),
-            Positioned(
-              bottom: 100,
-              right: 32,
-              child: Column(
-                children: <Widget>[
-                  FlatButton(
-                    color: Colors.blue,
-                    child: Text("flip camera", style: TextStyle(color: Colors.white)),
-                    onPressed: () async {
-                      this.focus = !focus;
-                      await CamerawesomePlugin.flipCamera();
-                    }
-                  ),
-                  FlatButton(
-                    color: Colors.blue,
-                    child: Text("focus", style: TextStyle(color: Colors.white)),
-                    onPressed: () async {
-                      this.focus = !focus;
-                      await CamerawesomePlugin.startAutoFocus();
-                    }
-                  ),
-                  FlatButton(
-                    color: Colors.blue,
-                    child: Text("flash auto", style: TextStyle(color: Colors.white)),
-                    onPressed: () {
-                      if(switchFlash.value == CameraFlashes.ALWAYS) {
-                        switchFlash.value = CameraFlashes.NONE;
-                      } else {
-                        switchFlash.value = CameraFlashes.ALWAYS;
-                      }
-                    }
-                  ),
-                  FlatButton(
-                    color: Colors.blue,
-                    child: Text("zoom x8", style: TextStyle(color: Colors.white)),
-                    onPressed: () => zoomNotifier.value = 1
-                  ),
-                  FlatButton(
-                    color: Colors.blue,
-                    child: Text("zoom x2", style: TextStyle(color: Colors.white)),
-                    onPressed: () => zoomNotifier.value = 0.1
-                  ),
-                  FlatButton(
-                    color: Colors.blue,
-                    child: Text("zoom x1", style: TextStyle(color: Colors.white)),
-                    onPressed: () => zoomNotifier.value = 0
-                  ),
-                ],
-              ),
-            )
-          ],
-        )
-      );
+          ),
+        ],
+      ),
+    );
+  }
+
+  _onOrientationChange(CameraOrientations newOrientation) {
+    _orientation.value = newOrientation;
+    _previewDismissTimer.cancel();
+    _previewAnimationController.reverse();
   }
 
   Widget buildFullscreenCamera() {
     return Positioned(
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            child: Center(
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        child: Center(
+          child: CameraAwesome(
+            selectDefaultSize: (availableSizes) {
+              this.availableSizes = availableSizes;
+              return availableSizes[0];
+            },
+            photoSize: photoSize,
+            sensor: sensor,
+            switchFlashMode: switchFlash,
+            zoom: zoomNotifier,
+            onOrientationChanged: _onOrientationChange,
+          ),
+        ));
+  }
+
+  Widget buildSizedScreenCamera() {
+    return Positioned(
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+        child: Container(
+          color: Colors.black,
+          child: Center(
+            child: Container(
+              height: 300,
+              width: MediaQuery.of(context).size.width,
               child: CameraAwesome(
                 selectDefaultSize: (availableSizes) {
                   this.availableSizes = availableSizes;
@@ -183,47 +404,15 @@ class _MyAppState extends State<MyApp> {
                 },
                 photoSize: photoSize,
                 sensor: sensor,
+                fitted: true,
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
-                onOrientationChanged: (CameraOrientations orientation) {
-                  // TODO: Orientation change here
-                  print(orientation);
-                },
+                onOrientationChanged: _onOrientationChange,
               ),
-            )
-          );
-  }
-
-  Widget buildSizedScreenCamera() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      bottom: 0,
-      right: 0,
-      child: Container(
-        color: Colors.black,
-        child: Center(
-          child: Container(
-            height: 300,
-            width: MediaQuery.of(context).size.width,
-            child: CameraAwesome(
-              selectDefaultSize: (availableSizes) {
-                this.availableSizes = availableSizes;
-                return availableSizes[0];
-              },
-              photoSize: photoSize,
-              sensor: sensor,
-              fitted: true,
-              switchFlashMode: switchFlash,
-              zoom: zoomNotifier,
-              onOrientationChanged: (CameraOrientations orientation) {
-                print('-- ORIENTATION CHANGED --');
-                print(orientation);
-              },
             ),
           ),
-        ),
-      )
-    );
+        ));
   }
 }
+
+class OptionButtonState {}
