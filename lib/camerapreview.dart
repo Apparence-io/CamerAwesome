@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
-import 'package:camerawesome/picture_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

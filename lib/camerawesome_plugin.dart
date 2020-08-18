@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'sensors.dart';
 import './models/orientations.dart';
-import 'package:rxdart/rxdart.dart';
 
 import 'models/flashmodes.dart';
 
