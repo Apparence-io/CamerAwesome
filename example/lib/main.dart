@@ -26,6 +26,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
+
   double bestSizeRatio;
 
   String _lastPhotoPath;
@@ -59,8 +60,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   Timer _previewDismissTimer;
 
-  ValueNotifier<CameraOrientations> _orientation =
-      ValueNotifier(CameraOrientations.PORTRAIT_UP);
+  ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
   @override
   void initState() {
@@ -130,17 +130,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       if (mounted) setState(() {});
     });
     return Scaffold(
-        body: Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
-        _buildInterface(),
-        SafeArea(
-          child: Align(
+      body: SafeArea(
+        child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+          _buildInterface(),
+          Align(
             alignment: alignment,
             child: Padding(
               padding: OrientationUtils.isOnPortraitMode(_orientation.value)
-                  ? EdgeInsets.symmetric(horizontal: 35.0)
+                  ? EdgeInsets.symmetric(horizontal: 35.0, vertical: 140)
                   : EdgeInsets.symmetric(vertical: 65.0),
               child: Transform.rotate(
                 angle: OrientationUtils.convertOrientationToRadian(
@@ -161,9 +161,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               ),
             ),
           ),
-        ),
-      ],
-    ));
+
+        ],
+    ),
+      ));
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
@@ -229,7 +230,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   Widget _buildTopBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
       child: Column(
         children: <Widget>[
           Row(
@@ -449,5 +450,3 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         ));
   }
 }
-
-class OptionButtonState {}
