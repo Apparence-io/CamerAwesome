@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.os.Build;
+import android.util.EventLog;
 import android.util.Log;
 import android.util.Size;
 
@@ -40,7 +41,7 @@ import io.flutter.view.TextureRegistry;
  * This plugin recquire android Lolipop version (21) as a min version in your Android's gradle build
  * */
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, PluginRegistry.RequestPermissionsResultListener , ActivityAware {
+public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
 
   private static final String TAG = CamerawesomePlugin.class.getName();
 
@@ -50,11 +51,17 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   // activity attached to plugin
   private Activity pluginActivity;
 
+  // manage current required permissions
+  private CameraPermissions cameraPermissions;
+
   // Flutter channel to send method results
   private MethodChannel channel;
 
   // Flutter event channel to listen orientation changes from sensor
   private EventChannel sensorOrientationChannel;
+
+  // Flutter permission event channel to listen on result
+  private EventChannel permissionsResultChannel;
 
   // Flutter texture registry
   private TextureRegistry textureRegistry;
@@ -76,10 +83,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
 
   // listen sensor orientation
   private SensorOrientationListener mSensorOrientation = new SensorOrientationListener();
-
-  // did user has accept all permissions
-  private boolean permissionGranted = false;
-
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -163,10 +166,13 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
 
   private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger, TextureRegistry textureRegistry) {
     this.applicationContext = applicationContext;
+    cameraPermissions = new CameraPermissions();
     channel = new MethodChannel(messenger, "camerawesome");
     sensorOrientationChannel = new EventChannel(messenger, "camerawesome/orientation");
+    permissionsResultChannel = new EventChannel(messenger, "camerawesome/permissions");
     channel.setMethodCallHandler(this);
     sensorOrientationChannel.setStreamHandler(mSensorOrientation);
+    permissionsResultChannel.setStreamHandler(cameraPermissions);
     this.textureRegistry = textureRegistry;
   }
 
@@ -178,13 +184,11 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     Log.d(TAG, "_handleCheckPermissions: ");
     try {
       assert(pluginActivity !=null);
-      String[] missingPermissions = CameraPermissions.checkPermissions(pluginActivity);
+      String[] missingPermissions = cameraPermissions.checkPermissions(pluginActivity);
       if(missingPermissions.length == 0) {
         result.success(new ArrayList<>());
-        this.permissionGranted = true;
       } else {
         result.success(Arrays.asList(missingPermissions));
-        this.permissionGranted = false;
       }
     } catch (RuntimeException e) {
       result.error("FAILED_TO_CHECK_PERMISSIONS", "", e.getMessage());
@@ -193,11 +197,11 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   }
 
   private void _handleRequestPermissions(MethodCall call, Result result) {
-    CameraPermissions.checkAndRequestPermissions(pluginActivity);
+    cameraPermissions.checkAndRequestPermissions(pluginActivity);
   }
 
   private void _handleSetup(MethodCall call, Result result) {
-    if(!this.permissionGranted) {
+    if(!this.cameraPermissions.hasPermissionGranted()) {
       result.error("MISSING_PERMISSION", "you got to accept all permissions before setup", "");
       return;
     }
@@ -420,22 +424,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   }
 
   // ----------------------------
-  // REQUEST PERMISSION
-  // ----------------------------
-
-  @Override
-  public boolean onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-    permissionGranted = true;
-    for(int i=0; i < permissions.length; i++) {
-      if(grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-        permissionGranted = false;
-        break;
-      }
-    }
-    return permissionGranted;
-  }
-
-  // ----------------------------
   // ActivityAware
   // ----------------------------
 
@@ -443,7 +431,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
     Log.d(TAG, "onAttachedToActivity: ");
     this.pluginActivity = binding.getActivity();
-    binding.addRequestPermissionsResultListener(this);
+    binding.addRequestPermissionsResultListener(this.cameraPermissions);
   }
 
   @Override
@@ -456,7 +444,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
     Log.d(TAG, "onReattachedToActivityForConfigChanges: ");
     this.pluginActivity = binding.getActivity();
-    binding.addRequestPermissionsResultListener(this);
+    binding.addRequestPermissionsResultListener(this.cameraPermissions);
   }
 
   @Override

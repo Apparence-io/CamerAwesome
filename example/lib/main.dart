@@ -79,11 +79,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     _previewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1300),
       vsync: this,
-    )..addStatusListener((status) {
-//        if (status == AnimationStatus.completed) {
-//          setState(() {});
-//        }
-      });
+    );
     _previewAnimation = Tween<Offset>(
       begin: const Offset(-2.0, 0.0),
       end: Offset.zero,
@@ -91,10 +87,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         parent: _previewAnimationController,
         curve: Curves.elasticOut,
         reverseCurve: Curves.elasticIn));
-
-    photoSize.addListener(() {
-      setState(() {});
-    });
   }
 
   @override
@@ -132,41 +124,39 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       if (mounted) setState(() {});
     });
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
-          _buildInterface(),
-          Align(
-            alignment: alignment,
-            child: Padding(
-              padding: OrientationUtils.isOnPortraitMode(_orientation.value)
-                  ? EdgeInsets.symmetric(horizontal: 35.0, vertical: 140)
-                  : EdgeInsets.symmetric(vertical: 65.0),
-              child: Transform.rotate(
-                angle: OrientationUtils.convertOrientationToRadian(
-                  _orientation.value,
-                ),
-                child: Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(mirror ? pi : 0.0),
-                  child: Dismissible(
-                    onDismissed: (direction) {},
-                    key: UniqueKey(),
-                    child: SlideTransition(
-                      position: _previewAnimation,
-                      child: _buildPreviewPicture(reverseImage: mirror),
-                    ),
+      body: Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+        _buildInterface(),
+        Align(
+          alignment: alignment,
+          child: Padding(
+            padding: OrientationUtils.isOnPortraitMode(_orientation.value)
+                ? EdgeInsets.symmetric(horizontal: 35.0, vertical: 140)
+                : EdgeInsets.symmetric(vertical: 65.0),
+            child: Transform.rotate(
+              angle: OrientationUtils.convertOrientationToRadian(
+                _orientation.value,
+              ),
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.rotationY(mirror ? pi : 0.0),
+                child: Dismissible(
+                  onDismissed: (direction) {},
+                  key: UniqueKey(),
+                  child: SlideTransition(
+                    position: _previewAnimation,
+                    child: _buildPreviewPicture(reverseImage: mirror),
                   ),
                 ),
               ),
             ),
           ),
+        ),
 
-        ],
-    ),
-      ));
+      ],
+    ));
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
@@ -422,6 +412,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           return alert;
         },
       );
+    } else {
+      setState(() {});
+      print("granted");
     }
   }
 

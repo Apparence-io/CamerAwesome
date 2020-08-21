@@ -21,12 +21,16 @@ export 'picture_controller.dart';
 // TODO - TESTS E2E
 // TODO VNEXT - stream images
 class CamerawesomePlugin {
+
   static const MethodChannel _channel = const MethodChannel('camerawesome');
 
-  static const EventChannel _eventChannel =
-      const EventChannel('camerawesome/orientation');
+  static const EventChannel _orientationChannel = const EventChannel('camerawesome/orientation');
+
+  static const EventChannel _permissionsChannel = const EventChannel('camerawesome/permissions');
 
   static Stream<dynamic> _orientationStream;
+
+  static Stream<bool> _permissionsStream;
 
   static Future<List<String>> checkAndroidPermissions() => _channel
       .invokeMethod("checkPermissions")
@@ -51,7 +55,7 @@ class CamerawesomePlugin {
 
   static Stream<CameraOrientations> getNativeOrientation() {
     if (_orientationStream == null) {
-      _orientationStream = _eventChannel.receiveBroadcastStream().transform(
+      _orientationStream = _orientationChannel.receiveBroadcastStream().transform(
           StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
               handleData: (data, sink) {
         CameraOrientations newOrientation;
@@ -74,6 +78,17 @@ class CamerawesomePlugin {
       }));
     }
     return _orientationStream;
+  }
+
+  static Stream<bool> listenPermissionResult() {
+    if(_permissionsStream == null) {
+      _permissionsStream = _permissionsChannel.receiveBroadcastStream()
+        .transform(StreamTransformer<dynamic,bool>.fromHandlers(handleData: (data,sink) {
+          sink.add(data);
+        })
+      );
+    }
+    return _permissionsStream;
   }
 
   // TODO

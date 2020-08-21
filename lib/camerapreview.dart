@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
@@ -80,11 +81,14 @@ class CameraAwesome extends StatefulWidget {
 }
 
 class _CameraAwesomeState extends State<CameraAwesome> {
+
   List<Size> camerasAvailableSizes;
 
   bool hasPermissions = false;
 
   bool started = false;
+
+  StreamSubscription _permissionStreamSub;
 
   /// choose preview size, default to the first available size in the list (MAX) or use [selectDefaultSize]
   final ValueNotifier<Size> selectedPreviewSize = ValueNotifier(null);
@@ -105,19 +109,33 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     selectedAndroidPhotoSize.dispose();
     selectedPreviewSize.dispose();
     widget.photoSize.value = null;
+    if(_permissionStreamSub != null) {
+      _permissionStreamSub.cancel();
+    }
     super.dispose();
   }
 
   initPlatformState() async {
+    // wait user accept permissions to init widget completely on android
+    if(Platform.isAndroid) {
+      _permissionStreamSub = CamerawesomePlugin.listenPermissionResult()
+        .listen((res) {
+          if(res) {
+            initPlatformState();
+          }
+          widget.onPermissionsResult(res);
+        });
+    }
     hasPermissions = await CamerawesomePlugin.checkPermissions();
     if(widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
-
+    if(!hasPermissions) {
+      return;
+    }
     // Init orientation stream
     if (widget.onOrientationChanged != null) {
-      CamerawesomePlugin.getNativeOrientation()
-        .listen(widget.onOrientationChanged);
+      CamerawesomePlugin.getNativeOrientation().listen(widget.onOrientationChanged);
     }
 
     await CamerawesomePlugin.init(widget.sensor.value);
