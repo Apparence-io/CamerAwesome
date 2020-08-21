@@ -67,7 +67,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
     public void refresh() {
         pictureImageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);
-        mCameraSession.addSurface(pictureImageReader.getSurface());
+        mCameraSession.addPictureSurface(pictureImageReader.getSurface());
     }
 
     /**

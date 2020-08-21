@@ -9,6 +9,8 @@ import 'package:camerawesome_example/widgets/take_photo_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui' as ui;
+import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -236,6 +238,31 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(right: 24.0),
+                child: IconButton(
+                  icon: Icon(
+                    fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                    color: Colors.white),
+                  onPressed: () => setState(() => fullscreen = !fullscreen),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    if (photoSize.value != null)
+                      FlatButton(
+                        onPressed: _buildChangeResolutionDialog,
+                        child: Text(
+                          '${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
               OptionButton(
                 icon: Icons.switch_camera,
                 rotationController: _iconsAnimationController,
@@ -283,84 +310,87 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   Widget _buildBottomBar() {
     return Align(
       alignment: Alignment.bottomCenter,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              OptionButton(
-                icon: Icons.zoom_out,
-                rotationController: _iconsAnimationController,
-                orientation: _orientation,
-                onTapCallback: () {
-                  if (zoomNotifier.value >= 0.1) {
-                    zoomNotifier.value -= 0.1;
-                  }
-                  setState(() {});
-                },
-              ),
-              TakePhotoButton(
-                onTap: () async {
-                  final Directory extDir = await getTemporaryDirectory();
-                  var testDir = await Directory('${extDir.path}/test')
-                      .create(recursive: true);
-                  final String filePath =
-                      '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                  await _pictureController.takePicture(filePath);
-                  // lets just make our phone vibrate
-                  HapticFeedback.mediumImpact();
-                  setState(() {
-                    _lastPhotoPath = filePath;
-                  });
-                  // TODO: Display loading on preview
-                  // Display preview box animation
-                  if(_previewAnimationController.status == AnimationStatus.completed) {
-                    _previewAnimationController.reset();
-                  }
-                  _previewAnimationController.forward();
-                  print("----------------------------------");
-                  print("TAKE PHOTO CALLED");
-                  print("==> hastakePhoto : ${await File(filePath).exists()}");
-                  print("==> path : $filePath");
-                  print("----------------------------------");
-                },
-              ),
-              OptionButton(
-                icon: Icons.zoom_in,
-                rotationController: _iconsAnimationController,
-                orientation: _orientation,
-                onTapCallback: () {
-                  if (zoomNotifier.value <= 0.9) {
-                    zoomNotifier.value += 0.1;
-                  }
-                  setState(() {});
-                },
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                IconButton(
-                  icon: Icon(
-                      fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                      color: Colors.white),
-                  onPressed: () => setState(() => fullscreen = !fullscreen),
-                ),
-                if (photoSize.value != null)
-                  Text(
-                    'res: ${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
-                    style: TextStyle(color: Colors.white),
-                  ),
-              ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 32.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            OptionButton(
+              icon: Icons.zoom_out,
+              rotationController: _iconsAnimationController,
+              orientation: _orientation,
+              onTapCallback: () {
+                if (zoomNotifier.value >= 0.1) {
+                  zoomNotifier.value -= 0.1;
+                }
+                setState(() {});
+              },
             ),
-          ),
-        ],
+            TakePhotoButton(
+              onTap: () async {
+                final Directory extDir = await getTemporaryDirectory();
+                var testDir = await Directory('${extDir.path}/test')
+                    .create(recursive: true);
+                final String filePath =
+                    '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                await _pictureController.takePicture(filePath);
+                // lets just make our phone vibrate
+                HapticFeedback.mediumImpact();
+                setState(() {
+                  _lastPhotoPath = filePath;
+                });
+                // TODO: Display loading on preview
+                // Display preview box animation
+                if(_previewAnimationController.status == AnimationStatus.completed) {
+                  _previewAnimationController.reset();
+                }
+                _previewAnimationController.forward();
+                print("----------------------------------");
+                print("TAKE PHOTO CALLED");
+                var file = await File(filePath);
+                print("==> hastakePhoto : ${file.exists()}");
+                print("==> path : $filePath");
+                var img = imgUtils.decodeImage(file.readAsBytesSync());
+                print("==> img.width : ${img.width}");
+                print("==> img.height : ${img.height}");
+                print("----------------------------------");
+              },
+            ),
+            OptionButton(
+              icon: Icons.zoom_in,
+              rotationController: _iconsAnimationController,
+              orientation: _orientation,
+              onTapCallback: () {
+                if (zoomNotifier.value <= 0.9) {
+                  zoomNotifier.value += 0.1;
+                }
+                setState(() {});
+              },
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  _buildChangeResolutionDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) =>
+        ListView.separated(
+          itemBuilder: (context, index) =>
+            ListTile(
+              onTap: () {
+                setState(() {
+                  this.photoSize.value = availableSizes[index];
+                });
+              },
+              leading: Icon(Icons.aspect_ratio),
+              title: Text("${availableSizes[index].width}/${availableSizes[index].height}"),
+            ),
+          separatorBuilder: (context, index) => Divider(),
+          itemCount: availableSizes.length
+        ));
   }
 
   _onOrientationChange(CameraOrientations newOrientation) {

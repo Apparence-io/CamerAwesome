@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider: ^1.6.11
+  image: ^2.1.14
   camerawesome:
     # When depending on this package from a real application you should use:
     #   camerawesome: ^x.y.z

@@ -12,7 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
 
@@ -22,11 +24,15 @@ public class CameraSession {
 
     private static final String TAG = CameraSession.class.getName();
 
+    private static final String PREVIEW_SURFACE_KEY = "PREVIEW_SURFACE_KEY";
+
+    private static final String PHOTO_SURFACE_KEY = "PHOTO_SURFACE_KEY";
+
     private CameraCaptureSession mCaptureSession;
 
     private List<OnCaptureSession> onCaptureSessionListenerList;
 
-    private List<Surface> surfaces = new ArrayList<>();
+    private Map<String, Surface> surfaces = new HashMap();
 
     private CameraPictureStates state;
 
@@ -35,7 +41,7 @@ public class CameraSession {
 
     void createCameraCaptureSession(final CameraDevice cameraDevice) throws CameraAccessException {
         this.cameraDevice = cameraDevice;
-        cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
+        cameraDevice.createCaptureSession(new ArrayList<>(surfaces.values()), new CameraCaptureSession.StateCallback() {
             @Override
             public void onConfigured(@NonNull CameraCaptureSession session) {
                 mCaptureSession = session;
@@ -66,18 +72,30 @@ public class CameraSession {
         this.onCaptureSessionListenerList = onCaptureSessionListenerList;
     }
 
-    public void addSurface(Surface surface) {
-        this.surfaces.add(surface);
+    public void addPreviewSurface(Surface surface) {
+        this.surfaces.put(PREVIEW_SURFACE_KEY, surface);
         // todo if session is active recreate session
+    }
+
+    public void addPictureSurface(Surface surface) {
+        this.surfaces.put(PHOTO_SURFACE_KEY, surface);
+        // if session is active recreate session
+        if(mCaptureSession != null) {
+            try {
+                mCaptureSession.abortCaptures();
+                this.createCameraCaptureSession(cameraDevice);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "addPictureSurface: failed to recreate camera session", e);
+            }
+        }
     }
 
     public void clearSurface() {
         this.surfaces.clear();
-        // todo if session is active recreate session
     }
 
     public List<Surface> getSurfaces() {
-        return surfaces;
+        return new ArrayList<>(surfaces.values());
     }
 
     public CameraPictureStates getState() {

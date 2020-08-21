@@ -94,7 +94,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         initPreviewRequest();
 
         mPreviewRequestBuilder.addTarget(previewSurface);
-        mCameraSession.addSurface(previewSurface);
+        mCameraSession.addPreviewSurface(previewSurface);
         mCameraSession.createCameraCaptureSession(cameraDevice);
     }
 
