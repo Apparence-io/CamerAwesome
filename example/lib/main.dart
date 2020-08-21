@@ -78,9 +78,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 1300),
       vsync: this,
     )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          setState(() {});
-        }
+//        if (status == AnimationStatus.completed) {
+//          setState(() {});
+//        }
       });
     _previewAnimation = Tween<Offset>(
       begin: const Offset(-2.0, 0.0),
@@ -308,19 +308,16 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   final String filePath =
                       '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await _pictureController.takePicture(filePath);
+                  // lets just make our phone vibrate
                   HapticFeedback.mediumImpact();
-
                   setState(() {
                     _lastPhotoPath = filePath;
                   });
                   // TODO: Display loading on preview
-                  // Display preview box
-                  if (_previewDismissTimer != null) {
-                    _previewDismissTimer.cancel();
+                  // Display preview box animation
+                  if(_previewAnimationController.status == AnimationStatus.completed) {
+                    _previewAnimationController.reset();
                   }
-                  _previewDismissTimer = Timer(Duration(milliseconds: 4500), () {
-                    _previewAnimationController.reverse();
-                  });
                   _previewAnimationController.forward();
                   print("----------------------------------");
                   print("TAKE PHOTO CALLED");
@@ -371,7 +368,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     if (_previewDismissTimer != null) {
       _previewDismissTimer.cancel();
     }
-    _previewAnimationController.reverse();
   }
 
   _onPermissionsResult(bool granted) {

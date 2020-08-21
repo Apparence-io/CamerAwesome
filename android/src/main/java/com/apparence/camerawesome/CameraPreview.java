@@ -181,7 +181,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         switch (flashMode) {
             case AUTO:
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case ALWAYS:
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);

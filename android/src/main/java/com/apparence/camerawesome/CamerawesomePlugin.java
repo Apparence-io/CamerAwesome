@@ -365,7 +365,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Plu
     double zoom;
     // sending 0.0 will result in an int so lets force cast
     zoom = call.argument("zoom");
-    Log.d(TAG, "_handleZoom: " + zoom);
     mCameraPreview.setZoom((float) zoom);
     result.success(null);
   }

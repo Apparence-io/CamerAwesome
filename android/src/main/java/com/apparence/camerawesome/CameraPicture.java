@@ -110,17 +110,9 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         takePhotoRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
         takePhotoRequestBuilder.addTarget(pictureImageReader.getSurface());
 
-        switch (flashMode) {
-            case AUTO:
-                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-                break;
-            case ALWAYS:
-                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-                break;
-            case NONE:
-            default:
-                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
-                break;
+        // FIXME handle exposure to detect need flash ?
+        if (flashMode == FlashMode.AUTO) {
+            takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
         }
         takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         takePhotoRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
@@ -171,17 +163,9 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
             captureBuilder = mCameraSession.getCameraDevice().createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(pictureImageReader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            switch (flashMode) {
-                case AUTO:
-                    captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-                    break;
-                case ALWAYS:
-                    captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-                    break;
-                case NONE:
-                default:
-                    captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
-                    break;
+            // FIXME handle exposure to detect need flash ?
+            if (flashMode == FlashMode.AUTO) {
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
             }
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
 
