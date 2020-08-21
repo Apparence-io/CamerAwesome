@@ -29,7 +29,7 @@ CamerAwesome include a lot of useful features like:
 <string>Your own description</string>
 ```
 
-  - **Android** 
+  - **Android**
     - Set permissions before ```<application>```
     <br />
 
@@ -37,7 +37,7 @@ CamerAwesome include a lot of useful features like:
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     ```
-    
+
     - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
     <br />
 
@@ -155,6 +155,10 @@ Feel free to help by submitting PR !
 - [x] ~~Zoom level~~
 - [x] ~~Live switching camera~~
 - [x] ~~Device flash support~~
+
+## Sponsor
+Initiated and sponsored by Apparence.io.
+
 
 ## 👥&nbsp; Contribution
 

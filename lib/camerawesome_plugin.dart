@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'sensors.dart';
 import './models/orientations.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'models/flashmodes.dart';
 
@@ -77,6 +79,9 @@ class CamerawesomePlugin {
   // TODO
   //  static Future<void> dispose() =>_channel.invokeMethod("dispose");
 
+  // FIXME remove this and use setSensor
+  static Future<void> flipCamera() => _channel.invokeMethod("flipCamera");
+
   static Future<bool> init(Sensors sensor) async {
     return _channel.invokeMethod("init", <String, dynamic>{
       'sensor': sensor.toString().split(".")[1],
@@ -94,8 +99,7 @@ class CamerawesomePlugin {
     return res;
   }
 
-  static Future<num> getPreviewTexture() =>
-      _channel.invokeMethod<num>('previewTexture');
+  static Future<num> getPreviewTexture() => _channel.invokeMethod<num>('previewTexture');
 
   static Future<void> setPreviewSize(int width, int height) {
     return _channel.invokeMethod<void>('setPreviewSize', <String, dynamic>{
@@ -178,22 +182,3 @@ class CamerawesomePlugin {
   }
 }
 
-//class CamerawesomePreview {
-//  static const EventChannel _eventChannel = const EventChannel('camerawesome/live');
-//
-//  static Stream<dynamic> _previewStream;
-//
-//  // useless
-//  static Stream<List<int>> getLive() {
-//    if(_previewStream == null) {
-//      _previewStream = _eventChannel
-//        .receiveBroadcastStream([{"width": 640, "height": 480}])
-//        .transform(StreamTransformer<dynamic, List<int>>.fromHandlers(handleData: (data, sink) {
-//          sink.add(data["data"] as List<int>);
-//        }));
-//    }
-//    return _previewStream;
-//  }
-//
-//
-//}

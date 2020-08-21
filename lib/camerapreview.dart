@@ -19,6 +19,7 @@ typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 typedef OnCameraStarted = void Function();
 
 /// used to send notification when the device rotate
+/// FIXME use [DeviceOrientation] instead
 typedef OnOrientationChanged = void Function(CameraOrientations);
 
 /// -------------------------------------------------

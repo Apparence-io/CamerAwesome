@@ -254,16 +254,21 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               OptionButton(
                 rotationController: _iconsAnimationController,
                 icon: (switchFlash.value == CameraFlashes.ALWAYS)
-                    ? Icons.flash_off
-                    : Icons.flash_on,
+                    ? Icons.flash_on
+                    : (switchFlash.value == CameraFlashes.AUTO) ? Icons.flash_auto : Icons.flash_off,
                 orientation: _orientation,
                 onTapCallback: () {
-                  if (switchFlash.value == CameraFlashes.ALWAYS) {
-                    switchFlash.value = CameraFlashes.NONE;
-                  } else {
-                    switchFlash.value = CameraFlashes.ALWAYS;
+                  switch(switchFlash.value) {
+                    case CameraFlashes.NONE:
+                      switchFlash.value = CameraFlashes.AUTO;
+                      break;
+                    case CameraFlashes.AUTO:
+                      switchFlash.value = CameraFlashes.ALWAYS;
+                      break;
+                    case CameraFlashes.ALWAYS:
+                      switchFlash.value = CameraFlashes.NONE;
+                      break;
                   }
-
                   setState(() {});
                 },
               ),
@@ -307,14 +312,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   setState(() {
                     _lastPhotoPath = filePath;
                   });
-
                   // TODO: Display loading on preview
                   // Display preview box
                   if (_previewDismissTimer != null) {
                     _previewDismissTimer.cancel();
                   }
-                  _previewDismissTimer =
-                      Timer(Duration(milliseconds: 4500), () {
+                  _previewDismissTimer = Timer(Duration(milliseconds: 4500), () {
                     _previewAnimationController.reverse();
                   });
                   _previewAnimationController.forward();
