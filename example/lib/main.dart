@@ -383,6 +383,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               onTap: () {
                 setState(() {
                   this.photoSize.value = availableSizes[index];
+                  Navigator.of(context).pop();
                 });
               },
               leading: Icon(Icons.aspect_ratio),

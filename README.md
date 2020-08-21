@@ -51,6 +51,9 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
 ### Define notifiers (if needed) & controller
+ValueNotifier is a usefull change notifier from Flutter framework. It fires an event on all listener when value changes.
+[Take a look here for ValueNotifier doc](https://api.flutter.dev/flutter/foundation/ValueNotifier-class.html)
+
 ```dart
 class MyApp extends StatefulWidget {
   @override
@@ -69,6 +72,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   // [...]
 }
 ```
+
+
+If you want to change a config, all you need is setting the value. CameraAwesome will handle the rest.
+
+Example:
+```dart
+_switchFlash.value = CameraFlashes.AUTO
+```
+
 
 ### Create your camera
 
@@ -157,9 +169,10 @@ Feel free to help by submitting PR !
 - [x] ~~Device flash support~~
 
 ## Sponsor
-Initiated and sponsored by Apparence.io.
+[Initiated and sponsored by Apparence.io.](https://apparence.io)
 
 
 ## 👥&nbsp; Contribution
 
-Don't hesitate to contribute by creating a PR or create an issue 🎉.
+Contributions are welcome.
+Contribute by creating a PR or create an issue 🎉.
