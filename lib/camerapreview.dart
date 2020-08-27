@@ -106,9 +106,10 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   @override
   void dispose() {
     CamerawesomePlugin.stop();
+    widget.photoSize.value = null;
     selectedAndroidPhotoSize.dispose();
     selectedPreviewSize.dispose();
-    widget.photoSize.value = null;
+    widget.photoSize.dispose();
     if(_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
     }
