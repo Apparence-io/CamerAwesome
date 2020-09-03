@@ -160,7 +160,7 @@ Feel free to help by submitting PR !
 - [ ] 🌤 Exposure level
 - [ ] 🎥 Record video
 - [ ] 🌠 Focus on specific point
-- [ ] 🧰 Add e2e tests
+- [x] ~~Add e2e tests~~
 - [x] ~~Fullscreen/SizedBox support~~
 - [x] ~~Complete example~~
 - [x] ~~Take a picture~~

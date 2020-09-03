@@ -324,8 +324,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
                     .create(recursive: true);
-                final String filePath =
-                    '${testDir.path}/photo_test.jpg';
+                final String filePath = '${testDir.path}/photo_test.jpg';
+                var oldFile = File(filePath);
+                if(await oldFile.exists()) {
+                  await oldFile.delete();
+                }
                 await _pictureController.takePicture(filePath);
                 // lets just make our phone vibrate
                 HapticFeedback.mediumImpact();
@@ -340,7 +343,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 _previewAnimationController.forward();
                 print("----------------------------------");
                 print("TAKE PHOTO CALLED");
-                var file = await File(filePath);
+                var file = File(filePath);
                 print("==> hastakePhoto : ${file.exists()}");
                 print("==> path : $filePath");
                 var img = imgUtils.decodeImage(file.readAsBytesSync());
