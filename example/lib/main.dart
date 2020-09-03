@@ -244,9 +244,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   children: <Widget>[
                     if (photoSize.value != null)
                       FlatButton(
+                        key: ValueKey("resolutionButton"),
                         onPressed: _buildChangeResolutionDialog,
                         child: Text(
                           '${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
+                          key: ValueKey("resolutionTxt"),
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
@@ -317,12 +319,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               },
             ),
             TakePhotoButton(
+              key: ValueKey("takePhotoButton"),
               onTap: () async {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
                     .create(recursive: true);
                 final String filePath =
-                    '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                    '${testDir.path}/photo_test.jpg';
                 await _pictureController.takePicture(filePath);
                 // lets just make our phone vibrate
                 HapticFeedback.mediumImpact();
@@ -370,6 +373,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         ListView.separated(
           itemBuilder: (context, index) =>
             ListTile(
+              key: ValueKey("resOption"),
               onTap: () {
                 setState(() {
                   this.photoSize.value = availableSizes[index];
