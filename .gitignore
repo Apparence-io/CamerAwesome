@@ -5,3 +5,7 @@
 .pub/
 
 build/
+
+test_lab.sh
+firebase_key.txt
+google-services.json
