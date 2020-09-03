@@ -151,6 +151,17 @@ public class CameraStateManager extends CameraDevice.StateCallback {
 
     @Override
     public void onError(@NonNull CameraDevice camera, int error) {
+        if(this.opened) {
+            try {
+                releaseSemaphore();
+                mCameraPreview.dispose();
+                this.startCamera(cameraId);
+            } catch (CameraManagerException e) {
+                Log.e(TAG, "Restarting camera after error: failed", e);
+            }
+        } else {
+            stopCamera();
+        }
         stopCamera();
     }
 

@@ -98,6 +98,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    photoSize.dispose();
     super.dispose();
   }
 
@@ -120,9 +121,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         break;
     }
 
-    photoSize.addListener(() {
-      if (mounted) setState(() {});
-    });
     return Scaffold(
       body: Stack(
       fit: StackFit.expand,
