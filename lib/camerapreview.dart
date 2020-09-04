@@ -91,15 +91,17 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   StreamSubscription _permissionStreamSub;
 
   /// choose preview size, default to the first available size in the list (MAX) or use [selectDefaultSize]
-  final ValueNotifier<Size> selectedPreviewSize = ValueNotifier(null);
+  ValueNotifier<Size> selectedPreviewSize;
 
   /// Only for Android, Preview and Photo size can be different. Android preview can't be higher than 1980x1024
-  final ValueNotifier<Size> selectedAndroidPhotoSize = ValueNotifier(null);
+  ValueNotifier<Size> selectedAndroidPhotoSize;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([widget.orientation]);
+    selectedPreviewSize = ValueNotifier(null);
+    selectedAndroidPhotoSize = ValueNotifier(null);
     initPlatformState();
   }
 
@@ -109,7 +111,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     widget.photoSize.value = null;
     selectedAndroidPhotoSize.dispose();
     selectedPreviewSize.dispose();
-    widget.photoSize.dispose();
     if(_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
     }
@@ -221,6 +222,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   }
 
   _initAndroidPhotoSize() {
+    if(selectedAndroidPhotoSize == null ) {
+      return;
+    }
     selectedAndroidPhotoSize.addListener(() async {
       if(selectedAndroidPhotoSize.value == null || !Platform.isAndroid) {
         return;

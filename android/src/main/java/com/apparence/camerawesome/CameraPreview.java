@@ -165,11 +165,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         refreshConfiguration();
     }
 
-    public void setOrientation(int orientation) {
-        this.orientation = orientation;
-        this.refreshConfiguration();
-    }
-
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------

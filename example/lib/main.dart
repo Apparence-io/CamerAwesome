@@ -23,6 +23,13 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
+
+  // just for E2E test. if true we create our images names from datetime.
+  // Else it's just a name to assert image exists
+  final bool randomPhotoName;
+
+  MyApp({this.randomPhotoName = true});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -98,6 +105,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    photoSize.dispose();
     super.dispose();
   }
 
@@ -120,9 +128,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         break;
     }
 
-    photoSize.addListener(() {
-      if (mounted) setState(() {});
-    });
     return Scaffold(
       body: Stack(
       fit: StackFit.expand,
@@ -324,23 +329,20 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
                     .create(recursive: true);
-                final String filePath =
-                    '${testDir.path}/photo_test.jpg';
+                final String filePath = widget.randomPhotoName ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg' : '${testDir.path}/photo_test.jpg';
                 await _pictureController.takePicture(filePath);
                 // lets just make our phone vibrate
                 HapticFeedback.mediumImpact();
                 setState(() {
                   _lastPhotoPath = filePath;
                 });
-                // TODO: Display loading on preview
-                // Display preview box animation
                 if(_previewAnimationController.status == AnimationStatus.completed) {
                   _previewAnimationController.reset();
                 }
                 _previewAnimationController.forward();
                 print("----------------------------------");
                 print("TAKE PHOTO CALLED");
-                var file = await File(filePath);
+                var file = File(filePath);
                 print("==> hastakePhoto : ${file.exists()}");
                 print("==> path : $filePath");
                 var img = imgUtils.decodeImage(file.readAsBytesSync());

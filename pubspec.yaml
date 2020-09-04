@@ -1,8 +1,8 @@
 name: camerawesome
 description: An open source camera plugin by the community for the community
 version: 0.0.1
-author:
-homepage:
+author: Apparence.io
+homepage: https://github.com/Apparence-io/camera_awesome
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
