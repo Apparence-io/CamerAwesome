@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import static com.apparence.camerawesome.CameraPictureStates.STATE_PRECAPTURE;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_RELEASE_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
@@ -33,6 +34,8 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
     private static String TAG = CameraPicture.class.getName();
 
     private final CameraSession mCameraSession;
+
+    private CameraDevice mCameraDevice;
 
     private ImageReader pictureImageReader;
 
@@ -80,6 +83,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
      */
     public void takePicture(final CameraDevice cameraDevice, final String filePath, final int orientation, final OnImageResult onResultListener) throws CameraAccessException {
         final File file = new File(filePath);
+        this.mCameraDevice = cameraDevice;
         this.orientation = orientation;
         if (file.exists()) {
             //FIXME throw here
@@ -95,28 +99,19 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
             return;
         }
         pictureImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
-                    @Override
-                    public void onImageAvailable(ImageReader reader) {
-                        try (Image image = reader.acquireLatestImage()) {
-                            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                            CameraPicture.this.writeToFile(buffer, file);
-                            onResultListener.onSuccess();
-                        } catch (IOException e) {
-                            onResultListener.onFailure("IOError");
-                        }
-                    }
-                }, null);
-
-        takePhotoRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-        takePhotoRequestBuilder.addTarget(pictureImageReader.getSurface());
-
-        // FIXME handle exposure to detect need flash ?
-        if (flashMode == FlashMode.AUTO) {
-            takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-        }
-        takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
-        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
-        mCameraSession.getCaptureSession().capture(takePhotoRequestBuilder.build(), mCaptureCallback, null);
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+                try (Image image = reader.acquireNextImage()) {
+                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                    CameraPicture.this.writeToFile(buffer, file);
+                    onResultListener.onSuccess();
+                } catch (IOException e) {
+                    onResultListener.onFailure("IOError");
+                }
+            }
+        }, null);
+//        captureStillPicture();
+        mCameraSession.setState(CameraPictureStates.STATE_REQUEST_FOCUS);
     }
 
     public void setAutoExposure(boolean autoExposure) {
@@ -141,13 +136,45 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
             pictureImageReader = null;
         }
     }
+
     // ---------------------------------------------------
     // PRIVATES
     // ---------------------------------------------------
 
+    private void captureStillPicture() throws CameraAccessException {
+        takePhotoRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+        takePhotoRequestBuilder.addTarget(pictureImageReader.getSurface());
+        switch (flashMode) {
+            case NONE:
+                takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                break;
+            case ON:
+                takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                break;
+            case AUTO:
+                takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                break;
+            case ALWAYS:
+                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+                takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                break;
+        }
+        takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
+        mCameraSession.getCaptureSession().stopRepeating();
+        mCameraSession.getCaptureSession().capture(takePhotoRequestBuilder.build(), mCaptureCallback, null);
+    }
+
     private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+            if(mCameraSession.getState().equals(STATE_REQUEST_PHOTO_AFTER_FOCUS)) {
+                mCameraSession.setState(STATE_RELEASE_FOCUS);
+            } else {
+                mCameraSession.setState(CameraPictureStates.STATE_RESTART_PREVIEW_REQUEST);
+            }
         }
 
         @Override
@@ -155,15 +182,12 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         }
     };
 
-
     private void refreshFocus() {
         final CaptureRequest.Builder captureBuilder;
         try {
-            //FIXME change to takePhotoRequestBuilder
             captureBuilder = mCameraSession.getCameraDevice().createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(pictureImageReader.getSurface());
             captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            // FIXME handle exposure to detect need flash ?
             if (flashMode == FlashMode.AUTO) {
                 takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
             }
@@ -195,7 +219,6 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         }
     }
 
-
     // --------------------------------------------------
     // CameraSession.OnCaptureSession
     // --------------------------------------------------
@@ -215,10 +238,17 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         if(state == null) {
             return;
         }
-        if(state.equals(STATE_REQUEST_PHOTO_AFTER_FOCUS)) {
-
-        } else if(state.equals(STATE_READY_AFTER_FOCUS)) {
-            refreshFocus();
+        try {
+            switch (state) {
+                case STATE_REQUEST_PHOTO_AFTER_FOCUS:
+                    captureStillPicture();
+                    break;
+                case STATE_READY_AFTER_FOCUS:
+                    refreshFocus();
+                    break;
+            }
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "onStateChanged: ", e);
         }
     }
 

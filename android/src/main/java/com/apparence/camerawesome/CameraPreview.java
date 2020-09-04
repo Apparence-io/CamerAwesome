@@ -6,12 +6,12 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Size;
 import android.util.Log;
 import android.view.Surface;
@@ -20,18 +20,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
-import com.apparence.camerawesome.exceptions.CameraPreviewException;
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
-import com.apparence.camerawesome.surface.FlutterSurfaceFactory;
 import com.apparence.camerawesome.surface.SurfaceFactory;
 
-import io.flutter.view.TextureRegistry;
-
+import static com.apparence.camerawesome.CameraPictureStates.STATE_PRECAPTURE;
+import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
+import static com.apparence.camerawesome.CameraPictureStates.STATE_RESTART_PREVIEW_REQUEST;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_RELEASE_FOCUS;
-import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_LOCK;
+import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_PRECAPTURE_READY;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraPreview implements CameraSession.OnCaptureSession  {
@@ -101,14 +100,23 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     public void lockFocus() {
         mCameraSession.setState(STATE_WAITING_LOCK);
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-        refreshConfigurationWithCallback();
+        try {
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureFocusedCallback,null);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "lockFocus: error ", e);
+        }
     }
 
     public void unlockFocus() {
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-        initPreviewRequest();
-        refreshConfiguration();
         mCameraSession.setState(null);
+        try {
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureFocusedCallback, null);
+            initPreviewRequest();
+            refreshConfiguration();
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "unlockFocus: ", e);
+        }
     }
     
     public CameraCaptureSession getCaptureSession() {
@@ -175,13 +183,24 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         }
         mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         switch (flashMode) {
+            case ON:
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                break;
             case AUTO:
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
             case ALWAYS:
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
                 break;
             case NONE:
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                break;
             default:
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
         }
@@ -196,15 +215,16 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             return;
         }
         try {
-            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
+            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureFocusedCallback, null);
         } catch (CameraAccessException | IllegalStateException | IllegalArgumentException e) {
             Log.e(TAG, "refreshConfiguration", e);
         }
     }
 
+    //FIXME
     private void refreshConfigurationWithCallback() {
         try {
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
         } catch (CameraAccessException e) {
             Log.e(TAG, "refreshConfigurationWithCallback", e);
         }
@@ -257,8 +277,21 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     @Override
     public void onStateChanged(CameraPictureStates state) {
-        if(state !=null && state.equals(STATE_RELEASE_FOCUS)) {
-            this.unlockFocus();
+        if(state == null)
+            return;
+        switch (state) {
+            case STATE_RELEASE_FOCUS:
+                this.unlockFocus();
+                break;
+            case STATE_REQUEST_FOCUS:
+                this.lockFocus();
+                break;
+            case STATE_RESTART_PREVIEW_REQUEST:
+                this.refreshConfiguration();
+                break;
+            case STATE_PRECAPTURE:
+                this.runPrecaptureSequence();
+                break;
         }
     }
 
@@ -266,7 +299,17 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     // ON FOCUS CALLBACK
     // ------------------------------------------------------
 
-    private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
+    private void runPrecaptureSequence() {
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+        try {
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureFocusedCallback , null);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "Failed to run precapture sequence.", e);
+        }
+    }
+
+    private CameraCaptureSession.CaptureCallback mCaptureFocusedCallback = new CameraCaptureSession.CaptureCallback() {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
             processCapture(result);
@@ -280,34 +323,42 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private void processCapture(CaptureResult result) {
         if(mCameraSession.getState() == null) {
-            Log.e(TAG, "processCapture: is null");
             return;
         }
         switch (mCameraSession.getState()) {
             case STATE_WAITING_LOCK:
                 Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
                 if(afState == null) {
-//                    mCameraSession.setState(STATE_READY_AFTER_FOCUS);
-                } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState) {
+                    return;
+                } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
+                        afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
-                        mCameraSession.setState(STATE_READY_AFTER_FOCUS);
+                        mCameraSession.setState(STATE_REQUEST_PHOTO_AFTER_FOCUS);
                     } else {
-                        runPrecaptureSequence();
+                        mCameraSession.setState(STATE_PRECAPTURE);
                     }
-                } else if (CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
-
                 }
                 break;
+            case STATE_PRECAPTURE: {
+                Integer ae = result.get(CaptureResult.CONTROL_AE_STATE);
+                if (ae == null || ae == CaptureResult.CONTROL_AE_STATE_PRECAPTURE ||
+                        ae == CaptureRequest.CONTROL_AE_STATE_FLASH_REQUIRED ||
+                        ae == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
+                    mCameraSession.setState(STATE_WAITING_PRECAPTURE_READY);
+                }
+                break;
+            }
+            case STATE_WAITING_PRECAPTURE_READY: {
+                Integer ae = result.get(CaptureResult.CONTROL_AE_STATE);
+                if (ae == null || ae != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
+                    mCameraSession.setState(STATE_REQUEST_PHOTO_AFTER_FOCUS);
+                }
+                break;
+            }
         }
     }
-
-    private void runPrecaptureSequence() {
-        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
-        refreshConfigurationWithCallback();
-    }
-
 
     // ------------------------------------------------------
     // VISIBLE FOR TESTS
