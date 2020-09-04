@@ -24,7 +24,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets("start camera preview", (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: MyApp()));
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
@@ -32,7 +32,7 @@ void main() {
   });
 
   testWidgets("take photo works with selected photo size", (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: MyApp()));
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
@@ -56,7 +56,7 @@ void main() {
   });
 
   testWidgets("change selected photo size param then take photo", (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: MyApp()));
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);

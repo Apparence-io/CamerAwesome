@@ -23,6 +23,13 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
+
+  // just for E2E test. if true we create our images names from datetime.
+  // Else it's just a name to assert image exists
+  final bool randomPhotoName;
+
+  MyApp({this.randomPhotoName = true});
+
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -322,19 +329,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
                     .create(recursive: true);
-                final String filePath = '${testDir.path}/photo_test.jpg';
-                var oldFile = File(filePath);
-                if(await oldFile.exists()) {
-                  await oldFile.delete();
-                }
+                final String filePath = widget.randomPhotoName ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg' : '${testDir.path}/photo_test.jpg';
                 await _pictureController.takePicture(filePath);
                 // lets just make our phone vibrate
                 HapticFeedback.mediumImpact();
                 setState(() {
                   _lastPhotoPath = filePath;
                 });
-                // TODO: Display loading on preview
-                // Display preview box animation
                 if(_previewAnimationController.status == AnimationStatus.completed) {
                   _previewAnimationController.reset();
                 }
