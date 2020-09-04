@@ -6,7 +6,6 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
-import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
@@ -26,9 +25,6 @@ import com.apparence.camerawesome.surface.SurfaceFactory;
 
 import static com.apparence.camerawesome.CameraPictureStates.STATE_PRECAPTURE;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
-import static com.apparence.camerawesome.CameraPictureStates.STATE_RESTART_PREVIEW_REQUEST;
-import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
-import static com.apparence.camerawesome.CameraPictureStates.STATE_RELEASE_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_LOCK;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_PRECAPTURE_READY;
 
@@ -73,7 +69,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
 
     public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel cameraCharacteristics, final SurfaceFactory surfaceFactory) {
-        this.autoFocus = true;
+        setAutoFocus(true);
         this.flashMode = FlashMode.NONE;
         this.mCameraSession = cameraSession;
         this.cameraCharacteristics = cameraCharacteristics;
@@ -156,7 +152,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
 
     public void setAutoFocus(boolean autoFocus) {
-        this.autoFocus = autoFocus;
+        this.autoFocus = autoFocus && cameraCharacteristics.hasAutoFocus();
         initPreviewRequest();
         refreshConfiguration();
     }
@@ -218,15 +214,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
             mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureFocusedCallback, null);
         } catch (CameraAccessException | IllegalStateException | IllegalArgumentException e) {
             Log.e(TAG, "refreshConfiguration", e);
-        }
-    }
-
-    //FIXME
-    private void refreshConfigurationWithCallback() {
-        try {
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), null, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "refreshConfigurationWithCallback", e);
         }
     }
 

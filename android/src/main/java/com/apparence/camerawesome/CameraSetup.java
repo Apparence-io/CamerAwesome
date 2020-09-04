@@ -73,6 +73,7 @@ class CameraSetup {
             this.characteristicsModel = new CameraCharacteristicsModel.Builder()
                 .withMaxZoom(characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM))
                 .withAvailablePreviewZone(characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE))
+                .withAutoFocus(characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES))
                 .build();
             mCameraId = cameraId;
             return;

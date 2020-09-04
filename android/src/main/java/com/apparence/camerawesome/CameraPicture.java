@@ -16,6 +16,7 @@ import android.util.Size;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
 
 import java.io.File;
@@ -35,6 +36,8 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
     private final CameraSession mCameraSession;
 
+    private final CameraCharacteristicsModel mCameraCharacteristics;
+
     private CameraDevice mCameraDevice;
 
     private ImageReader pictureImageReader;
@@ -51,11 +54,12 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
     private FlashMode flashMode;
 
-    public CameraPicture(CameraSession cameraSession) {
-        this.mCameraSession = cameraSession;
-        this.autoFocus = true;
-        this.flashMode = FlashMode.NONE;
-        this.autoExposure = true;
+    public CameraPicture(CameraSession cameraSession, final CameraCharacteristicsModel cameraCharacteristics) {
+        mCameraSession = cameraSession;
+        mCameraCharacteristics = cameraCharacteristics;
+        setAutoFocus(true);
+        flashMode = FlashMode.NONE;
+        autoExposure = true;
     }
 
     /**
@@ -110,8 +114,11 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
                 }
             }
         }, null);
-//        captureStillPicture();
-        mCameraSession.setState(CameraPictureStates.STATE_REQUEST_FOCUS);
+        if(autoFocus) {
+            mCameraSession.setState(CameraPictureStates.STATE_REQUEST_FOCUS);
+        } else {
+            captureStillPicture();
+        }
     }
 
     public void setAutoExposure(boolean autoExposure) {
@@ -123,11 +130,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
     }
 
     public void setAutoFocus(boolean autoFocus) {
-        this.autoFocus = autoFocus;
-    }
-
-    public boolean isAutoFocus() {
-        return autoFocus;
+        this.autoFocus = autoFocus && mCameraCharacteristics.hasAutoFocus();
     }
 
     public void dispose() {
