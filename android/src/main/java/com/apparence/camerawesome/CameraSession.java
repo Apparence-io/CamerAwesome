@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
-
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class CameraSession {

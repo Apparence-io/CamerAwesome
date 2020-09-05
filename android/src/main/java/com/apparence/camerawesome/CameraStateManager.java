@@ -1,8 +1,6 @@
 package com.apparence.camerawesome;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
@@ -13,16 +11,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 
 import com.apparence.camerawesome.exceptions.CameraManagerException;
-import com.apparence.camerawesome.exceptions.CameraPreviewException;
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import io.flutter.view.TextureRegistry;
 
 import static com.apparence.camerawesome.exceptions.CameraManagerException.Codes.LOCKED;
 
@@ -88,7 +82,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
             return;
         }
         stopCamera();
-        mCameraPreview.setCameraCharacteristics(characteristicsModel);
+        mCameraPreview.setmCameraCharacteristics(characteristicsModel);
         startCamera(cameraId);
         mCameraPicture.refresh();
         Log.d(TAG, "switchCamera: finished");

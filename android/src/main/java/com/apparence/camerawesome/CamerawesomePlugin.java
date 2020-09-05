@@ -224,7 +224,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
               mCameraSetup.getCharacteristicsModel(),
               new FlutterSurfaceFactory(textureRegistry));
       // init picture recorder
-      mCameraPicture = new CameraPicture(mCameraSession);
+      mCameraPicture = new CameraPicture(mCameraSession, mCameraSetup.getCharacteristicsModel());
       // init state listener
       mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
       // set camera sessions listeners

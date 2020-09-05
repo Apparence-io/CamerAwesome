@@ -148,6 +148,8 @@ Feel free to **contribute** to improve this **compatibility list**.
 | iPhone X      | ✅    | ✅    | ✅    | ✅   |
 | iPhone 7      | ✅    | ✅    | ✅    | ✅   |
 | One Plus 6T   | ✅    | ✅    | ✅    | ✅   |
+| Xiaomi redmi  | ✅    | ✅    | ✅    | ✅   |
+| Honor 7       | ✅    | ✅    | ✅    | ✅   |
 
 </p>
 </details>
@@ -157,9 +159,9 @@ Feel free to **contribute** to improve this **compatibility list**.
 Feel free to help by submitting PR !
 
 - [ ] 📡 Broadcast live image stream
-- [ ] 🌤 Exposure level
 - [ ] 🎥 Record video
 - [ ] 🌠 Focus on specific point
+- [x] ~~🌤 Exposure level~~
 - [x] ~~Add e2e tests~~
 - [x] ~~Fullscreen/SizedBox support~~
 - [x] ~~Complete example~~
@@ -167,6 +169,7 @@ Feel free to help by submitting PR !
 - [x] ~~Zoom level~~
 - [x] ~~Live switching camera~~
 - [x] ~~Device flash support~~
+- [x] ~~Auto focus~~
 
 ## Sponsor
 [Initiated and sponsored by Apparence.io.](https://apparence.io)

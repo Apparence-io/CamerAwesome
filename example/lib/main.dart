@@ -278,13 +278,14 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               ),
               OptionButton(
                 rotationController: _iconsAnimationController,
-                icon: (switchFlash.value == CameraFlashes.ALWAYS)
-                    ? Icons.flash_on
-                    : (switchFlash.value == CameraFlashes.AUTO) ? Icons.flash_auto : Icons.flash_off,
+                icon: _getFlashIcon(),
                 orientation: _orientation,
                 onTapCallback: () {
                   switch(switchFlash.value) {
                     case CameraFlashes.NONE:
+                      switchFlash.value = CameraFlashes.ON;
+                      break;
+                    case CameraFlashes.ON:
                       switchFlash.value = CameraFlashes.AUTO;
                       break;
                     case CameraFlashes.AUTO:
@@ -302,6 +303,21 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  IconData _getFlashIcon() {
+    switch(switchFlash.value) {
+      case CameraFlashes.NONE:
+        return Icons.flash_off;
+      case CameraFlashes.ON:
+        return Icons.flash_on;
+      case CameraFlashes.AUTO:
+        return Icons.flash_auto;
+      case CameraFlashes.ALWAYS:
+        return Icons.highlight;
+      default:
+        return Icons.flash_off;
+    }
   }
 
   Widget _buildBottomBar() {
