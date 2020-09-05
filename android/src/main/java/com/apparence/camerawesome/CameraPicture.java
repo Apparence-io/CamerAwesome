@@ -46,8 +46,6 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
     private boolean autoFocus;
 
-    private boolean autoExposure;
-
     private CaptureRequest.Builder takePhotoRequestBuilder;
 
     private int orientation;
@@ -57,9 +55,8 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
     public CameraPicture(CameraSession cameraSession, final CameraCharacteristicsModel cameraCharacteristics) {
         mCameraSession = cameraSession;
         mCameraCharacteristics = cameraCharacteristics;
-        setAutoFocus(true);
         flashMode = FlashMode.NONE;
-        autoExposure = true;
+        setAutoFocus(true);
     }
 
     /**
@@ -121,11 +118,10 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         }
     }
 
-    public void setAutoExposure(boolean autoExposure) {
-        this.autoExposure = autoExposure;
-    }
-
     public void setFlashMode(FlashMode flashMode) {
+        if(!mCameraCharacteristics.hasFlashAvailable()) {
+            return;
+        }
         this.flashMode = flashMode;
     }
 
@@ -154,11 +150,9 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
                 break;
             case ON:
                 takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case AUTO:
                 takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
             case ALWAYS:
                 takePhotoRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
@@ -173,15 +167,11 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
     private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-            if(mCameraSession.getState().equals(STATE_REQUEST_PHOTO_AFTER_FOCUS)) {
+            if(mCameraSession.getState() != null && mCameraSession.getState().equals(STATE_REQUEST_PHOTO_AFTER_FOCUS)) {
                 mCameraSession.setState(STATE_RELEASE_FOCUS);
             } else {
                 mCameraSession.setState(CameraPictureStates.STATE_RESTART_PREVIEW_REQUEST);
             }
-        }
-
-        @Override
-        public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request, CaptureResult partialResult) {
         }
     };
 

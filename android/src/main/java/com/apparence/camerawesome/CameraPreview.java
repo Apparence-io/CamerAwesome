@@ -59,7 +59,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private Rect mInitialCropRegion;
 
-    private CameraCharacteristicsModel cameraCharacteristics;
+    private CameraCharacteristicsModel mCameraCharacteristics;
 
     private Surface previewSurface;
 
@@ -68,13 +68,13 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     private int orientation;
 
 
-    public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel cameraCharacteristics, final SurfaceFactory surfaceFactory) {
-        setAutoFocus(true);
+    public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel mCameraCharacteristics, final SurfaceFactory surfaceFactory) {
         this.flashMode = FlashMode.NONE;
         this.mCameraSession = cameraSession;
-        this.cameraCharacteristics = cameraCharacteristics;
+        this.mCameraCharacteristics = mCameraCharacteristics;
         this.surfaceFactory = surfaceFactory;
         this.orientation = 270;
+        setAutoFocus(true);
     }
     
     void createCameraPreviewSession(final CameraDevice cameraDevice) throws CameraAccessException {
@@ -147,17 +147,20 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         return this.previewSize;
     }
 
-    public void setCameraCharacteristics(CameraCharacteristicsModel cameraCharacteristics) {
-        this.cameraCharacteristics = cameraCharacteristics;
+    public void setmCameraCharacteristics(CameraCharacteristicsModel mCameraCharacteristics) {
+        this.mCameraCharacteristics = mCameraCharacteristics;
     }
 
     public void setAutoFocus(boolean autoFocus) {
-        this.autoFocus = autoFocus && cameraCharacteristics.hasAutoFocus();
+        this.autoFocus = autoFocus && mCameraCharacteristics.hasAutoFocus();
         initPreviewRequest();
         refreshConfiguration();
     }
 
     public void setFlashMode(FlashMode flashMode) {
+        if(!mCameraCharacteristics.hasFlashAvailable()) {
+            return;
+        }
         this.flashMode = flashMode;
         initPreviewRequest();
         refreshConfiguration();
@@ -200,10 +203,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
         }
-        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, this.autoFocus
-                ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
-                : CaptureRequest.CONTROL_AF_MODE_OFF);
-
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
     }
 
     private void refreshConfiguration() {
@@ -219,8 +219,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     // Inspired by react nativ plugin
     private void updateZoom() {
-        float maxZoom = this.cameraCharacteristics.getMaxZoom();
-        Rect currentPreviewArea = this.cameraCharacteristics.getAvailablePreviewZone();
+        float maxZoom = this.mCameraCharacteristics.getMaxZoom();
+        Rect currentPreviewArea = this.mCameraCharacteristics.getAvailablePreviewZone();
         if(currentPreviewArea == null) {
             return;
         }
