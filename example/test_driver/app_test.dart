@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter_driver/flutter_driver.dart';
-import 'package:test/test.dart';
 import 'dart:async';
+
 import 'package:integration_test/integration_test_driver.dart';
 
 const String _examplePackage = 'com.apparence.camerawesome_example';

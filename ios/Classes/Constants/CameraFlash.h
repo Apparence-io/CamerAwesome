@@ -10,6 +10,7 @@
 
 typedef enum {
     None,   // Flash is disabled
+    On,     // Flash is always enabled when photo is taken
     Auto,   // Flash is enabled when user take a photo only if necessary
     Always, // Flash is enabled anytime, then trigger Auto mode when a photo is taken
 } CameraFlashMode;

@@ -246,6 +246,8 @@
     CameraFlashMode flash;
     if ([flashMode isEqualToString:@"NONE"]) {
         flash = None;
+    } else if ([flashMode isEqualToString:@"ON"]) {
+        flash = On;
     } else if ([flashMode isEqualToString:@"AUTO"]) {
         flash = Auto;
     } else if ([flashMode isEqualToString:@"ALWAYS"]) {

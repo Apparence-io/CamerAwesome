@@ -32,7 +32,8 @@
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
     
     // By default enable auto flash mode
-    _flashMode = AVCaptureFlashModeAuto;
+    _flashMode = AVCaptureFlashModeOff;
+    _torchMode = AVCaptureTorchModeOff;
     
     _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
@@ -215,6 +216,10 @@
         case None:
             _torchMode = AVCaptureTorchModeOff;
             _flashMode = AVCaptureFlashModeOff;
+            break;
+        case On:
+            _torchMode = AVCaptureTorchModeOff;
+            _flashMode = AVCaptureFlashModeOn;
             break;
         case Auto:
             _torchMode = AVCaptureTorchModeAuto;
