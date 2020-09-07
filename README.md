@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://apparence.io/">
-		<img src="logo/banner.png" width="456" alt="camerawesome_logo">
+		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/logo/banner.png" width="456" alt="camerawesome_logo">
 	</a>
 </p>
 
