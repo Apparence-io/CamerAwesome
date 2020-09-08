@@ -1,6 +1,6 @@
 name: camerawesome
 description: An open source camera plugin by the community for the community
-version: 0.0.1
+version: 0.0.2+1
 homepage: https://Apparence.io
 repository: https://github.com/Apparence-io/camera_awesome
 
@@ -11,7 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  rxdart: ^0.24.1
 
 dev_dependencies:
   flutter_test:
