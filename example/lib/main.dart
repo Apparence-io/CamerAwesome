@@ -71,6 +71,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
+  StreamController<ByteData> previewStream = new StreamController<ByteData>();
+
+  StreamSubscription<ByteData> previewStreamSub;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +98,14 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         parent: _previewAnimationController,
         curve: Curves.elasticOut,
         reverseCurve: Curves.elasticIn));
+    
+    /// listen for images preview stream
+    /// you can use it to process AI recognition or anything else...
+    previewStreamSub = previewStream.stream.listen((event) {
+      // ... do whatever you want with the image here
+      // the freq is set by the previewStreamImagesFreq arg
+      print("...${DateTime.now()} new image received... ${event.lengthInBytes} bytes");
+    });
   }
 
   @override
@@ -105,6 +117,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    previewStreamSub.cancel();
     photoSize.dispose();
     super.dispose();
   }
@@ -458,6 +471,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
             onOrientationChanged: _onOrientationChange,
+            previewStream: previewStream,
+            previewStreamImagesFreq: 60,
           ),
         ));
   }
@@ -486,6 +501,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
                 onOrientationChanged: _onOrientationChange,
+                previewStream: previewStream,
+                previewStreamImagesFreq: 60,
               ),
             ),
           ),
