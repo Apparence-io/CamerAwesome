@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui' as ui;
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'models/flashmodes.dart';
@@ -61,6 +64,13 @@ class CameraAwesome extends StatefulWidget {
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
+  /// provide it to get an image at a [previewStreamImagesFreq] frequency
+  final StreamController<ByteData> previewStream;
+  
+  /// frequency to provide images in [previewStream] prefer values between [1 - 60] 
+  /// the higher it is, the higher performances it use
+  final int previewStreamImagesFreq;
+
   CameraAwesome({Key key,
     this.testMode = false,
     this.onPermissionsResult,
@@ -72,8 +82,11 @@ class CameraAwesome extends StatefulWidget {
     this.fitted = false,
     this.zoom,
     this.onOrientationChanged,
-    @required this.sensor})
-    : assert(sensor != null),
+    this.previewStream,
+    this.previewStreamImagesFreq,
+    @required this.sensor
+  }): assert(sensor != null),
+      assert(previewStream == null || (previewStream != null && previewStreamImagesFreq != null)),
       super(key: key);
 
   @override
@@ -82,12 +95,15 @@ class CameraAwesome extends StatefulWidget {
 
 class _CameraAwesomeState extends State<CameraAwesome> {
 
+  final GlobalKey boundaryKey = new GlobalKey();
+  
   List<Size> camerasAvailableSizes;
 
   bool hasPermissions = false;
 
   bool started = false;
 
+  /// sub used to listen for permissions on native side
   StreamSubscription _permissionStreamSub;
 
   /// choose preview size, default to the first available size in the list (MAX) or use [selectDefaultSize]
@@ -95,6 +111,13 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 
   /// Only for Android, Preview and Photo size can be different. Android preview can't be higher than 1980x1024
   ValueNotifier<Size> selectedAndroidPhotoSize;
+  
+  /// used to stream images, we saves an instance as method "findRenderObject" requires a lot if we had to call it each times
+  RenderRepaintBoundary renderBoundary;
+
+  /// used to stream images, calls renderRepaint to stream images 
+  Timer previewStreamTimer;
+  
 
   @override
   void initState() {
@@ -111,6 +134,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     widget.photoSize.value = null;
     selectedAndroidPhotoSize.dispose();
     selectedPreviewSize.dispose();
+    if(previewStreamTimer != null) {
+      previewStreamTimer.cancel();
+    }
     if(_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
     }
@@ -158,7 +184,21 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     _initFlashModeSwitcher();
     _initZoom();
     _initSensor();
+    _initPreviewStream();
     setState(() {});
+  }
+
+  _initPreviewStream() {
+    if(widget.previewStream == null) {
+      return;
+    }
+    Future.delayed(Duration(seconds: 1), (){
+      renderBoundary = boundaryKey.currentContext.findRenderObject();
+      previewStreamTimer = Timer.periodic(
+        Duration(milliseconds: (1000/widget.previewStreamImagesFreq).round()),
+        (_) => _capturePng()
+      );
+    });
   }
 
   @override
@@ -173,10 +213,13 @@ class _CameraAwesomeState extends State<CameraAwesome> {
           return Container();
         if(!snapshot.hasData || !hasInit)
           return Center(child: CircularProgressIndicator());
-        return _CameraPreviewWidget(
-          size: selectedPreviewSize.value,
-          fitted: widget.fitted,
-          textureId: snapshot.data,
+        return RepaintBoundary(
+          key: boundaryKey,
+          child: _CameraPreviewWidget(
+            size: selectedPreviewSize.value,
+            fitted: widget.fitted,
+            textureId: snapshot.data,
+          ),
         );
       }
     );
@@ -248,6 +291,17 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         setState(() {});
       }
     });
+  }
+
+  _capturePng() async {
+    try {
+      ui.Image image = await renderBoundary.toImage(pixelRatio: 1.0);
+      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      widget.previewStream.add(byteData);
+    } catch (e) {
+      print("Error while catching screenshot");
+      print(e);
+    }
   }
 
 }
