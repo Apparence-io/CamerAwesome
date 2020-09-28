@@ -72,20 +72,10 @@ public class CameraSession {
 
     public void addPreviewSurface(Surface surface) {
         this.surfaces.put(PREVIEW_SURFACE_KEY, surface);
-        // todo if session is active recreate session
     }
 
     public void addPictureSurface(Surface surface) {
         this.surfaces.put(PHOTO_SURFACE_KEY, surface);
-        // if session is active recreate session
-        if(mCaptureSession != null) {
-            try {
-                mCaptureSession.abortCaptures();
-                this.createCameraCaptureSession(cameraDevice);
-            } catch (CameraAccessException e) {
-                Log.e(TAG, "addPictureSurface: failed to recreate camera session", e);
-            }
-        }
     }
 
     public void clearSurface() {

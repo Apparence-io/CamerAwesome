@@ -82,9 +82,10 @@ public class CameraStateManager extends CameraDevice.StateCallback {
             return;
         }
         stopCamera();
+        mCameraSession.clearSurface();
+        mCameraPicture.setCameraCharacteristics(characteristicsModel);
         mCameraPreview.setmCameraCharacteristics(characteristicsModel);
         startCamera(cameraId);
-        mCameraPicture.refresh();
         Log.d(TAG, "switchCamera: finished");
     }
 
@@ -129,7 +130,8 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         this.mCameraDevice = camera;
         // init cameraPreview
         try {
-            this.mCameraPreview.createCameraPreviewSession(mCameraDevice);
+            mCameraPicture.refresh();
+            mCameraPreview.createCameraPreviewSession(mCameraDevice);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
