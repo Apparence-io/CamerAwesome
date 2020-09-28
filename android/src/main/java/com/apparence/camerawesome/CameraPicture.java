@@ -36,7 +36,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
 
     private final CameraSession mCameraSession;
 
-    private final CameraCharacteristicsModel mCameraCharacteristics;
+    private CameraCharacteristicsModel mCameraCharacteristics;
 
     private CameraDevice mCameraDevice;
 
@@ -70,6 +70,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
     }
 
     public void refresh() {
+        setAutoFocus(this.autoFocus);
         pictureImageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);
         mCameraSession.addPictureSurface(pictureImageReader.getSurface());
     }
@@ -87,15 +88,14 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         this.mCameraDevice = cameraDevice;
         this.orientation = orientation;
         if (file.exists()) {
-            //FIXME throw here
+            Log.e(TAG, "takePicture : PATH NOT FOUND");
             return;
         }
         if(size == null) {
-            //FIXME throw here
+            Log.e(TAG, "takePicture : NO SIZE SET");
             return;
         }
         if(mCameraSession.getCaptureSession() == null) {
-            //FIXME throw here
             Log.e(TAG, "takePicture: mCameraSession.getCaptureSession() is null");
             return;
         }
@@ -123,6 +123,10 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
             return;
         }
         this.flashMode = flashMode;
+    }
+
+    public void setCameraCharacteristics(CameraCharacteristicsModel mCameraCharacteristics) {
+        this.mCameraCharacteristics = mCameraCharacteristics;
     }
 
     public void setAutoFocus(boolean autoFocus) {
