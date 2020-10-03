@@ -14,6 +14,7 @@ import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -71,9 +72,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
-  StreamController<ByteData> previewStream = new StreamController<ByteData>();
+  StreamController<ByteData> previewStreamController = new StreamController<ByteData>();
 
   StreamSubscription<ByteData> previewStreamSub;
+
+  Stream<ByteData> previewStream;
 
   @override
   void initState() {
@@ -98,14 +101,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         parent: _previewAnimationController,
         curve: Curves.elasticOut,
         reverseCurve: Curves.elasticIn));
-    
+
+    previewStream = previewStreamController.stream.asBroadcastStream();
     /// listen for images preview stream
     /// you can use it to process AI recognition or anything else...
-    previewStreamSub = previewStream.stream.listen((event) {
-      // ... do whatever you want with the image here
-      // the freq is set by the previewStreamImagesFreq arg
-      print("...${DateTime.now()} new image received... ${event.lengthInBytes} bytes");
-    });
+    // previewStreamSub = previewStream.stream.listen((event) {
+    //   // ... do whatever you want with the image here
+    //   // the freq is set by the previewStreamImagesFreq arg
+    //   print("...${DateTime.now()} new image received... ${event.lengthInBytes} bytes");
+    // });
   }
 
   @override
@@ -117,7 +121,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
-    previewStreamSub.cancel();
+    // previewStreamSub.cancel();
     photoSize.dispose();
     super.dispose();
   }
@@ -146,6 +150,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       fit: StackFit.expand,
       children: <Widget>[
         fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+        _buildPreviewStream(),
         _buildInterface(),
         Align(
           alignment: alignment,
@@ -175,6 +180,26 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
       ],
     ));
+  }
+
+  Widget _buildPreviewStream() {
+    return Positioned(
+      left: 32,
+      bottom: 120,
+      child: StreamBuilder(
+        stream: previewStream.bufferTime(Duration(milliseconds: 5500)),
+        builder: (context, snapshot) {
+          if(!snapshot.hasData)
+            return Container();
+          print("image found ");
+          List<ByteData> data = snapshot.data;
+          return Image.memory(
+            data.last.buffer.asUint8List(),
+            width: 120,
+          );
+        },
+      )
+    );
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
@@ -471,8 +496,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
             onOrientationChanged: _onOrientationChange,
-            previewStream: previewStream,
-            previewStreamImagesFreq: 60,
+            previewStream: previewStreamController,
+            previewStreamImagesFreq: 1,
           ),
         ));
   }
@@ -501,8 +526,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
                 onOrientationChanged: _onOrientationChange,
-                previewStream: previewStream,
-                previewStreamImagesFreq: 60,
+                previewStream: previewStreamController,
+                previewStreamImagesFreq: 1,
               ),
             ),
           ),

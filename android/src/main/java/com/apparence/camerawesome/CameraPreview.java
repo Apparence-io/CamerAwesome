@@ -1,5 +1,6 @@
 package com.apparence.camerawesome;
 
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -9,6 +10,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Size;
@@ -23,13 +25,15 @@ import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
 import com.apparence.camerawesome.surface.SurfaceFactory;
 
+import io.flutter.plugin.common.EventChannel;
+
 import static com.apparence.camerawesome.CameraPictureStates.STATE_PRECAPTURE;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_LOCK;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_PRECAPTURE_READY;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class CameraPreview implements CameraSession.OnCaptureSession  {
+public class CameraPreview implements CameraSession.OnCaptureSession, EventChannel.StreamHandler  {
 
     private static final String TAG = CameraPreview.class.getName();
 
@@ -67,6 +71,11 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
 
     private int orientation;
 
+    // used to send image stream to flutter side
+    private EventChannel.EventSink previewStreamSink;
+
+    private ImageReader pictureImageReader;
+
 
     public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel mCameraCharacteristics, final SurfaceFactory surfaceFactory) {
         this.flashMode = FlashMode.NONE;
@@ -87,7 +96,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
         // save initial region for zoom management
         mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
         initPreviewRequest();
-
         mPreviewRequestBuilder.addTarget(previewSurface);
         mCameraSession.addPreviewSurface(previewSurface);
         mCameraSession.createCameraCaptureSession(cameraDevice);
@@ -348,6 +356,28 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     }
 
     // ------------------------------------------------------
+    // PREVIEW STREAM FLUTTER CHANNEL
+    // ------------------------------------------------------
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink events) {
+        this.previewStreamSink = events;
+        // create reader for image stream
+//        pictureImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.YUV_420_888, 2);
+        pictureImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.JPEG, 2);
+        pictureImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+
+            }
+        }, mBackgroundHandler);
+    }
+
+    @Override
+    public void onCancel(Object arguments) {
+        this.previewStreamSink.endOfStream();
+        this.previewStreamSink = null;
+    }
+    // ------------------------------------------------------
     // VISIBLE FOR TESTS
     // ------------------------------------------------------
 
@@ -355,6 +385,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession  {
     public CaptureRequest.Builder getPreviewRequest() {
         return mPreviewRequestBuilder;
     }
+
+
 }
 
 

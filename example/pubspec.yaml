@@ -9,6 +9,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
+  rxdart: ^0.24.1
   flutter:
     sdk: flutter
   path_provider: ^1.6.11
