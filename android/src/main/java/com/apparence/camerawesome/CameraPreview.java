@@ -10,6 +10,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
@@ -21,9 +22,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
+import com.apparence.camerawesome.image.ImgConverter;
+import com.apparence.camerawesome.image.ImgConverterThreaded;
+import com.apparence.camerawesome.image.YuvToJpgConverter;
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
 import com.apparence.camerawesome.surface.SurfaceFactory;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
 import io.flutter.plugin.common.EventChannel;
 
@@ -46,6 +54,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
     private final SurfaceFactory surfaceFactory;
 
     private Size previewSize;
+
+    private Handler mainHandler;
 
     private Handler mBackgroundHandler;
 
@@ -71,18 +81,25 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
 
     private int orientation;
 
+    private boolean streamPreviewImages;
+
     // used to send image stream to flutter side
     private EventChannel.EventSink previewStreamSink;
 
     private ImageReader pictureImageReader;
 
-
-    public CameraPreview(final CameraSession cameraSession, final CameraCharacteristicsModel mCameraCharacteristics, final SurfaceFactory surfaceFactory) {
+    public CameraPreview(final CameraSession cameraSession,
+                         final CameraCharacteristicsModel mCameraCharacteristics,
+                         final SurfaceFactory surfaceFactory,
+                         final Handler mainHandler,
+                         final boolean streamPreviewImages) {
         this.flashMode = FlashMode.NONE;
         this.mCameraSession = cameraSession;
         this.mCameraCharacteristics = mCameraCharacteristics;
         this.surfaceFactory = surfaceFactory;
         this.orientation = 270;
+        this.streamPreviewImages = streamPreviewImages;
+        this.mainHandler = mainHandler;
         setAutoFocus(true);
     }
     
@@ -96,6 +113,10 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         // save initial region for zoom management
         mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
         initPreviewRequest();
+        // only start preview ImageReader if asked for it
+        if(streamPreviewImages) {
+            initPreviewStream();
+        }
         mPreviewRequestBuilder.addTarget(previewSurface);
         mCameraSession.addPreviewSurface(previewSurface);
         mCameraSession.createCameraCaptureSession(cameraDevice);
@@ -358,25 +379,54 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
     // ------------------------------------------------------
     // PREVIEW STREAM FLUTTER CHANNEL
     // ------------------------------------------------------
-    @Override
-    public void onListen(Object arguments, EventChannel.EventSink events) {
-        this.previewStreamSink = events;
-        // create reader for image stream
-//        pictureImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.YUV_420_888, 2);
-        pictureImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.JPEG, 2);
+
+    private ImgConverterThreaded imgConverterThread;
+
+    private void initPreviewStream() {
+        imgConverterThread = new ImgConverterThreaded(new YuvToJpgConverter());
+        // create preview stream surface YUV_420_888
+        pictureImageReader = ImageReader.newInstance(previewSize.getWidth(), previewSize.getHeight(), ImageFormat.YUV_420_888, 2);
         pictureImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-
+                if(previewStreamSink != null && mainHandler != null) {
+                    imgConverterThread.process(reader, new ImgConverterThreaded.Consumer() {
+                        @Override
+                        public void process(final byte[] result) {
+                            final Runnable myRunnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(result != null && result.length > 0
+                                            && previewStreamSink != null && mainHandler != null)
+                                        previewStreamSink.success(result);
+                                }
+                            };
+                            mainHandler.post(myRunnable);
+                        }
+                    });
+                }
             }
-        }, mBackgroundHandler);
+        }, null);
+        mCameraSession.addPreviewStreamSurface(pictureImageReader.getSurface());
+        mPreviewRequestBuilder.addTarget(pictureImageReader.getSurface());
+    }
+
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink events) {
+        this.previewStreamSink = events;
     }
 
     @Override
     public void onCancel(Object arguments) {
         this.previewStreamSink.endOfStream();
         this.previewStreamSink = null;
+        this.imgConverterThread.dispose();
     }
+
+    public void setMainHandler(Handler mainHandler) {
+        this.mainHandler = mainHandler;
+    }
+
     // ------------------------------------------------------
     // VISIBLE FOR TESTS
     // ------------------------------------------------------

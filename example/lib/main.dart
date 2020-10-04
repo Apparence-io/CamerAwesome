@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
@@ -72,11 +73,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
-  StreamController<ByteData> previewStreamController = new StreamController<ByteData>();
+  StreamSubscription<Uint8List> previewStreamSub;
 
-  StreamSubscription<ByteData> previewStreamSub;
-
-  Stream<ByteData> previewStream;
+  Stream<Uint8List> previewStream;
 
   @override
   void initState() {
@@ -101,15 +100,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         parent: _previewAnimationController,
         curve: Curves.elasticOut,
         reverseCurve: Curves.elasticIn));
-
-    previewStream = previewStreamController.stream.asBroadcastStream();
-    /// listen for images preview stream
-    /// you can use it to process AI recognition or anything else...
-    // previewStreamSub = previewStream.stream.listen((event) {
-    //   // ... do whatever you want with the image here
-    //   // the freq is set by the previewStreamImagesFreq arg
-    //   print("...${DateTime.now()} new image received... ${event.lengthInBytes} bytes");
-    // });
   }
 
   @override
@@ -180,26 +170,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
       ],
     ));
-  }
-
-  Widget _buildPreviewStream() {
-    return Positioned(
-      left: 32,
-      bottom: 120,
-      child: StreamBuilder(
-        stream: previewStream.bufferTime(Duration(milliseconds: 5500)),
-        builder: (context, snapshot) {
-          if(!snapshot.hasData)
-            return Container();
-          print("image found ");
-          List<ByteData> data = snapshot.data;
-          return Image.memory(
-            data.last.buffer.asUint8List(),
-            width: 120,
-          );
-        },
-      )
-    );
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
@@ -478,6 +448,32 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     }
   }
 
+  /// this is just to preview images from stream
+  /// This use a bufferTime to take an image each 1500 ms
+  /// you cannot show every frame as flutter cannot draw them fast enough
+  /// [THIS IS JUST FOR DEMO PURPOSE]
+  Widget _buildPreviewStream() {
+    if(previewStream == null)
+      return Container();
+    return Positioned(
+      left: 32,
+      bottom: 120,
+      child: StreamBuilder(
+        stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
+        builder: (context, snapshot) {
+          if(!snapshot.hasData && snapshot.data.isNotEmpty)
+            return Container();
+          List<Uint8List> data = snapshot.data;
+          print("...${DateTime.now()} new image received... ${data.last.lengthInBytes} bytes");
+          return Image.memory(
+            data.last,
+            width: 120,
+          );
+        },
+      )
+    );
+  }
+
   Widget buildFullscreenCamera() {
     return Positioned(
         top: 0,
@@ -496,8 +492,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
             onOrientationChanged: _onOrientationChange,
-            previewStream: previewStreamController,
-            previewStreamImagesFreq: 1,
+            // imagesStreamBuilder: (imageStream) {
+            //   /// listen for images preview stream
+            //   /// you can use it to process AI recognition or anything else...
+            //   print("-- init CamerAwesome images stream");
+            //   setState(() {
+            //     previewStream = imageStream;
+            //   });
+            // },
+            onCameraStarted: () {
+              // camera started here -- do your after start stuff
+            },
           ),
         ));
   }
@@ -526,8 +531,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 switchFlashMode: switchFlash,
                 zoom: zoomNotifier,
                 onOrientationChanged: _onOrientationChange,
-                previewStream: previewStreamController,
-                previewStreamImagesFreq: 1,
               ),
             ),
           ),

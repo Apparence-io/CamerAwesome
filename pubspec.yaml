@@ -9,9 +9,9 @@ environment:
   flutter: ">=1.10.0"
 
 dependencies:
+  image: ^2.1.18
   flutter:
     sdk: flutter
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

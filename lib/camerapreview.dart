@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
+
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,9 @@ typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 
 /// used to send notification about camera has actually started
 typedef OnCameraStarted = void Function();
+
+/// returns a Stream containing images from camera preview
+typedef ImagesStreamBuilder = void Function(Stream<Uint8List> imageStream);
 
 /// used to send notification when the device rotate
 /// FIXME use [DeviceOrientation] instead
@@ -64,12 +69,8 @@ class CameraAwesome extends StatefulWidget {
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
-  /// provide it to get an image at a [previewStreamImagesFreq] frequency
-  final StreamController<ByteData> previewStream;
-  
-  /// frequency to provide images in [previewStream] prefer values between [1 - 60] 
-  /// the higher it is, the higher performances it use
-  final int previewStreamImagesFreq;
+  /// returns a Stream containing images from camera preview
+  final ImagesStreamBuilder imagesStreamBuilder;
 
   CameraAwesome({Key key,
     this.testMode = false,
@@ -82,11 +83,10 @@ class CameraAwesome extends StatefulWidget {
     this.fitted = false,
     this.zoom,
     this.onOrientationChanged,
-    this.previewStream,
-    this.previewStreamImagesFreq,
-    @required this.sensor
+    @required this.sensor,
+    this.imagesStreamBuilder
   }): assert(sensor != null),
-      assert(previewStream == null || (previewStream != null && previewStreamImagesFreq != null)),
+      // assert(previewStream == null || (previewStream != null && previewStreamImagesFreq != null)),
       super(key: key);
 
   @override
@@ -111,13 +111,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
 
   /// Only for Android, Preview and Photo size can be different. Android preview can't be higher than 1980x1024
   ValueNotifier<Size> selectedAndroidPhotoSize;
-  
-  /// used to stream images, we saves an instance as method "findRenderObject" requires a lot if we had to call it each times
-  RenderRepaintBoundary renderBoundary;
-
-  /// used to stream images, calls renderRepaint to stream images 
-  Timer previewStreamTimer;
-  
 
   @override
   void initState() {
@@ -134,9 +127,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     widget.photoSize.value = null;
     selectedAndroidPhotoSize.dispose();
     selectedPreviewSize.dispose();
-    if(previewStreamTimer != null) {
-      previewStreamTimer.cancel();
-    }
     if(_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
     }
@@ -165,8 +155,8 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     if (widget.onOrientationChanged != null) {
       CamerawesomePlugin.getNativeOrientation().listen(widget.onOrientationChanged);
     }
-
-    await CamerawesomePlugin.init(widget.sensor.value);
+    // init plugin --
+    await CamerawesomePlugin.init(widget.sensor.value, widget.imagesStreamBuilder != null);
     _initAndroidPhotoSize();
     _initPhotoSize();
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
@@ -176,29 +166,19 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     } else {
       widget.photoSize.value = camerasAvailableSizes[0];
     }
+    // start camera --
     await CamerawesomePlugin.start();
     started =  true;
+    if(widget.imagesStreamBuilder != null) {
+      widget.imagesStreamBuilder(CamerawesomePlugin.listenCameraImages());
+    }
     if(widget.onCameraStarted != null) {
       widget.onCameraStarted();
     }
     _initFlashModeSwitcher();
     _initZoom();
     _initSensor();
-    _initPreviewStream();
     setState(() {});
-  }
-
-  _initPreviewStream() {
-    if(widget.previewStream == null) {
-      return;
-    }
-    Future.delayed(Duration(seconds: 1), (){
-      renderBoundary = boundaryKey.currentContext.findRenderObject();
-      previewStreamTimer = Timer.periodic(
-        Duration(milliseconds: (1000/widget.previewStreamImagesFreq).round()),
-        (_) => _capturePng()
-      );
-    });
   }
 
   @override
@@ -213,13 +193,10 @@ class _CameraAwesomeState extends State<CameraAwesome> {
           return Container();
         if(!snapshot.hasData || !hasInit)
           return Center(child: CircularProgressIndicator());
-        return RepaintBoundary(
-          key: boundaryKey,
-          child: _CameraPreviewWidget(
-            size: selectedPreviewSize.value,
-            fitted: widget.fitted,
-            textureId: snapshot.data,
-          ),
+        return _CameraPreviewWidget(
+          size: selectedPreviewSize.value,
+          fitted: widget.fitted,
+          textureId: snapshot.data,
         );
       }
     );
@@ -291,17 +268,6 @@ class _CameraAwesomeState extends State<CameraAwesome> {
         setState(() {});
       }
     });
-  }
-
-  _capturePng() async {
-    try {
-      ui.Image image = await renderBoundary.toImage(pixelRatio: 1.0);
-      ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      widget.previewStream.add(byteData);
-    } catch (e) {
-      print("Error while catching screenshot");
-      print(e);
-    }
   }
 
 }

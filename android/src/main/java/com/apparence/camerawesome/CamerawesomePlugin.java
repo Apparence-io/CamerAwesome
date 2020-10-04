@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.os.Build;
+import android.os.Handler;
 import android.util.EventLog;
 import android.util.Log;
 import android.util.Size;
@@ -62,6 +63,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
 
   // Flutter permission event channel to listen on result
   private EventChannel permissionsResultChannel;
+
+  // Flutter images stream event channel
+  private EventChannel imageStreamChannel;
 
   // Flutter texture registry
   private TextureRegistry textureRegistry;
@@ -170,6 +174,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     channel = new MethodChannel(messenger, "camerawesome");
     sensorOrientationChannel = new EventChannel(messenger, "camerawesome/orientation");
     permissionsResultChannel = new EventChannel(messenger, "camerawesome/permissions");
+    imageStreamChannel = new EventChannel(messenger, "camerawesome/images");
     channel.setMethodCallHandler(this);
     sensorOrientationChannel.setStreamHandler(mSensorOrientation);
     permissionsResultChannel.setStreamHandler(cameraPermissions);
@@ -209,6 +214,10 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       result.error("SENSOR_ERROR","a sensor FRONT or BACK must be provided", "");
       return;
     }
+    boolean streamImages = false;
+    if(call.argument("streamImages") != null) {
+      streamImages = call.argument("streamImages");
+    }
     String sensorArg = call.argument("sensor");
     CameraSensor sensor = sensorArg.equals("FRONT") ? CameraSensor.FRONT : CameraSensor.BACK;
     try {
@@ -222,7 +231,10 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       mCameraPreview = new CameraPreview(
               mCameraSession,
               mCameraSetup.getCharacteristicsModel(),
-              new FlutterSurfaceFactory(textureRegistry));
+              new FlutterSurfaceFactory(textureRegistry),
+              new Handler(pluginActivity.getMainLooper()),
+              streamImages);
+      imageStreamChannel.setStreamHandler(mCameraPreview);
       // init picture recorder
       mCameraPicture = new CameraPicture(mCameraSession, mCameraSetup.getCharacteristicsModel());
       // init state listener
@@ -432,12 +444,15 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     Log.d(TAG, "onAttachedToActivity: ");
     this.pluginActivity = binding.getActivity();
     binding.addRequestPermissionsResultListener(this.cameraPermissions);
+    if (this.mCameraPreview != null)
+      this.mCameraPreview.setMainHandler(new Handler(pluginActivity.getMainLooper()));
   }
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
     Log.d(TAG, "onDetachedFromActivityForConfigChanges: ");
     this.pluginActivity = null;
+    this.mCameraPreview.setMainHandler(null);
   }
 
   @Override
@@ -445,6 +460,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     Log.d(TAG, "onReattachedToActivityForConfigChanges: ");
     this.pluginActivity = binding.getActivity();
     binding.addRequestPermissionsResultListener(this.cameraPermissions);
+    this.mCameraPreview.setMainHandler(new Handler(pluginActivity.getMainLooper()));
   }
 
   @Override
@@ -452,5 +468,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     Log.d(TAG, "onDetachedFromActivity: ");
     this.pluginActivity = null;
     this.mCameraStateManager.stopCamera();
+    this.mCameraPreview.setMainHandler(null);
   }
 }

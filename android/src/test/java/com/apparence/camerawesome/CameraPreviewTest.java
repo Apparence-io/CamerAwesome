@@ -61,7 +61,12 @@ public class CameraPreviewTest {
         when(surfaceFactoryMock.build(any(Size.class))).thenReturn(surfaceMock);
         when(cameraDeviceMock.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)).thenReturn(captureRequestBuilder);
         cameraSession = new CameraSession();
-        cameraPreview = new CameraPreview(cameraSession, null, surfaceFactoryMock);
+        cameraPreview = new CameraPreview(
+                cameraSession,
+                null,
+                surfaceFactoryMock,
+                null,
+                false);
         cameraSession.setOnCaptureSessionListenerList(
                 Collections.<CameraSession.OnCaptureSession>singletonList(cameraPreview));
     }
