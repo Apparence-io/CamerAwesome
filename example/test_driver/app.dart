@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:camerawesome/camerapreview.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome_example/main.dart' as app;
 import 'package:camerawesome_example/main.dart';
 import 'package:flutter/material.dart';
@@ -87,11 +89,40 @@ void main() {
   });
 
   testWidgets('Image stream properly delivers images', (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
-    await tester.pumpAndSettle(Duration(seconds: 1));
-    var camera = find.byType(CameraAwesome);
-    await expectLater(camera, findsOneWidget);
-    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-
+    ValueNotifier<Size> photoSize = ValueNotifier(null);
+    ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
+    Stream<Uint8List> imageStream;
+    Uint8List imgData;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Stack(
+            children: [
+              Positioned(top: 0, left: 0, bottom: 0, right: 0,
+                child: Center(
+                  child: CameraAwesome(
+                    selectDefaultSize: (availableSizes) => availableSizes[0],
+                    photoSize: photoSize,
+                    sensor: sensor,
+                    imagesStreamBuilder: (stream) async {
+                      imageStream = stream;
+                      imgData = await imageStream.first;
+                      expect(imgData, isNotNull);
+                      var img = imgUtils.decodeImage(imgData);
+                      expect(img, isNotNull);
+                      expect(img.getBytes().length, greaterThan(0));
+                      expect(img.width, greaterThan(0));
+                      expect(img.height, greaterThan(0));
+                      print("check stream image has been done");
+                    }
+                  ),
+                )
+              )
+            ],
+          ),
+        )
+      )
+    );
+    await Future.delayed(Duration(seconds: 3));
   });
 }

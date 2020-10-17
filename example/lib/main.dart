@@ -140,7 +140,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       fit: StackFit.expand,
       children: <Widget>[
         fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
-        _buildPreviewStream(),
         _buildInterface(),
         Align(
           alignment: alignment,
@@ -448,31 +447,31 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     }
   }
 
-  /// this is just to preview images from stream
-  /// This use a bufferTime to take an image each 1500 ms
-  /// you cannot show every frame as flutter cannot draw them fast enough
-  /// [THIS IS JUST FOR DEMO PURPOSE]
-  Widget _buildPreviewStream() {
-    if(previewStream == null)
-      return Container();
-    return Positioned(
-      left: 32,
-      bottom: 120,
-      child: StreamBuilder(
-        stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
-        builder: (context, snapshot) {
-          if(!snapshot.hasData && snapshot.data.isNotEmpty)
-            return Container();
-          List<Uint8List> data = snapshot.data;
-          print("...${DateTime.now()} new image received... ${data.last.lengthInBytes} bytes");
-          return Image.memory(
-            data.last,
-            width: 120,
-          );
-        },
-      )
-    );
-  }
+  // /// this is just to preview images from stream
+  // /// This use a bufferTime to take an image each 1500 ms
+  // /// you cannot show every frame as flutter cannot draw them fast enough
+  // /// [THIS IS JUST FOR DEMO PURPOSE]
+  // Widget _buildPreviewStream() {
+  //   if(previewStream == null)
+  //     return Container();
+  //   return Positioned(
+  //     left: 32,
+  //     bottom: 120,
+  //     child: StreamBuilder(
+  //       stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
+  //       builder: (context, snapshot) {
+  //         if(!snapshot.hasData && snapshot.data.isNotEmpty)
+  //           return Container();
+  //         List<Uint8List> data = snapshot.data;
+  //         print("...${DateTime.now()} new image received... ${data.last.lengthInBytes} bytes");
+  //         return Image.memory(
+  //           data.last,
+  //           width: 120,
+  //         );
+  //       },
+  //     )
+  //   );
+  // }
 
   Widget buildFullscreenCamera() {
     return Positioned(
