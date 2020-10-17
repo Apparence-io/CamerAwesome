@@ -320,6 +320,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     int width = call.argument("width");
     int height = call.argument("height");
     mCameraPicture.setSize(width, height);
+    mCameraSession.refresh();
     result.success(null);
   }
 

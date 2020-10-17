@@ -31,7 +31,7 @@ void main() {
   });
 
   testWidgets("take photo works with selected photo size", (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
@@ -55,7 +55,7 @@ void main() {
   });
 
   testWidgets("change selected photo size param then take photo", (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
@@ -84,5 +84,14 @@ void main() {
     expect(img.height, equals(cameraPreview.photoSize.value.height));
     // delete photo
     file.deleteSync();
+  });
+
+  testWidgets('Image stream properly delivers images', (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
+    await tester.pumpAndSettle(Duration(seconds: 1));
+    var camera = find.byType(CameraAwesome);
+    await expectLater(camera, findsOneWidget);
+    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
+
   });
 }

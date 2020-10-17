@@ -63,6 +63,18 @@ public class CameraSession {
         }, null);
     }
 
+    public void refresh() {
+        // if session is active recreate session
+        if(mCaptureSession != null) {
+            try {
+                mCaptureSession.abortCaptures();
+                this.createCameraCaptureSession(cameraDevice);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "addPictureSurface: failed to recreate camera session", e);
+            }
+        }
+    }
+
     public List<OnCaptureSession> getOnCaptureSessionListenerList() {
         return onCaptureSessionListenerList;
     }
