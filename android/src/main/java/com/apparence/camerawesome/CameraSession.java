@@ -26,6 +26,8 @@ public class CameraSession {
 
     private static final String PHOTO_SURFACE_KEY = "PHOTO_SURFACE_KEY";
 
+    private static final String PREVIEW_STREAM_SURFACE_KEY = "PREVIEW_STREAM_SURFACE_KEY";
+
     private CameraCaptureSession mCaptureSession;
 
     private List<OnCaptureSession> onCaptureSessionListenerList;
@@ -35,7 +37,6 @@ public class CameraSession {
     private CameraPictureStates state;
 
     private CameraDevice cameraDevice;
-
 
     void createCameraCaptureSession(final CameraDevice cameraDevice) throws CameraAccessException {
         this.cameraDevice = cameraDevice;
@@ -62,6 +63,18 @@ public class CameraSession {
         }, null);
     }
 
+    public void refresh() {
+        // if session is active recreate session
+        if(mCaptureSession != null) {
+            try {
+                mCaptureSession.abortCaptures();
+                this.createCameraCaptureSession(cameraDevice);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "addPictureSurface: failed to recreate camera session", e);
+            }
+        }
+    }
+
     public List<OnCaptureSession> getOnCaptureSessionListenerList() {
         return onCaptureSessionListenerList;
     }
@@ -76,6 +89,10 @@ public class CameraSession {
 
     public void addPictureSurface(Surface surface) {
         this.surfaces.put(PHOTO_SURFACE_KEY, surface);
+    }
+
+    public void addPreviewStreamSurface(Surface surface) {
+        this.surfaces.put(PREVIEW_STREAM_SURFACE_KEY, surface);
     }
 
     public void clearSurface() {

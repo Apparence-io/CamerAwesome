@@ -123,6 +123,7 @@ _switchFlash.value = CameraFlashes.AUTO
 | photoSize | ```ValueNotifier<Size>``` | choose your photo size from the [selectDefaultSize] method |  |
 | orientation | ```DeviceOrientation``` | initial orientation |  |
 | fitted | ```bool``` | whether camera preview must be as big as it needs or cropped to fill with. false by default |  |
+| imagesStreamBuilder | ```Function``` | returns an imageStream when camera has started preview |  |
 
 </p>
 </details>
@@ -131,6 +132,23 @@ _switchFlash.value = CameraFlashes.AUTO
 
 ```dart
 await _pictureController.takePicture('THE_IMAGE_PATH/myimage.jpg');
+```
+
+## Live image stream
+
+The property imagesStreamBuilder allows you to get an imageStream once the camera is ready.
+Don't try to show all these images on Flutter UI as you won't have time to refresh UI fast enough.
+(there is too much images/sec).
+
+```dart
+CameraAwesome(
+    ...
+    imagesStreamBuilder: (imageStream) {
+        /// listen for images preview stream
+        /// you can use it to process AI recognition or anything else...
+        print("-- init CamerAwesome images stream");
+    },
+)
 ```
 
 ## 📱&nbsp; Tested devices
@@ -158,9 +176,9 @@ Feel free to **contribute** to improve this **compatibility list**.
 
 Feel free to help by submitting PR !
 
-- [ ] 📡 Broadcast live image stream
 - [ ] 🎥 Record video
 - [ ] 🌠 Focus on specific point
+- [x] ~~📡 Broadcast live image stream~~
 - [x] ~~🌤 Exposure level~~
 - [x] ~~Add e2e tests~~
 - [x] ~~Fullscreen/SizedBox support~~

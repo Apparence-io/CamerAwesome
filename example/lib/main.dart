@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
@@ -14,6 +15,7 @@ import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -71,6 +73,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
+  StreamSubscription<Uint8List> previewStreamSub;
+
+  Stream<Uint8List> previewStream;
+
   @override
   void initState() {
     super.initState();
@@ -105,6 +111,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    // previewStreamSub.cancel();
     photoSize.dispose();
     super.dispose();
   }
@@ -440,6 +447,32 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     }
   }
 
+  // /// this is just to preview images from stream
+  // /// This use a bufferTime to take an image each 1500 ms
+  // /// you cannot show every frame as flutter cannot draw them fast enough
+  // /// [THIS IS JUST FOR DEMO PURPOSE]
+  // Widget _buildPreviewStream() {
+  //   if(previewStream == null)
+  //     return Container();
+  //   return Positioned(
+  //     left: 32,
+  //     bottom: 120,
+  //     child: StreamBuilder(
+  //       stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
+  //       builder: (context, snapshot) {
+  //         if(!snapshot.hasData && snapshot.data.isNotEmpty)
+  //           return Container();
+  //         List<Uint8List> data = snapshot.data;
+  //         print("...${DateTime.now()} new image received... ${data.last.lengthInBytes} bytes");
+  //         return Image.memory(
+  //           data.last,
+  //           width: 120,
+  //         );
+  //       },
+  //     )
+  //   );
+  // }
+
   Widget buildFullscreenCamera() {
     return Positioned(
         top: 0,
@@ -458,6 +491,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
             onOrientationChanged: _onOrientationChange,
+            // imagesStreamBuilder: (imageStream) {
+            //   /// listen for images preview stream
+            //   /// you can use it to process AI recognition or anything else...
+            //   print("-- init CamerAwesome images stream");
+            //   setState(() {
+            //     previewStream = imageStream;
+            //   });
+            // },
+            onCameraStarted: () {
+              // camera started here -- do your after start stuff
+            },
           ),
         ));
   }

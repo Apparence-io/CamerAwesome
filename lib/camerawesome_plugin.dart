@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'sensors.dart';
 import './models/orientations.dart';
-
 import 'models/flashmodes.dart';
 
 export 'sensors.dart';
@@ -14,11 +13,6 @@ export './models/flashmodes.dart';
 export 'camerapreview.dart';
 export 'picture_controller.dart';
 
-// TODO - dispose method
-// TODO - Focus on a point
-
-// TODO - TESTS E2E
-// TODO VNEXT - stream images
 class CamerawesomePlugin {
 
   static const MethodChannel _channel = const MethodChannel('camerawesome');
@@ -27,9 +21,13 @@ class CamerawesomePlugin {
 
   static const EventChannel _permissionsChannel = const EventChannel('camerawesome/permissions');
 
+  static const EventChannel _imagesChannel = const EventChannel('camerawesome/images');
+
   static Stream<dynamic> _orientationStream;
 
   static Stream<bool> _permissionsStream;
+
+  static Stream<Uint8List> _imagesStream;
 
   static Future<List<String>> checkAndroidPermissions() => _channel
       .invokeMethod("checkPermissions")
@@ -90,15 +88,21 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
-  // TODO
-  //  static Future<void> dispose() =>_channel.invokeMethod("dispose");
+  static Stream<Uint8List> listenCameraImages() {
+    if(_imagesStream == null) {
+      _imagesStream = _imagesChannel.receiveBroadcastStream()
+        .transform(StreamTransformer<dynamic, Uint8List>.fromHandlers(handleData: (data,sink) {
+          sink.add(data);
+        })
+      );
+    }
+    return _imagesStream;
+  }
 
-  // FIXME remove this and use setSensor
-  static Future<void> flipCamera() => _channel.invokeMethod("flipCamera");
-
-  static Future<bool> init(Sensors sensor) async {
+  static Future<bool> init(Sensors sensor, bool enableImageStream) async {
     return _channel.invokeMethod("init", <String, dynamic>{
       'sensor': sensor.toString().split(".")[1],
+      'streamImages': enableImageStream
     });
   }
 
@@ -169,6 +173,7 @@ class CamerawesomePlugin {
 
   /// returns the max zoom available on device
   static Future<num> getMaxZoom() => _channel.invokeMethod("getMaxZoom");
+
 
   // ---------------------------------------------------
   // UTILITY METHODS
