@@ -1,3 +1,5 @@
+## 0.1.0
+- image stream available to use MLkit or other image live processing (Only android)
 ## 0.0.2+3
 - fix switch camera on Android with new update (now correctly switch ImageReader and cameraCharacteristics when switch sensor).
 ## 0.0.2+1
