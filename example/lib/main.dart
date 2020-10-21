@@ -254,16 +254,18 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    if (photoSize.value != null)
-                      FlatButton(
+                    ValueListenableBuilder(
+                      valueListenable: photoSize,
+                      builder: (context, value, child) => FlatButton(
                         key: ValueKey("resolutionButton"),
                         onPressed: _buildChangeResolutionDialog,
                         child: Text(
-                          '${photoSize.value.width.toInt()} / ${photoSize.value.height.toInt()}',
+                          '${value?.width?.toInt()} / ${value?.height?.toInt()}',
                           key: ValueKey("resolutionTxt"),
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),

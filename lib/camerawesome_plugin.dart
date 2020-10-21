@@ -134,14 +134,18 @@ class CamerawesomePlugin {
   }
 
   static Future<List<Size>> getSizes() async {
-    List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
-    List<Size> res = List();
-    sizes.forEach((el) {
-      int width = el["width"];
-      int height = el["height"];
-      res.add(Size(width.toDouble(), height.toDouble()));
-    });
-    return res;
+    try {
+      List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
+      List<Size> res = List();
+      sizes.forEach((el) {
+        int width = el["width"];
+        int height = el["height"];
+        res.add(Size(width.toDouble(), height.toDouble()));
+      });
+      return res;
+    } catch (e) {
+      throw e;
+    }
   }
 
   static Future<num> getPreviewTexture() => _channel.invokeMethod<num>('previewTexture');

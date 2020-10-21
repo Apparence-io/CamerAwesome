@@ -222,7 +222,6 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     );
   }
 
-
   bool get hasInit => selectedPreviewSize.value != null
     && camerasAvailableSizes != null
     && camerasAvailableSizes.length > 0
