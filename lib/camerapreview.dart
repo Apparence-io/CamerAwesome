@@ -34,7 +34,6 @@ typedef OnOrientationChanged = void Function(CameraOrientations);
 /// -------------------------------------------------
 /// CameraAwesome preview Widget
 /// -------------------------------------------------
-/// TODO - handle refused permissions
 class CameraAwesome extends StatefulWidget {
   /// true to wrap texture
   final bool testMode;
@@ -86,14 +85,13 @@ class CameraAwesome extends StatefulWidget {
     @required this.sensor,
     this.imagesStreamBuilder
   }): assert(sensor != null),
-      // assert(previewStream == null || (previewStream != null && previewStreamImagesFreq != null)),
       super(key: key);
 
   @override
-  _CameraAwesomeState createState() => _CameraAwesomeState();
+  CameraAwesomeState createState() => CameraAwesomeState();
 }
 
-class _CameraAwesomeState extends State<CameraAwesome> {
+class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserver {
 
   final GlobalKey boundaryKey = new GlobalKey();
   
@@ -102,6 +100,8 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   bool hasPermissions = false;
 
   bool started = false;
+
+  bool stopping = false;
 
   /// sub used to listen for permissions on native side
   StreamSubscription _permissionStreamSub;
@@ -115,25 +115,41 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
     SystemChrome.setPreferredOrientations([widget.orientation]);
     selectedPreviewSize = ValueNotifier(null);
     selectedAndroidPhotoSize = ValueNotifier(null);
     initPlatformState();
+    super.didChangeDependencies();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
   void dispose() {
+    started = false;
+    stopping = true;
+    WidgetsBinding.instance.removeObserver(this);
     CamerawesomePlugin.stop();
     widget.photoSize.value = null;
     selectedAndroidPhotoSize.dispose();
     selectedPreviewSize.dispose();
+    selectedPreviewSize = null;
+    selectedAndroidPhotoSize = null;
     if(_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
     }
     super.dispose();
   }
 
-  initPlatformState() async {
+  Future<void> initPlatformState() async {
     // wait user accept permissions to init widget completely on android
     if(Platform.isAndroid) {
       _permissionStreamSub = CamerawesomePlugin.listenPermissionResult()
@@ -167,8 +183,11 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       widget.photoSize.value = camerasAvailableSizes[0];
     }
     // start camera --
-    await CamerawesomePlugin.start();
-    started =  true;
+    try {
+      started = await CamerawesomePlugin.start();
+    } catch(e) {
+      _retryStartCamera(3);
+    }
     if(widget.imagesStreamBuilder != null) {
       widget.imagesStreamBuilder(CamerawesomePlugin.listenCameraImages());
     }
@@ -178,7 +197,8 @@ class _CameraAwesomeState extends State<CameraAwesome> {
     _initFlashModeSwitcher();
     _initZoom();
     _initSensor();
-    setState(() {});
+    if(mounted)
+      setState(() {});
   }
 
   @override
@@ -187,7 +207,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       future: CamerawesomePlugin.getPreviewTexture(),
       builder: (context, snapshot) {
         if(snapshot.hasError) {
-          return Container(); //TODO retry ?
+          return Container(); //TODO retry or show error here
         }
         if(!hasPermissions)
           return Container();
@@ -201,6 +221,7 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       }
     );
   }
+
 
   bool get hasInit => selectedPreviewSize.value != null
     && camerasAvailableSizes != null
@@ -237,7 +258,9 @@ class _CameraAwesomeState extends State<CameraAwesome> {
   _initSensor() {
     widget.sensor.addListener(() async {
       await CamerawesomePlugin.setSensor(widget.sensor.value);
-      setState(() {});
+      if(mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -258,16 +281,33 @@ class _CameraAwesomeState extends State<CameraAwesome> {
       return;
     }
     widget.photoSize.addListener(() async {
-      if(widget.photoSize.value == null) {
+      if(widget.photoSize.value == null || selectedAndroidPhotoSize == null) {
         return;
       }
       selectedAndroidPhotoSize.value = widget.photoSize.value;
       await CamerawesomePlugin.setPreviewSize(widget.photoSize.value.width.toInt(), widget.photoSize.value.height.toInt());
-      selectedPreviewSize.value = await CamerawesomePlugin.getEffectivPreviewSize();
-      if(mounted) {
-        setState(() {});
+      var effectivPreviewSize = await CamerawesomePlugin.getEffectivPreviewSize();
+      if(selectedPreviewSize != null) {
+        // this future can take time and be called after we disposed
+        selectedPreviewSize.value = effectivPreviewSize;
+        if(mounted) {
+          setState(() {});
+        }
       }
     });
+  }
+
+  _retryStartCamera(int nbTry) async {
+    while(!started && !stopping && nbTry > 0) {
+      print("[_retryStartCamera] ${this.hashCode}");
+      print("...retry start camera $nbTry try left");
+      try {
+        started = await Future.delayed(Duration(seconds: 2), CamerawesomePlugin.start);
+      } catch(e) {
+        _retryStartCamera(nbTry-1);
+        print("$e");
+      }
+    }
   }
 
 }

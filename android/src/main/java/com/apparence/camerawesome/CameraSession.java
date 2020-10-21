@@ -70,7 +70,7 @@ public class CameraSession {
                 mCaptureSession.abortCaptures();
                 this.createCameraCaptureSession(cameraDevice);
             } catch (CameraAccessException e) {
-                Log.e(TAG, "addPictureSurface: failed to recreate camera session", e);
+                Log.e(TAG, "failed to recreate camera session");
             }
         }
     }

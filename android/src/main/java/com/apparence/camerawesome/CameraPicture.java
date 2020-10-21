@@ -69,6 +69,10 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         refresh();
     }
 
+    public Size getSize() {
+        return size;
+    }
+
     public void refresh() {
         setAutoFocus(this.autoFocus);
         pictureImageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, 2);

@@ -128,15 +128,16 @@ public class CameraStateManager extends CameraDevice.StateCallback {
     public void onOpened(@NonNull CameraDevice camera) {
         this.opened = true;
         this.mCameraDevice = camera;
-        // init cameraPreview
         try {
             mCameraPicture.refresh();
             mCameraPreview.createCameraPreviewSession(mCameraDevice);
+            if(mOnCameraStateListener != null) {
+                this.mOnCameraStateListener.onOpened();
+            }
         } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-        if(mOnCameraStateListener != null) {
-            this.mOnCameraStateListener.onOpened();
+            if(mOnCameraStateListener != null) {
+                this.mOnCameraStateListener.onOpenError("CameraAccessException");
+            }
         }
     }
 
@@ -204,9 +205,15 @@ public class CameraStateManager extends CameraDevice.StateCallback {
     /// OnStateCallback
     // -----------------------------------------
 
-    public interface OnCameraState {
 
+    public void setmOnCameraStateListener(OnCameraState mOnCameraStateListener) {
+        this.mOnCameraStateListener = mOnCameraStateListener;
+    }
+
+    public interface OnCameraState {
         void onOpened();
+
+        void onOpenError(String reason);
     }
 
 }
