@@ -1,5 +1,6 @@
 package com.apparence.camerawesome;
 
+import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
@@ -37,6 +38,8 @@ public class CameraSession {
     private CameraPictureStates state;
 
     private CameraDevice cameraDevice;
+
+    private Rect zoomArea;
 
     void createCameraCaptureSession(final CameraDevice cameraDevice) throws CameraAccessException {
         this.cameraDevice = cameraDevice;
@@ -124,6 +127,14 @@ public class CameraSession {
 
     public void setCaptureSession(CameraCaptureSession mCaptureSession) {
         this.mCaptureSession = mCaptureSession;
+    }
+
+    public Rect getZoomArea() {
+        return zoomArea;
+    }
+
+    public void setZoomArea(Rect zoomArea) {
+        this.zoomArea = zoomArea;
     }
 
     /**

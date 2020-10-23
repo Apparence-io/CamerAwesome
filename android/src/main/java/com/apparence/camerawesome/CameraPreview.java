@@ -112,6 +112,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         mPreviewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
         // save initial region for zoom management
         mInitialCropRegion = mPreviewRequestBuilder.get(CaptureRequest.SCALER_CROP_REGION);
+        mCameraSession.setZoomArea(mInitialCropRegion);
         initPreviewRequest();
         // only start preview ImageReader if asked for it
         if(streamPreviewImages) {
@@ -270,6 +271,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         // ¯\_(ツ)_/¯ for some devices calculating the Rect for zoom=1 results in a bit different
         // Rect that device claims as its no-zoom crop region and the preview freezes
         if (scaledZoom != 1.0f) {
+            mCameraSession.setZoomArea(zoomPreviewArea);
             mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoomPreviewArea);
         } else {
             mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mInitialCropRegion);
