@@ -167,6 +167,7 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
                 takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 break;
         }
+        takePhotoRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCameraSession.getZoomArea());
         takePhotoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         mCameraSession.getCaptureSession().stopRepeating();
         mCameraSession.getCaptureSession().capture(takePhotoRequestBuilder.build(), mCaptureCallback, null);

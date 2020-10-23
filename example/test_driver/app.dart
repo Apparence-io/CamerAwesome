@@ -65,10 +65,12 @@ void main() {
     var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
     // change photo size preset
     var previousResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
-    await tester.tap(find.byKey(ValueKey("resolutionButton")));
+    var resolButtonFinder = find.byKey(ValueKey("resolutionButton"));
+    (resolButtonFinder.evaluate().first.widget as FlatButton).onPressed();
     await tester.pump(Duration(milliseconds: 1000));
     await tester.pumpAndSettle(Duration(milliseconds: 1000));
-    await tester.tap(find.byKey(ValueKey("resOption")).at(1));
+    var optionsFinder = find.byKey(ValueKey("resOption"));
+    await tester.tap(optionsFinder.last);
     await tester.pump(Duration(milliseconds: 500));
     var currentResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
     expect(previousResolution, isNot(equals(currentResolution)));

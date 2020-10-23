@@ -3,7 +3,7 @@
 - stability between rebuilds improved on Flutter side
 - [android] check size is correctly set before starting camera
 - CameraPreview try 3 times to start if camera is locked (each try are 1s ellapsed)
--
+- Fix android zoom when taking picture
 ## 0.1.0
 - image stream available to use MLkit or other image live processing (Only android)
 ## 0.0.2+3
