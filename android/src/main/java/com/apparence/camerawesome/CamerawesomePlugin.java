@@ -330,9 +330,23 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       Log.e(TAG, "_handleStart: must be init before this");
       return;
     }
+    if(mCameraPicture.getSize() == null) {
+      result.error("NO_PICTURE_SIZE", "","");
+      return;
+    }
     try {
+      mCameraStateManager.setmOnCameraStateListener(new CameraStateManager.OnCameraState() {
+        @Override
+        public void onOpened() {
+          result.success(true);
+        }
+
+        @Override
+        public void onOpenError(String reason) {
+          result.error(reason, "","");
+        }
+      });
       mCameraStateManager.startCamera(mCameraSetup.getCameraId());
-      result.success(true);
     } catch (CameraManagerException e) {
       result.error(e.getMessage(), "Error while starting camera", e.getStackTrace());
     }
@@ -342,6 +356,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     if(throwIfCameraNotInit(result))
       return;
     mCameraStateManager.stopCamera();
+    result.success(true);
   }
 
   private void _handleTakePhoto(final MethodCall call, final Result result) {

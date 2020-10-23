@@ -10,6 +10,7 @@ environment:
 
 dependencies:
   image: ^2.1.18
+#  rxdart: ^0.24.1
   flutter:
     sdk: flutter
 dev_dependencies:

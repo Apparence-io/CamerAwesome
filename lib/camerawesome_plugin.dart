@@ -13,6 +13,13 @@ export './models/flashmodes.dart';
 export 'camerapreview.dart';
 export 'picture_controller.dart';
 
+enum CameraState {
+  STARTING,
+  STARTED,
+  STOPPING,
+  STOPPED
+}
+
 class CamerawesomePlugin {
 
   static const MethodChannel _channel = const MethodChannel('camerawesome');
@@ -29,6 +36,8 @@ class CamerawesomePlugin {
 
   static Stream<Uint8List> _imagesStream;
 
+  static CameraState currentState = CameraState.STOPPED;
+
   static Future<List<String>> checkAndroidPermissions() => _channel
       .invokeMethod("checkPermissions")
       .then((res) => res.cast<String>());
@@ -40,12 +49,30 @@ class CamerawesomePlugin {
   static Future<List<String>> requestPermissions() =>
       _channel.invokeMethod("requestPermissions");
 
-  static Future<bool> start() => _channel.invokeMethod("start");
+  static Future<bool> start() async {
+    if(currentState == CameraState.STARTED || currentState == CameraState.STARTING) {
+      return true;
+    }
+    currentState = CameraState.STARTING;
+    var res = await _channel.invokeMethod("start");
+    if(res)
+      currentState = CameraState.STARTED;
+    return res;
+  }
 
-  static Future<bool> stop() {
-    // Dispose orientation stream
+  static Future<bool> stop() async {
+    if(currentState == CameraState.STOPPED || currentState == CameraState.STOPPING) {
+      return true;
+    }
     _orientationStream = null;
-    return _channel.invokeMethod("stop");
+    currentState = CameraState.STOPPING;
+    try {
+      await _channel.invokeMethod("stop");
+    } catch(e) {
+      return false;
+    }
+    currentState = CameraState.STOPPED;
+    return true;
   }
 
   static Future<bool> focus() => _channel.invokeMethod("focus");
@@ -107,14 +134,18 @@ class CamerawesomePlugin {
   }
 
   static Future<List<Size>> getSizes() async {
-    List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
-    List<Size> res = List();
-    sizes.forEach((el) {
-      int width = el["width"];
-      int height = el["height"];
-      res.add(Size(width.toDouble(), height.toDouble()));
-    });
-    return res;
+    try {
+      List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
+      List<Size> res = List();
+      sizes.forEach((el) {
+        int width = el["width"];
+        int height = el["height"];
+        res.add(Size(width.toDouble(), height.toDouble()));
+      });
+      return res;
+    } catch (e) {
+      throw e;
+    }
   }
 
   static Future<num> getPreviewTexture() => _channel.invokeMethod<num>('previewTexture');
@@ -138,6 +169,8 @@ class CamerawesomePlugin {
   /// Just for android
   /// you can set a different size for preview and for photo
   static Future<void> setPhotoSize(int width, int height) {
+    if(width == null || height == null)
+      return Future.value();
     return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic>{
       'width': width,
       'height': height,
