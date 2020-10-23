@@ -274,6 +274,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
             mCameraSession.setZoomArea(zoomPreviewArea);
             mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoomPreviewArea);
         } else {
+            mCameraSession.setZoomArea(mInitialCropRegion);
             mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mInitialCropRegion);
         }
     }
