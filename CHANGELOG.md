@@ -1,3 +1,5 @@
+## 0.1.1+1
+- [android] fix release onOpenListener after emit result to Flutter platform
 ## 0.1.1
 - prevent starting camera when already open on Flutter side
 - stability between rebuilds improved on Flutter side
