@@ -339,8 +339,8 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
         @Override
         public void onOpened() {
           result.success(true);
+          mCameraStateManager.setmOnCameraStateListener(null);
         }
-
         @Override
         public void onOpenError(String reason) {
           result.error(reason, "","");
