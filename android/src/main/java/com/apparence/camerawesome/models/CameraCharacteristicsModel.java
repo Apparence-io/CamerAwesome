@@ -2,6 +2,8 @@ package com.apparence.camerawesome.models;
 
 import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
+import android.util.Range;
+import android.util.Rational;
 
 public class CameraCharacteristicsModel {
 
@@ -13,11 +15,18 @@ public class CameraCharacteristicsModel {
 
     private Boolean flashAvailable;
 
-    public CameraCharacteristicsModel(float maxZoom, Rect availablePreviewZone, boolean hasAutoFocus, boolean hasFlash) {
+    private Range<Integer> aeCompensationRange;
+
+    private Rational aeCompensationRatio;
+
+    public CameraCharacteristicsModel(float maxZoom, Rect availablePreviewZone, boolean hasAutoFocus, boolean hasFlash,
+                                      Range<Integer> aeCompensationRange, Rational aeCompensationRatio) {
         this.maxZoom = maxZoom;
         this.availablePreviewZone = availablePreviewZone;
         this.hasAutoFocus = hasAutoFocus;
         this.flashAvailable = hasFlash;
+        this.aeCompensationRange = aeCompensationRange;
+        this.aeCompensationRatio = aeCompensationRatio;
     }
 
     public float getMaxZoom() {
@@ -32,6 +41,10 @@ public class CameraCharacteristicsModel {
         return availablePreviewZone;
     }
 
+    public Range<Integer> getAeCompensationRange() { return aeCompensationRange; }
+
+    public Rational getAeCompensationRatio() { return aeCompensationRatio; }
+
     public static class Builder {
 
         private float maxZoom;
@@ -41,6 +54,10 @@ public class CameraCharacteristicsModel {
         private boolean hasAutoFocus;
 
         private Boolean flashAvailable;
+
+        private Rational aeCompensationRatio;
+
+        private Range<Integer> aeCompensationRange;
 
         public Builder() {}
 
@@ -69,11 +86,20 @@ public class CameraCharacteristicsModel {
             return this;
         }
 
-        public CameraCharacteristicsModel build() {
-            return new CameraCharacteristicsModel(
-              this.maxZoom, this.availablePreviewZone, this.hasAutoFocus, this.flashAvailable
-            );
+        public Builder withAeCompensationRange(Range<Integer> aeCompensationRange) {
+            this.aeCompensationRange = aeCompensationRange;
+            return this;
         }
 
+        public Builder withAeCompensationStep(Rational rational) {
+            aeCompensationRatio = rational;
+            return this;
+        }
+
+        public CameraCharacteristicsModel build() {
+            return new CameraCharacteristicsModel(
+              this.maxZoom, this.availablePreviewZone, this.hasAutoFocus, this.flashAvailable, this.aeCompensationRange, this.aeCompensationRatio
+            );
+        }
     }
 }

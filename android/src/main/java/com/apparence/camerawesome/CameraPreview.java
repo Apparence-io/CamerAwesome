@@ -14,6 +14,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Rational;
 import android.util.Size;
 import android.util.Log;
 import android.view.Surface;
@@ -69,6 +70,8 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
 
     private FlashMode flashMode;
 
+    private int manualBrightness;
+
     private float mZoom;
 
     private Rect mInitialCropRegion;
@@ -100,6 +103,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         this.orientation = 270;
         this.streamPreviewImages = streamPreviewImages;
         this.mainHandler = mainHandler;
+        manualBrightness = 0;
         setAutoFocus(true);
     }
     
@@ -202,6 +206,27 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         refreshConfiguration();
     }
 
+    // -1 to 1 value
+    public void setManualBrightness(double value) {
+        if(value > 1 || value < 0) {
+            throw new IllegalArgumentException("Value for brightness compensation must be between 0 and 1");
+        }
+        int minCompensationRange = mCameraCharacteristics.getAeCompensationRange().getLower();
+        int maxCompensationRange = mCameraCharacteristics.getAeCompensationRange().getUpper();
+        double stepCompensation = mCameraCharacteristics.getAeCompensationRatio().doubleValue();
+        if(minCompensationRange != 0 && maxCompensationRange != 0 ) {
+            this.manualBrightness = (int) (minCompensationRange + (maxCompensationRange - minCompensationRange) * (value));
+        }
+        Log.d(TAG, "---------------------------------------------");
+        Log.d(TAG, "value: " + value);
+        Log.d(TAG, "stepCompensation: " + stepCompensation);
+        Log.d(TAG, "minCompensationRange: " + minCompensationRange);
+        Log.d(TAG, "maxCompensationRange: " + maxCompensationRange);
+        Log.d(TAG, "==> setManualBrightness: " + this.manualBrightness);
+        initPreviewRequest();
+        refreshConfiguration();
+    }
+
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------
@@ -233,6 +258,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
         }
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, manualBrightness);
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
     }
 

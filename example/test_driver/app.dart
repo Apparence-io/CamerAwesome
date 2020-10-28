@@ -56,6 +56,22 @@ void main() {
     file.deleteSync();
   });
 
+  testWidgets("take multiple photo", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
+    await tester.pumpAndSettle(Duration(seconds: 1));
+    var camera = find.byType(CameraAwesome);
+    await expectLater(camera, findsOneWidget);
+    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
+    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    // take photo
+    await tester.tap(takePhotoBtnFinder);
+    await tester.pump(Duration(seconds: 2));
+    // take a second photo
+    await tester.tap(takePhotoBtnFinder);
+    await tester.pump(Duration(seconds: 2));
+
+  });
+
   testWidgets("change selected photo size param then take photo", (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
