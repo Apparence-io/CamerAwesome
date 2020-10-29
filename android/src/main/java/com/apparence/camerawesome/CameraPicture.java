@@ -30,7 +30,7 @@ import static com.apparence.camerawesome.CameraPictureStates.STATE_RELEASE_FOCUS
 import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class CameraPicture implements CameraSession.OnCaptureSession {
+public class CameraPicture implements CameraSession.OnCaptureSession, CameraSettingsManager.CameraSettingsHandler {
 
     private static String TAG = CameraPicture.class.getName();
 
@@ -252,6 +252,14 @@ public class CameraPicture implements CameraSession.OnCaptureSession {
         } catch (CameraAccessException e) {
             Log.e(TAG, "onStateChanged: ", e);
         }
+    }
+
+    // ------------------------------------------------------
+    // CameraSettingsManager.CameraSettingsHandler
+    // ------------------------------------------------------
+    @Override
+    public void refreshConfiguration(CameraSettingsManager.CameraSettings settings) {
+        takePhotoRequestBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, settings.manualBrightness);
     }
 
     // --------------------------------------------------

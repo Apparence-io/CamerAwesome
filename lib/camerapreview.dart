@@ -29,7 +29,7 @@ typedef OnCameraStarted = void Function();
 typedef ImagesStreamBuilder = void Function(Stream<Uint8List> imageStream);
 
 /// returns the current level of luminosity
-typedef LuminosityLevelStreamBuilder = void Function(Stream<SensorData> imageStream);
+typedef LuminosityLevelStreamBuilder = void Function(Stream<SensorData> stream);
 
 /// used to send notification when the device rotate
 /// FIXME use [DeviceOrientation] instead

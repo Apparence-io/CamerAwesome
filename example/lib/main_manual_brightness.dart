@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   StreamSubscription<Uint8List> previewStreamSub;
 
-  Stream<Uint8List> previewStream;
+  Stream<SensorData> brightnessStream;
 
   @override
   void initState() {
@@ -488,10 +488,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             photoSize: photoSize,
             sensor: sensor,
             brightness: brightnessCorrection,
-            luminosityLevelStreamBuilder: (s) {
-              // just for example, use this as you want and destroy it when you are done
-              s.listen((event) => print("luminosity level changed: ${event.value}"));
-            },
+            luminosityLevelStreamBuilder: (s) => brightnessStream = s,
             switchFlashMode: switchFlash,
             zoom: zoomNotifier,
             onOrientationChanged: _onOrientationChange,
@@ -519,6 +516,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 },
                 photoSize: photoSize,
                 brightness: brightnessCorrection,
+                luminosityLevelStreamBuilder: (s) => brightnessStream = s,
                 sensor: sensor,
                 fitted: true,
                 switchFlashMode: switchFlash,

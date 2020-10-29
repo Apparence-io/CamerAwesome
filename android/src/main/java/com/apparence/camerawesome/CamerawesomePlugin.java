@@ -11,6 +11,7 @@ import android.util.Size;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.apparence.camerawesome.CameraSettingsManager.CameraSettingsHandler;
 import com.apparence.camerawesome.exceptions.CameraManagerException;
 import com.apparence.camerawesome.models.FlashMode;
 import com.apparence.camerawesome.sensors.BasicLuminosityNotifier;
@@ -75,6 +76,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
 
   // handle setup of camera (get size, init...)
   private CameraSetup mCameraSetup;
+
+  // handle camera settings
+  private CameraSettingsManager mSettingsManager;
 
   // handle luminosity change notifying
   private LuminosityNotifier mLuminosityNotifier;
@@ -251,10 +255,15 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       imageStreamChannel.setStreamHandler(mCameraPreview);
       // init picture recorder
       mCameraPicture = new CameraPicture(mCameraSession, mCameraSetup.getCharacteristicsModel());
+      // init settings manager
+      List<CameraSettingsHandler> handlers = new ArrayList<CameraSettingsHandler>();
+      handlers.add(mCameraPreview);
+      handlers.add(mCameraPicture);
+      mSettingsManager = new CameraSettingsManager(mCameraSetup.getCharacteristicsModel(), handlers);
       // init state listener
       mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
       // set camera sessions listeners
-      mCameraSession.setOnCaptureSessionListenerList(Arrays.asList(mCameraPreview, mCameraPicture));
+      mCameraSession.setOnCaptureSessionListenerList((List<CameraSession.OnCaptureSession>) Arrays.asList(mCameraPreview, mCameraPicture));
       result.success(true);
     } catch (CameraAccessException e) {
       result.error("", e.getMessage(), e.getStackTrace());
@@ -371,7 +380,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       return;
     double brightness = call.argument("brightness");
     try {
-      mCameraPreview.setManualBrightness(brightness);
+      mSettingsManager.setManualBrightness(brightness);
       result.success(null);
     } catch (IllegalArgumentException e) {
       result.error("ArgumentError", "ArgumentError", "Value for brightness compensation must be between 0 and -1");
@@ -414,15 +423,13 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     result.success(null);
   }
 
-  @SuppressWarnings("ConstantConditions")
   private void _handleZoom(final MethodCall call, final Result result) {
     if(!call.hasArgument("zoom")) {
       result.error("ZOOM_NOT_SET", "a float zoom must be set", "");
       return;
     }
-    double zoom;
+    double zoom = call.argument("zoom");
     // sending 0.0 will result in an int so lets force cast
-    zoom = call.argument("zoom");
     mCameraPreview.setZoom((float) zoom);
     result.success(null);
   }
