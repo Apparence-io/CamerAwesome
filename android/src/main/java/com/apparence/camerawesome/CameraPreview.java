@@ -14,6 +14,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Rational;
 import android.util.Size;
 import android.util.Log;
 import android.view.Surface;
@@ -41,7 +42,7 @@ import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_LOCK;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_WAITING_PRECAPTURE_READY;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class CameraPreview implements CameraSession.OnCaptureSession, EventChannel.StreamHandler  {
+public class CameraPreview implements CameraSession.OnCaptureSession, EventChannel.StreamHandler, CameraSettingsManager.CameraSettingsHandler {
 
     private static final String TAG = CameraPreview.class.getName();
 
@@ -248,6 +249,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
     }
 
     // Inspired by react nativ plugin
+    // TODO moves to [CameraSettingsManager]
     private void updateZoom() {
         float maxZoom = this.mCameraCharacteristics.getMaxZoom();
         Rect currentPreviewArea = this.mCameraCharacteristics.getAvailablePreviewZone();
@@ -428,6 +430,16 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
 
     public void setMainHandler(Handler mainHandler) {
         this.mainHandler = mainHandler;
+    }
+
+    // ------------------------------------------------------
+    // CameraSettingsManager.CameraSettingsHandler
+    // ------------------------------------------------------
+    @Override
+    public void refreshConfiguration(CameraSettingsManager.CameraSettings settings) {
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, settings.manualBrightness);
+        initPreviewRequest();
+        refreshConfiguration();
     }
 
     // ------------------------------------------------------

@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rxdart/rxdart.dart';
+import 'models/sensor_data.dart';
 import 'sensors.dart';
 import './models/orientations.dart';
 import 'models/flashmodes.dart';
@@ -12,6 +14,7 @@ export 'sensors.dart';
 export './models/flashmodes.dart';
 export 'camerapreview.dart';
 export 'picture_controller.dart';
+export './models/sensor_data.dart';
 
 enum CameraState {
   STARTING,
@@ -30,9 +33,13 @@ class CamerawesomePlugin {
 
   static const EventChannel _imagesChannel = const EventChannel('camerawesome/images');
 
+  static const EventChannel _luminosityChannel = const EventChannel('camerawesome/luminosity');
+
   static Stream<dynamic> _orientationStream;
 
   static Stream<bool> _permissionsStream;
+
+  static Stream<SensorData> _luminositySensorDataStream;
 
   static Stream<Uint8List> _imagesStream;
 
@@ -203,6 +210,32 @@ class CamerawesomePlugin {
       _channel.invokeMethod('setSensor', <String, dynamic>{
         'sensor': sensor.toString().split(".")[1],
       });
+
+  /// set brightness manually with range [0,1]
+  static Future<void> setBrightness(double brightness) {
+    if(brightness < 0 || brightness > 1) {
+      throw "Value must be between [0,1]";
+    }
+    return _channel.invokeMethod('setCorrection', <String, dynamic>{
+      'brightness': brightness,
+    });
+  }
+
+  // listen for luminosity level
+  static Stream<SensorData> listenLuminosityLevel() {
+    if(!Platform.isAndroid) {
+      // Not available 
+      throw "not available on this OS for now... only Android";
+    }
+    if(_luminositySensorDataStream == null) {
+      _luminositySensorDataStream = _luminosityChannel.receiveBroadcastStream()
+        .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(handleData: (data,sink) {
+          sink.add(SensorData(data));
+        })
+      );
+    }
+    return _luminositySensorDataStream;
+  }
 
   /// returns the max zoom available on device
   static Future<num> getMaxZoom() => _channel.invokeMethod("getMaxZoom");

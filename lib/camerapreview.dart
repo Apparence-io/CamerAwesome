@@ -9,6 +9,7 @@ import 'package:camerawesome/models/orientations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'models/flashmodes.dart';
 
@@ -26,6 +27,9 @@ typedef OnCameraStarted = void Function();
 
 /// returns a Stream containing images from camera preview
 typedef ImagesStreamBuilder = void Function(Stream<Uint8List> imageStream);
+
+/// returns the current level of luminosity
+typedef LuminosityLevelStreamBuilder = void Function(Stream<SensorData> stream);
 
 /// used to send notification when the device rotate
 /// FIXME use [DeviceOrientation] instead
@@ -62,14 +66,20 @@ class CameraAwesome extends StatefulWidget {
   /// choose your photo size from the [selectDefaultSize] method
   final ValueNotifier<Size> photoSize;
 
+  /// set brightness correction manually range [0,1] (optionnal)
+  final ValueNotifier<double> brightness;
+
   /// initial orientation
   final DeviceOrientation orientation;
 
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
-  /// returns a Stream containing images from camera preview
+  /// (optional) returns a Stream containing images from camera preview - TODO only Android, iOS to be done
   final ImagesStreamBuilder imagesStreamBuilder;
+
+  /// (optional) returns a Stream containing images from camera preview - TODO only Android, iOS to be done
+  final LuminosityLevelStreamBuilder luminosityLevelStreamBuilder;
 
   CameraAwesome({Key key,
     this.testMode = false,
@@ -83,7 +93,9 @@ class CameraAwesome extends StatefulWidget {
     this.zoom,
     this.onOrientationChanged,
     @required this.sensor,
-    this.imagesStreamBuilder
+    this.imagesStreamBuilder,
+    this.brightness,
+    this.luminosityLevelStreamBuilder,
   }): assert(sensor != null),
       super(key: key);
 
@@ -103,6 +115,12 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
 
   bool stopping = false;
 
+  /// we use this subject to have a little debounce time between changes
+  PublishSubject<double> brightnessCorrectionData;
+
+  /// sub used to listen for brightness correction
+  StreamSubscription<double> _brightnessCorrectionDataSub;
+
   /// sub used to listen for permissions on native side
   StreamSubscription _permissionStreamSub;
 
@@ -111,6 +129,8 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
 
   /// Only for Android, Preview and Photo size can be different. Android preview can't be higher than 1980x1024
   ValueNotifier<Size> selectedAndroidPhotoSize;
+
+
 
   @override
   void initState() {
@@ -123,6 +143,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     SystemChrome.setPreferredOrientations([widget.orientation]);
     selectedPreviewSize = ValueNotifier(null);
     selectedAndroidPhotoSize = ValueNotifier(null);
+    brightnessCorrectionData = PublishSubject();
     initPlatformState();
     super.didChangeDependencies();
   }
@@ -145,6 +166,9 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     selectedAndroidPhotoSize = null;
     if(_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
+    }
+    if(_brightnessCorrectionDataSub != null) {
+      _brightnessCorrectionDataSub.cancel();
     }
     super.dispose();
   }
@@ -197,6 +221,8 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     _initFlashModeSwitcher();
     _initZoom();
     _initSensor();
+    _initManualBrightness();
+    _initBrightnessStream();
     if(mounted)
       setState(() {});
   }
@@ -294,6 +320,23 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
         }
       }
     });
+  }
+
+  _initManualBrightness() {
+    if(widget.brightness == null) {
+      return;
+    }
+    _brightnessCorrectionDataSub = brightnessCorrectionData
+      .debounceTime(Duration(milliseconds: 500))
+      .listen((value) => CamerawesomePlugin.setBrightness(value));
+    widget.brightness.addListener(() => brightnessCorrectionData.add(widget.brightness.value));
+  }
+
+  _initBrightnessStream() {
+    if(widget.luminosityLevelStreamBuilder == null) {
+      return;
+    }
+    widget.luminosityLevelStreamBuilder(CamerawesomePlugin.listenLuminosityLevel());
   }
 
   _retryStartCamera(int nbTry) async {

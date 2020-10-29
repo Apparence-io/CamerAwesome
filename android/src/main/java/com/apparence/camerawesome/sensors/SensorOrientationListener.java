@@ -1,4 +1,4 @@
-package com.apparence.camerawesome;
+package com.apparence.camerawesome.sensors;
 
 import io.flutter.plugin.common.EventChannel;
 

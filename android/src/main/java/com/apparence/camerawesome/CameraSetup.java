@@ -9,15 +9,13 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
-import android.util.Log;
 import android.util.Size;
 import android.view.OrientationEventListener;
 
 import androidx.annotation.RequiresApi;
 
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
-
-import io.flutter.plugin.common.EventChannel;
+import com.apparence.camerawesome.sensors.SensorOrientation;
 
 import static android.view.OrientationEventListener.ORIENTATION_UNKNOWN;
 
@@ -75,6 +73,8 @@ class CameraSetup {
                 .withAvailablePreviewZone(characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE))
                 .withAutoFocus(characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES))
                 .withFlash(characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE))
+                .withAeCompensationRange(characteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE))
+                .withAeCompensationStep(characteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP))
                 .build();
             mCameraId = cameraId;
             return;
