@@ -263,7 +263,10 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       // init state listener
       mCameraStateManager = new CameraStateManager(applicationContext, mCameraPreview, mCameraPicture, mCameraSession);
       // set camera sessions listeners
-      mCameraSession.setOnCaptureSessionListenerList((List<CameraSession.OnCaptureSession>) Arrays.asList(mCameraPreview, mCameraPicture));
+      List<CameraSession.OnCaptureSession> onCaptureSessionListners = new ArrayList<CameraSession.OnCaptureSession>();
+      onCaptureSessionListners.add(mCameraPreview);
+      onCaptureSessionListners.add(mCameraPicture);
+      mCameraSession.setOnCaptureSessionListenerList(onCaptureSessionListners);
       result.success(true);
     } catch (CameraAccessException e) {
       result.error("", e.getMessage(), e.getStackTrace());

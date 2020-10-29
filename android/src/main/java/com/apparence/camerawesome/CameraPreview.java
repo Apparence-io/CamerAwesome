@@ -203,27 +203,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         refreshConfiguration();
     }
 
-//    // -1 to 1 value
-//    public void setManualBrightness(double value) {
-//        if(value > 1 || value < 0) {
-//            throw new IllegalArgumentException("Value for brightness compensation must be between 0 and 1");
-//        }
-//        int minCompensationRange = mCameraCharacteristics.getAeCompensationRange().getLower();
-//        int maxCompensationRange = mCameraCharacteristics.getAeCompensationRange().getUpper();
-//        double stepCompensation = mCameraCharacteristics.getAeCompensationRatio().doubleValue();
-//        if(minCompensationRange != 0 && maxCompensationRange != 0 ) {
-//            this.manualBrightness = (int) (minCompensationRange + (maxCompensationRange - minCompensationRange) * (value));
-//        }
-//        Log.d(TAG, "---------------------------------------------");
-//        Log.d(TAG, "value: " + value);
-//        Log.d(TAG, "stepCompensation: " + stepCompensation);
-//        Log.d(TAG, "minCompensationRange: " + minCompensationRange);
-//        Log.d(TAG, "maxCompensationRange: " + maxCompensationRange);
-//        Log.d(TAG, "==> setManualBrightness: " + this.manualBrightness);
-//        initPreviewRequest();
-//        refreshConfiguration();
-//    }
-
     // ------------------------------------------------------
     // PRIVATES
     // ------------------------------------------------------
@@ -270,6 +249,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
     }
 
     // Inspired by react nativ plugin
+    // TODO moves to [CameraSettingsManager]
     private void updateZoom() {
         float maxZoom = this.mCameraCharacteristics.getMaxZoom();
         Rect currentPreviewArea = this.mCameraCharacteristics.getAvailablePreviewZone();
