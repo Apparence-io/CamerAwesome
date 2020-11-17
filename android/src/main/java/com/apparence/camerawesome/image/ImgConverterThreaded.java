@@ -14,6 +14,10 @@ public class ImgConverterThreaded {
     private ImgConverter converter;
 
     public ImgConverterThreaded(ImgConverter converter) {
+        if(handlerThread != null) {
+            handlerThread.quit();
+            handlerThread = new HandlerThread("ImgConverterThreaded");
+        }
         this.converter = converter;
         handlerThread.start();
     }
