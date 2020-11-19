@@ -127,23 +127,18 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
     public void lockFocus() {
         mCameraSession.setState(STATE_WAITING_LOCK);
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-        try {
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureFocusedCallback,null);
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "lockFocus: error ", e);
-        }
+        refreshConfiguration();
     }
 
     public void unlockFocus() {
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
         mCameraSession.setState(null);
+        initPreviewRequest();
         try {
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureFocusedCallback, null);
-            initPreviewRequest();
-            refreshConfiguration();
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "unlockFocus: ", e);
-        }
+            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureFocusedCallback , null);
+        } catch (CameraAccessException ignored) { }
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+        refreshConfiguration();
     }
     
     public CameraCaptureSession getCaptureSession() {
@@ -213,10 +208,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         }
         mPreviewRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientation);
         switch (flashMode) {
-            case ON:
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
-                break;
             case AUTO:
                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
@@ -229,12 +220,14 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
+            case ON:
             default:
                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
         }
-        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, autoFocus ? CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE : CaptureRequest.CONTROL_AF_MODE_OFF);
     }
 
     private void refreshConfiguration() {
@@ -360,7 +353,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
                     } else {
                         mCameraSession.setState(STATE_PRECAPTURE);
                     }
-                }
+                } 
                 break;
             case STATE_PRECAPTURE: {
                 Integer ae = result.get(CaptureResult.CONTROL_AE_STATE);
