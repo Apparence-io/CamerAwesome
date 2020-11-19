@@ -2,6 +2,7 @@
 - [Android] onDetachedFromActivity : fix stopping the camera should be only done if camera has been started
 - listen native Orientation should be canceled correctly on dispose CameraAwesomeState
 - unlock focus now restart session correctly after taking a photo
+- takePicture listener now cannot send result more than one time
 ## 0.1.2
 - [Android] get luminosity level from device
 - [Android] apply brightness correction

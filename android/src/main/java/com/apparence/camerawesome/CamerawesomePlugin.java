@@ -459,16 +459,27 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
 
   private CameraPicture.OnImageResult createTakePhotoResultListener(final Result result) {
     return new CameraPicture.OnImageResult() {
+      boolean sent = false;
+
       @Override
       public void onSuccess() {
+        if(sent) {
+          return;
+        }
         try {
+          sent = true;
           result.success(null);
         } catch (IllegalStateException e) {
           Log.e(TAG, "onSuccess image error", e);
         }
       }
+
       @Override
       public void onFailure(String error) {
+        if(sent) {
+          return;
+        }
+        sent = true;
         result.error(error, "", "");
       }
     };
