@@ -1,5 +1,6 @@
 ## 0.1.2+1
 - [Android] onDetachedFromActivity : fix stopping the camera should be only done if camera has been started
+- listen native Orientation should be canceled correctly on dispose CameraAwesomeState
 ## 0.1.2
 - [Android] get luminosity level from device
 - [Android] apply brightness correction

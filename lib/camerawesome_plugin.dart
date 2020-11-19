@@ -88,7 +88,7 @@ class CamerawesomePlugin {
     if (_orientationStream == null) {
       _orientationStream = _orientationChannel.receiveBroadcastStream().transform(
           StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
-              handleData: (data, sink) {
+            handleData: (data, sink) {
         CameraOrientations newOrientation;
         switch (data) {
           case 'LANDSCAPE_LEFT':
