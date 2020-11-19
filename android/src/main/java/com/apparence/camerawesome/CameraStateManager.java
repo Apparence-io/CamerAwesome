@@ -159,7 +159,6 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         } else {
             stopCamera();
         }
-        stopCamera();
     }
 
     public CameraDevice getCameraDevice() {
