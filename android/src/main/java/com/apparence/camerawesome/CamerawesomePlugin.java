@@ -493,7 +493,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
 
   @Override
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-    Log.d(TAG, "onAttachedToActivity: ");
     this.pluginActivity = binding.getActivity();
     binding.addRequestPermissionsResultListener(this.cameraPermissions);
     if (this.mCameraPreview != null)
@@ -502,14 +501,12 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
 
   @Override
   public void onDetachedFromActivityForConfigChanges() {
-    Log.d(TAG, "onDetachedFromActivityForConfigChanges: ");
     this.pluginActivity = null;
     this.mCameraPreview.setMainHandler(null);
   }
 
   @Override
   public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-    Log.d(TAG, "onReattachedToActivityForConfigChanges: ");
     this.pluginActivity = binding.getActivity();
     binding.addRequestPermissionsResultListener(this.cameraPermissions);
     this.mCameraPreview.setMainHandler(new Handler(pluginActivity.getMainLooper()));
@@ -517,9 +514,13 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
 
   @Override
   public void onDetachedFromActivity() {
-    Log.d(TAG, "onDetachedFromActivity: ");
     this.pluginActivity = null;
-    this.mCameraStateManager.stopCamera();
-    this.mCameraPreview.setMainHandler(null);
+    if(this.mCameraStateManager != null) {
+      this.mCameraStateManager.stopCamera();
+      this.mCameraStateManager = null;
+    }
+    if(this.mCameraPreview != null) {
+      this.mCameraPreview.setMainHandler(null);
+    }
   }
 }

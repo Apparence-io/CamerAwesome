@@ -1,3 +1,8 @@
+## 0.1.2+1
+- [Android] onDetachedFromActivity : fix stopping the camera should be only done if camera has been started
+## 0.1.2
+- [Android] get luminosity level from device
+- [Android] apply brightness correction
 ## 0.1.1+1
 - [android] fix release onOpenListener after emit result to Flutter platform
 ## 0.1.1
