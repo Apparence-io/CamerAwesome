@@ -124,6 +124,9 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   /// sub used to listen for permissions on native side
   StreamSubscription _permissionStreamSub;
 
+  /// sub used to listen for orientation changes on native side
+  StreamSubscription _orientationStreamSub;
+
   /// choose preview size, default to the first available size in the list (MAX) or use [selectDefaultSize]
   ValueNotifier<Size> selectedPreviewSize;
 
@@ -170,6 +173,9 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     if(_brightnessCorrectionDataSub != null) {
       _brightnessCorrectionDataSub.cancel();
     }
+    if(_orientationStreamSub != null) {
+      _orientationStreamSub.cancel();
+    }
     super.dispose();
   }
 
@@ -193,7 +199,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     }
     // Init orientation stream
     if (widget.onOrientationChanged != null) {
-      CamerawesomePlugin.getNativeOrientation().listen(widget.onOrientationChanged);
+      _orientationStreamSub = CamerawesomePlugin.getNativeOrientation().listen(widget.onOrientationChanged);
     }
     // init plugin --
     await CamerawesomePlugin.init(widget.sensor.value, widget.imagesStreamBuilder != null);
