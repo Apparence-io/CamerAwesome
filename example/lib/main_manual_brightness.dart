@@ -372,8 +372,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 setState(() {});
               },
             ),
-            TakePhotoButton(
-              key: ValueKey("takePhotoButton"),
+            CameraButton(
+              key: ValueKey("cameraButton"),
               onTap: () async {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')

@@ -38,7 +38,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -62,7 +62,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -78,7 +78,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
     // change photo size preset
     var previousResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
     var resolButtonFinder = find.byKey(ValueKey("resolutionButton"));

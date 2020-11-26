@@ -7,10 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'models/sensor_data.dart';
 import 'sensors.dart';
+import 'capture_modes.dart';
 import './models/orientations.dart';
 import 'models/flashmodes.dart';
 
 export 'sensors.dart';
+export 'capture_modes.dart';
 export './models/flashmodes.dart';
 export 'camerapreview.dart';
 export 'picture_controller.dart';
