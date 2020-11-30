@@ -12,6 +12,7 @@
 #import <Foundation/Foundation.h>
 
 #import "CameraSensor.h"
+#import "CaptureModes.h"
 #import "CameraFlash.h"
 #import "CameraQualities.h"
 #import "CameraPicture.h"
@@ -32,12 +33,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) UIDeviceOrientation deviceOrientation;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
+@property(readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
+@property(readonly, nonatomic) AVAssetWriter *videoWriter;
+@property(readonly, nonatomic) AVAssetWriterInput *videoWriterInput;
+@property(readonly, nonatomic) AVAssetWriterInput *audioWriterInput;
+@property(readonly, nonatomic) AVAssetWriterInputPixelBufferAdaptor *videoAdaptor;
+@property(assign, nonatomic) CMTime lastVideoSampleTime;
+@property(assign, nonatomic) CMTime lastAudioSampleTime;
+@property(assign, nonatomic) CMTime videoTimeOffset;
+@property(assign, nonatomic) CMTime audioTimeOffset;
 @property(readonly, nonatomic) CameraSensor cameraSensor;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
+@property(readonly, nonatomic) bool isRecording;
+@property(readonly, nonatomic) bool enableAudio;
+@property(readonly, nonatomic) bool isAudioSetup;
+@property(readonly, nonatomic) bool videoIsDisconnected;
+@property(readonly, nonatomic) bool audioIsDisconnected;
 @property(nonatomic) FlutterEventSink eventSink;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
@@ -50,6 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 - (void)stop;
 - (void)takePictureAtPath:(NSString *)path;
+- (void)recordVideoAtPath:(NSString *)path;
+- (void)stopRecordingVideo;
 - (void)instantFocus;
 - (void)dispose;
 - (void)setResult:(nonnull FlutterResult)result;

@@ -72,12 +72,18 @@
         [self _handlePhotoSize:call result:result];
     } else if ([@"takePhoto" isEqualToString:call.method]) {
         [self _handleTakePhoto:call result:result];
+    } else if ([@"recordVideo" isEqualToString:call.method]) {
+        [self _handleRecordVideo:call result:result];
+    } else if ([@"stopRecordingVideo" isEqualToString:call.method]) {
+        [self _handleStopRecordingVideo:call result:result];
     } else if ([@"handleAutoFocus" isEqualToString:call.method]) {
         [self _handleAutoFocus:call result:result];
     } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
     } else if ([@"setSensor" isEqualToString:call.method]) {
         [self _handleSetSensor:call result:result];
+    } else if ([@"setCaptureMode" isEqualToString:call.method]) {
+        [self _handleSetCaptureMode:call result:result];
     } else if ([@"setZoom" isEqualToString:call.method]) {
         [self _handleSetZoom:call result:result];
     } else if ([@"getMaxZoom" isEqualToString:call.method]) {
@@ -124,12 +130,35 @@
     [_camera takePictureAtPath:path];
 }
 
+- (void)_handleRecordVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *path = call.arguments[@"path"];
+    
+    if (path == nil || path.length <= 0) {
+        result([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
+        return;
+    }
+    
+    [_camera setResult:result];
+    [_camera recordVideoAtPath:path];
+}
+
+- (void)_handleStopRecordingVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera setResult:result];
+    [_camera stopRecordingVideo];
+}
+
 - (void)_handleSetSensor:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString *sensorName = call.arguments[@"sensor"];
     // TODO: Return a list of all available cameras to front & then choice in a list the device ID wanted
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
 
     [_camera setSensor:sensor];
+}
+
+- (void)_handleSetCaptureMode:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *captureModeName = call.arguments[@"captureMode"];
+    CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
+//    [_camera setCaptureMode:captureMode];
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
