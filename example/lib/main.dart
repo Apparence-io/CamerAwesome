@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
+import 'package:camerawesome_example/widgets/camera_preview.dart';
 import 'package:camerawesome_example/widgets/take_photo_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:video_player/video_player.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -35,9 +37,11 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   double _bestSizeRatio;
   String _lastPhotoPath;
+  String _lastVideoPath;
   bool _focus = false;
   bool _fullscreen = true;
   bool _isRecordingVideo = false;
+  VideoPlayerController _videoPlayerController;
 
   // TODO: Add zoom smooth animation
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
@@ -96,6 +100,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    _videoPlayerController.dispose();
     // previewStreamSub.cancel();
     _photoSize.dispose();
     _captureMode.dispose();
@@ -154,6 +159,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         ),
       ],
     ));
+  }
+
+  Widget _buildFullscreenVideoPlayer() {
+    return Center(
+      child: _videoPlayerController.value.initialized
+          ? AspectRatio(
+              aspectRatio: _videoPlayerController.value.aspectRatio,
+              child: VideoPlayer(_videoPlayerController),
+            )
+          : Container(),
+    );
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
@@ -434,22 +450,40 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     HapticFeedback.mediumImpact();
 
     if (this._isRecordingVideo) {
-      // TODO: Stop video
+      await _pictureController.stopRecordingVideo();
 
       setState(() {
         this._isRecordingVideo = false;
       });
-    } else {
-      setState(() {
-        this._isRecordingVideo = true;
-      });
 
+      final file = File(_lastVideoPath);
+      print("----------------------------------");
+      print("VIDEO RECORDED");
+      print("==> has been recorded : ${file.exists()}");
+      print("==> path : $_lastVideoPath");
+      print("----------------------------------");
+
+      await Future.delayed(Duration(milliseconds: 300));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CameraPreview(
+            videoPath: _lastVideoPath,
+          ),
+        ),
+      );
+    } else {
       final Directory extDir = await getTemporaryDirectory();
       final testDir =
           await Directory('${extDir.path}/test').create(recursive: true);
       final String filePath = widget.randomPhotoName
-          ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'
-          : '${testDir.path}/photo_test.jpg';
+          ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4'
+          : '${testDir.path}/video_test.mp4';
+      await _pictureController.recordVideo(filePath);
+      setState(() {
+        _isRecordingVideo = true;
+        _lastVideoPath = filePath;
+      });
     }
   }
 
@@ -550,7 +584,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             },
             photoSize: _photoSize,
             sensor: _sensor,
-            captureMode: _captureMode,
             switchFlashMode: _switchFlash,
             zoom: _zoomNotifier,
             onOrientationChanged: _onOrientationChange,

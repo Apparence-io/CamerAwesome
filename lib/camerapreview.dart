@@ -63,9 +63,6 @@ class CameraAwesome extends StatefulWidget {
   /// choose between [BACK] and [FRONT]
   final ValueNotifier<Sensors> sensor;
 
-  /// choose between [PHOTO] and [VIDEO]
-  final ValueNotifier<CaptureModes> captureMode;
-
   /// choose your photo size from the [selectDefaultSize] method
   final ValueNotifier<Size> photoSize;
 
@@ -97,7 +94,6 @@ class CameraAwesome extends StatefulWidget {
     this.zoom,
     this.onOrientationChanged,
     @required this.sensor,
-    @required this.captureMode,
     this.imagesStreamBuilder,
     this.brightness,
     this.luminosityLevelStreamBuilder,

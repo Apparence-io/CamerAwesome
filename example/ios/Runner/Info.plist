@@ -43,5 +43,12 @@
 	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>To enable camera access</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>To enable microphone access</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

@@ -192,6 +192,16 @@ class CamerawesomePlugin {
     });
   }
 
+  static recordVideo(String path) {
+    return _channel.invokeMethod<void>('recordVideo', <String, dynamic>{
+      'path': path,
+    });
+  }
+
+  static stopRecordingVideo() {
+    return _channel.invokeMethod<void>('stopRecordingVideo');
+  }
+
   /// Switch flash mode from Android / iOS
   static Future<void> setFlashMode(CameraFlashes flashMode) =>
       _channel.invokeMethod('setFlashMode', <String, dynamic>{
