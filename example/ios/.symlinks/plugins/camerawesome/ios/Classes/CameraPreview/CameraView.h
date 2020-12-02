@@ -15,7 +15,7 @@
 #import "CaptureModes.h"
 #import "CameraFlash.h"
 #import "CameraQualities.h"
-#import "CameraPicture.h"
+#import "CameraPictureController.h"
 #import "CameraPermissions.h"
 
 NS_ASSUME_NONNULL_BEGIN

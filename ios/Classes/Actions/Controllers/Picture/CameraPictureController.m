@@ -5,10 +5,10 @@
 //  Created by Dimitri Dessus on 24/07/2020.
 //
 
-#import "CameraPicture.h"
+#import "CameraPictureController.h"
 
-@implementation CameraPicture {
-  CameraPicture *selfReference;
+@implementation CameraPictureController {
+    CameraPictureController *selfReference;
 }
 
 - (instancetype)initWithPath:(NSString *)path
