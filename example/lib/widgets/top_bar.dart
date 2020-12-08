@@ -48,12 +48,16 @@ class TopBarWidget extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 24.0),
-                child: IconButton(
-                  icon: Icon(
-                    isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                    color: Colors.white,
+                child: Opacity(
+                  opacity: isRecording ? 0.3 : 1.0,
+                  child: IconButton(
+                    icon: Icon(
+                      isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                      color: Colors.white,
+                    ),
+                    onPressed:
+                        isRecording ? null : () => onFullscreenTap?.call(),
                   ),
-                  onPressed: () => onFullscreenTap?.call(),
                 ),
               ),
               Padding(
@@ -61,19 +65,25 @@ class TopBarWidget extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    ValueListenableBuilder(
-                      valueListenable: photoSize,
-                      builder: (context, value, child) => FlatButton(
-                        key: ValueKey("resolutionButton"),
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
+                    IgnorePointer(
+                      ignoring: isRecording,
+                      child: Opacity(
+                        opacity: isRecording ? 0.3 : 1.0,
+                        child: ValueListenableBuilder(
+                          valueListenable: photoSize,
+                          builder: (context, value, child) => FlatButton(
+                            key: ValueKey("resolutionButton"),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
 
-                          onResolutionTap?.call();
-                        },
-                        child: Text(
-                          '${value?.width?.toInt()} / ${value?.height?.toInt()}',
-                          key: ValueKey("resolutionTxt"),
-                          style: TextStyle(color: Colors.white),
+                              onResolutionTap?.call();
+                            },
+                            child: Text(
+                              '${value?.width?.toInt()} / ${value?.height?.toInt()}',
+                              key: ValueKey("resolutionTxt"),
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
                       ),
                     ),
