@@ -1,8 +1,8 @@
 //
-//  CameraPicture.h
+//  CameraPictureController.h
 //  camerawesome
 //
-//  Created by Dimitri Dessus on 24/07/2020.
+//  Created by Dimitri Dessus on 08/12/2020.
 //
 
 #import <Flutter/Flutter.h>
