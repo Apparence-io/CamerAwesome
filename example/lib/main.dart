@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:camerawesome/models/orientations.dart';
-import 'package:camerawesome_example/utils/orientation_utils.dart';
-import 'package:camerawesome_example/widgets/camera_buttons.dart';
+import 'package:camerawesome_example/widgets/bottom_bar.dart';
 import 'package:camerawesome_example/widgets/camera_preview.dart';
-import 'package:camerawesome_example/widgets/take_photo_button.dart';
+import 'package:camerawesome_example/widgets/preview_card.dart';
+import 'package:camerawesome_example/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imgUtils;
@@ -62,7 +61,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   Timer _previewDismissTimer;
   ValueNotifier<CameraOrientations> _orientation =
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
-  StreamSubscription<Uint8List> previewStreamSub;
+  // StreamSubscription<Uint8List> previewStreamSub;
   Stream<Uint8List> previewStream;
 
   @override
@@ -101,106 +100,20 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    Alignment alignment;
-    bool mirror;
-    switch (_orientation.value) {
-      case CameraOrientations.PORTRAIT_UP:
-      case CameraOrientations.PORTRAIT_DOWN:
-        alignment = _orientation.value == CameraOrientations.PORTRAIT_UP
-            ? Alignment.bottomLeft
-            : Alignment.topLeft;
-        mirror = _orientation.value == CameraOrientations.PORTRAIT_DOWN;
-        break;
-      case CameraOrientations.LANDSCAPE_LEFT:
-      case CameraOrientations.LANDSCAPE_RIGHT:
-        alignment = Alignment.topLeft;
-        mirror = _orientation.value == CameraOrientations.LANDSCAPE_LEFT;
-        break;
-    }
-
     return Scaffold(
-        body: Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
-        _buildInterface(),
-        (!_isRecordingVideo)
-            ? Align(
-                alignment: alignment,
-                child: Padding(
-                  padding: OrientationUtils.isOnPortraitMode(_orientation.value)
-                      ? EdgeInsets.symmetric(horizontal: 35.0, vertical: 140)
-                      : EdgeInsets.symmetric(vertical: 65.0),
-                  child: Transform.rotate(
-                    angle: OrientationUtils.convertOrientationToRadian(
-                      _orientation.value,
-                    ),
-                    child: Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.rotationY(mirror ? pi : 0.0),
-                      child: Dismissible(
-                        onDismissed: (direction) {},
-                        key: UniqueKey(),
-                        child: SlideTransition(
-                          position: _previewAnimation,
-                          child: _buildPreviewPicture(reverseImage: mirror),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            : Container(),
-      ],
-    ));
-  }
-
-  Widget _buildPreviewPicture({bool reverseImage = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(
-          Radius.circular(15),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black45,
-            offset: Offset(2, 2),
-            blurRadius: 25,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(3.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(13.0),
-          child: _lastPhotoPath != null
-              ? Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
-                  child: Image.file(
-                    new File(_lastPhotoPath),
-                    width: OrientationUtils.isOnPortraitMode(_orientation.value)
-                        ? 128
-                        : 256,
-                  ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+          _buildInterface(),
+          (!_isRecordingVideo)
+              ? PreviewCardWidget(
+                  lastPhotoPath: _lastPhotoPath,
+                  orientation: _orientation,
+                  previewAnimation: _previewAnimation,
                 )
-              : Container(
-                  width: OrientationUtils.isOnPortraitMode(_orientation.value)
-                      ? 128
-                      : 256,
-                  height: 228,
-                  decoration: BoxDecoration(
-                    color: Colors.black38,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.photo,
-                      color: Colors.white,
-                    ),
-                  ),
-                ), // TODO: Placeholder here
-        ),
+              : Container(),
+        ],
       ),
     );
   }
@@ -210,213 +123,80 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       children: <Widget>[
         SafeArea(
           bottom: false,
-          child: _buildTopBar(),
+          child: TopBarWidget(
+              isFullscreen: _fullscreen,
+              isRecording: _isRecordingVideo,
+              enableAudio: _enableAudio,
+              photoSize: _photoSize,
+              captureMode: _captureMode,
+              switchFlash: _switchFlash,
+              orientation: _orientation,
+              rotationController: _iconsAnimationController,
+              onFlashTap: () {
+                switch (_switchFlash.value) {
+                  case CameraFlashes.NONE:
+                    _switchFlash.value = CameraFlashes.ON;
+                    break;
+                  case CameraFlashes.ON:
+                    _switchFlash.value = CameraFlashes.AUTO;
+                    break;
+                  case CameraFlashes.AUTO:
+                    _switchFlash.value = CameraFlashes.ALWAYS;
+                    break;
+                  case CameraFlashes.ALWAYS:
+                    _switchFlash.value = CameraFlashes.NONE;
+                    break;
+                }
+                setState(() {});
+              },
+              onAudioChange: () {
+                this._enableAudio.value = !this._enableAudio.value;
+                setState(() {});
+              },
+              onChangeSensorTap: () {
+                this._focus = !_focus;
+                if (_sensor.value == Sensors.FRONT) {
+                  _sensor.value = Sensors.BACK;
+                } else {
+                  _sensor.value = Sensors.FRONT;
+                }
+              },
+              onResolutionTap: () => _buildChangeResolutionDialog(),
+              onFullscreenTap: () {
+                this._fullscreen = !this._fullscreen;
+                setState(() {});
+              }),
         ),
-        _buildBottomBar(),
+        BottomBarWidget(
+          onZoomInTap: () {
+            if (_zoomNotifier.value <= 0.9) {
+              _zoomNotifier.value += 0.1;
+            }
+            setState(() {});
+          },
+          onZoomOutTap: () {
+            if (_zoomNotifier.value >= 0.1) {
+              _zoomNotifier.value -= 0.1;
+            }
+            setState(() {});
+          },
+          onCaptureModeSwitchChange: () {
+            if (_captureMode.value == CaptureModes.PHOTO) {
+              _captureMode.value = CaptureModes.VIDEO;
+            } else {
+              _captureMode.value = CaptureModes.PHOTO;
+            }
+            setState(() {});
+          },
+          onCaptureTap: (_captureMode.value == CaptureModes.PHOTO)
+              ? _takePhoto
+              : _recordVideo,
+          rotationController: _iconsAnimationController,
+          orientation: _orientation,
+          isRecording: _isRecordingVideo,
+          captureMode: _captureMode,
+        ),
       ],
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-      child: Column(
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(right: 24.0),
-                child: IconButton(
-                  icon: Icon(
-                    this._fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                    color: Colors.white,
-                  ),
-                  onPressed: () => setState(
-                    () => this._fullscreen = !this._fullscreen,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    ValueListenableBuilder(
-                      valueListenable: _photoSize,
-                      builder: (context, value, child) => FlatButton(
-                        key: ValueKey("resolutionButton"),
-                        onPressed: _buildChangeResolutionDialog,
-                        child: Text(
-                          '${value?.width?.toInt()} / ${value?.height?.toInt()}',
-                          key: ValueKey("resolutionTxt"),
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              OptionButton(
-                icon: Icons.switch_camera,
-                rotationController: _iconsAnimationController,
-                orientation: _orientation,
-                onTapCallback: () async {
-                  this._focus = !_focus;
-                  if (_sensor.value == Sensors.FRONT) {
-                    _sensor.value = Sensors.BACK;
-                  } else {
-                    _sensor.value = Sensors.FRONT;
-                  }
-                },
-              ),
-              SizedBox(width: 20.0),
-              OptionButton(
-                rotationController: _iconsAnimationController,
-                icon: _getFlashIcon(),
-                orientation: _orientation,
-                onTapCallback: () {
-                  switch (_switchFlash.value) {
-                    case CameraFlashes.NONE:
-                      _switchFlash.value = CameraFlashes.ON;
-                      break;
-                    case CameraFlashes.ON:
-                      _switchFlash.value = CameraFlashes.AUTO;
-                      break;
-                    case CameraFlashes.AUTO:
-                      _switchFlash.value = CameraFlashes.ALWAYS;
-                      break;
-                    case CameraFlashes.ALWAYS:
-                      _switchFlash.value = CameraFlashes.NONE;
-                      break;
-                  }
-                  setState(() {});
-                },
-              ),
-            ],
-          ),
-          SizedBox(height: 20.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _captureMode.value == CaptureModes.VIDEO
-                  ? OptionButton(
-                      icon: _enableAudio.value ? Icons.mic : Icons.mic_off,
-                      rotationController: _iconsAnimationController,
-                      orientation: _orientation,
-                      isEnabled: !_isRecordingVideo,
-                      onTapCallback: () {
-                        this._enableAudio.value = !this._enableAudio.value;
-                        setState(() {});
-                      },
-                    )
-                  : Container(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getFlashIcon() {
-    switch (_switchFlash.value) {
-      case CameraFlashes.NONE:
-        return Icons.flash_off;
-      case CameraFlashes.ON:
-        return Icons.flash_on;
-      case CameraFlashes.AUTO:
-        return Icons.flash_auto;
-      case CameraFlashes.ALWAYS:
-        return Icons.highlight;
-      default:
-        return Icons.flash_off;
-    }
-  }
-
-  Widget _buildBottomBar() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: SizedBox(
-        height: 200,
-        child: Stack(
-          children: [
-            Container(
-              color: Colors.black12,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    OptionButton(
-                      icon: Icons.zoom_out,
-                      rotationController: _iconsAnimationController,
-                      orientation: _orientation,
-                      onTapCallback: () {
-                        if (_zoomNotifier.value >= 0.1) {
-                          _zoomNotifier.value -= 0.1;
-                        }
-                        setState(() {});
-                      },
-                    ),
-                    CameraButton(
-                      key: ValueKey('cameraButton'),
-                      captureMode: _captureMode.value,
-                      isRecording: _isRecordingVideo,
-                      onTap: (_captureMode.value == CaptureModes.PHOTO)
-                          ? _takePhoto
-                          : _recordVideo,
-                    ),
-                    OptionButton(
-                      icon: Icons.zoom_in,
-                      rotationController: _iconsAnimationController,
-                      orientation: _orientation,
-                      onTapCallback: () {
-                        if (_zoomNotifier.value <= 0.9) {
-                          _zoomNotifier.value += 0.1;
-                        }
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.photo_camera,
-                      color: Colors.white,
-                    ),
-                    Switch(
-                      value: (_captureMode.value == CaptureModes.VIDEO),
-                      activeColor: Color(0xFF4F6AFF),
-                      onChanged: !_isRecordingVideo
-                          ? (value) {
-                              HapticFeedback.heavyImpact();
-                              if (_captureMode.value == CaptureModes.PHOTO) {
-                                _captureMode.value = CaptureModes.VIDEO;
-                              } else {
-                                _captureMode.value = CaptureModes.PHOTO;
-                              }
-                              setState(() {});
-                            }
-                          : null,
-                    ),
-                    Icon(
-                      Icons.videocam,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 

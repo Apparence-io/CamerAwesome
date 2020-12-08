@@ -46,7 +46,6 @@ class _OptionButtonState extends State<OptionButton>
       _angle =
           OrientationUtils.convertOrientationToRadian(widget.orientation.value);
 
-      // TODO: be able to rotate on portrait down mode to landscape
       if (widget.orientation.value == CameraOrientations.PORTRAIT_UP) {
         widget.rotationController.reverse();
       } else if (_oldOrientation == CameraOrientations.LANDSCAPE_LEFT ||

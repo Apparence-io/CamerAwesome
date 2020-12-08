@@ -103,7 +103,6 @@ class CameraButtonPainter extends CustomPainter {
     bgPainter.color = Colors.white.withOpacity(.5);
     canvas.drawCircle(center, radius, bgPainter);
 
-    // TODO: Add some sweet animations
     if (this.captureMode == CaptureModes.VIDEO && this.isRecording) {
       bgPainter.color = Colors.red;
       canvas.drawRRect(

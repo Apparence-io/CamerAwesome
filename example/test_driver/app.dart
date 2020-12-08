@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:camerawesome/camerapreview.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome_example/main.dart' as app;
 import 'package:camerawesome_example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,7 +28,7 @@ void main() {
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
-    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
+    camera.evaluate().first.widget as CameraAwesome;
   });
 
   testWidgets("take photo works with selected photo size", (WidgetTester tester) async {
@@ -45,10 +44,10 @@ void main() {
     expect(cameraPreview.photoSize.value, isNotNull);
     // checks photo exists + size
     final Directory extDir = await getTemporaryDirectory();
-    var testDir = await Directory('${extDir.path}/test');
+    var testDir = Directory('${extDir.path}/test');
     final String filePath = '${testDir.path}/photo_test.jpg';
     expect(await File(filePath).exists(), isTrue);
-    var file = await File(filePath);
+    var file = File(filePath);
     var img = imgUtils.decodeImage(file.readAsBytesSync());
     expect(img.width, equals(cameraPreview.photoSize.value.width));
     expect(img.height, equals(cameraPreview.photoSize.value.height));
@@ -61,7 +60,7 @@ void main() {
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
-    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
+    camera.evaluate().first.widget as CameraAwesome;
     var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
@@ -95,10 +94,10 @@ void main() {
     await tester.pump(Duration(seconds: 2));
     // checks photo exists + size
     final Directory extDir = await getTemporaryDirectory();
-    var testDir = await Directory('${extDir.path}/test');
+    var testDir = Directory('${extDir.path}/test');
     final String filePath = '${testDir.path}/photo_test.jpg';
     expect(await File(filePath).exists(), isTrue);
-    var file = await File(filePath);
+    var file = File(filePath);
     var img = imgUtils.decodeImage(file.readAsBytesSync());
     expect(img.width, equals(cameraPreview.photoSize.value.width));
     expect(img.height, equals(cameraPreview.photoSize.value.height));
@@ -109,6 +108,7 @@ void main() {
   testWidgets('Image stream properly delivers images', (WidgetTester tester) async {
     ValueNotifier<Size> photoSize = ValueNotifier(null);
     ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
+    ValueNotifier<CaptureModes> captureMode = ValueNotifier(CaptureModes.PHOTO);
     Stream<Uint8List> imageStream;
     Uint8List imgData;
     await tester.pumpWidget(
@@ -122,6 +122,7 @@ void main() {
                     selectDefaultSize: (availableSizes) => availableSizes[0],
                     photoSize: photoSize,
                     sensor: sensor,
+                    captureMode: captureMode,
                     imagesStreamBuilder: (stream) async {
                       imageStream = stream;
                       imgData = await imageStream.first;

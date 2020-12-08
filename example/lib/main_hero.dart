@@ -50,10 +50,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _switchFlash = ValueNotifier(CameraFlashes.NONE);
-  final _sensor = ValueNotifier(Sensors.BACK);
-  final _photoSize = ValueNotifier<Size>(null);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +79,7 @@ class CameraView extends StatelessWidget {
   final _switchFlash = ValueNotifier(CameraFlashes.NONE);
   final _sensor = ValueNotifier(Sensors.BACK);
   final _photoSize = ValueNotifier<Size>(null);
+  final _captureMode = ValueNotifier(CaptureModes.PHOTO);
   final cameraKey = ValueKey("camera");
   final bool fit;
 
@@ -93,6 +90,7 @@ class CameraView extends StatelessWidget {
     return CameraAwesome(
       key: cameraKey,
       testMode: false,
+      captureMode: _captureMode,
       onPermissionsResult: (result) {},
       selectDefaultSize: (availableSizes) => availableSizes.first,
       onCameraStarted: () {},
