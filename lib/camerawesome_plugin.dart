@@ -243,6 +243,12 @@ class CamerawesomePlugin {
         'captureMode': captureMode.toString().split(".")[1],
       });
 
+  /// enable audio mode recording or not
+  static Future<void> setAudioMode(bool enableAudio) =>
+      _channel.invokeMethod('setRecordingAudioMode', <String, dynamic>{
+        'enableAudio': enableAudio,
+      });
+
   /// set brightness manually with range [0,1]
   static Future<void> setBrightness(double brightness) {
     if (brightness < 0 || brightness > 1) {

@@ -239,6 +239,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     _initZoom();
     _initSensor();
     _initCaptureMode();
+    _initAudioMode();
     _initManualBrightness();
     _initBrightnessStream();
     if (mounted) setState(() {});
@@ -309,6 +310,12 @@ class CameraAwesomeState extends State<CameraAwesome>
   _initCaptureMode() {
     widget.captureMode.addListener(() async {
       await CamerawesomePlugin.setCaptureMode(widget.captureMode.value);
+    });
+  }
+
+  _initAudioMode() {
+    widget.enableAudio.addListener(() async {
+      await CamerawesomePlugin.setAudioMode(widget.enableAudio.value);
     });
   }
 

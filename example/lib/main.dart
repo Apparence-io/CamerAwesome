@@ -295,6 +295,24 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               ),
             ],
           ),
+          SizedBox(height: 20.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _captureMode.value == CaptureModes.VIDEO
+                  ? OptionButton(
+                      icon: _enableAudio.value ? Icons.mic : Icons.mic_off,
+                      rotationController: _iconsAnimationController,
+                      orientation: _orientation,
+                      isEnabled: !_isRecordingVideo,
+                      onTapCallback: () {
+                        this._enableAudio.value = !this._enableAudio.value;
+                        setState(() {});
+                      },
+                    )
+                  : Container(),
+            ],
+          ),
         ],
       ),
     );

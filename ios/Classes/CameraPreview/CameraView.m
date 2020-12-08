@@ -34,7 +34,7 @@
     [_captureSession addOutputWithNoConnections:_captureVideoOutput];
     
     // Creating input device
-    [self initCamera:sensor];
+    [self initCameraPreview:sensor];
     
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
     
@@ -61,6 +61,41 @@
     return self;
 }
 
+/// Init camera preview with Front or Rear sensor
+- (void)initCameraPreview:(CameraSensor)sensor {
+    // Here we set a preset which wont crash the device before switching to front or back
+    [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
+    
+    NSError *error;
+    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
+    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error];
+    
+    if (error != nil) {
+        _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
+        return;
+    }
+    
+    // Create connection
+    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
+                                                                output:_captureVideoOutput];
+    
+    // Attaching to session
+    [_captureSession addInputWithNoConnections:_captureVideoInput];
+    [_captureSession addConnection:_captureConnection];
+    
+    // Creating photo output
+    _capturePhotoOutput = [AVCapturePhotoOutput new];
+    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+    [_captureSession addOutput:_capturePhotoOutput];
+    
+    // Mirror the preview only on portrait mode
+    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+    [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
+    [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+    
+    [self setCameraPresset:CGSizeMake(0, 0)];
+}
+
 - (void)dealloc {
   if (_latestPixelBuffer) {
     CFRelease(_latestPixelBuffer);
@@ -68,6 +103,7 @@
   [_motionManager stopAccelerometerUpdates];
 }
 
+/// Start live motion detection
 - (void)startMyMotionDetect {
     [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
                                         withHandler:^(CMDeviceMotion *data, NSError *error) {
@@ -106,40 +142,7 @@
     }];
 }
 
-- (void)initCamera:(CameraSensor)sensor {
-    // Here we set a preset which wont crash the device before switching to front or back
-    [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
-    
-    NSError *error;
-    _captureDevice = [AVCaptureDevice deviceWithUniqueID:[self selectAvailableCamera:sensor]];
-    _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error];
-    
-    if (error != nil) {
-        _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
-        return;
-    }
-    
-    // Create connection
-    _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
-                                                                output:_captureVideoOutput];
-    
-    // Attaching to session
-    [_captureSession addInputWithNoConnections:_captureVideoInput];
-    [_captureSession addConnection:_captureConnection];
-    
-    // Creating photo output
-    _capturePhotoOutput = [AVCapturePhotoOutput new];
-    [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
-    [_captureSession addOutput:_capturePhotoOutput];
-    
-    // Mirror the preview only on portrait mode
-    [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-    [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
-    [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-    
-    [self setCameraPresset:CGSizeMake(0, 0)];
-}
-
+/// Set camera preview size
 - (void)setCameraPresset:(CGSize)currentPreviewSize {
     NSString *presetSelected;
     if (!CGSizeEqualToSize(CGSizeZero, currentPreviewSize)) {
@@ -156,14 +159,22 @@
     _currentPreviewSize = [CameraQualities getSizeForPresset:presetSelected];
 }
 
+/// Get current video prewiew size
 - (CGSize)getEffectivPreviewSize {
     return _currentPreviewSize;
 }
 
+// Get max zoom level
+- (CGFloat)getMaxZoom {
+    return _captureDevice.activeFormat.videoMaxZoomFactor;
+}
+
+/// Set Flutter results
 - (void)setResult:(FlutterResult _Nonnull)result {
     _result = result;
 }
 
+/// Dispose camera inputs & outputs
 - (void)dispose {
     [self stop];
     
@@ -175,6 +186,7 @@
     }
 }
 
+/// Set preview size resolution
 - (void)setPreviewSize:(CGSize)previewSize {
     if (_isRecording) {
         _result([FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""]);
@@ -184,14 +196,17 @@
     [self setCameraPresset:previewSize];
 }
 
+/// Start camera preview
 - (void)start {
     [_captureSession startRunning];
 }
 
+/// Stop camera preview
 - (void)stop {
     [_captureSession stopRunning];
 }
 
+/// Set sensor between Front & Rear camera
 - (void)setSensor:(CameraSensor)sensor {
     // First remove all input & output
     [_captureSession beginConfiguration];
@@ -210,18 +225,15 @@
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
     
-    // Init the camera with the selected sensor
-    [self initCamera:sensor];
+    // Init the camera preview with the selected sensor
+    [self initCameraPreview:sensor];
     
     [_captureSession commitConfiguration];
     
     _cameraSensor = sensor;
 }
 
-- (CGFloat)getMaxZoom {
-    return _captureDevice.activeFormat.videoMaxZoomFactor;
-}
-
+/// Set zoom level
 - (void)setZoom:(float)value {
     CGFloat maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
     CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
@@ -235,6 +247,7 @@
     }
 }
 
+/// Set flash mode
 - (void)setFlashMode:(CameraFlashMode)flashMode {
     if (![_captureDevice hasFlash]) {
         _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
@@ -323,6 +336,7 @@
     return nil;
 }
 
+/// Set capture mode between Photo & Video mode
 - (void)setCaptureMode:(CaptureModes)captureMode {
     if (_isRecording) {
         _result([FlutterError errorWithCode:@"CAPTURE_MODE" message:@"impossible to change capture mode, video already recording" details:@""]);
@@ -347,6 +361,7 @@
 // Both of these need to access value from preview
 // We do not create separate object before it seems to be
 // a mess with pointer to pass... :/
+
 /// Take the picture into the given path
 - (void)takePictureAtPath:(NSString *)path {
     
@@ -417,8 +432,31 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 /// Set audio recording mode
 - (void)setRecordingAudioMode:(bool)enableAudio {
+    if (_isRecording) {
+        _result([FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
+        return;
+    }
+    
+    [_captureSession beginConfiguration];
     _enableAudio = enableAudio;
     _isAudioSetup = NO;
+    _audioIsDisconnected = YES;
+    
+    // Only audio channel but keep audio
+    for (AVCaptureInput *input in [_captureSession inputs]) {
+        for (AVCaptureInputPort *port in input.ports) {
+            if ([[port mediaType] isEqual:AVMediaTypeAudio]) {
+                [_captureSession removeInput:input];
+                break;
+            }
+        }
+    }
+    
+    if (_enableAudio) {
+        [self setUpCaptureSessionForAudio];
+    }
+    
+    [_captureSession commitConfiguration];
 }
 
 # pragma mark - Recording
@@ -490,6 +528,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
 }
 
+/// Setup video channel & write file on path
 - (BOOL)setupWriterForPath:(NSString *)path {
     NSError *error = nil;
     NSURL *outputURL;
@@ -553,27 +592,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     return YES;
 }
 
-- (CMSampleBufferRef)adjustTime:(CMSampleBufferRef)sample by:(CMTime)offset CF_RETURNS_RETAINED {
-    CMItemCount count;
-    CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
-    CMSampleTimingInfo *pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
-    CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
-    for (CMItemCount i = 0; i < count; i++) {
-        pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
-        pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
-    }
-    CMSampleBufferRef sout;
-    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
-    free(pInfo);
-    return sout;
-}
-
 # pragma mark - Audio
+/// Setup audio channel to record audio
 - (void)setUpCaptureSessionForAudio {
-//    for (AVCaptureInput *input in [_captureSession inputs]) {
-//        [_captureSession removeInput:input];
-//    }
-    
     NSError *error = nil;
     // Create a device input with the device and add it to the session.
     // Setup the audio input.
@@ -599,6 +620,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
 }
 
+/// Append audio data
 - (void)newAudioSample:(CMSampleBufferRef)sampleBuffer {
     if (_videoWriter.status != AVAssetWriterStatusWriting) {
         if (_videoWriter.status == AVAssetWriterStatusFailed) {
@@ -700,11 +722,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
         CFRelease(sampleBuffer);
       }
-    
-//    [self captureVideo:output didOutputSampleBuffer:sampleBuffer fromConnection:connection];
 }
 
-# pragma mark - Flutter Delegates
+# pragma mark - Data manipulation
 
 /// Used to copy pixels to in-memory buffer
 - (CVPixelBufferRef _Nullable)copyPixelBuffer {
@@ -714,6 +734,22 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
     
     return pixelBuffer;
+}
+
+/// Adjust time to sync audio & video
+- (CMSampleBufferRef)adjustTime:(CMSampleBufferRef)sample by:(CMTime)offset CF_RETURNS_RETAINED {
+    CMItemCount count;
+    CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
+    CMSampleTimingInfo *pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
+    CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
+    for (CMItemCount i = 0; i < count; i++) {
+        pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
+        pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
+    }
+    CMSampleBufferRef sout;
+    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
+    free(pInfo);
+    return sout;
 }
 
 @end
