@@ -6,12 +6,4 @@ class PictureController {
     await CamerawesomePlugin.takePhoto(filePath);
   }
 
-  Future<void> recordVideo(String filePath) async {
-    await CamerawesomePlugin.recordVideo(filePath);
-  }
-
-  Future<void> stopRecordingVideo() async {
-    await CamerawesomePlugin.stopRecordingVideo();
-  }
-
 }

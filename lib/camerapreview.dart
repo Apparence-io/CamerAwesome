@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
-import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -60,6 +58,12 @@ class CameraAwesome extends StatefulWidget {
   /// Zoom from native side. Must be between 0 and 1
   final ValueNotifier<double> zoom;
 
+  /// current capture mode [PHOTO] or [VIDEO]
+  final ValueNotifier<CaptureModes> captureMode;
+
+  /// choose to record video with audio or not
+  final ValueNotifier<bool> enableAudio;
+
   /// choose between [BACK] and [FRONT]
   final ValueNotifier<Sensors> sensor;
 
@@ -94,6 +98,8 @@ class CameraAwesome extends StatefulWidget {
     this.zoom,
     this.onOrientationChanged,
     @required this.sensor,
+    @required this.captureMode,
+    this.enableAudio,
     this.imagesStreamBuilder,
     this.brightness,
     this.luminosityLevelStreamBuilder,
@@ -203,7 +209,10 @@ class CameraAwesomeState extends State<CameraAwesome>
     }
     // init plugin --
     await CamerawesomePlugin.init(
-        widget.sensor.value, widget.imagesStreamBuilder != null);
+      widget.sensor.value,
+      widget.imagesStreamBuilder != null,
+      captureMode: widget.captureMode?.value,
+    );
     _initAndroidPhotoSize();
     _initPhotoSize();
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
@@ -229,6 +238,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     _initFlashModeSwitcher();
     _initZoom();
     _initSensor();
+    _initCaptureMode();
     _initManualBrightness();
     _initBrightnessStream();
     if (mounted) setState(() {});
@@ -292,6 +302,13 @@ class CameraAwesomeState extends State<CameraAwesome>
       if (mounted) {
         setState(() {});
       }
+    });
+  }
+
+  /// handle capture mode change
+  _initCaptureMode() {
+    widget.captureMode.addListener(() async {
+      await CamerawesomePlugin.setCaptureMode(widget.captureMode.value);
     });
   }
 
@@ -377,8 +394,12 @@ class _CameraPreviewWidget extends StatelessWidget {
 
   final bool testMode;
 
-  _CameraPreviewWidget(
-      {this.size, this.textureId, this.fitted = false, this.testMode = false});
+  _CameraPreviewWidget({
+    this.size,
+    this.textureId,
+    this.fitted = false,
+    this.testMode = false,
+  });
 
   @override
   Widget build(BuildContext context) {

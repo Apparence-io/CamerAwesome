@@ -20,7 +20,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CameraView : NSObject<FlutterTexture, AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface CameraView : NSObject<FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate,
+AVCaptureAudioDataOutputSampleBufferDelegate>
 
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
@@ -43,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(assign, nonatomic) CMTime videoTimeOffset;
 @property(assign, nonatomic) CMTime audioTimeOffset;
 @property(readonly, nonatomic) CameraSensor cameraSensor;
+@property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
@@ -57,13 +59,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
+                         captureMode:(CaptureModes)captureMode
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
                            messenger:(NSObject<FlutterBinaryMessenger> *)messenger
                                event:(FlutterEventSink)eventSink;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
+- (void)setCaptureMode:(CaptureModes)captureMode;
 - (void)setRecordingAudioMode:(bool)enableAudio;
+- (void)refresh;
 - (void)start;
 - (void)stop;
 - (void)takePictureAtPath:(NSString *)path;

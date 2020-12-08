@@ -14,7 +14,6 @@ import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:video_player/video_player.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -35,23 +34,24 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  double _bestSizeRatio;
   String _lastPhotoPath;
   String _lastVideoPath;
   bool _focus = false;
   bool _fullscreen = true;
   bool _isRecordingVideo = false;
-  VideoPlayerController _videoPlayerController;
 
-  // TODO: Add zoom smooth animation
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<double> _zoomNotifier = ValueNotifier(0);
   ValueNotifier<Size> _photoSize = ValueNotifier(null);
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
+  ValueNotifier<bool> _enableAudio = ValueNotifier(true);
 
   /// use this to call a take picture
   PictureController _pictureController = new PictureController();
+
+  /// use this to record a video
+  VideoController _videoController = new VideoController();
 
   /// list of available sizes
   List<Size> _availableSizes;
@@ -59,7 +59,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   AnimationController _iconsAnimationController;
   AnimationController _previewAnimationController;
   Animation<Offset> _previewAnimation;
-  bool _animationPlaying = false;
   Timer _previewDismissTimer;
   ValueNotifier<CameraOrientations> _orientation =
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
@@ -72,13 +71,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     _iconsAnimationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 300),
-    )..addStatusListener(
-        (status) {
-          if (status == AnimationStatus.completed) {
-            _animationPlaying = false;
-          }
-        },
-      );
+    );
 
     _previewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1300),
@@ -100,7 +93,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
-    _videoPlayerController.dispose();
     // previewStreamSub.cancel();
     _photoSize.dispose();
     _captureMode.dispose();
@@ -132,44 +124,35 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       children: <Widget>[
         this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
         _buildInterface(),
-        Align(
-          alignment: alignment,
-          child: Padding(
-            padding: OrientationUtils.isOnPortraitMode(_orientation.value)
-                ? EdgeInsets.symmetric(horizontal: 35.0, vertical: 140)
-                : EdgeInsets.symmetric(vertical: 65.0),
-            child: Transform.rotate(
-              angle: OrientationUtils.convertOrientationToRadian(
-                _orientation.value,
-              ),
-              child: Transform(
-                alignment: Alignment.center,
-                transform: Matrix4.rotationY(mirror ? pi : 0.0),
-                child: Dismissible(
-                  onDismissed: (direction) {},
-                  key: UniqueKey(),
-                  child: SlideTransition(
-                    position: _previewAnimation,
-                    child: _buildPreviewPicture(reverseImage: mirror),
+        (!_isRecordingVideo)
+            ? Align(
+                alignment: alignment,
+                child: Padding(
+                  padding: OrientationUtils.isOnPortraitMode(_orientation.value)
+                      ? EdgeInsets.symmetric(horizontal: 35.0, vertical: 140)
+                      : EdgeInsets.symmetric(vertical: 65.0),
+                  child: Transform.rotate(
+                    angle: OrientationUtils.convertOrientationToRadian(
+                      _orientation.value,
+                    ),
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.rotationY(mirror ? pi : 0.0),
+                      child: Dismissible(
+                        onDismissed: (direction) {},
+                        key: UniqueKey(),
+                        child: SlideTransition(
+                          position: _previewAnimation,
+                          child: _buildPreviewPicture(reverseImage: mirror),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ),
+              )
+            : Container(),
       ],
     ));
-  }
-
-  Widget _buildFullscreenVideoPlayer() {
-    return Center(
-      child: _videoPlayerController.value.initialized
-          ? AspectRatio(
-              aspectRatio: _videoPlayerController.value.aspectRatio,
-              child: VideoPlayer(_videoPlayerController),
-            )
-          : Container(),
-    );
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
@@ -393,15 +376,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                     Switch(
                       value: (_captureMode.value == CaptureModes.VIDEO),
                       activeColor: Color(0xFF4F6AFF),
-                      onChanged: (value) {
-                        HapticFeedback.heavyImpact();
-                        if (_captureMode.value == CaptureModes.PHOTO) {
-                          _captureMode.value = CaptureModes.VIDEO;
-                        } else {
-                          _captureMode.value = CaptureModes.PHOTO;
-                        }
-                        setState(() {});
-                      },
+                      onChanged: !_isRecordingVideo
+                          ? (value) {
+                              HapticFeedback.heavyImpact();
+                              if (_captureMode.value == CaptureModes.PHOTO) {
+                                _captureMode.value = CaptureModes.VIDEO;
+                              } else {
+                                _captureMode.value = CaptureModes.PHOTO;
+                              }
+                              setState(() {});
+                            }
+                          : null,
                     ),
                     Icon(
                       Icons.videocam,
@@ -450,7 +435,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     HapticFeedback.mediumImpact();
 
     if (this._isRecordingVideo) {
-      await _pictureController.stopRecordingVideo();
+      await _videoController.stopRecordingVideo();
 
       setState(() {
         this._isRecordingVideo = false;
@@ -464,7 +449,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       print("----------------------------------");
 
       await Future.delayed(Duration(milliseconds: 300));
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => CameraPreview(
@@ -479,7 +464,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       final String filePath = widget.randomPhotoName
           ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4'
           : '${testDir.path}/video_test.mp4';
-      await _pictureController.recordVideo(filePath);
+      await _videoController.recordVideo(filePath);
       setState(() {
         _isRecordingVideo = true;
         _lastVideoPath = filePath;
@@ -582,8 +567,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               this._availableSizes = availableSizes;
               return availableSizes[0];
             },
+            captureMode: _captureMode,
             photoSize: _photoSize,
             sensor: _sensor,
+            enableAudio: _enableAudio,
             switchFlashMode: _switchFlash,
             zoom: _zoomNotifier,
             onOrientationChanged: _onOrientationChange,
@@ -620,6 +607,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 this._availableSizes = availableSizes;
                 return availableSizes[0];
               },
+              captureMode: _captureMode,
               photoSize: _photoSize,
               sensor: _sensor,
               fitted: true,

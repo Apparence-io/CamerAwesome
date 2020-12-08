@@ -29,9 +29,13 @@
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     CamerawesomePlugin *instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
     
-    FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
+    FlutterEventChannel *orientationChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
     binaryMessenger:[registrar messenger]];
-    [eventChannel setStreamHandler:instance];
+    FlutterEventChannel *videoRecordingChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/video-recording"
+    binaryMessenger:[registrar messenger]];
+    
+    [orientationChannel setStreamHandler:instance];
+    [videoRecordingChannel setStreamHandler:instance];
     
     // TODO: Change to "camerawesome/methods"
     FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"camerawesome" binaryMessenger:[registrar messenger]];
@@ -56,55 +60,61 @@
     [_camera setResult:result];
     
     dispatch_async(_dispatchQueue, ^{
-        if ([@"init" isEqualToString:call.method]) {
-            [self _handleSetup:call result:result];
-        } else if ([@"checkPermissions" isEqualToString:call.method]) {
-            [self _handleCheckPermissions:call result:result];
-        } else if ([@"requestPermissions" isEqualToString:call.method]) {
-            // Not possible on iOS
-            result(FlutterMethodNotImplemented);
-            return;
-        } else if ([@"start" isEqualToString:call.method]) {
-            [self _handleStart:call result:result];
-        } else if ([@"stop" isEqualToString:call.method]) {
-            [self _handleStop:call result:result];
-        } else if ([@"availableSizes" isEqualToString:call.method]) {
-            [self _handleSizes:call result:result];
-        } else if ([@"previewTexture" isEqualToString:call.method]) {
-            [self _handleGetTextures:call result:result];
-        } else if ([@"setPreviewSize" isEqualToString:call.method]) {
-            [self _handlePreviewSize:call result:result];
-        } else if ([@"getEffectivPreviewSize" isEqualToString:call.method]) {
-            [self _handleGetEffectivPreviewSize:call result:result];
-        } else if ([@"setPhotoSize" isEqualToString:call.method]) {
-            [self _handlePhotoSize:call result:result];
-        } else if ([@"takePhoto" isEqualToString:call.method]) {
-            [self _handleTakePhoto:call result:result];
-        } else if ([@"recordVideo" isEqualToString:call.method]) {
-            [self _handleRecordVideo:call result:result];
-        } else if ([@"stopRecordingVideo" isEqualToString:call.method]) {
-            [self _handleStopRecordingVideo:call result:result];
-        } else if ([@"setRecordingAudioMode" isEqualToString:call.method]) {
-            [self _handleRecordingAudioMode:call result:result];
-        } else if ([@"handleAutoFocus" isEqualToString:call.method]) {
-            [self _handleAutoFocus:call result:result];
-        } else if ([@"setFlashMode" isEqualToString:call.method]) {
-            [self _handleFlashMode:call result:result];
-        } else if ([@"setSensor" isEqualToString:call.method]) {
-            [self _handleSetSensor:call result:result];
-        } else if ([@"setCaptureMode" isEqualToString:call.method]) {
-            [self _handleSetCaptureMode:call result:result];
-        } else if ([@"setZoom" isEqualToString:call.method]) {
-            [self _handleSetZoom:call result:result];
-        } else if ([@"getMaxZoom" isEqualToString:call.method]) {
-            [self _handleGetMaxZoom:call result:result];
-        } else if ([@"dispose" isEqualToString:call.method]) {
-            [self _handleDispose:call result:result];
-        } else {
-            result(FlutterMethodNotImplemented);
-            return;
-        }
+        [self handleMethodCallAsync:call result:result];
     });
+}
+
+- (void)handleMethodCallAsync:(FlutterMethodCall *)call result:(FlutterResult)result {
+    if ([@"init" isEqualToString:call.method]) {
+        [self _handleSetup:call result:result];
+    } else if ([@"checkPermissions" isEqualToString:call.method]) {
+        [self _handleCheckPermissions:call result:result];
+    } else if ([@"requestPermissions" isEqualToString:call.method]) {
+        // Not possible on iOS
+        result(FlutterMethodNotImplemented);
+        return;
+    } else if ([@"start" isEqualToString:call.method]) {
+        [self _handleStart:call result:result];
+    } else if ([@"stop" isEqualToString:call.method]) {
+        [self _handleStop:call result:result];
+    } else if ([@"refresh" isEqualToString:call.method]) {
+        [self _handleRefresh:call result:result];
+    } else if ([@"availableSizes" isEqualToString:call.method]) {
+        [self _handleSizes:call result:result];
+    } else if ([@"previewTexture" isEqualToString:call.method]) {
+        [self _handleGetTextures:call result:result];
+    } else if ([@"setPreviewSize" isEqualToString:call.method]) {
+        [self _handlePreviewSize:call result:result];
+    } else if ([@"getEffectivPreviewSize" isEqualToString:call.method]) {
+        [self _handleGetEffectivPreviewSize:call result:result];
+    } else if ([@"setPhotoSize" isEqualToString:call.method]) {
+        [self _handlePhotoSize:call result:result];
+    } else if ([@"takePhoto" isEqualToString:call.method]) {
+        [self _handleTakePhoto:call result:result];
+    } else if ([@"recordVideo" isEqualToString:call.method]) {
+        [self _handleRecordVideo:call result:result];
+    } else if ([@"stopRecordingVideo" isEqualToString:call.method]) {
+        [self _handleStopRecordingVideo:call result:result];
+    } else if ([@"setRecordingAudioMode" isEqualToString:call.method]) {
+        [self _handleRecordingAudioMode:call result:result];
+    } else if ([@"handleAutoFocus" isEqualToString:call.method]) {
+        [self _handleAutoFocus:call result:result];
+    } else if ([@"setFlashMode" isEqualToString:call.method]) {
+        [self _handleFlashMode:call result:result];
+    } else if ([@"setSensor" isEqualToString:call.method]) {
+        [self _handleSetSensor:call result:result];
+    } else if ([@"setCaptureMode" isEqualToString:call.method]) {
+        [self _handleSetCaptureMode:call result:result];
+    } else if ([@"setZoom" isEqualToString:call.method]) {
+        [self _handleSetZoom:call result:result];
+    } else if ([@"getMaxZoom" isEqualToString:call.method]) {
+        [self _handleGetMaxZoom:call result:result];
+    } else if ([@"dispose" isEqualToString:call.method]) {
+        [self _handleDispose:call result:result];
+    } else {
+        result(FlutterMethodNotImplemented);
+        return;
+    };
 }
 
 - (void)_handleRecordingAudioMode:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -172,7 +182,7 @@
 - (void)_handleSetCaptureMode:(FlutterMethodCall*)call result:(FlutterResult)result {
     NSString *captureModeName = call.arguments[@"captureMode"];
     CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
-//    [_camera setCaptureMode:captureMode];
+    [_camera setCaptureMode:captureMode];
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -247,8 +257,14 @@
     result(@(YES));
 }
 
+- (void)_handleRefresh:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera refresh];
+}
+
 - (void)_handleSetup:(FlutterMethodCall*)call result:(FlutterResult)result  {
     NSString *sensorName = call.arguments[@"sensor"];
+    NSString *captureModeName = call.arguments[@"captureMode"];
+    CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
     
     if (![CameraPermissions checkPermissions]) {
         result([FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
@@ -262,6 +278,7 @@
 
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
     self.camera = [[CameraView alloc] initWithCameraSensor:sensor
+                                               captureMode:captureMode
                                                     result:result
                                              dispatchQueue:_dispatchQueue
                                                  messenger:_messenger

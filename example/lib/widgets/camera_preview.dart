@@ -16,21 +16,21 @@ class CameraPreview extends StatefulWidget {
 }
 
 class _CameraPreviewState extends State<CameraPreview> {
-  VideoPlayerController _controller;
+  VideoPlayerController _videoPlayerController;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(File(widget.videoPath))
+    _videoPlayerController = VideoPlayerController.file(File(widget.videoPath))
       ..initialize().then((_) {
         setState(() {});
-        _controller.play();
+        _videoPlayerController.play();
       });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _videoPlayerController.dispose();
     super.dispose();
   }
 
@@ -39,23 +39,25 @@ class _CameraPreviewState extends State<CameraPreview> {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: _controller.value.initialized
+        child: _videoPlayerController.value.initialized
             ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
+                aspectRatio: _videoPlayerController.value.aspectRatio,
+                child: VideoPlayer(_videoPlayerController),
               )
             : Container(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
-            _controller.value.isPlaying
-                ? _controller.pause()
-                : _controller.play();
+            _videoPlayerController.value.isPlaying
+                ? _videoPlayerController.pause()
+                : _videoPlayerController.play();
           });
         },
         child: Icon(
-          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+          _videoPlayerController.value.isPlaying
+              ? Icons.pause
+              : Icons.play_arrow,
         ),
       ),
     );
