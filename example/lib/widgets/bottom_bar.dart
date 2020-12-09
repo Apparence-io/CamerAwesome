@@ -75,6 +75,7 @@ class BottomBarWidget extends StatelessWidget {
                       color: Colors.white,
                     ),
                     Switch(
+                      key: ValueKey('captureModeSwitch'),
                       value: (captureMode.value == CaptureModes.VIDEO),
                       activeColor: Color(0xFF4F6AFF),
                       onChanged: !isRecording

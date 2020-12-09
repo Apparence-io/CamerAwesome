@@ -344,37 +344,38 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   Widget buildFullscreenCamera() {
     return Positioned(
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-        child: Center(
-          child: CameraAwesome(
-            onPermissionsResult: _onPermissionsResult,
-            selectDefaultSize: (availableSizes) {
-              this._availableSizes = availableSizes;
-              return availableSizes[0];
-            },
-            captureMode: _captureMode,
-            photoSize: _photoSize,
-            sensor: _sensor,
-            enableAudio: _enableAudio,
-            switchFlashMode: _switchFlash,
-            zoom: _zoomNotifier,
-            onOrientationChanged: _onOrientationChange,
-            // imagesStreamBuilder: (imageStream) {
-            //   /// listen for images preview stream
-            //   /// you can use it to process AI recognition or anything else...
-            //   print("-- init CamerAwesome images stream");
-            //   setState(() {
-            //     previewStream = imageStream;
-            //   });
-            // },
-            onCameraStarted: () {
-              // camera started here -- do your after start stuff
-            },
-          ),
-        ));
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+      child: Center(
+        child: CameraAwesome(
+          onPermissionsResult: _onPermissionsResult,
+          selectDefaultSize: (availableSizes) {
+            this._availableSizes = availableSizes;
+            return availableSizes[0];
+          },
+          captureMode: _captureMode,
+          photoSize: _photoSize,
+          sensor: _sensor,
+          enableAudio: _enableAudio,
+          switchFlashMode: _switchFlash,
+          zoom: _zoomNotifier,
+          onOrientationChanged: _onOrientationChange,
+          // imagesStreamBuilder: (imageStream) {
+          //   /// listen for images preview stream
+          //   /// you can use it to process AI recognition or anything else...
+          //   print("-- init CamerAwesome images stream");
+          //   setState(() {
+          //     previewStream = imageStream;
+          //   });
+          // },
+          onCameraStarted: () {
+            // camera started here -- do your after start stuff
+          },
+        ),
+      ),
+    );
   }
 
   Widget buildSizedScreenCamera() {

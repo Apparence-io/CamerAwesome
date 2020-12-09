@@ -52,6 +52,8 @@ class _CameraButtonState extends State<CameraButton>
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
       child: Container(
+        key: ValueKey('cameraButton' +
+            (widget.captureMode == CaptureModes.PHOTO ? 'Photo' : 'Video')),
         height: 80,
         width: 80,
         child: Transform.scale(

@@ -37,7 +37,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -61,7 +61,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -77,7 +77,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // change photo size preset
     var previousResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
     var resolButtonFinder = find.byKey(ValueKey("resolutionButton"));
@@ -143,5 +143,48 @@ void main() {
       )
     );
     await Future.delayed(Duration(seconds: 3));
+  });
+
+  testWidgets("should change capture mode", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
+    await tester.pumpAndSettle(Duration(seconds: 1));
+    var camera = find.byType(CameraAwesome);
+    await expectLater(camera, findsOneWidget);
+    expect(find.byKey(ValueKey("cameraButtonPhoto")), findsOneWidget);
+    expect(find.byKey(ValueKey("cameraButtonVideo")), findsNothing);
+
+    final captureModeSwitch = find.byKey(ValueKey('captureModeSwitch'));
+    await tester.tap(captureModeSwitch);
+    await tester.pump(Duration(milliseconds: 500));
+
+    expect(find.byKey(ValueKey("cameraButtonVideo")), findsOneWidget);
+    expect(find.byKey(ValueKey("cameraButtonPhoto")), findsNothing);
+  });
+
+  testWidgets("should record a video", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
+    await tester.pumpAndSettle(Duration(seconds: 1));
+    final camera = find.byType(CameraAwesome);
+    await expectLater(camera, findsOneWidget);
+    final captureModeSwitch = find.byKey(ValueKey('captureModeSwitch'));
+    await tester.tap(captureModeSwitch);
+    await tester.pump(Duration(seconds: 2));
+
+    await tester.tap(find.byKey(ValueKey('cameraButtonVideo')));
+    await tester.pump(Duration(seconds: 8));
+
+    await tester.tap(find.byKey(ValueKey('cameraButtonVideo')));
+    await tester.pump(Duration(seconds: 2));
+
+    // checks photo exists + size
+    final Directory extDir = await getTemporaryDirectory();
+    final testDir = Directory('${extDir.path}/test');
+    final String filePath = '${testDir.path}/video_test.mp4';
+    expect(await File(filePath).exists(), isTrue);
+    final file = File(filePath);
+    final bool isFileExist = await file.exists();
+    expect(isFileExist, equals(true));
+    // delete video
+    file.deleteSync();
   });
 }
