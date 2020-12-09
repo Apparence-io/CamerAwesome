@@ -37,7 +37,9 @@ class _CameraPreviewState extends State<CameraPreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text('Video preview'),
+      ),
       body: Center(
         child: _videoPlayerController.value.initialized
             ? AspectRatio(

@@ -58,10 +58,10 @@ class CameraAwesome extends StatefulWidget {
   /// Zoom from native side. Must be between 0 and 1
   final ValueNotifier<double> zoom;
 
-  /// current capture mode [PHOTO] or [VIDEO]
+  /// current capture mode [PHOTO] or [VIDEO] - Video mode TODO only iOS, Android to be done
   final ValueNotifier<CaptureModes> captureMode;
 
-  /// choose to record video with audio or not
+  /// choose to record video with audio or not - Video mode TODO only iOS, Android to be done
   final ValueNotifier<bool> enableAudio;
 
   /// choose between [BACK] and [FRONT]

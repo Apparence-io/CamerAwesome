@@ -33,11 +33,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  String _lastPhotoPath;
-  String _lastVideoPath;
-  bool _focus = false;
-  bool _fullscreen = true;
-  bool _isRecordingVideo = false;
+  String _lastPhotoPath, _lastVideoPath;
+  bool _focus = false, _fullscreen = true, _isRecordingVideo = false;
 
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<double> _zoomNotifier = ValueNotifier(0);
@@ -45,6 +42,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
   ValueNotifier<bool> _enableAudio = ValueNotifier(true);
+  ValueNotifier<CameraOrientations> _orientation =
+      ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
   /// use this to call a take picture
   PictureController _pictureController = new PictureController();
@@ -55,12 +54,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   /// list of available sizes
   List<Size> _availableSizes;
 
-  AnimationController _iconsAnimationController;
-  AnimationController _previewAnimationController;
+  AnimationController _iconsAnimationController, _previewAnimationController;
   Animation<Offset> _previewAnimation;
   Timer _previewDismissTimer;
-  ValueNotifier<CameraOrientations> _orientation =
-      ValueNotifier(CameraOrientations.PORTRAIT_UP);
   // StreamSubscription<Uint8List> previewStreamSub;
   Stream<Uint8List> previewStream;
 
@@ -210,21 +206,18 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     await _pictureController.takePicture(filePath);
     // lets just make our phone vibrate
     HapticFeedback.mediumImpact();
-    setState(() {
-      _lastPhotoPath = filePath;
-    });
+    _lastPhotoPath = filePath;
+    setState(() {});
     if (_previewAnimationController.status == AnimationStatus.completed) {
       _previewAnimationController.reset();
     }
     _previewAnimationController.forward();
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
-    var file = File(filePath);
-    print("==> hastakePhoto : ${file.exists()}");
-    print("==> path : $filePath");
-    var img = imgUtils.decodeImage(file.readAsBytesSync());
-    print("==> img.width : ${img.width}");
-    print("==> img.height : ${img.height}");
+    final file = File(filePath);
+    print("==> hastakePhoto : ${file.exists()} | path : $filePath");
+    final img = imgUtils.decodeImage(file.readAsBytesSync());
+    print("==> img.width : ${img.width} | img.height : ${img.height}");
     print("----------------------------------");
   }
 
@@ -235,15 +228,14 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     if (this._isRecordingVideo) {
       await _videoController.stopRecordingVideo();
 
-      setState(() {
-        this._isRecordingVideo = false;
-      });
+      _isRecordingVideo = false;
+      setState(() {});
 
       final file = File(_lastVideoPath);
       print("----------------------------------");
       print("VIDEO RECORDED");
-      print("==> has been recorded : ${file.exists()}");
-      print("==> path : $_lastVideoPath");
+      print(
+          "==> has been recorded : ${file.exists()} | path : $_lastVideoPath");
       print("----------------------------------");
 
       await Future.delayed(Duration(milliseconds: 300));
@@ -263,10 +255,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4'
           : '${testDir.path}/video_test.mp4';
       await _videoController.recordVideo(filePath);
-      setState(() {
-        _isRecordingVideo = true;
-        _lastVideoPath = filePath;
-      });
+      _isRecordingVideo = true;
+      _lastVideoPath = filePath;
+      setState(() {});
     }
   }
 
@@ -277,10 +268,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         itemBuilder: (context, index) => ListTile(
           key: ValueKey("resOption"),
           onTap: () {
-            setState(() {
-              this._photoSize.value = _availableSizes[index];
-              Navigator.of(context).pop();
-            });
+            this._photoSize.value = _availableSizes[index];
+            setState(() {});
+            Navigator.of(context).pop();
           },
           leading: Icon(Icons.aspect_ratio),
           title: Text(

@@ -219,8 +219,8 @@
                 break;
             }
         }
-        
     }
+    _audioIsDisconnected = YES;
 
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
