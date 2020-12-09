@@ -22,6 +22,7 @@ CamerAwesome include a lot of useful features like:
 - 🖼 **Fullscreen** or **SizedBox** preview support.
 - 🎮 Complete example.
 - 🎞 Taking a **picture** ( of course 😃 ).
+- 🎥 Video recording (iOS only for now).
 
 ## 📖&nbsp; Installation and usage
 
@@ -31,6 +32,9 @@ CamerAwesome include a lot of useful features like:
 ```xml
 <key>NSCameraUsageDescription</key>
 <string>Your own description</string>
+
+<key>NSMicrophoneUsageDescription</key>
+<string>To enable microphone access when recording video</string>
 ```
 
   - **Android**
@@ -55,7 +59,7 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
 ### Define notifiers (if needed) & controller
-ValueNotifier is a usefull change notifier from Flutter framework. It fires an event on all listener when value changes.
+ValueNotifier is a useful change notifier from Flutter framework. It fires an event on all listener when value changes.
 [Take a look here for ValueNotifier doc](https://api.flutter.dev/flutter/foundation/ValueNotifier-class.html)
 
 ```dart
@@ -69,10 +73,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   // Notifiers
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
+  ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
   ValueNotifier<Size> _photoSize = ValueNotifier(null);
 
-  // Controller
+  // Controllers
   PictureController _pictureController = new PictureController();
+  VideoController _videoController = new VideoController();
   // [...]
 }
 ```
@@ -80,9 +86,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
 If you want to change a config, all you need is setting the value. CameraAwesome will handle the rest.
 
-Example:
+Examples:
 ```dart
-_switchFlash.value = CameraFlashes.AUTO
+_switchFlash.value = CameraFlashes.AUTO;
+_captureMode.value = CaptureModes.VIDEO;
 ```
 
 
@@ -102,6 +109,7 @@ _switchFlash.value = CameraFlashes.AUTO
       sensor: _sensor,
       photoSize: _photoSize,
       switchFlashMode: _switchFlash,
+      captureMode: _captureMode,****
       orientation: DeviceOrientation.portraitUp,
       fitted: true,
     );
@@ -121,10 +129,11 @@ _switchFlash.value = CameraFlashes.AUTO
 | selectDefaultSize | ```OnAvailableSizes``` | implement this to select a default size from device available size list | ✅ |
 | onCameraStarted | ```OnCameraStarted``` | notify client that camera started |  |
 | onOrientationChanged | ```OnOrientationChanged``` | notify client that orientation changed |  |
-| switchFlashMode | ```ValueNotifier<CameraFlashes>``` | change flash mode |  |
+| switchFlashMode | ```**ValueNotifier**<CameraFlashes>``` | change flash mode |  |
 | zoom | ```ValueNotifier<double>``` | Zoom from native side. Must be between **0** and **1** |  |
 | sensor | ```ValueNotifier<Sensors>``` | sensor to initiate **BACK** or **FRONT** | ✅ |
 | photoSize | ```ValueNotifier<Size>``` | choose your photo size from the [selectDefaultSize] method |  |
+| captureMode | ```ValueNotifier<CaptureModes>``` | choose capture mode between **PHOTO** or **VIDEO** |  |
 | orientation | ```DeviceOrientation``` | initial orientation |  |
 | fitted | ```bool``` | whether camera preview must be as big as it needs or cropped to fill with. false by default |  |
 | imagesStreamBuilder | ```Function``` | returns an imageStream when camera has started preview |  |
@@ -132,10 +141,24 @@ _switchFlash.value = CameraFlashes.AUTO
 </p>
 </details>
 
-### Take a photo 🎉
+### Photo 🎞
+#### Take a photo 🎉
 
 ```dart
 await _pictureController.takePicture('THE_IMAGE_PATH/myimage.jpg');
+```
+
+### Video 🎥
+#### Record a video 🎉
+
+```dart
+await _videoController.recordVideo('THE_IMAGE_PATH/myvideo.mp4');
+```
+
+#### Stop recording video 📁
+
+```dart
+await _videoController.stopRecordingVideo();
 ```
 
 ## Live image stream
@@ -150,7 +173,7 @@ CameraAwesome(
     imagesStreamBuilder: (imageStream) {
         /// listen for images preview stream
         /// you can use it to process AI recognition or anything else...
-        print("-- init CamerAwesome images stream");
+        print('-- init CamerAwesome images stream');
     },
 )
 ```
@@ -180,7 +203,7 @@ Feel free to **contribute** to improve this **compatibility list**.
 
 Feel free to help by submitting PR !
 
-- [ ] 🎥 Record video
+- [ ] 🎥 Record video (partially, iOS only)
 - [ ] 🌠 Focus on specific point
 - [x] ~~📡 Broadcast live image stream~~
 - [x] ~~🌤 Exposure level~~
