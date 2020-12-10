@@ -381,35 +381,38 @@ class _CameraPreviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return OrientationBuilder(
       builder: (context, orientation) {
-        double ratio = size.height / size.width;
-        return fitted ? buildFittedBox(orientation) : buildFull(context, ratio, orientation);
+        return fitted ? buildFittedBox(orientation) : buildFull(context, orientation);
       }
     );
   }
 
-  Widget buildFull(BuildContext context, double ratio, Orientation orientation) {
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: Transform.scale(
-          scale: _calculateScale(context, ratio, orientation),
-          child: AspectRatio(
-            aspectRatio: ratio,
-            child: SizedBox(
-              height: orientation == Orientation.portrait
-                ? size.height
-                : size.width,
-              width: orientation == Orientation.portrait
-                ? size.width
-                : size.height,
-              child: testMode
-                ? Container()
-                : Texture(textureId: textureId),
+  Widget buildFull(BuildContext context, Orientation orientation) {
+    return LayoutBuilder(builder: (_, constraints) {
+      final double ratio = size.height / size.width;
+
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Transform.scale(
+            scale: _calculateScale(constraints, ratio, orientation),
+            child: AspectRatio(
+              aspectRatio: ratio,
+              child: SizedBox(
+                height: orientation == Orientation.portrait
+                    ? constraints.maxHeight
+                    : constraints.maxWidth,
+                width: orientation == Orientation.portrait
+                    ? constraints.maxWidth
+                    : constraints.maxHeight,
+                child: testMode
+                    ? Container()
+                    : Texture(textureId: textureId),
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget buildFittedBox(Orientation orientation) {
@@ -429,12 +432,13 @@ class _CameraPreviewWidget extends StatelessWidget {
       );
   }
 
-  _calculateScale(BuildContext context, double ratio, Orientation orientation) {
-    var contentSize = MediaQuery.of(context).size;
-    var scale = ratio / contentSize.aspectRatio;
-    if (ratio < contentSize.aspectRatio) {
+  double _calculateScale(BoxConstraints constraints, double ratio, Orientation orientation) {
+    final aspectRatio = constraints.maxWidth / constraints.maxHeight;
+    var scale = ratio / aspectRatio;
+    if (ratio < aspectRatio) {
       scale = 1 / scale;
     }
+
     return scale;
   }
 }
