@@ -4,36 +4,38 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:rxdart/rxdart.dart';
-import 'models/sensor_data.dart';
-import 'sensors.dart';
-import './models/orientations.dart';
-import 'models/flashmodes.dart';
 
-export 'sensors.dart';
-export './models/flashmodes.dart';
 export 'camerapreview.dart';
-export 'picture_controller.dart';
-export './models/sensor_data.dart';
 
-enum CameraState {
-  STARTING,
-  STARTED,
-  STOPPING,
-  STOPPED
-}
+export 'picture_controller.dart';
+export 'video_controller.dart';
+
+import 'models/sensor_data.dart';
+import 'models/sensors.dart';
+import 'models/capture_modes.dart';
+import 'models/flashmodes.dart';
+export 'models/sensors.dart';
+export 'models/capture_modes.dart';
+export 'models/flashmodes.dart';
+import 'models/orientations.dart';
+export 'models/sensor_data.dart';
+
+enum CameraState { STARTING, STARTED, STOPPING, STOPPED }
 
 class CamerawesomePlugin {
-
   static const MethodChannel _channel = const MethodChannel('camerawesome');
 
-  static const EventChannel _orientationChannel = const EventChannel('camerawesome/orientation');
+  static const EventChannel _orientationChannel =
+      const EventChannel('camerawesome/orientation');
 
-  static const EventChannel _permissionsChannel = const EventChannel('camerawesome/permissions');
+  static const EventChannel _permissionsChannel =
+      const EventChannel('camerawesome/permissions');
 
-  static const EventChannel _imagesChannel = const EventChannel('camerawesome/images');
+  static const EventChannel _imagesChannel =
+      const EventChannel('camerawesome/images');
 
-  static const EventChannel _luminosityChannel = const EventChannel('camerawesome/luminosity');
+  static const EventChannel _luminosityChannel =
+      const EventChannel('camerawesome/luminosity');
 
   static Stream<dynamic> _orientationStream;
 
@@ -57,25 +59,26 @@ class CamerawesomePlugin {
       _channel.invokeMethod("requestPermissions");
 
   static Future<bool> start() async {
-    if(currentState == CameraState.STARTED || currentState == CameraState.STARTING) {
+    if (currentState == CameraState.STARTED ||
+        currentState == CameraState.STARTING) {
       return true;
     }
     currentState = CameraState.STARTING;
     var res = await _channel.invokeMethod("start");
-    if(res)
-      currentState = CameraState.STARTED;
+    if (res) currentState = CameraState.STARTED;
     return res;
   }
 
   static Future<bool> stop() async {
-    if(currentState == CameraState.STOPPED || currentState == CameraState.STOPPING) {
+    if (currentState == CameraState.STOPPED ||
+        currentState == CameraState.STOPPING) {
       return true;
     }
     _orientationStream = null;
     currentState = CameraState.STOPPING;
     try {
       await _channel.invokeMethod("stop");
-    } catch(e) {
+    } catch (e) {
       return false;
     }
     currentState = CameraState.STOPPED;
@@ -86,9 +89,11 @@ class CamerawesomePlugin {
 
   static Stream<CameraOrientations> getNativeOrientation() {
     if (_orientationStream == null) {
-      _orientationStream = _orientationChannel.receiveBroadcastStream().transform(
-          StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
-            handleData: (data, sink) {
+      _orientationStream = _orientationChannel
+          .receiveBroadcastStream()
+          .transform(
+              StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
+                  handleData: (data, sink) {
         CameraOrientations newOrientation;
         switch (data) {
           case 'LANDSCAPE_LEFT':
@@ -112,30 +117,36 @@ class CamerawesomePlugin {
   }
 
   static Stream<bool> listenPermissionResult() {
-    if(_permissionsStream == null) {
-      _permissionsStream = _permissionsChannel.receiveBroadcastStream()
-        .transform(StreamTransformer<dynamic,bool>.fromHandlers(handleData: (data,sink) {
-          sink.add(data);
-        })
-      );
+    if (_permissionsStream == null) {
+      _permissionsStream = _permissionsChannel
+          .receiveBroadcastStream()
+          .transform(StreamTransformer<dynamic, bool>.fromHandlers(
+              handleData: (data, sink) {
+        sink.add(data);
+      }));
     }
     return _permissionsStream;
   }
 
   static Stream<Uint8List> listenCameraImages() {
-    if(_imagesStream == null) {
-      _imagesStream = _imagesChannel.receiveBroadcastStream()
-        .transform(StreamTransformer<dynamic, Uint8List>.fromHandlers(handleData: (data,sink) {
-          sink.add(data);
-        })
-      );
+    if (_imagesStream == null) {
+      _imagesStream = _imagesChannel.receiveBroadcastStream().transform(
+          StreamTransformer<dynamic, Uint8List>.fromHandlers(
+              handleData: (data, sink) {
+        sink.add(data);
+      }));
     }
     return _imagesStream;
   }
 
-  static Future<bool> init(Sensors sensor, bool enableImageStream) async {
+  static Future<bool> init(
+    Sensors sensor,
+    bool enableImageStream, {
+    CaptureModes captureMode = CaptureModes.PHOTO,
+  }) async {
     return _channel.invokeMethod("init", <String, dynamic>{
       'sensor': sensor.toString().split(".")[1],
+      'captureMode': captureMode.toString().split(".")[1],
       'streamImages': enableImageStream
     });
   }
@@ -155,7 +166,8 @@ class CamerawesomePlugin {
     }
   }
 
-  static Future<num> getPreviewTexture() => _channel.invokeMethod<num>('previewTexture');
+  static Future<num> getPreviewTexture() =>
+      _channel.invokeMethod<num>('previewTexture');
 
   static Future<void> setPreviewSize(int width, int height) {
     return _channel.invokeMethod<void>('setPreviewSize', <String, dynamic>{
@@ -164,10 +176,15 @@ class CamerawesomePlugin {
     });
   }
 
+  static Future<void> refresh() {
+    return _channel.invokeMethod<void>('refresh');
+  }
+
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
   static Future<Size> getEffectivPreviewSize() async {
-    Map<dynamic, dynamic> sizeMap = await _channel.invokeMethod("getEffectivPreviewSize");
+    Map<dynamic, dynamic> sizeMap =
+        await _channel.invokeMethod("getEffectivPreviewSize");
     int width = sizeMap["width"];
     int height = sizeMap["height"];
     return Size(width.toDouble(), height.toDouble());
@@ -176,8 +193,7 @@ class CamerawesomePlugin {
   /// Just for android
   /// you can set a different size for preview and for photo
   static Future<void> setPhotoSize(int width, int height) {
-    if(width == null || height == null)
-      return Future.value();
+    if (width == null || height == null) return Future.value();
     return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic>{
       'width': width,
       'height': height,
@@ -188,6 +204,16 @@ class CamerawesomePlugin {
     return _channel.invokeMethod<void>('takePhoto', <String, dynamic>{
       'path': path,
     });
+  }
+
+  static recordVideo(String path) {
+    return _channel.invokeMethod<void>('recordVideo', <String, dynamic>{
+      'path': path,
+    });
+  }
+
+  static stopRecordingVideo() {
+    return _channel.invokeMethod<void>('stopRecordingVideo');
   }
 
   /// Switch flash mode from Android / iOS
@@ -211,9 +237,21 @@ class CamerawesomePlugin {
         'sensor': sensor.toString().split(".")[1],
       });
 
+  /// change capture mode between [CaptureModes.PHOTO] and [CaptureModes.VIDEO]
+  static Future<void> setCaptureMode(CaptureModes captureMode) =>
+      _channel.invokeMethod('setCaptureMode', <String, dynamic>{
+        'captureMode': captureMode.toString().split(".")[1],
+      });
+
+  /// enable audio mode recording or not
+  static Future<void> setAudioMode(bool enableAudio) =>
+      _channel.invokeMethod('setRecordingAudioMode', <String, dynamic>{
+        'enableAudio': enableAudio,
+      });
+
   /// set brightness manually with range [0,1]
   static Future<void> setBrightness(double brightness) {
-    if(brightness < 0 || brightness > 1) {
+    if (brightness < 0 || brightness > 1) {
       throw "Value must be between [0,1]";
     }
     return _channel.invokeMethod('setCorrection', <String, dynamic>{
@@ -223,23 +261,23 @@ class CamerawesomePlugin {
 
   // listen for luminosity level
   static Stream<SensorData> listenLuminosityLevel() {
-    if(!Platform.isAndroid) {
-      // Not available 
+    if (!Platform.isAndroid) {
+      // Not available
       throw "not available on this OS for now... only Android";
     }
-    if(_luminositySensorDataStream == null) {
-      _luminositySensorDataStream = _luminosityChannel.receiveBroadcastStream()
-        .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(handleData: (data,sink) {
-          sink.add(SensorData(data));
-        })
-      );
+    if (_luminositySensorDataStream == null) {
+      _luminositySensorDataStream = _luminosityChannel
+          .receiveBroadcastStream()
+          .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
+              handleData: (data, sink) {
+        sink.add(SensorData(data));
+      }));
     }
     return _luminositySensorDataStream;
   }
 
   /// returns the max zoom available on device
   static Future<num> getMaxZoom() => _channel.invokeMethod("getMaxZoom");
-
 
   // ---------------------------------------------------
   // UTILITY METHODS
@@ -266,4 +304,3 @@ class CamerawesomePlugin {
     return Future.value(false);
   }
 }
-

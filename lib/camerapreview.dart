@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
-import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -60,6 +58,12 @@ class CameraAwesome extends StatefulWidget {
   /// Zoom from native side. Must be between 0 and 1
   final ValueNotifier<double> zoom;
 
+  /// current capture mode [PHOTO] or [VIDEO] - Video mode TODO only iOS, Android to be done
+  final ValueNotifier<CaptureModes> captureMode;
+
+  /// choose to record video with audio or not - Video mode TODO only iOS, Android to be done
+  final ValueNotifier<bool> enableAudio;
+
   /// choose between [BACK] and [FRONT]
   final ValueNotifier<Sensors> sensor;
 
@@ -81,7 +85,8 @@ class CameraAwesome extends StatefulWidget {
   /// (optional) returns a Stream containing images from camera preview - TODO only Android, iOS to be done
   final LuminosityLevelStreamBuilder luminosityLevelStreamBuilder;
 
-  CameraAwesome({Key key,
+  CameraAwesome({
+    Key key,
     this.testMode = false,
     this.onPermissionsResult,
     @required this.photoSize,
@@ -93,20 +98,22 @@ class CameraAwesome extends StatefulWidget {
     this.zoom,
     this.onOrientationChanged,
     @required this.sensor,
+    @required this.captureMode,
+    this.enableAudio,
     this.imagesStreamBuilder,
     this.brightness,
     this.luminosityLevelStreamBuilder,
-  }): assert(sensor != null),
-      super(key: key);
+  })  : assert(sensor != null),
+        super(key: key);
 
   @override
   CameraAwesomeState createState() => CameraAwesomeState();
 }
 
-class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserver {
-
+class CameraAwesomeState extends State<CameraAwesome>
+    with WidgetsBindingObserver {
   final GlobalKey boundaryKey = new GlobalKey();
-  
+
   List<Size> camerasAvailableSizes;
 
   bool hasPermissions = false;
@@ -132,8 +139,6 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
 
   /// Only for Android, Preview and Photo size can be different. Android preview can't be higher than 1980x1024
   ValueNotifier<Size> selectedAndroidPhotoSize;
-
-
 
   @override
   void initState() {
@@ -167,13 +172,13 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     selectedPreviewSize.dispose();
     selectedPreviewSize = null;
     selectedAndroidPhotoSize = null;
-    if(_permissionStreamSub != null) {
+    if (_permissionStreamSub != null) {
       _permissionStreamSub.cancel();
     }
-    if(_brightnessCorrectionDataSub != null) {
+    if (_brightnessCorrectionDataSub != null) {
       _brightnessCorrectionDataSub.cancel();
     }
-    if(_orientationStreamSub != null) {
+    if (_orientationStreamSub != null) {
       _orientationStreamSub.cancel();
     }
     super.dispose();
@@ -181,83 +186,89 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
 
   Future<void> initPlatformState() async {
     // wait user accept permissions to init widget completely on android
-    if(Platform.isAndroid) {
-      _permissionStreamSub = CamerawesomePlugin.listenPermissionResult()
-        .listen((res) {
-          if(res) {
-            initPlatformState();
-          }
-          widget.onPermissionsResult(res);
-        });
+    if (Platform.isAndroid) {
+      _permissionStreamSub =
+          CamerawesomePlugin.listenPermissionResult().listen((res) {
+        if (res) {
+          initPlatformState();
+        }
+        widget.onPermissionsResult(res);
+      });
     }
     hasPermissions = await CamerawesomePlugin.checkPermissions();
-    if(widget.onPermissionsResult != null) {
+    if (widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
     }
-    if(!hasPermissions) {
+    if (!hasPermissions) {
       return;
     }
     // Init orientation stream
     if (widget.onOrientationChanged != null) {
-      _orientationStreamSub = CamerawesomePlugin.getNativeOrientation().listen(widget.onOrientationChanged);
+      _orientationStreamSub = CamerawesomePlugin.getNativeOrientation()
+          .listen(widget.onOrientationChanged);
     }
     // init plugin --
-    await CamerawesomePlugin.init(widget.sensor.value, widget.imagesStreamBuilder != null);
+    await CamerawesomePlugin.init(
+      widget.sensor.value,
+      widget.imagesStreamBuilder != null,
+      captureMode: widget.captureMode?.value,
+    );
     _initAndroidPhotoSize();
     _initPhotoSize();
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
-    if(widget.selectDefaultSize != null) {
+    if (widget.selectDefaultSize != null) {
       widget.photoSize.value = widget.selectDefaultSize(camerasAvailableSizes);
-      assert(widget.photoSize.value !=null, "A size from the list must be selected");
+      assert(widget.photoSize.value != null,
+          "A size from the list must be selected");
     } else {
       widget.photoSize.value = camerasAvailableSizes[0];
     }
     // start camera --
     try {
       started = await CamerawesomePlugin.start();
-    } catch(e) {
+    } catch (e) {
       _retryStartCamera(3);
     }
-    if(widget.imagesStreamBuilder != null) {
+    if (widget.imagesStreamBuilder != null) {
       widget.imagesStreamBuilder(CamerawesomePlugin.listenCameraImages());
     }
-    if(widget.onCameraStarted != null) {
+    if (widget.onCameraStarted != null) {
       widget.onCameraStarted();
     }
     _initFlashModeSwitcher();
     _initZoom();
     _initSensor();
+    _initCaptureMode();
+    _initAudioMode();
     _initManualBrightness();
     _initBrightnessStream();
-    if(mounted)
-      setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: CamerawesomePlugin.getPreviewTexture(),
-      builder: (context, snapshot) {
-        if(snapshot.hasError) {
-          return Container(); //TODO retry or show error here
-        }
-        if(!hasPermissions)
-          return Container();
-        if(!snapshot.hasData || !hasInit)
-          return Center(child: CircularProgressIndicator());
-        return _CameraPreviewWidget(
-          size: selectedPreviewSize.value,
-          fitted: widget.fitted,
-          textureId: snapshot.data,
-        );
-      }
-    );
+        future: CamerawesomePlugin.getPreviewTexture(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Container(); //TODO retry or show error here
+          }
+          if (!hasPermissions) return Container();
+          if (!snapshot.hasData || !hasInit)
+            return Center(child: CircularProgressIndicator());
+          return _CameraPreviewWidget(
+            size: selectedPreviewSize.value,
+            fitted: widget.fitted,
+            textureId: snapshot.data,
+          );
+        });
   }
 
-  bool get hasInit => selectedPreviewSize.value != null
-    && camerasAvailableSizes != null
-    && camerasAvailableSizes.length > 0
-    && started;
+  bool get hasInit =>
+      selectedPreviewSize.value != null &&
+      camerasAvailableSizes != null &&
+      camerasAvailableSizes.length > 0 &&
+      started;
 
   /// inits the Flash mode switcher using [ValueNotifier]
   /// Each time user call to switch flashMode we send a call to iOS or Android Plugins
@@ -289,39 +300,57 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   _initSensor() {
     widget.sensor.addListener(() async {
       await CamerawesomePlugin.setSensor(widget.sensor.value);
-      if(mounted) {
+      if (mounted) {
         setState(() {});
       }
     });
   }
 
+  /// handle capture mode change
+  _initCaptureMode() {
+    widget.captureMode.addListener(() async {
+      await CamerawesomePlugin.setCaptureMode(widget.captureMode.value);
+    });
+  }
+
+  _initAudioMode() {
+    widget.enableAudio.addListener(() async {
+      await CamerawesomePlugin.setAudioMode(widget.enableAudio.value);
+    });
+  }
+
   _initAndroidPhotoSize() {
-    if(selectedAndroidPhotoSize == null ) {
+    if (selectedAndroidPhotoSize == null) {
       return;
     }
     selectedAndroidPhotoSize.addListener(() async {
-      if(selectedAndroidPhotoSize.value == null || !Platform.isAndroid) {
+      if (selectedAndroidPhotoSize.value == null || !Platform.isAndroid) {
         return;
       }
-      await CamerawesomePlugin.setPhotoSize(selectedAndroidPhotoSize.value.width.toInt(), selectedAndroidPhotoSize.value.height.toInt());
+      await CamerawesomePlugin.setPhotoSize(
+          selectedAndroidPhotoSize.value.width.toInt(),
+          selectedAndroidPhotoSize.value.height.toInt());
     });
   }
 
   _initPhotoSize() {
-    if(widget.photoSize == null) {
+    if (widget.photoSize == null) {
       return;
     }
     widget.photoSize.addListener(() async {
-      if(widget.photoSize.value == null || selectedAndroidPhotoSize == null) {
+      if (widget.photoSize.value == null || selectedAndroidPhotoSize == null) {
         return;
       }
       selectedAndroidPhotoSize.value = widget.photoSize.value;
-      await CamerawesomePlugin.setPreviewSize(widget.photoSize.value.width.toInt(), widget.photoSize.value.height.toInt());
-      var effectivPreviewSize = await CamerawesomePlugin.getEffectivPreviewSize();
-      if(selectedPreviewSize != null) {
+      await CamerawesomePlugin.setPreviewSize(
+          widget.photoSize.value.width.toInt(),
+          widget.photoSize.value.height.toInt());
+      var effectivPreviewSize =
+          await CamerawesomePlugin.getEffectivPreviewSize();
+      if (selectedPreviewSize != null) {
         // this future can take time and be called after we disposed
         selectedPreviewSize.value = effectivPreviewSize;
-        if(mounted) {
+        if (mounted) {
           setState(() {});
         }
       }
@@ -329,40 +358,41 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   }
 
   _initManualBrightness() {
-    if(widget.brightness == null) {
+    if (widget.brightness == null) {
       return;
     }
     _brightnessCorrectionDataSub = brightnessCorrectionData
-      .debounceTime(Duration(milliseconds: 500))
-      .listen((value) => CamerawesomePlugin.setBrightness(value));
-    widget.brightness.addListener(() => brightnessCorrectionData.add(widget.brightness.value));
+        .debounceTime(Duration(milliseconds: 500))
+        .listen((value) => CamerawesomePlugin.setBrightness(value));
+    widget.brightness.addListener(
+        () => brightnessCorrectionData.add(widget.brightness.value));
   }
 
   _initBrightnessStream() {
-    if(widget.luminosityLevelStreamBuilder == null) {
+    if (widget.luminosityLevelStreamBuilder == null) {
       return;
     }
-    widget.luminosityLevelStreamBuilder(CamerawesomePlugin.listenLuminosityLevel());
+    widget.luminosityLevelStreamBuilder(
+        CamerawesomePlugin.listenLuminosityLevel());
   }
 
   _retryStartCamera(int nbTry) async {
-    while(!started && !stopping && nbTry > 0) {
+    while (!started && !stopping && nbTry > 0) {
       print("[_retryStartCamera] ${this.hashCode}");
       print("...retry start camera $nbTry try left");
       try {
-        started = await Future.delayed(Duration(seconds: 2), CamerawesomePlugin.start);
-      } catch(e) {
-        _retryStartCamera(nbTry-1);
+        started = await Future.delayed(
+            Duration(seconds: 2), CamerawesomePlugin.start);
+      } catch (e) {
+        _retryStartCamera(nbTry - 1);
         print("$e");
       }
     }
   }
-
 }
 
 ///
 class _CameraPreviewWidget extends StatelessWidget {
-
   final Size size;
 
   final int textureId;
@@ -371,68 +401,66 @@ class _CameraPreviewWidget extends StatelessWidget {
 
   final bool testMode;
 
-  _CameraPreviewWidget(
-      {this.size,
-      this.textureId,
-      this.fitted = false,
-      this.testMode = false});
+  _CameraPreviewWidget({
+    this.size,
+    this.textureId,
+    this.fitted = false,
+    this.testMode = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return OrientationBuilder(
       builder: (context, orientation) {
-        return fitted ? buildFittedBox(orientation) : buildFull(context, orientation);
-      }
+        return fitted
+            ? buildFittedBox(orientation)
+            : buildFull(context, orientation);
+      },
     );
   }
 
   Widget buildFull(BuildContext context, Orientation orientation) {
-    return LayoutBuilder(builder: (_, constraints) {
-      final double ratio = size.height / size.width;
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        final double ratio = size.height / size.width;
 
-      return Container(
-        color: Colors.black,
-        child: Center(
-          child: Transform.scale(
-            scale: _calculateScale(constraints, ratio, orientation),
-            child: AspectRatio(
-              aspectRatio: ratio,
-              child: SizedBox(
-                height: orientation == Orientation.portrait
-                    ? constraints.maxHeight
-                    : constraints.maxWidth,
-                width: orientation == Orientation.portrait
-                    ? constraints.maxWidth
-                    : constraints.maxHeight,
-                child: testMode
-                    ? Container()
-                    : Texture(textureId: textureId),
+        return Container(
+          color: Colors.black,
+          child: Center(
+            child: Transform.scale(
+              scale: _calculateScale(constraints, ratio, orientation),
+              child: AspectRatio(
+                aspectRatio: ratio,
+                child: SizedBox(
+                  height: orientation == Orientation.portrait
+                      ? constraints.maxHeight
+                      : constraints.maxWidth,
+                  width: orientation == Orientation.portrait
+                      ? constraints.maxWidth
+                      : constraints.maxHeight,
+                  child: testMode ? Container() : Texture(textureId: textureId),
+                ),
               ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget buildFittedBox(Orientation orientation) {
     return FittedBox(
-        fit: BoxFit.fitWidth,
-        child: SizedBox(
-          height: orientation == Orientation.portrait
-            ? size.height
-            : size.width,
-          width: orientation == Orientation.portrait
-            ? size.width
-            : size.height,
-          child: testMode
-            ? Container()
-            : Texture(textureId: textureId),
-        ),
-      );
+      fit: BoxFit.fitWidth,
+      child: SizedBox(
+        height: orientation == Orientation.portrait ? size.height : size.width,
+        width: orientation == Orientation.portrait ? size.width : size.height,
+        child: testMode ? Container() : Texture(textureId: textureId),
+      ),
+    );
   }
 
-  double _calculateScale(BoxConstraints constraints, double ratio, Orientation orientation) {
+  double _calculateScale(
+      BoxConstraints constraints, double ratio, Orientation orientation) {
     final aspectRatio = constraints.maxWidth / constraints.maxHeight;
     var scale = ratio / aspectRatio;
     if (ratio < aspectRatio) {

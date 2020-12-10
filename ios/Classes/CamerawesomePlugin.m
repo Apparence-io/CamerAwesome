@@ -13,7 +13,9 @@
 
 @end
 
-@implementation CamerawesomePlugin
+@implementation CamerawesomePlugin {
+    dispatch_queue_t _dispatchQueue;
+}
 - (instancetype)initWithRegistry:(NSObject<FlutterTextureRegistry> *)registry
                        messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
     self = [super init];
@@ -27,9 +29,13 @@
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     CamerawesomePlugin *instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
     
-    FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
+    FlutterEventChannel *orientationChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
     binaryMessenger:[registrar messenger]];
-    [eventChannel setStreamHandler:instance];
+    FlutterEventChannel *videoRecordingChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/video-recording"
+    binaryMessenger:[registrar messenger]];
+    
+    [orientationChannel setStreamHandler:instance];
+    [videoRecordingChannel setStreamHandler:instance];
     
     // TODO: Change to "camerawesome/methods"
     FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"camerawesome" binaryMessenger:[registrar messenger]];
@@ -48,6 +54,17 @@
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    if (_dispatchQueue == nil) {
+        _dispatchQueue = dispatch_queue_create("camerawesome.dispatchqueue", NULL);
+    }
+    [_camera setResult:result];
+    
+    dispatch_async(_dispatchQueue, ^{
+        [self handleMethodCallAsync:call result:result];
+    });
+}
+
+- (void)handleMethodCallAsync:(FlutterMethodCall *)call result:(FlutterResult)result {
     if ([@"init" isEqualToString:call.method]) {
         [self _handleSetup:call result:result];
     } else if ([@"checkPermissions" isEqualToString:call.method]) {
@@ -60,6 +77,8 @@
         [self _handleStart:call result:result];
     } else if ([@"stop" isEqualToString:call.method]) {
         [self _handleStop:call result:result];
+    } else if ([@"refresh" isEqualToString:call.method]) {
+        [self _handleRefresh:call result:result];
     } else if ([@"availableSizes" isEqualToString:call.method]) {
         [self _handleSizes:call result:result];
     } else if ([@"previewTexture" isEqualToString:call.method]) {
@@ -72,12 +91,20 @@
         [self _handlePhotoSize:call result:result];
     } else if ([@"takePhoto" isEqualToString:call.method]) {
         [self _handleTakePhoto:call result:result];
+    } else if ([@"recordVideo" isEqualToString:call.method]) {
+        [self _handleRecordVideo:call result:result];
+    } else if ([@"stopRecordingVideo" isEqualToString:call.method]) {
+        [self _handleStopRecordingVideo:call result:result];
+    } else if ([@"setRecordingAudioMode" isEqualToString:call.method]) {
+        [self _handleRecordingAudioMode:call result:result];
     } else if ([@"handleAutoFocus" isEqualToString:call.method]) {
         [self _handleAutoFocus:call result:result];
     } else if ([@"setFlashMode" isEqualToString:call.method]) {
         [self _handleFlashMode:call result:result];
     } else if ([@"setSensor" isEqualToString:call.method]) {
         [self _handleSetSensor:call result:result];
+    } else if ([@"setCaptureMode" isEqualToString:call.method]) {
+        [self _handleSetCaptureMode:call result:result];
     } else if ([@"setZoom" isEqualToString:call.method]) {
         [self _handleSetZoom:call result:result];
     } else if ([@"getMaxZoom" isEqualToString:call.method]) {
@@ -87,7 +114,12 @@
     } else {
         result(FlutterMethodNotImplemented);
         return;
-    }
+    };
+}
+
+- (void)_handleRecordingAudioMode:(FlutterMethodCall*)call result:(FlutterResult)result {
+    bool value = [call.arguments[@"enableAudio"] boolValue];
+    [_camera setRecordingAudioMode:value];
 }
 
 - (void)_handleGetEffectivPreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -100,7 +132,6 @@
 
 - (void)_handleSetZoom:(FlutterMethodCall*)call result:(FlutterResult)result {
     float value = [call.arguments[@"zoom"] floatValue];
-    
     [_camera setZoom:value];
 }
 
@@ -110,6 +141,8 @@
 
 - (void)_handleDispose:(FlutterMethodCall*)call result:(FlutterResult)result {
     [_camera dispose];
+    _dispatchQueue = nil;
+    result(nil);
 }
 
 - (void)_handleTakePhoto:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -120,8 +153,22 @@
         return;
     }
     
-    [_camera setResult:result];
     [_camera takePictureAtPath:path];
+}
+
+- (void)_handleRecordVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *path = call.arguments[@"path"];
+    
+    if (path == nil || path.length <= 0) {
+        result([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
+        return;
+    }
+    
+    [_camera recordVideoAtPath:path];
+}
+
+- (void)_handleStopRecordingVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera stopRecordingVideo];
 }
 
 - (void)_handleSetSensor:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -132,8 +179,13 @@
     [_camera setSensor:sensor];
 }
 
+- (void)_handleSetCaptureMode:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSString *captureModeName = call.arguments[@"captureMode"];
+    CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
+    [_camera setCaptureMode:captureMode];
+}
+
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
-    [_camera setResult:result];
     [_camera instantFocus];
 }
 
@@ -205,8 +257,14 @@
     result(@(YES));
 }
 
+- (void)_handleRefresh:(FlutterMethodCall*)call result:(FlutterResult)result {
+    [_camera refresh];
+}
+
 - (void)_handleSetup:(FlutterMethodCall*)call result:(FlutterResult)result  {
     NSString *sensorName = call.arguments[@"sensor"];
+    NSString *captureModeName = call.arguments[@"captureMode"];
+    CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
     
     if (![CameraPermissions checkPermissions]) {
         result([FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
@@ -220,7 +278,9 @@
 
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
     self.camera = [[CameraView alloc] initWithCameraSensor:sensor
+                                               captureMode:captureMode
                                                     result:result
+                                             dispatchQueue:_dispatchQueue
                                                  messenger:_messenger
                                                      event:_eventSink];
     [self->_registry textureFrameAvailable:_textureId];
@@ -256,7 +316,6 @@
         flash = None;
     }
     
-    [_camera setResult:result];
     [_camera setFlashMode:flash];
     result(@(YES));
 }

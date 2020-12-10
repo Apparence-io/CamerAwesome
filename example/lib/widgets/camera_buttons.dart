@@ -9,12 +9,14 @@ class OptionButton extends StatefulWidget {
   final Function onTapCallback;
   final AnimationController rotationController;
   final ValueNotifier<CameraOrientations> orientation;
+  final bool isEnabled;
   const OptionButton({
     Key key,
     this.icon,
     this.onTapCallback,
     this.rotationController,
     this.orientation,
+    this.isEnabled = true,
   }) : super(key: key);
 
   @override
@@ -31,20 +33,19 @@ class _OptionButtonState extends State<OptionButton>
     super.initState();
 
     Tween(begin: 0.0, end: 1.0)
-      .chain(CurveTween(curve: Curves.ease))
-      .animate(widget.rotationController)
-        ..addStatusListener((status) {
-          if (status == AnimationStatus.completed) {
-            _oldOrientation =
-                OrientationUtils.convertRadianToOrientation(_angle);
-          }
-        });
+        .chain(CurveTween(curve: Curves.ease))
+        .animate(widget.rotationController)
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              _oldOrientation =
+                  OrientationUtils.convertRadianToOrientation(_angle);
+            }
+          });
 
     widget.orientation.addListener(() {
       _angle =
           OrientationUtils.convertOrientationToRadian(widget.orientation.value);
 
-      // TODO: be able to rotate on portrait down mode to landscape
       if (widget.orientation.value == CameraOrientations.PORTRAIT_UP) {
         widget.rotationController.reverse();
       } else if (_oldOrientation == CameraOrientations.LANDSCAPE_LEFT ||
@@ -95,29 +96,35 @@ class _OptionButtonState extends State<OptionButton>
           }
         }
 
-        return Transform.rotate(
-          angle: newAngle ?? widget.rotationController.value * _angle,
-          child: ClipOval(
-            child: Material(
-              color: Color(0xFF4F6AFF),
-              child: InkWell(
-                child: SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Icon(
-                    widget.icon,
-                    color: Colors.white,
-                    size: 24.0,
+        return IgnorePointer(
+          ignoring: !widget.isEnabled,
+          child: Opacity(
+            opacity: widget.isEnabled ? 1.0 : 0.3,
+            child: Transform.rotate(
+              angle: newAngle ?? widget.rotationController.value * _angle,
+              child: ClipOval(
+                child: Material(
+                  color: Color(0xFF4F6AFF),
+                  child: InkWell(
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: Icon(
+                        widget.icon,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                    ),
+                    onTap: () {
+                      if (widget.onTapCallback != null) {
+                        // Trigger short vibration
+                        HapticFeedback.selectionClick();
+
+                        widget.onTapCallback();
+                      }
+                    },
                   ),
                 ),
-                onTap: () {
-                  if (widget.onTapCallback != null) {
-                    // Trigger short vibration
-                    HapticFeedback.selectionClick();
-
-                    widget.onTapCallback();
-                  }
-                },
               ),
             ),
           ),

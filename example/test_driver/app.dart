@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:camerawesome/camerapreview.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome_example/main.dart' as app;
 import 'package:camerawesome_example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,7 +28,7 @@ void main() {
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
-    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
+    camera.evaluate().first.widget as CameraAwesome;
   });
 
   testWidgets("take photo works with selected photo size", (WidgetTester tester) async {
@@ -38,17 +37,17 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
     expect(cameraPreview.photoSize.value, isNotNull);
     // checks photo exists + size
     final Directory extDir = await getTemporaryDirectory();
-    var testDir = await Directory('${extDir.path}/test');
+    var testDir = Directory('${extDir.path}/test');
     final String filePath = '${testDir.path}/photo_test.jpg';
     expect(await File(filePath).exists(), isTrue);
-    var file = await File(filePath);
+    var file = File(filePath);
     var img = imgUtils.decodeImage(file.readAsBytesSync());
     expect(img.width, equals(cameraPreview.photoSize.value.width));
     expect(img.height, equals(cameraPreview.photoSize.value.height));
@@ -61,8 +60,8 @@ void main() {
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
-    var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    camera.evaluate().first.widget as CameraAwesome;
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -78,7 +77,7 @@ void main() {
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("takePhotoButton"));
+    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // change photo size preset
     var previousResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
     var resolButtonFinder = find.byKey(ValueKey("resolutionButton"));
@@ -95,10 +94,10 @@ void main() {
     await tester.pump(Duration(seconds: 2));
     // checks photo exists + size
     final Directory extDir = await getTemporaryDirectory();
-    var testDir = await Directory('${extDir.path}/test');
+    var testDir = Directory('${extDir.path}/test');
     final String filePath = '${testDir.path}/photo_test.jpg';
     expect(await File(filePath).exists(), isTrue);
-    var file = await File(filePath);
+    var file = File(filePath);
     var img = imgUtils.decodeImage(file.readAsBytesSync());
     expect(img.width, equals(cameraPreview.photoSize.value.width));
     expect(img.height, equals(cameraPreview.photoSize.value.height));
@@ -109,6 +108,7 @@ void main() {
   testWidgets('Image stream properly delivers images', (WidgetTester tester) async {
     ValueNotifier<Size> photoSize = ValueNotifier(null);
     ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
+    ValueNotifier<CaptureModes> captureMode = ValueNotifier(CaptureModes.PHOTO);
     Stream<Uint8List> imageStream;
     Uint8List imgData;
     await tester.pumpWidget(
@@ -122,6 +122,7 @@ void main() {
                     selectDefaultSize: (availableSizes) => availableSizes[0],
                     photoSize: photoSize,
                     sensor: sensor,
+                    captureMode: captureMode,
                     imagesStreamBuilder: (stream) async {
                       imageStream = stream;
                       imgData = await imageStream.first;
@@ -142,5 +143,48 @@ void main() {
       )
     );
     await Future.delayed(Duration(seconds: 3));
+  });
+
+  testWidgets("should change capture mode", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
+    await tester.pumpAndSettle(Duration(seconds: 1));
+    var camera = find.byType(CameraAwesome);
+    await expectLater(camera, findsOneWidget);
+    expect(find.byKey(ValueKey("cameraButtonPhoto")), findsOneWidget);
+    expect(find.byKey(ValueKey("cameraButtonVideo")), findsNothing);
+
+    final captureModeSwitch = find.byKey(ValueKey('captureModeSwitch'));
+    await tester.tap(captureModeSwitch);
+    await tester.pump(Duration(milliseconds: 500));
+
+    expect(find.byKey(ValueKey("cameraButtonVideo")), findsOneWidget);
+    expect(find.byKey(ValueKey("cameraButtonPhoto")), findsNothing);
+  });
+
+  testWidgets("should record a video", (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
+    await tester.pumpAndSettle(Duration(seconds: 1));
+    final camera = find.byType(CameraAwesome);
+    await expectLater(camera, findsOneWidget);
+    final captureModeSwitch = find.byKey(ValueKey('captureModeSwitch'));
+    await tester.tap(captureModeSwitch);
+    await tester.pump(Duration(seconds: 2));
+
+    await tester.tap(find.byKey(ValueKey('cameraButtonVideo')));
+    await tester.pump(Duration(seconds: 8));
+
+    await tester.tap(find.byKey(ValueKey('cameraButtonVideo')));
+    await tester.pump(Duration(seconds: 2));
+
+    // checks photo exists + size
+    final Directory extDir = await getTemporaryDirectory();
+    final testDir = Directory('${extDir.path}/test');
+    final String filePath = '${testDir.path}/video_test.mp4';
+    expect(await File(filePath).exists(), isTrue);
+    final file = File(filePath);
+    final bool isFileExist = await file.exists();
+    expect(isFileExist, equals(true));
+    // delete video
+    file.deleteSync();
   });
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
@@ -10,12 +9,10 @@ import 'package:camerawesome_example/widgets/take_photo_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui' as ui;
 import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -48,14 +45,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
-  // TODO: Add zoom smooth animation
   ValueNotifier<double> zoomNotifier = ValueNotifier(0);
-
   ValueNotifier<Size> photoSize = ValueNotifier(null);
-
   ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
-
   ValueNotifier<double> brightnessCorrection = ValueNotifier(0);
+  ValueNotifier<CaptureModes> captureMode = ValueNotifier(CaptureModes.PHOTO);
+  ValueNotifier<bool> enableAudio = ValueNotifier(true);
 
   double sliderBrightnessValue = 0;
 
@@ -77,7 +72,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
-  StreamSubscription<Uint8List> previewStreamSub;
+  // StreamSubscription<Uint8List> previewStreamSub;
 
   Stream<SensorData> brightnessStream;
 
@@ -220,7 +215,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                       color: Colors.white,
                     ),
                   ),
-                ), // TODO: Placeholder here
+                ),
         ),
       ),
     );
@@ -372,8 +367,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 setState(() {});
               },
             ),
-            TakePhotoButton(
-              key: ValueKey("takePhotoButton"),
+            CameraButton(
+              key: ValueKey("cameraButton"),
               onTap: () async {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
@@ -485,6 +480,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               this.availableSizes = availableSizes;
               return availableSizes[0];
             },
+            captureMode: captureMode,
             photoSize: photoSize,
             sensor: sensor,
             brightness: brightnessCorrection,
@@ -514,6 +510,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   this.availableSizes = availableSizes;
                   return availableSizes[0];
                 },
+                captureMode: captureMode,
                 photoSize: photoSize,
                 brightness: brightnessCorrection,
                 luminosityLevelStreamBuilder: (s) => brightnessStream = s,

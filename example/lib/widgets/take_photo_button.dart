@@ -1,15 +1,23 @@
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
-class TakePhotoButton extends StatefulWidget {
+class CameraButton extends StatefulWidget {
+  final CaptureModes captureMode;
+  final bool isRecording;
   final Function onTap;
 
-  TakePhotoButton({Key key, this.onTap}) : super(key: key);
+  CameraButton({
+    Key key,
+    this.captureMode,
+    this.isRecording,
+    this.onTap,
+  }) : super(key: key);
 
   @override
-  _TakePhotoButtonState createState() => _TakePhotoButtonState();
+  _CameraButtonState createState() => _CameraButtonState();
 }
 
-class _TakePhotoButtonState extends State<TakePhotoButton>
+class _CameraButtonState extends State<CameraButton>
     with SingleTickerProviderStateMixin {
   AnimationController _animationController;
   double _scale;
@@ -17,6 +25,8 @@ class _TakePhotoButtonState extends State<TakePhotoButton>
 
   @override
   void initState() {
+    super.initState();
+
     _animationController = AnimationController(
       vsync: this,
       duration: _duration,
@@ -25,7 +35,6 @@ class _TakePhotoButtonState extends State<TakePhotoButton>
     )..addListener(() {
         setState(() {});
       });
-    super.initState();
   }
 
   @override
@@ -43,12 +52,17 @@ class _TakePhotoButtonState extends State<TakePhotoButton>
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
       child: Container(
+        key: ValueKey('cameraButton' +
+            (widget.captureMode == CaptureModes.PHOTO ? 'Photo' : 'Video')),
         height: 80,
         width: 80,
         child: Transform.scale(
           scale: _scale,
           child: CustomPaint(
-            painter: TakePhotoButtonPainter(),
+            painter: CameraButtonPainter(
+              widget.captureMode ?? CaptureModes.PHOTO,
+              isRecording: widget.isRecording,
+            ),
           ),
         ),
       ),
@@ -64,7 +78,7 @@ class _TakePhotoButtonState extends State<TakePhotoButton>
       _animationController.reverse();
     });
 
-    this.widget.onTap();
+    this.widget.onTap?.call();
   }
 
   _onTapCancel() {
@@ -72,7 +86,15 @@ class _TakePhotoButtonState extends State<TakePhotoButton>
   }
 }
 
-class TakePhotoButtonPainter extends CustomPainter {
+class CameraButtonPainter extends CustomPainter {
+  final CaptureModes captureMode;
+  final bool isRecording;
+
+  CameraButtonPainter(
+    this.captureMode, {
+    this.isRecording = false,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
     var bgPainter = Paint()
@@ -82,8 +104,24 @@ class TakePhotoButtonPainter extends CustomPainter {
     var center = Offset(size.width / 2, size.height / 2);
     bgPainter.color = Colors.white.withOpacity(.5);
     canvas.drawCircle(center, radius, bgPainter);
-    bgPainter.color = Colors.white;
-    canvas.drawCircle(center, radius - 8, bgPainter);
+
+    if (this.captureMode == CaptureModes.VIDEO && this.isRecording) {
+      bgPainter.color = Colors.red;
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(
+              Rect.fromLTWH(
+                17,
+                17,
+                size.width - (17 * 2),
+                size.height - (17 * 2),
+              ),
+              Radius.circular(12.0)),
+          bgPainter);
+    } else {
+      bgPainter.color =
+          captureMode == CaptureModes.PHOTO ? Colors.white : Colors.red;
+      canvas.drawCircle(center, radius - 8, bgPainter);
+    }
   }
 
   @override

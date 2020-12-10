@@ -1,0 +1,4 @@
+enum Sensors {
+  BACK,
+  FRONT
+}
