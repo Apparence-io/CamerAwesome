@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://apparence.io/">
-		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/logo/banner.png" width="456" alt="camerawesome_logo">
+		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/medias/banner.png" width="456" alt="camerawesome_logo">
 	</a>
 </p>
 
@@ -23,6 +23,9 @@ CamerAwesome include a lot of useful features like:
 - 🎮 Complete example.
 - 🎞 Taking a **picture** ( of course 😃 ).
 - 🎥 Video recording (iOS only for now).
+
+<img src="./medias/examples/example1.gif" width="200" alt="camerawesome_example1">
+<img src="./medias/examples/example2.gif" width="200" alt="camerawesome_example2">
 
 ## 📖&nbsp; Installation and usage
 
