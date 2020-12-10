@@ -38,8 +38,8 @@ CamerAwesome include a lot of useful features like:
     <td>Resolution changing 🌇 & use a mask 🎭</td>
   </tr>
   <tr>
-    <td><img src="./medias/examples/example1.gif" width="200" alt="camerawesome_example1"></td>
-    <td><img src="./medias/examples/example2.gif" width="200" alt="camerawesome_example2"></td>
+    <td><center><img src="./medias/examples/example1.gif" width="200" alt="camerawesome_example1"></center></td>
+    <td><center><img src="./medias/examples/example2.gif" width="200" alt="camerawesome_example2"></center></td>
   </tr>
 </table>
 
