@@ -1,11 +1,17 @@
 <p align="center">
 	<a href="https://apparence.io/">
-		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/medias/banner.png" width="456" alt="camerawesome_logo">
+		<img src="./medias/banner.png" width="456" alt="camerawesome_logo">
 	</a>
 </p>
 
 <a href="https://github.com/Solido/awesome-flutter">
    <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
+</a>
+<a href="https://github.com/Apparence-io/camera_awesome">
+  <img src="https://img.shields.io/github/stars/Apparence-io/camera_awesome.svg?style=flat-square&logo=github&colorB=orange&label=Stars" alt="Star on Github">
+</a>
+<a href="https://pub.dev/packages/package_config">
+  <img src="https://img.shields.io/pub/v/package_config.svg?style=flat-square&label=Pub" alt="Star on Github">
 </a>
 
 ## 🚀&nbsp; Overview
@@ -24,8 +30,18 @@ CamerAwesome include a lot of useful features like:
 - 🎞 Taking a **picture** ( of course 😃 ).
 - 🎥 Video recording (iOS only for now).
 
-<img src="./medias/examples/example1.gif" width="200" alt="camerawesome_example1">
-<img src="./medias/examples/example2.gif" width="200" alt="camerawesome_example2">
+## 🧐&nbsp; Live example
+
+<table>
+  <tr>
+    <td>Taking photo 📸 & record video 🎥</td>
+    <td>Resolution changing 🌇 & use a mask 🎭</td>
+  </tr>
+  <tr>
+    <td><img src="./medias/examples/example1.gif" width="200" alt="camerawesome_example1"></td>
+    <td><img src="./medias/examples/example2.gif" width="200" alt="camerawesome_example2"></td>
+  </tr>
+</table>
 
 ## 📖&nbsp; Installation and usage
 
@@ -145,14 +161,14 @@ _captureMode.value = CaptureModes.VIDEO;
 </details>
 
 ### Photo 🎞
-#### Take a photo 🎉
+#### Take a photo 📸
 
 ```dart
 await _pictureController.takePicture('THE_IMAGE_PATH/myimage.jpg');
 ```
 
 ### Video 🎥
-#### Record a video 🎉
+#### Record a video 📽
 
 ```dart
 await _videoController.recordVideo('THE_IMAGE_PATH/myvideo.mp4');
@@ -164,7 +180,7 @@ await _videoController.recordVideo('THE_IMAGE_PATH/myvideo.mp4');
 await _videoController.stopRecordingVideo();
 ```
 
-## Live image stream
+## 📡&nbsp; Live image stream
 
 The property imagesStreamBuilder allows you to get an imageStream once the camera is ready.
 Don't try to show all these images on Flutter UI as you won't have time to refresh UI fast enough.
@@ -210,18 +226,20 @@ Feel free to help by submitting PR !
 - [ ] 🌠 Focus on specific point
 - [x] ~~📡 Broadcast live image stream~~
 - [x] ~~🌤 Exposure level~~
-- [x] ~~Add e2e tests~~
-- [x] ~~Fullscreen/SizedBox support~~
-- [x] ~~Complete example~~
-- [x] ~~Take a picture~~
-- [x] ~~Zoom level~~
-- [x] ~~Live switching camera~~
-- [x] ~~Device flash support~~
-- [x] ~~Auto focus~~
+- [x] ~~✅ Add e2e tests~~
+- [x] ~~🖼 Fullscreen/SizedBox support~~
+- [x] ~~🎮 Complete example~~
+- [x] ~~🎞 Take a picture~~
+- [x] ~~🎚 Zoom level~~
+- [x] ~~📲 Live switching camera~~
+- [x] ~~📸 Device flash support~~
+- [x] ~~⌛️ Auto focus~~
 
-## Sponsor
+## 📣&nbsp; Sponsor
+<img src="https://en.apparence.io/assets/images/logo.svg" width="30" />
+<br />
+
 [Initiated and sponsored by Apparence.io.](https://apparence.io)
-
 
 ## 👥&nbsp; Contribution
 
