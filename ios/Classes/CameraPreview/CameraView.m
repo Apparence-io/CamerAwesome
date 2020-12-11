@@ -442,7 +442,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     _isAudioSetup = NO;
     _audioIsDisconnected = YES;
     
-    // Only audio channel but keep audio
+    // Only remove audio channel input but keep video
     for (AVCaptureInput *input in [_captureSession inputs]) {
         for (AVCaptureInputPort *port in input.ports) {
             if ([[port mediaType] isEqual:AVMediaTypeAudio]) {
@@ -451,6 +451,8 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
             }
         }
     }
+    // Only remove audio channel output but keep video
+    [_captureSession removeOutput:_audioOutput];
     
     if (_enableAudio) {
         [self setUpCaptureSessionForAudio];
@@ -614,7 +616,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
             [_captureSession addOutput:_audioOutput];
             _isAudioSetup = YES;
         } else {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to add audio canal to session capture" details:@""]);
             _isAudioSetup = NO;
         }
     }
