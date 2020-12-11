@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://apparence.io/">
-		<img src="./medias/banner.png" width="456" alt="camerawesome_logo">
+		<img src="https://back.apparence.io/media/111/camerawesome.jpeg" width="456" alt="camerawesome_logo">
 	</a>
 </p>
 
@@ -35,7 +35,7 @@ CamerAwesome include a lot of useful features like:
 <table>
   <tr>
     <td>Taking photo 📸 & record video 🎥</td>
-    <td>Resolution changing 🌇 & use a mask 🎭</td>
+    <td>Resolution changing 🌇</td>
   </tr>
   <tr>
     <td><center><img src="./medias/examples/example1.gif" width="200" alt="camerawesome_example1"></center></td>

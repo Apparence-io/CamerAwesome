@@ -1,3 +1,6 @@
+## 0.2.0
+- [iOS] video recording support
+- [iOS] thread and perf enhancements
 ## 0.1.2+1
 - [Android] onDetachedFromActivity : fix stopping the camera should be only done if camera has been started
 - listen native Orientation should be canceled correctly on dispose CameraAwesomeState
