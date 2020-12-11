@@ -143,7 +143,7 @@ void main() {
       )
     );
     await Future.delayed(Duration(seconds: 3));
-  });
+  }, skip: Platform.isIOS);
 
   testWidgets("should change capture mode", (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
@@ -159,7 +159,7 @@ void main() {
 
     expect(find.byKey(ValueKey("cameraButtonVideo")), findsOneWidget);
     expect(find.byKey(ValueKey("cameraButtonPhoto")), findsNothing);
-  });
+  }, skip: Platform.isAndroid);
 
   testWidgets("should record a video", (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
@@ -186,5 +186,5 @@ void main() {
     expect(isFileExist, equals(true));
     // delete video
     file.deleteSync();
-  });
+  }, skip: Platform.isAndroid);
 }
