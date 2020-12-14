@@ -120,7 +120,7 @@ _captureMode.value = CaptureModes.VIDEO;
   Widget build(BuildContext context) {
     return CameraAwesome(
       testMode: false,
-      onPermissionsResult: (bool result) { }
+      onPermissionsResult: (bool result) { },
       selectDefaultSize: (List<Size> availableSizes) => Size(1920, 1080),
       onCameraStarted: () { },
       onOrientationChanged: (CameraOrientations newOrientation) { },
@@ -128,7 +128,7 @@ _captureMode.value = CaptureModes.VIDEO;
       sensor: _sensor,
       photoSize: _photoSize,
       switchFlashMode: _switchFlash,
-      captureMode: _captureMode,****
+      captureMode: _captureMode,
       orientation: DeviceOrientation.portraitUp,
       fitted: true,
     );
