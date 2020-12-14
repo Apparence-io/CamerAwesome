@@ -314,6 +314,9 @@ class CameraAwesomeState extends State<CameraAwesome>
   }
 
   _initAudioMode() {
+    if (widget.enableAudio == null) {
+      return;
+    }
     widget.enableAudio.addListener(() async {
       await CamerawesomePlugin.setAudioMode(widget.enableAudio.value);
     });
