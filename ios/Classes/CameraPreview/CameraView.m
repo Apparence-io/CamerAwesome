@@ -660,7 +660,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
     if (_isRecording) {
         if (_videoWriter.status == AVAssetWriterStatusFailed) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video writing failed" details:_videoWriter.error]);
+            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video writing failed" details:[_videoWriter.error localizedDescription]]);
           return;
         }
 
