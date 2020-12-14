@@ -6,6 +6,6 @@
 //
 
 #import <XCTest/XCTest.h>
-#import <IntegrationTest/IntegrationTestIosTest.h>
+#import <integration_test/IntegrationTestIosTest.h>
 
 INTEGRATION_TEST_IOS_RUNNER(RunnerTests)
