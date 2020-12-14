@@ -1,16 +1,56 @@
 #import "CamerawesomePlugin.h"
 #import "CameraView.h"
+#import "CameraEvents.h"
+
+FlutterEventSink orientationEventSink;
+FlutterEventSink videoRecordingEventSink;
+FlutterEventSink imageStreamEventSink;
 
 @interface CamerawesomePlugin ()
 
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
-@property FlutterEventSink eventSink;
 @property int64_t textureId;
 @property CameraView *camera;
 
 - (instancetype)initWithRegistry:(NSObject<FlutterTextureRegistry> *)registry messenger:(NSObject<FlutterBinaryMessenger> *)messenger;
 
+@end
+
+@implementation OrientationStreamHandler
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+    orientationEventSink = eventSink;
+    return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+    orientationEventSink = nil;
+    return nil;
+}
+@end
+
+@implementation ImageStreamHandler
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+    imageStreamEventSink = eventSink;
+    return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+    imageStreamEventSink = nil;
+    return nil;
+}
+@end
+
+@implementation VideoRecordingStreamHandler
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+    videoRecordingEventSink = eventSink;
+    return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+    videoRecordingEventSink = nil;
+    return nil;
+}
 @end
 
 @implementation CamerawesomePlugin {
@@ -29,28 +69,27 @@
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     CamerawesomePlugin *instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
     
+    OrientationStreamHandler *orientationStreamHandler =
+            [[OrientationStreamHandler alloc] init];
     FlutterEventChannel *orientationChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
     binaryMessenger:[registrar messenger]];
+    [orientationChannel setStreamHandler:orientationStreamHandler];
+    
+    VideoRecordingStreamHandler *videoRecordingStreamHandler =
+            [[VideoRecordingStreamHandler alloc] init];
     FlutterEventChannel *videoRecordingChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/video-recording"
     binaryMessenger:[registrar messenger]];
+    [videoRecordingChannel setStreamHandler:videoRecordingStreamHandler];
     
-    [orientationChannel setStreamHandler:instance];
-    [videoRecordingChannel setStreamHandler:instance];
+    ImageStreamHandler *imageStreamHandler =
+            [[ImageStreamHandler alloc] init];
+    FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/image-stream"
+    binaryMessenger:[registrar messenger]];
+    [imageStreamChannel setStreamHandler:imageStreamHandler];
     
     // TODO: Change to "camerawesome/methods"
     FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"camerawesome" binaryMessenger:[registrar messenger]];
     [registrar addMethodCallDelegate:instance channel:methodChannel];
-}
-
-- (FlutterError* _Nullable)onListenWithArguments:(id _Nullable)arguments
-                                       eventSink:(FlutterEventSink)events {
-    _eventSink = events;
-    return nil;
-}
-
-- (FlutterError* _Nullable)onCancelWithArguments:(id _Nullable)arguments {
-    _eventSink = nil;
-    return nil;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -282,7 +321,9 @@
                                                     result:result
                                              dispatchQueue:_dispatchQueue
                                                  messenger:_messenger
-                                                     event:_eventSink];
+                                          orientationEvent:orientationEventSink
+                                       videoRecordingEvent:videoRecordingEventSink
+                                          imageStreamEvent:imageStreamEventSink];
     [self->_registry textureFrameAvailable:_textureId];
     
     __weak typeof(self) weakSelf = self;

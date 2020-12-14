@@ -15,13 +15,20 @@
                          captureMode:(CaptureModes)captureMode
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
-                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger event:(FlutterEventSink)eventSink {
+                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger
+                    orientationEvent:(FlutterEventSink)orientationEventSink
+                 videoRecordingEvent:(FlutterEventSink)videoRecordingEventSink
+                    imageStreamEvent:(FlutterEventSink)imageStreamEventSink {
     self = [super init];
     
     _result = result;
     _messenger = messenger;
-    _eventSink = eventSink;
     _dispatchQueue = dispatchQueue;
+    
+    // Events
+    _orientationEventSink = orientationEventSink;
+    _videoRecordingEventSink = videoRecordingEventSink;
+    _imageStreamEventSink = imageStreamEventSink;
     
     // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
@@ -135,8 +142,8 @@
                 default:
                     break;
             }
-            if (self->_eventSink != nil) {
-                self->_eventSink(orientationString);
+            if (self->_orientationEventSink != nil) {
+                self->_orientationEventSink(orientationString);
             }
         }
     }];
@@ -655,12 +662,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
         }
     }
     if (!CMSampleBufferDataIsReady(sampleBuffer)) {
-        _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"sample buffer is not ready. Skipping sample" details:@""]);
+        _videoRecordingEventSink(@"sample buffer is not ready. Skipping sample");
         return;
     }
     if (_isRecording) {
         if (_videoWriter.status == AVAssetWriterStatusFailed) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video writing failed" details:_videoWriter.error]);
+            _videoRecordingEventSink([NSString stringWithFormat:@"video writing failed: %@", [_videoWriter.error localizedDescription]]);
           return;
         }
 

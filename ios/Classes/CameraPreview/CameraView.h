@@ -55,7 +55,9 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) bool isAudioSetup;
 @property(readonly, nonatomic) bool videoIsDisconnected;
 @property(readonly, nonatomic) bool audioIsDisconnected;
-@property(nonatomic) FlutterEventSink eventSink;
+@property(nonatomic) FlutterEventSink orientationEventSink;
+@property(nonatomic) FlutterEventSink videoRecordingEventSink;
+@property(nonatomic) FlutterEventSink imageStreamEventSink;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
@@ -63,7 +65,9 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
                            messenger:(NSObject<FlutterBinaryMessenger> *)messenger
-                               event:(FlutterEventSink)eventSink;
+                    orientationEvent:(FlutterEventSink)orientationEventSink
+                 videoRecordingEvent:(FlutterEventSink)videoRecordingEventSink
+                    imageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)setCaptureMode:(CaptureModes)captureMode;
