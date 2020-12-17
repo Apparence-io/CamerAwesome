@@ -1,39 +1,39 @@
 //
-//  CameraView.m
+//  CameraPreview.m
 //  camerawesome
 //
 //  Created by Dimitri Dessus on 23/07/2020.
 //
 
-#import "CameraView.h"
+#import "CameraPreview.h"
 
-@implementation CameraView {
+@implementation CameraPreview {
     dispatch_queue_t _dispatchQueue;
 }
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
+                        streamImages:(BOOL)streamImages
                          captureMode:(CaptureModes)captureMode
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
-                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger event:(FlutterEventSink)eventSink {
+                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger
+                    orientationEvent:(FlutterEventSink)orientationEventSink
+                 videoRecordingEvent:(FlutterEventSink)videoRecordingEventSink
+                    imageStreamEvent:(FlutterEventSink)imageStreamEventSink {
     self = [super init];
     
     _result = result;
     _messenger = messenger;
-    _eventSink = eventSink;
     _dispatchQueue = dispatchQueue;
-    
+
     // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
-    
-    // Creating video output
     _captureVideoOutput = [AVCaptureVideoDataOutput new];
     _captureVideoOutput.videoSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
     [_captureVideoOutput setAlwaysDiscardsLateVideoFrames:YES];
     [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
     [_captureSession addOutputWithNoConnections:_captureVideoOutput];
     
-    // Creating input device
     [self initCameraPreview:sensor];
     
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
@@ -44,20 +44,18 @@
     _flashMode = AVCaptureFlashModeOff;
     _torchMode = AVCaptureTorchModeOff;
     
-    // Video stuff
-    _isRecording = false;
-    _enableAudio = true;
-    
     _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     
     _cameraSensor = sensor;
     
-    // Creating motion detection
-    _motionManager = [[CMMotionManager alloc] init];
-    _motionManager.deviceMotionUpdateInterval = 0.2f;
-    [self startMyMotionDetect];
+    // Controllers init
+    _videoController = [[VideoController alloc] initWithEventSink:videoRecordingEventSink result:result];
+    _imageStreamController = [[ImageStreamController alloc] initWithEventSink:imageStreamEventSink];
+    _motionController = [[MotionController alloc] initWithEventSink:orientationEventSink];
     
+    [_motionController startMotionDetection];
+
     return self;
 }
 
@@ -100,46 +98,7 @@
   if (_latestPixelBuffer) {
     CFRelease(_latestPixelBuffer);
   }
-  [_motionManager stopAccelerometerUpdates];
-}
-
-/// Start live motion detection
-- (void)startMyMotionDetect {
-    [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
-                                        withHandler:^(CMDeviceMotion *data, NSError *error) {
-        UIDeviceOrientation newOrientation;
-        if(fabs(data.gravity.x) > fabs(data.gravity.y)) {
-            // Landscape
-            newOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
-        } else {
-            // Portrait
-            newOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
-        }
-        if (self->_deviceOrientation != newOrientation) {
-            self->_deviceOrientation = newOrientation;
-            
-            NSString *orientationString;
-            switch (newOrientation) {
-                case UIDeviceOrientationLandscapeLeft:
-                    orientationString = @"LANDSCAPE_LEFT";
-                    break;
-                case UIDeviceOrientationLandscapeRight:
-                    orientationString = @"LANDSCAPE_RIGHT";
-                    break;
-                case UIDeviceOrientationPortrait:
-                    orientationString = @"PORTRAIT_UP";
-                    break;
-                case UIDeviceOrientationPortraitUpsideDown:
-                    orientationString = @"PORTRAIT_DOWN";
-                    break;
-                default:
-                    break;
-            }
-            if (self->_eventSink != nil) {
-                self->_eventSink(orientationString);
-            }
-        }
-    }];
+  [_motionController startMotionDetection];
 }
 
 /// Set camera preview size
@@ -157,6 +116,7 @@
     
     // Get preview size according to presset selected
     _currentPreviewSize = [CameraQualities getSizeForPresset:presetSelected];
+    [_videoController setPreviewSize:currentPreviewSize];
 }
 
 /// Get current video prewiew size
@@ -172,6 +132,9 @@
 /// Set Flutter results
 - (void)setResult:(FlutterResult _Nonnull)result {
     _result = result;
+    
+    // Spread resul in controllers
+    [_videoController setResult:result];
 }
 
 /// Dispose camera inputs & outputs
@@ -188,7 +151,7 @@
 
 /// Set preview size resolution
 - (void)setPreviewSize:(CGSize)previewSize {
-    if (_isRecording) {
+    if (_videoController.isRecording) {
         _result([FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""]);
         return;
     }
@@ -220,7 +183,7 @@
             }
         }
     }
-    _audioIsDisconnected = YES;
+    [_videoController setAudioIsDisconnected:YES];
 
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
@@ -338,7 +301,7 @@
 
 /// Set capture mode between Photo & Video mode
 - (void)setCaptureMode:(CaptureModes)captureMode {
-    if (_isRecording) {
+    if (_videoController.isRecording) {
         _result([FlutterError errorWithCode:@"CAPTURE_MODE" message:@"impossible to change capture mode, video already recording" details:@""]);
         return;
     }
@@ -357,17 +320,14 @@
     [self start];
 }
 
-# pragma mark - Camera action stuff
-// Both of these need to access value from preview
-// We do not create separate object before it seems to be
-// a mess with pointer to pass... :/
+# pragma mark - Camera picture
 
 /// Take the picture into the given path
 - (void)takePictureAtPath:(NSString *)path {
     
     // Instanciate camera picture obj
     CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
-                                                                               orientation:_deviceOrientation
+                                                                               orientation:_motionController.deviceOrientation
                                                                                     sensor:_cameraSensor
                                                                                     result:_result
                                                                                   callback:^{
@@ -389,24 +349,22 @@
                                          delegate:cameraPicture];
 }
 
-
-// This is all related stuff to video recording
-FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
-
-# pragma mark - User actions
+# pragma mark - Camera video
 /// Record video into the given path
 - (void)recordVideoAtPath:(NSString *)path {
-    if (!_isRecording) {
-        if (![self setupWriterForPath:path]) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
-            return;
-        }
-        _isRecording = YES;
-        _videoTimeOffset = CMTimeMake(0, 1);
-        _audioTimeOffset = CMTimeMake(0, 1);
-        _videoIsDisconnected = NO;
-        _audioIsDisconnected = NO;
-        _result(nil);
+    if (_imageStreamController.streamImages) {
+        _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
+    }
+    
+    if (!_videoController.isRecording) {
+        [_videoController recordVideoAtPath:path audioSetupCallback:^{
+            [self setUpCaptureSessionForAudio];
+        } videoWriterCallback:^{
+            if (self->_videoController.isAudioEnabled) {
+                [self->_audioOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
+            }
+            [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
+        }];
     } else {
         _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
     }
@@ -414,33 +372,24 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 /// Stop recording video
 - (void)stopRecordingVideo {
-    if (_isRecording) {
-        _isRecording = NO;
-        if (_videoWriter.status != AVAssetWriterStatusUnknown) {
-            [_videoWriter finishWritingWithCompletionHandler:^{
-                if (self->_videoWriter.status == AVAssetWriterStatusCompleted) {
-                    self->_result(nil);
-                } else {
-                    self->_result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to completely write video" details:@""]);
-                }
-            }];
-        }
+    if (_videoController.isRecording) {
+        [_videoController stopRecordingVideo];
     } else {
         _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
     }
 }
 
 /// Set audio recording mode
-- (void)setRecordingAudioMode:(bool)enableAudio {
-    if (_isRecording) {
+- (void)setRecordingAudioMode:(bool)isAudioEnabled {
+    if (_videoController.isRecording) {
         _result([FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
         return;
     }
     
     [_captureSession beginConfiguration];
-    _enableAudio = enableAudio;
-    _isAudioSetup = NO;
-    _audioIsDisconnected = YES;
+    [_videoController setIsAudioEnabled:isAudioEnabled];
+    [_videoController setIsAudioSetup:NO];
+    [_videoController setAudioIsDisconnected:YES];
     
     // Only remove audio channel input but keep video
     for (AVCaptureInput *input in [_captureSession inputs]) {
@@ -454,144 +403,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     // Only remove audio channel output but keep video
     [_captureSession removeOutput:_audioOutput];
     
-    if (_enableAudio) {
+    if (_videoController.isRecording) {
         [self setUpCaptureSessionForAudio];
     }
+    
     
     [_captureSession commitConfiguration];
-}
-
-# pragma mark - Recording
-- (void)captureVideo:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-    if (_isRecording) {
-        if (_videoWriter.status == AVAssetWriterStatusFailed) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video" details:[NSString stringWithFormat:@"%@", _videoWriter.error]]);
-            return;
-        }
-        
-        CFRetain(sampleBuffer);
-        CMTime currentSampleTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-        
-        if (_videoWriter.status != AVAssetWriterStatusWriting) {
-            [_videoWriter startWriting];
-            [_videoWriter startSessionAtSourceTime:currentSampleTime];
-        }
-        
-        if (output == _captureVideoOutput) {
-            if (_videoIsDisconnected) {
-                _videoIsDisconnected = NO;
-                
-                if (_videoTimeOffset.value == 0) {
-                    _videoTimeOffset = CMTimeSubtract(currentSampleTime, _lastVideoSampleTime);
-                } else {
-                    CMTime offset = CMTimeSubtract(currentSampleTime, _lastVideoSampleTime);
-                    _videoTimeOffset = CMTimeAdd(_videoTimeOffset, offset);
-                }
-                
-                return;
-            }
-            
-            _lastVideoSampleTime = currentSampleTime;
-            
-            CVPixelBufferRef nextBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-            CMTime nextSampleTime = CMTimeSubtract(_lastVideoSampleTime, _videoTimeOffset);
-            [_videoAdaptor appendPixelBuffer:nextBuffer withPresentationTime:nextSampleTime];
-        } else {
-            CMTime dur = CMSampleBufferGetDuration(sampleBuffer);
-            
-            if (dur.value > 0) {
-                currentSampleTime = CMTimeAdd(currentSampleTime, dur);
-            }
-            
-            if (_audioIsDisconnected) {
-                _audioIsDisconnected = NO;
-                
-                if (_audioTimeOffset.value == 0) {
-                    _audioTimeOffset = CMTimeSubtract(currentSampleTime, _lastAudioSampleTime);
-                } else {
-                    CMTime offset = CMTimeSubtract(currentSampleTime, _lastAudioSampleTime);
-                    _audioTimeOffset = CMTimeAdd(_audioTimeOffset, offset);
-                }
-                
-                return;
-            }
-            
-            _lastAudioSampleTime = currentSampleTime;
-            
-            if (_audioTimeOffset.value != 0) {
-                CFRelease(sampleBuffer);
-                sampleBuffer = [self adjustTime:sampleBuffer by:_audioTimeOffset];
-            }
-            
-            [self newAudioSample:sampleBuffer];
-        }
-        
-        CFRelease(sampleBuffer);
-    }
-}
-
-/// Setup video channel & write file on path
-- (BOOL)setupWriterForPath:(NSString *)path {
-    NSError *error = nil;
-    NSURL *outputURL;
-    if (path != nil) {
-        outputURL = [NSURL fileURLWithPath:path];
-    } else {
-        return NO;
-    }
-    if (_enableAudio && !_isAudioSetup) {
-        [self setUpCaptureSessionForAudio];
-    }
-    _videoWriter = [[AVAssetWriter alloc] initWithURL:outputURL
-                                             fileType:AVFileTypeQuickTimeMovie
-                                                error:&error];
-    NSParameterAssert(_videoWriter);
-    if (error) {
-        _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer" details:[NSString stringWithFormat:@"%@", error.description]]);
-        return NO;
-    }
-    NSDictionary *videoSettings = [NSDictionary
-                                   dictionaryWithObjectsAndKeys:AVVideoCodecH264, AVVideoCodecKey,
-                                   [NSNumber numberWithInt:_currentPreviewSize.height], AVVideoWidthKey,
-                                   [NSNumber numberWithInt:_currentPreviewSize.width], AVVideoHeightKey,
-                                   nil];
-    _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
-                                                           outputSettings:videoSettings];
-    
-    _videoAdaptor = [AVAssetWriterInputPixelBufferAdaptor
-                     assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoWriterInput
-                     sourcePixelBufferAttributes:@{
-                         (NSString *)kCVPixelBufferPixelFormatTypeKey : @(videoFormat)
-                     }];
-    
-    NSParameterAssert(_videoWriterInput);
-    _videoWriterInput.expectsMediaDataInRealTime = YES;
-    
-    // Add the audio input
-    if (_enableAudio) {
-        AudioChannelLayout acl;
-        bzero(&acl, sizeof(acl));
-        acl.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
-        NSDictionary *audioOutputSettings = nil;
-        // Both type of audio inputs causes output video file to be corrupted.
-        audioOutputSettings = [NSDictionary
-                               dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:kAudioFormatMPEG4AAC], AVFormatIDKey,
-                               [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
-                               [NSNumber numberWithInt:1], AVNumberOfChannelsKey,
-                               [NSData dataWithBytes:&acl length:sizeof(acl)],
-                               AVChannelLayoutKey, nil];
-        _audioWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio
-                                                               outputSettings:audioOutputSettings];
-        _audioWriterInput.expectsMediaDataInRealTime = YES;
-        
-        [_videoWriter addInput:_audioWriterInput];
-        [_audioOutput setSampleBufferDelegate:self queue:_dispatchQueue];
-    }
-    
-    [_videoWriter addInput:_videoWriterInput];
-    [_captureVideoOutput setSampleBufferDelegate:self queue:_dispatchQueue];
-    
-    return YES;
 }
 
 # pragma mark - Audio
@@ -614,28 +431,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
         
         if ([_captureSession canAddOutput:_audioOutput]) {
             [_captureSession addOutput:_audioOutput];
-            _isAudioSetup = YES;
+            [_videoController setIsAudioSetup:YES];
         } else {
-            _isAudioSetup = NO;
+            [_videoController setIsAudioSetup:NO];
         }
     }
 }
-
-/// Append audio data
-- (void)newAudioSample:(CMSampleBufferRef)sampleBuffer {
-    if (_videoWriter.status != AVAssetWriterStatusWriting) {
-        if (_videoWriter.status == AVAssetWriterStatusFailed) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:[NSString stringWithFormat:@"%@", _videoWriter.error]]);
-        }
-        return;
-    }
-    if (_audioWriterInput.readyForMoreMediaData) {
-        if (![_audioWriterInput appendSampleBuffer:sampleBuffer]) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:[NSString stringWithFormat:@"%@", _videoWriter.error]]);
-        }
-    }
-}
-
 
 # pragma mark - Camera Delegates
 
@@ -654,75 +455,15 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
             _onFrameAvailable();
         }
     }
-    if (!CMSampleBufferDataIsReady(sampleBuffer)) {
-        _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"sample buffer is not ready. Skipping sample" details:@""]);
-        return;
+    
+    // Process image stream controller
+    if (_imageStreamController.streamImages) {
+        [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection];
     }
-    if (_isRecording) {
-        if (_videoWriter.status == AVAssetWriterStatusFailed) {
-            _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video writing failed" details:[_videoWriter.error localizedDescription]]);
-          return;
-        }
-
-        CFRetain(sampleBuffer);
-        CMTime currentSampleTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
-
-        if (_videoWriter.status != AVAssetWriterStatusWriting) {
-          [_videoWriter startWriting];
-          [_videoWriter startSessionAtSourceTime:currentSampleTime];
-        }
-
-        if (output == _captureVideoOutput) {
-          if (_videoIsDisconnected) {
-            _videoIsDisconnected = NO;
-
-            if (_videoTimeOffset.value == 0) {
-              _videoTimeOffset = CMTimeSubtract(currentSampleTime, _lastVideoSampleTime);
-            } else {
-              CMTime offset = CMTimeSubtract(currentSampleTime, _lastVideoSampleTime);
-              _videoTimeOffset = CMTimeAdd(_videoTimeOffset, offset);
-            }
-
-            return;
-          }
-
-          _lastVideoSampleTime = currentSampleTime;
-
-          CVPixelBufferRef nextBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-          CMTime nextSampleTime = CMTimeSubtract(_lastVideoSampleTime, _videoTimeOffset);
-          [_videoAdaptor appendPixelBuffer:nextBuffer withPresentationTime:nextSampleTime];
-        } else {
-          CMTime dur = CMSampleBufferGetDuration(sampleBuffer);
-
-          if (dur.value > 0) {
-            currentSampleTime = CMTimeAdd(currentSampleTime, dur);
-          }
-
-          if (_audioIsDisconnected) {
-            _audioIsDisconnected = NO;
-
-            if (_audioTimeOffset.value == 0) {
-              _audioTimeOffset = CMTimeSubtract(currentSampleTime, _lastAudioSampleTime);
-            } else {
-              CMTime offset = CMTimeSubtract(currentSampleTime, _lastAudioSampleTime);
-              _audioTimeOffset = CMTimeAdd(_audioTimeOffset, offset);
-            }
-
-            return;
-          }
-
-          _lastAudioSampleTime = currentSampleTime;
-
-          if (_audioTimeOffset.value != 0) {
-            CFRelease(sampleBuffer);
-            sampleBuffer = [self adjustTime:sampleBuffer by:_audioTimeOffset];
-          }
-
-          [self newAudioSample:sampleBuffer];
-        }
-
-        CFRelease(sampleBuffer);
-      }
+    
+    if (_videoController.isRecording) {
+        [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:_captureVideoOutput];
+    }
 }
 
 # pragma mark - Data manipulation
@@ -735,22 +476,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
     
     return pixelBuffer;
-}
-
-/// Adjust time to sync audio & video
-- (CMSampleBufferRef)adjustTime:(CMSampleBufferRef)sample by:(CMTime)offset CF_RETURNS_RETAINED {
-    CMItemCount count;
-    CMSampleBufferGetSampleTimingInfoArray(sample, 0, nil, &count);
-    CMSampleTimingInfo *pInfo = malloc(sizeof(CMSampleTimingInfo) * count);
-    CMSampleBufferGetSampleTimingInfoArray(sample, count, pInfo, &count);
-    for (CMItemCount i = 0; i < count; i++) {
-        pInfo[i].decodeTimeStamp = CMTimeSubtract(pInfo[i].decodeTimeStamp, offset);
-        pInfo[i].presentationTimeStamp = CMTimeSubtract(pInfo[i].presentationTimeStamp, offset);
-    }
-    CMSampleBufferRef sout;
-    CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
-    free(pInfo);
-    return sout;
 }
 
 @end

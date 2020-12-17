@@ -202,17 +202,27 @@ class CameraAwesomeState extends State<CameraAwesome>
     if (!hasPermissions) {
       return;
     }
+
     // Init orientation stream
     if (widget.onOrientationChanged != null) {
       _orientationStreamSub = CamerawesomePlugin.getNativeOrientation()
           .listen(widget.onOrientationChanged);
     }
-    // init plugin --
+
+    // All events sink need to be done before camera init
+    if (Platform.isIOS) {
+      _initImageStream();
+    }
+
+    // init camera --
     await CamerawesomePlugin.init(
       widget.sensor.value,
       widget.imagesStreamBuilder != null,
       captureMode: widget.captureMode?.value,
     );
+    if (Platform.isAndroid) {
+      _initImageStream();
+    }
     _initAndroidPhotoSize();
     _initPhotoSize();
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
@@ -229,9 +239,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     } catch (e) {
       _retryStartCamera(3);
     }
-    if (widget.imagesStreamBuilder != null) {
-      widget.imagesStreamBuilder(CamerawesomePlugin.listenCameraImages());
-    }
+
     if (widget.onCameraStarted != null) {
       widget.onCameraStarted();
     }
@@ -245,23 +253,31 @@ class CameraAwesomeState extends State<CameraAwesome>
     if (mounted) setState(() {});
   }
 
+  _initImageStream() {
+    // Init images stream
+    if (widget.imagesStreamBuilder != null) {
+      widget.imagesStreamBuilder(CamerawesomePlugin.listenCameraImages());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: CamerawesomePlugin.getPreviewTexture(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Container(); //TODO retry or show error here
-          }
-          if (!hasPermissions) return Container();
-          if (!snapshot.hasData || !hasInit)
-            return Center(child: CircularProgressIndicator());
-          return _CameraPreviewWidget(
-            size: selectedPreviewSize.value,
-            fitted: widget.fitted,
-            textureId: snapshot.data,
-          );
-        });
+      future: CamerawesomePlugin.getPreviewTexture(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Container(); //TODO retry or show error here
+        }
+        if (!hasPermissions) return Container();
+        if (!snapshot.hasData || !hasInit)
+          return Center(child: CircularProgressIndicator());
+        return _CameraPreviewWidget(
+          size: selectedPreviewSize.value,
+          fitted: widget.fitted,
+          textureId: snapshot.data,
+        );
+      },
+    );
   }
 
   bool get hasInit =>

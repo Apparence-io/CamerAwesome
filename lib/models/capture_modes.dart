@@ -1,4 +1,4 @@
 enum CaptureModes {
   PHOTO,
-  VIDEO
+  VIDEO,
 }

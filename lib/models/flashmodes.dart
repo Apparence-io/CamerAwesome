@@ -2,5 +2,5 @@ enum CameraFlashes {
   NONE,
   ON,
   AUTO,
-  ALWAYS
+  ALWAYS,
 }

@@ -18,27 +18,17 @@ Future<void> main() async {
     exit(0);
   }
   final bool adbExists =
-    Process.runSync('which', <String>['adb']).exitCode == 0;
+      Process.runSync('which', <String>['adb']).exitCode == 0;
   if (!adbExists) {
     print('This test needs ADB to exist on the \$PATH. Skipping...');
     exit(0);
   }
   print('Granting camera permissions...');
-  permissions.forEach((permission) => Process.runSync('adb', <String>[
-    'shell',
-    'pm',
-    'grant',
-    _examplePackage,
-    permission
-  ]));
+  permissions.forEach((permission) => Process.runSync(
+      'adb', <String>['shell', 'pm', 'grant', _examplePackage, permission]));
   print('Starting test.');
   await integrationDriver();
   print('Test finished. Revoking camera permissions...');
-  permissions.forEach((permission) => Process.runSync('adb', <String>[
-      'shell',
-      'pm',
-      'revoke',
-      _examplePackage,
-      permission
-  ]));
+  permissions.forEach((permission) => Process.runSync(
+      'adb', <String>['shell', 'pm', 'revoke', _examplePackage, permission]));
 }
