@@ -320,10 +320,7 @@
     [self start];
 }
 
-# pragma mark - Camera action stuff
-// Both of these need to access value from preview
-// We do not create separate object before it seems to be
-// a mess with pointer to pass... :/
+# pragma mark - Camera picture
 
 /// Take the picture into the given path
 - (void)takePictureAtPath:(NSString *)path {
@@ -352,7 +349,7 @@
                                          delegate:cameraPicture];
 }
 
-# pragma mark - User actions
+# pragma mark - Camera video
 /// Record video into the given path
 - (void)recordVideoAtPath:(NSString *)path {
     if (_imageStreamController.streamImages) {
