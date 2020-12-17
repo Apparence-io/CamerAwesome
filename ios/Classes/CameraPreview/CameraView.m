@@ -27,7 +27,7 @@
     _dispatchQueue = dispatchQueue;
     
     // Events
-    _orientationEventSink = orientationEventSink;
+//    _orientationEventSink = orientationEventSink;
     _videoRecordingEventSink = videoRecordingEventSink;
     _imageStreamEventSink = imageStreamEventSink;
     
@@ -62,22 +62,11 @@
     
     _cameraSensor = sensor;
     
-    // Creating motion detection
-    _motionManager = [[CMMotionManager alloc] init];
-    _motionManager.deviceMotionUpdateInterval = 0.2f;
-    [self startMyMotionDetect];
+    // Creating motion detection controller
+    _motionController = [[MotionController alloc] initWithEventSink:orientationEventSink];
+    [_motionController startMotionDetection];
     
     return self;
-}
-
-- (void)setImageStreamEventSink:(FlutterEventSink _Nonnull)imageStreamEventSink {
-    _imageStreamEventSink = imageStreamEventSink;
-}
-- (void)setVideoRecordingEventSink:(FlutterEventSink _Nonnull)videoRecordingEventSink {
-    _videoRecordingEventSink = videoRecordingEventSink;
-}
-- (void)setOrientationEventSink:(FlutterEventSink _Nonnull)orientationEventSink {
-    _orientationEventSink = orientationEventSink;
 }
 
 /// Init camera preview with Front or Rear sensor
@@ -119,46 +108,7 @@
   if (_latestPixelBuffer) {
     CFRelease(_latestPixelBuffer);
   }
-  [_motionManager stopAccelerometerUpdates];
-}
-
-/// Start live motion detection
-- (void)startMyMotionDetect {
-    [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
-                                        withHandler:^(CMDeviceMotion *data, NSError *error) {
-        UIDeviceOrientation newOrientation;
-        if(fabs(data.gravity.x) > fabs(data.gravity.y)) {
-            // Landscape
-            newOrientation = (data.gravity.x >= 0) ? UIDeviceOrientationLandscapeLeft : UIDeviceOrientationLandscapeRight;
-        } else {
-            // Portrait
-            newOrientation = (data.gravity.y >= 0) ? UIDeviceOrientationPortraitUpsideDown : UIDeviceOrientationPortrait;
-        }
-        if (self->_deviceOrientation != newOrientation) {
-            self->_deviceOrientation = newOrientation;
-            
-            NSString *orientationString;
-            switch (newOrientation) {
-                case UIDeviceOrientationLandscapeLeft:
-                    orientationString = @"LANDSCAPE_LEFT";
-                    break;
-                case UIDeviceOrientationLandscapeRight:
-                    orientationString = @"LANDSCAPE_RIGHT";
-                    break;
-                case UIDeviceOrientationPortrait:
-                    orientationString = @"PORTRAIT_UP";
-                    break;
-                case UIDeviceOrientationPortraitUpsideDown:
-                    orientationString = @"PORTRAIT_DOWN";
-                    break;
-                default:
-                    break;
-            }
-            if (self->_orientationEventSink != nil) {
-                self->_orientationEventSink(orientationString);
-            }
-        }
-    }];
+  [_motionController startMotionDetection];
 }
 
 /// Set camera preview size
@@ -386,7 +336,7 @@
     
     // Instanciate camera picture obj
     CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
-                                                                               orientation:_deviceOrientation
+                                                                               orientation:_motionController.deviceOrientation
                                                                                     sensor:_cameraSensor
                                                                                     result:_result
                                                                                   callback:^{

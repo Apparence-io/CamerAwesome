@@ -8,9 +8,9 @@
 #import <Flutter/Flutter.h>
 #import <AVFoundation/AVFoundation.h>
 #import <libkern/OSAtomic.h>
-#import <CoreMotion/CoreMotion.h>
 #import <Foundation/Foundation.h>
 
+#import "MotionController.h"
 #import "CameraSensor.h"
 #import "CaptureModes.h"
 #import "CameraFlash.h"
@@ -25,7 +25,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
-@property(readonly, nonatomic) CMMotionManager *motionManager;
 @property(readonly, nonatomic) AVCaptureInput *captureVideoInput;
 @property(readonly, nonatomic) AVCaptureConnection *captureConnection;
 @property(readonly, nonatomic) AVCaptureVideoDataOutput *captureVideoOutput;
@@ -56,7 +55,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) bool isAudioSetup;
 @property(readonly, nonatomic) bool videoIsDisconnected;
 @property(readonly, nonatomic) bool audioIsDisconnected;
-@property(nonatomic) FlutterEventSink orientationEventSink;
+@property(readonly, nonatomic) MotionController *motionController;
+//@property(nonatomic) FlutterEventSink orientationEventSink;
 @property(nonatomic) FlutterEventSink videoRecordingEventSink;
 @property(nonatomic) FlutterEventSink imageStreamEventSink;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
@@ -70,9 +70,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                     orientationEvent:(FlutterEventSink)orientationEventSink
                  videoRecordingEvent:(FlutterEventSink)videoRecordingEventSink
                     imageStreamEvent:(FlutterEventSink)imageStreamEventSink;
-- (void)setImageStreamEventSink:(FlutterEventSink _Nonnull)imageStreamEventSink;
-- (void)setVideoRecordingEventSink:(FlutterEventSink _Nonnull)videoRecordingEventSink;
-- (void)setOrientationEventSink:(FlutterEventSink _Nonnull)orientationEventSink;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)setCaptureMode:(CaptureModes)captureMode;
