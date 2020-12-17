@@ -415,6 +415,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User actions
 /// Record video into the given path
 - (void)recordVideoAtPath:(NSString *)path {
+    if (_streamImages) {
+        _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
+    }
+    
     if (!_isRecording) {
         if (![self setupWriterForPath:path]) {
             _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
@@ -681,12 +685,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     if (_streamImages && _imageStreamEventSink) {
         CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
         CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
-        
-//        size_t imageWidth = CVPixelBufferGetWidth(pixelBuffer);
-//        size_t imageHeight = CVPixelBufferGetHeight(pixelBuffer);
-//
-//        NSMutableArray *planes = [NSMutableArray array];
-        
+
         const Boolean isPlanar = CVPixelBufferIsPlanar(pixelBuffer);
         size_t planeCount;
         if (isPlanar) {
@@ -716,25 +715,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
             
             NSNumber *length = @(bytesPerRow * height);
             NSData *bytes = [NSData dataWithBytes:planeAddress length:length.unsignedIntegerValue];
-            
-//            NSMutableDictionary *planeBuffer = [NSMutableDictionary dictionary];
-//            planeBuffer[@"bytesPerRow"] = @(bytesPerRow);
-//            planeBuffer[@"width"] = @(width);
-//            planeBuffer[@"height"] = @(height);
-//            planeBuffer[@"bytes"] = [FlutterStandardTypedData typedDataWithBytes:bytes];
             data = [FlutterStandardTypedData typedDataWithBytes:bytes];
-//            [planes addObject:planeBuffer];
         }
-        
-//        NSMutableDictionary *imageBuffer = [NSMutableDictionary dictionary];
-//        imageBuffer[@"width"] = [NSNumber numberWithUnsignedLong:imageWidth];
-//        imageBuffer[@"height"] = [NSNumber numberWithUnsignedLong:imageHeight];
-//        imageBuffer[@"format"] = @(videoFormat);
-//        imageBuffer[@"planes"] = planes;
-        
-//        NSLog(@"%@", [[imageBuffer[@"planes"] lastObject] objectForKey:@"bytes"]);
-//        NSLog(@"%@", [[imageBuffer[@"planes"] lastObject] objectForKey:@"bytes"]);
-        
+
         // Only send bytes for now
         _imageStreamEventSink(data);
         

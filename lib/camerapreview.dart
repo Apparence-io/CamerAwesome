@@ -203,9 +203,15 @@ class CameraAwesomeState extends State<CameraAwesome>
       return;
     }
 
+    // Init orientation stream
+    if (widget.onOrientationChanged != null) {
+      _orientationStreamSub = CamerawesomePlugin.getNativeOrientation()
+          .listen(widget.onOrientationChanged);
+    }
+
     // All events sink need to be done before camera init
     if (Platform.isIOS) {
-      _initEventsStream();
+      _initImageStream();
     }
 
     // init camera --
@@ -215,7 +221,7 @@ class CameraAwesomeState extends State<CameraAwesome>
       captureMode: widget.captureMode?.value,
     );
     if (Platform.isAndroid) {
-      _initEventsStream();
+      _initImageStream();
     }
     _initAndroidPhotoSize();
     _initPhotoSize();
@@ -247,13 +253,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     if (mounted) setState(() {});
   }
 
-  _initEventsStream() {
-    // Init orientation stream
-    if (widget.onOrientationChanged != null) {
-      _orientationStreamSub = CamerawesomePlugin.getNativeOrientation()
-          .listen(widget.onOrientationChanged);
-    }
-
+  _initImageStream() {
     // Init images stream
     if (widget.imagesStreamBuilder != null) {
       widget.imagesStreamBuilder(CamerawesomePlugin.listenCameraImages());
