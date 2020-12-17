@@ -22,7 +22,7 @@ import 'package:image/image.dart' as imgUtils;
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets("start camera preview", (WidgetTester tester) async {
+  testWidgets('start camera preview', (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
@@ -30,14 +30,14 @@ void main() {
     camera.evaluate().first.widget as CameraAwesome;
   });
 
-  testWidgets("take photo works with selected photo size",
+  testWidgets('take photo works with selected photo size',
       (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
+    var takePhotoBtnFinder = find.byKey(ValueKey('cameraButtonPhoto'));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -55,13 +55,13 @@ void main() {
     file.deleteSync();
   });
 
-  testWidgets("take multiple photo", (WidgetTester tester) async {
+  testWidgets('take multiple photo', (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: true)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
+    var takePhotoBtnFinder = find.byKey(ValueKey('cameraButtonPhoto'));
     // take photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
@@ -70,27 +70,27 @@ void main() {
     await tester.pump(Duration(seconds: 2));
   });
 
-  testWidgets("change selected photo size param then take photo",
+  testWidgets('change selected photo size param then take photo',
       (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
-    var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
+    var takePhotoBtnFinder = find.byKey(ValueKey('cameraButtonPhoto'));
     // change photo size preset
     var previousResolution =
-        (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text)
+        (find.byKey(ValueKey('resolutionTxt')).evaluate().first.widget as Text)
             .data;
-    var resolButtonFinder = find.byKey(ValueKey("resolutionButton"));
+    var resolButtonFinder = find.byKey(ValueKey('resolutionButton'));
     (resolButtonFinder.evaluate().first.widget as FlatButton).onPressed();
     await tester.pump(Duration(milliseconds: 1000));
     await tester.pumpAndSettle(Duration(milliseconds: 1000));
-    var optionsFinder = find.byKey(ValueKey("resOption"));
+    var optionsFinder = find.byKey(ValueKey('resOption'));
     await tester.tap(optionsFinder.last);
     await tester.pump(Duration(milliseconds: 500));
     var currentResolution =
-        (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text)
+        (find.byKey(ValueKey('resolutionTxt')).evaluate().first.widget as Text)
             .data;
     expect(previousResolution, isNot(equals(currentResolution)));
     // take photo
@@ -109,67 +109,71 @@ void main() {
     file.deleteSync();
   });
 
-  testWidgets('Image stream properly delivers images',
-      (WidgetTester tester) async {
-    ValueNotifier<Size> photoSize = ValueNotifier(null);
-    ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
-    ValueNotifier<CaptureModes> captureMode = ValueNotifier(CaptureModes.PHOTO);
-    Stream<Uint8List> imageStream;
-    Uint8List imgData;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Stack(
-            children: [
-              Positioned(
+  testWidgets(
+    'Image stream properly delivers images',
+    (WidgetTester tester) async {
+      ValueNotifier<Size> photoSize = ValueNotifier(null);
+      ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
+      ValueNotifier<CaptureModes> captureMode =
+          ValueNotifier(CaptureModes.PHOTO);
+      Stream<Uint8List> imageStream;
+      Uint8List imgData;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Stack(
+              children: [
+                Positioned(
                   top: 0,
                   left: 0,
                   bottom: 0,
                   right: 0,
                   child: Center(
                     child: CameraAwesome(
-                        selectDefaultSize: (availableSizes) =>
-                            availableSizes[0],
-                        photoSize: photoSize,
-                        sensor: sensor,
-                        captureMode: captureMode,
-                        imagesStreamBuilder: (stream) async {
-                          imageStream = stream;
-                          imgData = await imageStream.first;
-                          expect(imgData, isNotNull);
-                          var img = imgUtils.decodeImage(imgData);
-                          expect(img, isNotNull);
-                          expect(img.getBytes().length, greaterThan(0));
-                          expect(img.width, greaterThan(0));
-                          expect(img.height, greaterThan(0));
-                          print("check stream image has been done");
-                        }),
-                  ))
-            ],
+                      selectDefaultSize: (availableSizes) => availableSizes[0],
+                      photoSize: photoSize,
+                      sensor: sensor,
+                      captureMode: captureMode,
+                      imagesStreamBuilder: (stream) async {
+                        imageStream = stream;
+                        imgData = await imageStream.first;
+                        expect(imgData, isNotNull);
+                        var img = imgUtils.decodeImage(imgData);
+                        expect(img, isNotNull);
+                        expect(img.getBytes().length, greaterThan(0));
+                        expect(img.width, greaterThan(0));
+                        expect(img.height, greaterThan(0));
+                        print('check stream image has been done');
+                      },
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
-      ),
-    );
-    await Future.delayed(Duration(seconds: 3));
-  }, skip: Platform.isIOS);
+      );
+      await Future.delayed(Duration(seconds: 3));
+    },
+  );
 
-  testWidgets("should change capture mode", (WidgetTester tester) async {
+  testWidgets('should change capture mode', (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
     await expectLater(camera, findsOneWidget);
-    expect(find.byKey(ValueKey("cameraButtonPhoto")), findsOneWidget);
-    expect(find.byKey(ValueKey("cameraButtonVideo")), findsNothing);
+    expect(find.byKey(ValueKey('cameraButtonPhoto')), findsOneWidget);
+    expect(find.byKey(ValueKey('cameraButtonVideo')), findsNothing);
 
     final captureModeSwitch = find.byKey(ValueKey('captureModeSwitch'));
     await tester.tap(captureModeSwitch);
     await tester.pump(Duration(milliseconds: 500));
 
-    expect(find.byKey(ValueKey("cameraButtonVideo")), findsOneWidget);
-    expect(find.byKey(ValueKey("cameraButtonPhoto")), findsNothing);
+    expect(find.byKey(ValueKey('cameraButtonVideo')), findsOneWidget);
+    expect(find.byKey(ValueKey('cameraButtonPhoto')), findsNothing);
   }, skip: Platform.isAndroid);
 
-  testWidgets("should record a video", (WidgetTester tester) async {
+  testWidgets('should record a video', (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     final camera = find.byType(CameraAwesome);
