@@ -1,3 +1,6 @@
+## 0.2.1
+- [iOS] image stream available to use MLkit or other image live processing
+- [iOS] code refactoring
 ## 0.2.0
 - [iOS] video recording support
 - [iOS] thread and perf enhancements
