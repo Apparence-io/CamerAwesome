@@ -56,8 +56,9 @@
     }];
 }
 
+/// Stop motion update
 - (void)stopMotionDetection {
-    
+    [_motionManager stopDeviceMotionUpdates];
 }
 
 @end

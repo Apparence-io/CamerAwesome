@@ -1,5 +1,5 @@
 //
-//  CameraView.h
+//  CameraPreview.h
 //  camerawesome
 //
 //  Created by Dimitri Dessus on 23/07/2020.
@@ -11,6 +11,7 @@
 #import <Foundation/Foundation.h>
 
 #import "MotionController.h"
+#import "VideoController.h"
 #import "ImageStreamController.h"
 #import "CameraSensor.h"
 #import "CaptureModes.h"
@@ -21,7 +22,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CameraView : NSObject<FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate,
+@interface CameraPreview : NSObject<FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate,
 AVCaptureAudioDataOutputSampleBufferDelegate>
 
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
@@ -35,14 +36,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
-@property(readonly, nonatomic) AVAssetWriter *videoWriter;
-@property(readonly, nonatomic) AVAssetWriterInput *videoWriterInput;
-@property(readonly, nonatomic) AVAssetWriterInput *audioWriterInput;
-@property(readonly, nonatomic) AVAssetWriterInputPixelBufferAdaptor *videoAdaptor;
-@property(assign, nonatomic) CMTime lastVideoSampleTime;
-@property(assign, nonatomic) CMTime lastAudioSampleTime;
-@property(assign, nonatomic) CMTime videoTimeOffset;
-@property(assign, nonatomic) CMTime audioTimeOffset;
 @property(readonly, nonatomic) CameraSensor cameraSensor;
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) FlutterResult result;
@@ -50,14 +43,9 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
-@property(readonly, nonatomic) bool isRecording;
-@property(readonly, nonatomic) bool enableAudio;
-@property(readonly, nonatomic) bool isAudioSetup;
-@property(readonly, nonatomic) bool videoIsDisconnected;
-@property(readonly, nonatomic) bool audioIsDisconnected;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
-@property(nonatomic) FlutterEventSink videoRecordingEventSink;
+@property(readonly, nonatomic) VideoController *videoController;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
@@ -86,6 +74,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setZoom:(float)value;
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
+- (void)setUpCaptureSessionForAudio;
 
 @end
 

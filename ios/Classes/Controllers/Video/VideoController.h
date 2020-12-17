@@ -1,0 +1,49 @@
+//
+//  VideoController.h
+//  camerawesome
+//
+//  Created by Dimitri Dessus on 17/12/2020.
+//
+
+#import <Flutter/Flutter.h>
+#import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+typedef void(^OnAudioSetup)(void);
+typedef void(^OnVideoWriterSetup)(void);
+
+@interface VideoController : NSObject
+
+@property(readonly, nonatomic) bool isRecording;
+@property(readonly, nonatomic) bool isAudioEnabled;
+@property(readonly, nonatomic) bool isAudioSetup;
+@property(readonly, nonatomic) FlutterResult result;
+@property(readonly, nonatomic) AVAssetWriter *videoWriter;
+@property(readonly, nonatomic) AVAssetWriterInput *videoWriterInput;
+@property(readonly, nonatomic) AVAssetWriterInput *audioWriterInput;
+@property(readonly, nonatomic) AVAssetWriterInputPixelBufferAdaptor *videoAdaptor;
+@property(readonly, nonatomic) bool videoIsDisconnected;
+@property(readonly, nonatomic) bool audioIsDisconnected;
+@property(readonly, nonatomic) CGSize previewSize;
+@property(assign, nonatomic) CMTime lastVideoSampleTime;
+@property(assign, nonatomic) CMTime lastAudioSampleTime;
+@property(assign, nonatomic) CMTime videoTimeOffset;
+@property(assign, nonatomic) CMTime audioTimeOffset;
+@property(nonatomic) FlutterEventSink videoRecordingEventSink;
+
+- (instancetype)initWithEventSink:(FlutterEventSink)videoRecordingEventSink result:(FlutterResult)result;
+- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback;
+- (void)stopRecordingVideo;
+- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection captureVideoOutput:(AVCaptureVideoDataOutput *)captureVideoOutput;
+- (void)setIsAudioEnabled:(bool)isAudioEnabled;
+- (void)setIsAudioSetup:(bool)isAudioSetup;
+- (void)setVideoIsDisconnected:(bool)videoIsDisconnected;
+- (void)setAudioIsDisconnected:(bool)audioIsDisconnected;
+- (void)setPreviewSize:(CGSize)previewSize;
+- (void)setResult:(FlutterResult _Nonnull)result;
+
+@end
+
+NS_ASSUME_NONNULL_END

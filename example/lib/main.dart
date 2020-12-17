@@ -363,19 +363,19 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           switchFlashMode: _switchFlash,
           zoom: _zoomNotifier,
           onOrientationChanged: _onOrientationChange,
-          imagesStreamBuilder: (imageStream) {
-            /// listen for images preview stream
-            /// you can use it to process AI recognition or anything else...
-            print("-- init CamerAwesome images stream");
-            setState(() {
-              previewStream = imageStream;
-            });
+          // imagesStreamBuilder: (imageStream) {
+          //   /// listen for images preview stream
+          //   /// you can use it to process AI recognition or anything else...
+          //   print("-- init CamerAwesome images stream");
+          //   setState(() {
+          //     previewStream = imageStream;
+          //   });
 
-            imageStream.listen((Uint8List imageData) {
-              print(
-                  "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
-            });
-          },
+          //   imageStream.listen((Uint8List imageData) {
+          //     print(
+          //         "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
+          //   });
+          // },
           onCameraStarted: () {
             // camera started here -- do your after start stuff
           },

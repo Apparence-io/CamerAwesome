@@ -1,5 +1,5 @@
 #import "CamerawesomePlugin.h"
-#import "CameraPreview/CameraView.h"
+#import "CameraPreview.h"
 
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
@@ -10,7 +10,7 @@ FlutterEventSink imageStreamEventSink;
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property int64_t textureId;
-@property CameraView *camera;
+@property CameraPreview *camera;
 
 - (instancetype)initWithRegistry:(NSObject<FlutterTextureRegistry> *)registry messenger:(NSObject<FlutterBinaryMessenger> *)messenger;
 
@@ -316,7 +316,7 @@ FlutterEventSink imageStreamEventSink;
     }
 
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
-    self.camera = [[CameraView alloc] initWithCameraSensor:sensor
+    self.camera = [[CameraPreview alloc] initWithCameraSensor:sensor
                                               streamImages:streamImages
                                                captureMode:captureMode
                                                     result:result
