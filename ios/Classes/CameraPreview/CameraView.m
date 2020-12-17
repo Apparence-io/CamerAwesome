@@ -12,6 +12,7 @@
 }
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
+                        streamImages:(BOOL)streamImages
                          captureMode:(CaptureModes)captureMode
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
@@ -46,6 +47,7 @@
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
     
     _captureMode = captureMode;
+    _streamImages = streamImages;
     
     // By default enable auto flash mode
     _flashMode = AVCaptureFlashModeOff;
@@ -66,6 +68,16 @@
     [self startMyMotionDetect];
     
     return self;
+}
+
+- (void)setImageStreamEventSink:(FlutterEventSink _Nonnull)imageStreamEventSink {
+    _imageStreamEventSink = imageStreamEventSink;
+}
+- (void)setVideoRecordingEventSink:(FlutterEventSink _Nonnull)videoRecordingEventSink {
+    _videoRecordingEventSink = videoRecordingEventSink;
+}
+- (void)setOrientationEventSink:(FlutterEventSink _Nonnull)orientationEventSink {
+    _orientationEventSink = orientationEventSink;
 }
 
 /// Init camera preview with Front or Rear sensor
@@ -665,6 +677,70 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
         _videoRecordingEventSink(@"sample buffer is not ready. Skipping sample");
         return;
     }
+    
+    if (_streamImages && _imageStreamEventSink) {
+        CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+        CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+        
+//        size_t imageWidth = CVPixelBufferGetWidth(pixelBuffer);
+//        size_t imageHeight = CVPixelBufferGetHeight(pixelBuffer);
+//
+//        NSMutableArray *planes = [NSMutableArray array];
+        
+        const Boolean isPlanar = CVPixelBufferIsPlanar(pixelBuffer);
+        size_t planeCount;
+        if (isPlanar) {
+            planeCount = CVPixelBufferGetPlaneCount(pixelBuffer);
+        } else {
+            planeCount = 1;
+        }
+        
+        FlutterStandardTypedData *data;
+        for (int i = 0; i < planeCount; i++) {
+            void *planeAddress;
+            size_t bytesPerRow;
+            size_t height;
+            size_t width;
+            
+            if (isPlanar) {
+                planeAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, i);
+                bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, i);
+                height = CVPixelBufferGetHeightOfPlane(pixelBuffer, i);
+                width = CVPixelBufferGetWidthOfPlane(pixelBuffer, i);
+            } else {
+                planeAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
+                bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
+                height = CVPixelBufferGetHeight(pixelBuffer);
+                width = CVPixelBufferGetWidth(pixelBuffer);
+            }
+            
+            NSNumber *length = @(bytesPerRow * height);
+            NSData *bytes = [NSData dataWithBytes:planeAddress length:length.unsignedIntegerValue];
+            
+//            NSMutableDictionary *planeBuffer = [NSMutableDictionary dictionary];
+//            planeBuffer[@"bytesPerRow"] = @(bytesPerRow);
+//            planeBuffer[@"width"] = @(width);
+//            planeBuffer[@"height"] = @(height);
+//            planeBuffer[@"bytes"] = [FlutterStandardTypedData typedDataWithBytes:bytes];
+            data = [FlutterStandardTypedData typedDataWithBytes:bytes];
+//            [planes addObject:planeBuffer];
+        }
+        
+//        NSMutableDictionary *imageBuffer = [NSMutableDictionary dictionary];
+//        imageBuffer[@"width"] = [NSNumber numberWithUnsignedLong:imageWidth];
+//        imageBuffer[@"height"] = [NSNumber numberWithUnsignedLong:imageHeight];
+//        imageBuffer[@"format"] = @(videoFormat);
+//        imageBuffer[@"planes"] = planes;
+        
+//        NSLog(@"%@", [[imageBuffer[@"planes"] lastObject] objectForKey:@"bytes"]);
+//        NSLog(@"%@", [[imageBuffer[@"planes"] lastObject] objectForKey:@"bytes"]);
+        
+        // Only send bytes for now
+        _imageStreamEventSink(data);
+        
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+    }
+    
     if (_isRecording) {
         if (_videoWriter.status == AVAssetWriterStatusFailed) {
             _videoRecordingEventSink([NSString stringWithFormat:@"video writing failed: %@", [_videoWriter.error localizedDescription]]);

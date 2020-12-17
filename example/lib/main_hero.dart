@@ -21,24 +21,23 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => MyHomePage(title: 'CameraAwesome'),
         '/full': (context) => Scaffold(
-          body: Hero(
-            tag: 'camera',
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Scaffold(
-                appBar: AppBar(),
-                body: CameraView(fit: false),
+              body: Hero(
+                tag: 'camera',
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Scaffold(
+                    appBar: AppBar(),
+                    body: CameraView(fit: false),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
       },
     );
   }
 }
-
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -63,17 +62,13 @@ class _MyHomePageState extends State<MyHomePage> {
             Navigator.of(context).pushNamed('/full');
           },
           child: Center(
-            child: Container(
-              height: 400,
-              child: CameraView()
-            ),
+            child: Container(height: 400, child: CameraView()),
           ),
         ),
       ),
     );
   }
 }
-
 
 class CameraView extends StatelessWidget {
   final _switchFlash = ValueNotifier(CameraFlashes.NONE);

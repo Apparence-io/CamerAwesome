@@ -38,6 +38,7 @@ class OrientationUtils {
   }
 
   static bool isOnPortraitMode(CameraOrientations orientation) {
-    return (orientation == CameraOrientations.PORTRAIT_DOWN || orientation == CameraOrientations.PORTRAIT_UP);
+    return (orientation == CameraOrientations.PORTRAIT_DOWN ||
+        orientation == CameraOrientations.PORTRAIT_UP);
   }
 }

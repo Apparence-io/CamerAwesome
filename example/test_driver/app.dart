@@ -20,7 +20,6 @@ import 'package:image/image.dart' as imgUtils;
 /// or for iOS native :
 ///
 void main() {
-
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets("start camera preview", (WidgetTester tester) async {
@@ -31,7 +30,8 @@ void main() {
     camera.evaluate().first.widget as CameraAwesome;
   });
 
-  testWidgets("take photo works with selected photo size", (WidgetTester tester) async {
+  testWidgets("take photo works with selected photo size",
+      (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
@@ -68,10 +68,10 @@ void main() {
     // take a second photo
     await tester.tap(takePhotoBtnFinder);
     await tester.pump(Duration(seconds: 2));
-
   });
 
-  testWidgets("change selected photo size param then take photo", (WidgetTester tester) async {
+  testWidgets("change selected photo size param then take photo",
+      (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(home: MyApp(randomPhotoName: false)));
     await tester.pumpAndSettle(Duration(seconds: 1));
     var camera = find.byType(CameraAwesome);
@@ -79,7 +79,9 @@ void main() {
     var cameraPreview = camera.evaluate().first.widget as CameraAwesome;
     var takePhotoBtnFinder = find.byKey(ValueKey("cameraButtonPhoto"));
     // change photo size preset
-    var previousResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
+    var previousResolution =
+        (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text)
+            .data;
     var resolButtonFinder = find.byKey(ValueKey("resolutionButton"));
     (resolButtonFinder.evaluate().first.widget as FlatButton).onPressed();
     await tester.pump(Duration(milliseconds: 1000));
@@ -87,7 +89,9 @@ void main() {
     var optionsFinder = find.byKey(ValueKey("resOption"));
     await tester.tap(optionsFinder.last);
     await tester.pump(Duration(milliseconds: 500));
-    var currentResolution = (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text).data;
+    var currentResolution =
+        (find.byKey(ValueKey("resolutionTxt")).evaluate().first.widget as Text)
+            .data;
     expect(previousResolution, isNot(equals(currentResolution)));
     // take photo
     await tester.tap(takePhotoBtnFinder);
@@ -105,7 +109,8 @@ void main() {
     file.deleteSync();
   });
 
-  testWidgets('Image stream properly delivers images', (WidgetTester tester) async {
+  testWidgets('Image stream properly delivers images',
+      (WidgetTester tester) async {
     ValueNotifier<Size> photoSize = ValueNotifier(null);
     ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
     ValueNotifier<CaptureModes> captureMode = ValueNotifier(CaptureModes.PHOTO);
@@ -116,31 +121,34 @@ void main() {
         home: Scaffold(
           body: Stack(
             children: [
-              Positioned(top: 0, left: 0, bottom: 0, right: 0,
-                child: Center(
-                  child: CameraAwesome(
-                    selectDefaultSize: (availableSizes) => availableSizes[0],
-                    photoSize: photoSize,
-                    sensor: sensor,
-                    captureMode: captureMode,
-                    imagesStreamBuilder: (stream) async {
-                      imageStream = stream;
-                      imgData = await imageStream.first;
-                      expect(imgData, isNotNull);
-                      var img = imgUtils.decodeImage(imgData);
-                      expect(img, isNotNull);
-                      expect(img.getBytes().length, greaterThan(0));
-                      expect(img.width, greaterThan(0));
-                      expect(img.height, greaterThan(0));
-                      print("check stream image has been done");
-                    }
-                  ),
-                )
-              )
+              Positioned(
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  child: Center(
+                    child: CameraAwesome(
+                        selectDefaultSize: (availableSizes) =>
+                            availableSizes[0],
+                        photoSize: photoSize,
+                        sensor: sensor,
+                        captureMode: captureMode,
+                        imagesStreamBuilder: (stream) async {
+                          imageStream = stream;
+                          imgData = await imageStream.first;
+                          expect(imgData, isNotNull);
+                          var img = imgUtils.decodeImage(imgData);
+                          expect(img, isNotNull);
+                          expect(img.getBytes().length, greaterThan(0));
+                          expect(img.width, greaterThan(0));
+                          expect(img.height, greaterThan(0));
+                          print("check stream image has been done");
+                        }),
+                  ))
             ],
           ),
-        )
-      )
+        ),
+      ),
     );
     await Future.delayed(Duration(seconds: 3));
   }, skip: Platform.isIOS);

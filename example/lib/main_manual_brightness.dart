@@ -22,7 +22,6 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-
   // just for E2E test. if true we create our images names from datetime.
   // Else it's just a name to assert image exists
   final bool randomPhotoName;
@@ -34,7 +33,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-
   double bestSizeRatio;
 
   String _lastPhotoPath;
@@ -70,7 +68,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   Timer _previewDismissTimer;
 
-  ValueNotifier<CameraOrientations> _orientation = ValueNotifier(CameraOrientations.PORTRAIT_UP);
+  ValueNotifier<CameraOrientations> _orientation =
+      ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
   // StreamSubscription<Uint8List> previewStreamSub;
 
@@ -136,7 +135,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     }
 
     return Scaffold(
-      body: Stack(
+        body: Stack(
       fit: StackFit.expand,
       children: <Widget>[
         fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
@@ -166,7 +165,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             ),
           ),
         ),
-
       ],
     ));
   }
@@ -245,7 +243,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           max: 1,
           divisions: 10,
           label: brightnessCorrection.value.toStringAsFixed(2),
-          onChanged: (double value) => setState(() => brightnessCorrection.value = value),
+          onChanged: (double value) =>
+              setState(() => brightnessCorrection.value = value),
         ),
       ),
     );
@@ -263,8 +262,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 padding: const EdgeInsets.only(right: 24.0),
                 child: IconButton(
                   icon: Icon(
-                    fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                    color: Colors.white),
+                      fullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                      color: Colors.white),
                   onPressed: () => setState(() => fullscreen = !fullscreen),
                 ),
               ),
@@ -309,7 +308,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 icon: _getFlashIcon(),
                 orientation: _orientation,
                 onTapCallback: () {
-                  switch(switchFlash.value) {
+                  switch (switchFlash.value) {
                     case CameraFlashes.NONE:
                       switchFlash.value = CameraFlashes.ON;
                       break;
@@ -334,7 +333,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   IconData _getFlashIcon() {
-    switch(switchFlash.value) {
+    switch (switchFlash.value) {
       case CameraFlashes.NONE:
         return Icons.flash_off;
       case CameraFlashes.ON:
@@ -373,14 +372,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
                     .create(recursive: true);
-                final String filePath = widget.randomPhotoName ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg' : '${testDir.path}/photo_test.jpg';
+                final String filePath = widget.randomPhotoName
+                    ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'
+                    : '${testDir.path}/photo_test.jpg';
                 await _pictureController.takePicture(filePath);
                 // lets just make our phone vibrate
                 HapticFeedback.mediumImpact();
                 setState(() {
                   _lastPhotoPath = filePath;
                 });
-                if(_previewAnimationController.status == AnimationStatus.completed) {
+                if (_previewAnimationController.status ==
+                    AnimationStatus.completed) {
                   _previewAnimationController.reset();
                 }
                 _previewAnimationController.forward();
@@ -414,24 +416,22 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   _buildChangeResolutionDialog() {
     showModalBottomSheet(
-      context: context,
-      builder: (context) =>
-        ListView.separated(
-          itemBuilder: (context, index) =>
-            ListTile(
-              key: ValueKey("resOption"),
-              onTap: () {
-                setState(() {
-                  this.photoSize.value = availableSizes[index];
-                  Navigator.of(context).pop();
-                });
-              },
-              leading: Icon(Icons.aspect_ratio),
-              title: Text("${availableSizes[index].width}/${availableSizes[index].height}"),
-            ),
-          separatorBuilder: (context, index) => Divider(),
-          itemCount: availableSizes.length
-        ));
+        context: context,
+        builder: (context) => ListView.separated(
+            itemBuilder: (context, index) => ListTile(
+                  key: ValueKey("resOption"),
+                  onTap: () {
+                    setState(() {
+                      this.photoSize.value = availableSizes[index];
+                      Navigator.of(context).pop();
+                    });
+                  },
+                  leading: Icon(Icons.aspect_ratio),
+                  title: Text(
+                      "${availableSizes[index].width}/${availableSizes[index].height}"),
+                ),
+            separatorBuilder: (context, index) => Divider(),
+            itemCount: availableSizes.length));
   }
 
   _onOrientationChange(CameraOrientations newOrientation) {

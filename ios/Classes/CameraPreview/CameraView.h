@@ -52,6 +52,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) bool isRecording;
 @property(readonly, nonatomic) bool enableAudio;
+@property(readonly, nonatomic) bool streamImages;
 @property(readonly, nonatomic) bool isAudioSetup;
 @property(readonly, nonatomic) bool videoIsDisconnected;
 @property(readonly, nonatomic) bool audioIsDisconnected;
@@ -61,6 +62,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
+                        streamImages:(BOOL)streamImages
                          captureMode:(CaptureModes)captureMode
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
@@ -68,6 +70,9 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                     orientationEvent:(FlutterEventSink)orientationEventSink
                  videoRecordingEvent:(FlutterEventSink)videoRecordingEventSink
                     imageStreamEvent:(FlutterEventSink)imageStreamEventSink;
+- (void)setImageStreamEventSink:(FlutterEventSink _Nonnull)imageStreamEventSink;
+- (void)setVideoRecordingEventSink:(FlutterEventSink _Nonnull)videoRecordingEventSink;
+- (void)setOrientationEventSink:(FlutterEventSink _Nonnull)orientationEventSink;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)setCaptureMode:(CaptureModes)captureMode;

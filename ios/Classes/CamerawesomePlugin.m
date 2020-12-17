@@ -1,6 +1,5 @@
 #import "CamerawesomePlugin.h"
-#import "CameraView.h"
-#import "CameraEvents.h"
+#import "CameraPreview/CameraView.h"
 
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
@@ -83,7 +82,7 @@ FlutterEventSink imageStreamEventSink;
     
     ImageStreamHandler *imageStreamHandler =
             [[ImageStreamHandler alloc] init];
-    FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/image-stream"
+    FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/images"
     binaryMessenger:[registrar messenger]];
     [imageStreamChannel setStreamHandler:imageStreamHandler];
     
@@ -303,6 +302,7 @@ FlutterEventSink imageStreamEventSink;
 - (void)_handleSetup:(FlutterMethodCall*)call result:(FlutterResult)result  {
     NSString *sensorName = call.arguments[@"sensor"];
     NSString *captureModeName = call.arguments[@"captureMode"];
+    BOOL streamImages = call.arguments[@"streamImages"];
     CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
     
     if (![CameraPermissions checkPermissions]) {
@@ -317,6 +317,7 @@ FlutterEventSink imageStreamEventSink;
 
     CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
     self.camera = [[CameraView alloc] initWithCameraSensor:sensor
+                                              streamImages:streamImages
                                                captureMode:captureMode
                                                     result:result
                                              dispatchQueue:_dispatchQueue
