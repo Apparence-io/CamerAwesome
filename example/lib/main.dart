@@ -370,6 +370,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             setState(() {
               previewStream = imageStream;
             });
+
+            imageStream.listen((Uint8List imageData) {
+              print(
+                  "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
+            });
           },
           onCameraStarted: () {
             // camera started here -- do your after start stuff

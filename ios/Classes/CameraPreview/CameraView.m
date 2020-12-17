@@ -27,9 +27,7 @@
     _dispatchQueue = dispatchQueue;
     
     // Events
-//    _orientationEventSink = orientationEventSink;
     _videoRecordingEventSink = videoRecordingEventSink;
-    _imageStreamEventSink = imageStreamEventSink;
     
     // Creating capture session
     _captureSession = [[AVCaptureSession alloc] init];
@@ -47,7 +45,6 @@
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
     
     _captureMode = captureMode;
-    _streamImages = streamImages;
     
     // By default enable auto flash mode
     _flashMode = AVCaptureFlashModeOff;
@@ -61,6 +58,8 @@
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     
     _cameraSensor = sensor;
+    
+    _imageStreamController = [[ImageStreamController alloc] initWithEventSink:imageStreamEventSink];
     
     // Creating motion detection controller
     _motionController = [[MotionController alloc] initWithEventSink:orientationEventSink];
@@ -365,7 +364,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User actions
 /// Record video into the given path
 - (void)recordVideoAtPath:(NSString *)path {
-    if (_streamImages) {
+    if (_imageStreamController.streamImages) {
         _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
     }
     
@@ -632,46 +631,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
         return;
     }
     
-    if (_streamImages && _imageStreamEventSink) {
-        CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-        CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
-
-        const Boolean isPlanar = CVPixelBufferIsPlanar(pixelBuffer);
-        size_t planeCount;
-        if (isPlanar) {
-            planeCount = CVPixelBufferGetPlaneCount(pixelBuffer);
-        } else {
-            planeCount = 1;
-        }
-        
-        FlutterStandardTypedData *data;
-        for (int i = 0; i < planeCount; i++) {
-            void *planeAddress;
-            size_t bytesPerRow;
-            size_t height;
-            size_t width;
-            
-            if (isPlanar) {
-                planeAddress = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, i);
-                bytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, i);
-                height = CVPixelBufferGetHeightOfPlane(pixelBuffer, i);
-                width = CVPixelBufferGetWidthOfPlane(pixelBuffer, i);
-            } else {
-                planeAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
-                bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
-                height = CVPixelBufferGetHeight(pixelBuffer);
-                width = CVPixelBufferGetWidth(pixelBuffer);
-            }
-            
-            NSNumber *length = @(bytesPerRow * height);
-            NSData *bytes = [NSData dataWithBytes:planeAddress length:length.unsignedIntegerValue];
-            data = [FlutterStandardTypedData typedDataWithBytes:bytes];
-        }
-
-        // Only send bytes for now
-        _imageStreamEventSink(data);
-        
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+    // Process image stream controller
+    if (_imageStreamController.streamImages) {
+        [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection];
     }
     
     if (_isRecording) {

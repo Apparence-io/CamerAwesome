@@ -11,6 +11,7 @@
 #import <Foundation/Foundation.h>
 
 #import "MotionController.h"
+#import "ImageStreamController.h"
 #import "CameraSensor.h"
 #import "CaptureModes.h"
 #import "CameraFlash.h"
@@ -51,14 +52,12 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) bool isRecording;
 @property(readonly, nonatomic) bool enableAudio;
-@property(readonly, nonatomic) bool streamImages;
 @property(readonly, nonatomic) bool isAudioSetup;
 @property(readonly, nonatomic) bool videoIsDisconnected;
 @property(readonly, nonatomic) bool audioIsDisconnected;
+@property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
-//@property(nonatomic) FlutterEventSink orientationEventSink;
 @property(nonatomic) FlutterEventSink videoRecordingEventSink;
-@property(nonatomic) FlutterEventSink imageStreamEventSink;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
     
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
