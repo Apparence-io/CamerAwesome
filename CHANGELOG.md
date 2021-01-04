@@ -1,3 +1,5 @@
+## 0.2.1+1
+- build won't show red screen in debug if camerAwesome is running on slow phones
 ## 0.2.1
 - [iOS] image stream available to use MLkit or other image live processing
 - [iOS] code refactoring

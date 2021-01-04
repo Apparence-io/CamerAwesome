@@ -236,7 +236,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     try {
       started = await CamerawesomePlugin.start();
     } catch (e) {
-      _retryStartCamera(3);
+      await _retryStartCamera(3);
     }
 
     if (widget.onCameraStarted != null) {
@@ -261,8 +261,7 @@ class CameraAwesomeState extends State<CameraAwesome>
 
   @override
   Widget build(BuildContext context) {
-    if(!hasInit)
-      return _loading();
+    if (!hasInit) return _loading();
     return FutureBuilder(
       future: CamerawesomePlugin.getPreviewTexture(),
       builder: (context, snapshot) {
@@ -270,8 +269,7 @@ class CameraAwesomeState extends State<CameraAwesome>
           return Container(); //TODO show error icon ?
         }
         //TODO show an icon if permission not granted ??
-        if (!hasPermissions || !snapshot.hasData)
-          return _loading();
+        if (!hasPermissions || !snapshot.hasData) return _loading();
         return _CameraPreviewWidget(
           size: selectedPreviewSize.value,
           fitted: widget.fitted,
@@ -282,12 +280,9 @@ class CameraAwesomeState extends State<CameraAwesome>
   }
 
   Widget _loading() => Container(
-    color: Colors.black,
-    child: Center(
-      child: CircularProgressIndicator()
-    ),
-  );
-
+        color: Colors.black,
+        child: Center(child: CircularProgressIndicator()),
+      );
 
   bool get hasInit =>
       selectedPreviewSize.value != null &&
@@ -407,7 +402,7 @@ class CameraAwesomeState extends State<CameraAwesome>
   _retryStartCamera(int nbTry) async {
     while (!started && !stopping && nbTry > 0) {
       print("[_retryStartCamera] ${this.hashCode}");
-      print("...retry start camera $nbTry try left");
+      print("...retry start camera in 2 seconds... $nbTry try left");
       try {
         started = await Future.delayed(
             Duration(seconds: 2), CamerawesomePlugin.start);
