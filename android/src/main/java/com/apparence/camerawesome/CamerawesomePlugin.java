@@ -110,6 +110,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
   // this is the old version of plugin used by flutter
   public static void registerWith(Registrar registrar) {
     final CamerawesomePlugin camerawesomePlugin = new CamerawesomePlugin();
+    camerawesomePlugin.setPluginActivity(registrar.activity());
     camerawesomePlugin.onAttachedToEngine(registrar.context(), registrar.messenger(), registrar.textures());
   }
 
@@ -496,6 +497,10 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
       return true;
     }
     return false;
+  }
+
+  public void setPluginActivity(Activity pluginActivity) {
+    this.pluginActivity = pluginActivity;
   }
 
   // ----------------------------

@@ -154,7 +154,7 @@ class CamerawesomePlugin {
   static Future<List<Size>> getSizes() async {
     try {
       List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
-      List<Size> res = List();
+      List<Size> res = [];
       sizes.forEach((el) {
         int width = el["width"];
         int height = el["height"];
