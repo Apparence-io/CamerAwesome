@@ -531,6 +531,9 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
   @Override
   public void onDetachedFromActivity() {
     this.pluginActivity = null;
+    if (this.cameraPermissions != null) {
+      this.cameraPermissions.onCancel(null);
+    }
     if(this.mCameraStateManager != null) {
       this.mCameraStateManager.stopCamera();
       this.mCameraStateManager = null;

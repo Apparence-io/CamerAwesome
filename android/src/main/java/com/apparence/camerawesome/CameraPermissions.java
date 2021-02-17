@@ -2,6 +2,7 @@ package com.apparence.camerawesome;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -17,6 +18,8 @@ import static android.Manifest.permission.CAMERA;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class CameraPermissions implements EventChannel.StreamHandler, PluginRegistry.RequestPermissionsResultListener {
+
+    private static final String TAG = CameraPermissions.class.getName();
 
     private static  final String[] permissions = new String[]{ CAMERA, WRITE_EXTERNAL_STORAGE };
 
@@ -67,8 +70,10 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
 
     @Override
     public void onCancel(Object arguments) {
-        this.events.endOfStream();
-        this.events = null;
+        if(this.events != null) {
+            this.events.endOfStream();
+            this.events = null;
+        }
     }
 
     // ---------------------------------------------
@@ -86,8 +91,10 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
         }
         if(this.events != null) {
             this.events.success(permissionGranted);
-            this.events.endOfStream();
+        } else {
+            Log.d(TAG, "_onRequestPermissionsResult: received permissions but the EventSink is closed");
         }
+
         return permissionGranted;
     }
 }
