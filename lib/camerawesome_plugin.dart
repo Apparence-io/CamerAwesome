@@ -155,7 +155,7 @@ class CamerawesomePlugin {
     try {
       final sizes =
           await _channel.invokeMethod<List<dynamic>>("availableSizes");
-      List<Size> res = [];
+      final res = <Size>[];
       sizes?.forEach((el) {
         int width = el["width"];
         int height = el["height"];

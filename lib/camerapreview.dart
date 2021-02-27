@@ -18,7 +18,7 @@ typedef OnPermissionsResult = void Function(bool? result);
 typedef SelectSize = List<Size> Function();
 
 /// used to send all available sides to the dart side and let user choose one
-typedef OnAvailableSizes = Size Function(List<Size>? availableSizes);
+typedef OnAvailableSizes = Size Function(List<Size> availableSizes);
 
 /// used to send notification about camera has actually started
 typedef OnCameraStarted = void Function();
@@ -69,7 +69,7 @@ class CameraAwesome extends StatefulWidget {
   final ValueNotifier<Sensors> sensor;
 
   /// choose your photo size from the [selectDefaultSize] method
-  final ValueNotifier<Size?> photoSize;
+  final ValueNotifier<Size> photoSize;
 
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
@@ -114,7 +114,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     with WidgetsBindingObserver {
   final GlobalKey boundaryKey = GlobalKey();
 
-  List<Size>? camerasAvailableSizes;
+  late List<Size> camerasAvailableSizes;
 
   bool? hasPermissions = false;
 
@@ -167,7 +167,6 @@ class CameraAwesomeState extends State<CameraAwesome>
     stopping = true;
     WidgetsBinding.instance!.removeObserver(this);
     CamerawesomePlugin.stop();
-    widget.photoSize.value = null;
     selectedAndroidPhotoSize!.dispose();
     selectedPreviewSize!.dispose();
     selectedPreviewSize = null;
@@ -224,7 +223,7 @@ class CameraAwesomeState extends State<CameraAwesome>
       assert(widget.photoSize.value != null,
           "A size from the list must be selected");
     } else {
-      widget.photoSize.value = camerasAvailableSizes![0];
+      widget.photoSize.value = camerasAvailableSizes[0];
     }
     // start camera --
     try {
@@ -280,8 +279,7 @@ class CameraAwesomeState extends State<CameraAwesome>
 
   bool get hasInit =>
       selectedPreviewSize!.value != null &&
-      camerasAvailableSizes != null &&
-      camerasAvailableSizes!.length > 0 &&
+      camerasAvailableSizes.length > 0 &&
       started;
 
   /// inits the Flash mode switcher using [ValueNotifier]
@@ -352,13 +350,13 @@ class CameraAwesomeState extends State<CameraAwesome>
 
   _initPhotoSize() {
     widget.photoSize.addListener(() async {
-      if (widget.photoSize.value == null || selectedAndroidPhotoSize == null) {
+      if (selectedAndroidPhotoSize == null) {
         return;
       }
       selectedAndroidPhotoSize!.value = widget.photoSize.value;
       await CamerawesomePlugin.setPreviewSize(
-          widget.photoSize.value!.width.toInt(),
-          widget.photoSize.value!.height.toInt());
+          widget.photoSize.value.width.toInt(),
+          widget.photoSize.value.height.toInt());
       var effectivPreviewSize =
           await CamerawesomePlugin.getEffectivPreviewSize();
       if (selectedPreviewSize != null) {
@@ -466,22 +464,24 @@ class _CameraPreviewWidget extends StatelessWidget {
   Widget buildFittedBox(Orientation orientation) {
     return LayoutBuilder(
       builder: (_, constraints) => FittedBox(
-        fit: BoxFit.fitWidth,
+        fit: BoxFit.fitHeight,
         child: SizedBox(
           height:
               orientation == Orientation.portrait ? size!.height : size!.width,
           width:
               orientation == Orientation.portrait ? size!.width : size!.height,
-          child: AspectRatio(
-            aspectRatio: size!.height / size!.width,
-            child: SizedBox(
-              height: orientation == Orientation.portrait
-                  ? constraints.maxHeight
-                  : constraints.maxWidth,
-              width: orientation == Orientation.portrait
-                  ? constraints.maxWidth
-                  : constraints.maxHeight,
-              child: testMode ? Container() : Texture(textureId: textureId!),
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: size!.height / size!.width,
+              child: SizedBox(
+                height: orientation == Orientation.portrait
+                    ? constraints.maxHeight
+                    : constraints.maxWidth,
+                width: orientation == Orientation.portrait
+                    ? constraints.maxWidth
+                    : constraints.maxHeight,
+                child: testMode ? Container() : Texture(textureId: textureId!),
+              ),
             ),
           ),
         ),
