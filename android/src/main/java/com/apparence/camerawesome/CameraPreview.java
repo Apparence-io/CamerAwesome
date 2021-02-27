@@ -342,6 +342,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
         switch (mCameraSession.getState()) {
             case STATE_WAITING_LOCK:
                 Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                 if(afState == null) {
                     return;
                 }
