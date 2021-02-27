@@ -35,12 +35,11 @@ class _OptionButtonState extends State<OptionButton>
     Tween(begin: 0.0, end: 1.0)
         .chain(CurveTween(curve: Curves.ease))
         .animate(widget.rotationController)
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _oldOrientation =
-                  OrientationUtils.convertRadianToOrientation(_angle);
-            }
-          });
+        .addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _oldOrientation = OrientationUtils.convertRadianToOrientation(_angle);
+      }
+    });
 
     widget.orientation.addListener(() {
       _angle =

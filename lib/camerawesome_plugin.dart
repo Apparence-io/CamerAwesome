@@ -23,19 +23,19 @@ export 'models/sensor_data.dart';
 enum CameraState { STARTING, STARTED, STOPPING, STOPPED }
 
 class CamerawesomePlugin {
-  static const MethodChannel _channel = const MethodChannel('camerawesome');
+  static const MethodChannel _channel = MethodChannel('camerawesome');
 
   static const EventChannel _orientationChannel =
-      const EventChannel('camerawesome/orientation');
+      EventChannel('camerawesome/orientation');
 
   static const EventChannel _permissionsChannel =
-      const EventChannel('camerawesome/permissions');
+      EventChannel('camerawesome/permissions');
 
   static const EventChannel _imagesChannel =
-      const EventChannel('camerawesome/images');
+      EventChannel('camerawesome/images');
 
   static const EventChannel _luminosityChannel =
-      const EventChannel('camerawesome/luminosity');
+      EventChannel('camerawesome/luminosity');
 
   static Stream<dynamic> _orientationStream;
 

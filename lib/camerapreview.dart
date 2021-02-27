@@ -112,7 +112,7 @@ class CameraAwesome extends StatefulWidget {
 
 class CameraAwesomeState extends State<CameraAwesome>
     with WidgetsBindingObserver {
-  final GlobalKey boundaryKey = new GlobalKey();
+  final GlobalKey boundaryKey = GlobalKey();
 
   List<Size> camerasAvailableSizes;
 
