@@ -209,8 +209,11 @@ Feel free to **contribute** to improve this **compatibility list**.
 
 | Devices              | Flash         | Focus | Zoom | Flip |
 |----------------------|---------------|-------|------|------|
+| iPhone 5s            | ✅             | ✅     | ✅    | ✅    |
 | iPhone X             | ✅             | ✅     | ✅    | ✅    |
 | iPhone 7             | ✅             | ✅     | ✅    | ✅    |
+| iPhone 12 Pro        | ✅             | ✅     | ✅    | ✅    |
+| iPhone SE (2nd gen)  | ✅             | ✅     | ✅    | ✅    |
 | One Plus 6T          | ✅             | ✅     | ✅    | ✅    |
 | Xiaomi redmi         | ✅             | ✅     | ✅    | ✅    |
 | Honor 7              | ✅             | ✅     | ✅    | ✅    |

@@ -30,7 +30,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   camerawesome: 0f8628efae993cb064ec4f36322e89c237e1064f
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
   integration_test: 5ed24a436eb7ec17b6a13046e9bf7ca4a404e59e
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e

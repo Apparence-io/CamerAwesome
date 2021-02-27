@@ -84,11 +84,12 @@ void main() {
             .data;
     var resolButtonFinder = find.byKey(ValueKey('resolutionButton'));
     (resolButtonFinder.evaluate().first.widget as FlatButton).onPressed();
-    await tester.pump(Duration(milliseconds: 1000));
-    await tester.pumpAndSettle(Duration(milliseconds: 1000));
+    await tester.pump(Duration(milliseconds: 2000));
+    await tester.pumpAndSettle(Duration(milliseconds: 2000));
     var optionsFinder = find.byKey(ValueKey('resOption'));
     await tester.tap(optionsFinder.last);
-    await tester.pump(Duration(milliseconds: 500));
+    await tester.pump(Duration(milliseconds: 1500));
+    await tester.pumpAndSettle(Duration(milliseconds: 2000));
     var currentResolution =
         (find.byKey(ValueKey('resolutionTxt')).evaluate().first.widget as Text)
             .data;
