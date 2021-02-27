@@ -216,6 +216,8 @@ Feel free to **contribute** to improve this **compatibility list**.
 | Honor 7              | ✅             | ✅     | ✅    | ✅    |
 | Sony Xperia XZ F8331 | ✅             | ✅     | ✅    | ✅    |
 | Pixel 4              | ❌ (torch:yes) | ✅     | ✅    | ✅    |
+| Galaxy S7            | ✅             | ✅     | ✅    | ✅    |
+| LG k50s              | ✅             | ✅     | ✅    | ✅    |
 
 </p>
 </details>
