@@ -274,7 +274,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   children: <Widget>[
                     ValueListenableBuilder(
                       valueListenable: photoSize,
-                      builder: (context, value, child) => FlatButton(
+                      builder: (context, value, child) => TextButton(
                         key: ValueKey("resolutionButton"),
                         onPressed: _buildChangeResolutionDialog,
                         child: Text(
@@ -448,7 +448,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         content: Text(
             'It seems you doesn\'t authorized some permissions. Please check on your settings and try again.'),
         actions: [
-          FlatButton(
+          TextButton(
             child: Text('OK'),
             onPressed: () => Navigator.of(context).pop(),
           ),

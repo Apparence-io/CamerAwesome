@@ -37,13 +37,13 @@ class CamerawesomePlugin {
   static const EventChannel _luminosityChannel =
       EventChannel('camerawesome/luminosity');
 
-  static Stream<dynamic> _orientationStream;
+  static Stream<CameraOrientations?>? _orientationStream;
 
-  static Stream<bool> _permissionsStream;
+  static Stream<bool>? _permissionsStream;
 
-  static Stream<SensorData> _luminositySensorDataStream;
+  static Stream<SensorData>? _luminositySensorDataStream;
 
-  static Stream<Uint8List> _imagesStream;
+  static Stream<Uint8List>? _imagesStream;
 
   static CameraState currentState = CameraState.STOPPED;
 
@@ -51,11 +51,11 @@ class CamerawesomePlugin {
       .invokeMethod("checkPermissions")
       .then((res) => res.cast<String>());
 
-  static Future<bool> checkiOSPermissions() =>
+  static Future<bool?> checkiOSPermissions() =>
       _channel.invokeMethod("checkPermissions");
 
   /// only available on Android
-  static Future<List<String>> requestPermissions() =>
+  static Future<List<String>?> requestPermissions() =>
       _channel.invokeMethod("requestPermissions");
 
   static Future<bool> start() async {
@@ -85,16 +85,16 @@ class CamerawesomePlugin {
     return true;
   }
 
-  static Future<bool> focus() => _channel.invokeMethod("focus");
+  static Future<bool?> focus() => _channel.invokeMethod("focus");
 
-  static Stream<CameraOrientations> getNativeOrientation() {
+  static Stream<CameraOrientations?> getNativeOrientation() {
     if (_orientationStream == null) {
       _orientationStream = _orientationChannel
           .receiveBroadcastStream()
           .transform(
-              StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
+              StreamTransformer<dynamic, CameraOrientations?>.fromHandlers(
                   handleData: (data, sink) {
-        CameraOrientations newOrientation;
+        CameraOrientations? newOrientation;
         switch (data) {
           case 'LANDSCAPE_LEFT':
             newOrientation = CameraOrientations.LANDSCAPE_LEFT;
@@ -113,10 +113,10 @@ class CamerawesomePlugin {
         sink.add(newOrientation);
       }));
     }
-    return _orientationStream;
+    return _orientationStream!;
   }
 
-  static Stream<bool> listenPermissionResult() {
+  static Stream<bool>? listenPermissionResult() {
     if (_permissionsStream == null) {
       _permissionsStream = _permissionsChannel
           .receiveBroadcastStream()
@@ -128,7 +128,7 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
-  static Stream<Uint8List> listenCameraImages() {
+  static Stream<Uint8List>? listenCameraImages() {
     if (_imagesStream == null) {
       _imagesStream = _imagesChannel.receiveBroadcastStream().transform(
           StreamTransformer<dynamic, Uint8List>.fromHandlers(
@@ -139,7 +139,7 @@ class CamerawesomePlugin {
     return _imagesStream;
   }
 
-  static Future<bool> init(
+  static Future<bool?> init(
     Sensors sensor,
     bool enableImageStream, {
     CaptureModes captureMode = CaptureModes.PHOTO,
@@ -153,9 +153,10 @@ class CamerawesomePlugin {
 
   static Future<List<Size>> getSizes() async {
     try {
-      List<dynamic> sizes = await _channel.invokeMethod("availableSizes");
+      final sizes =
+          await _channel.invokeMethod<List<dynamic>>("availableSizes");
       List<Size> res = [];
-      sizes.forEach((el) {
+      sizes?.forEach((el) {
         int width = el["width"];
         int height = el["height"];
         res.add(Size(width.toDouble(), height.toDouble()));
@@ -166,8 +167,9 @@ class CamerawesomePlugin {
     }
   }
 
-  static Future<num> getPreviewTexture() =>
-      _channel.invokeMethod<num>('previewTexture');
+  static Future<num?> getPreviewTexture() {
+    return _channel.invokeMethod<num?>('previewTexture');
+  }
 
   static Future<void> setPreviewSize(int width, int height) {
     return _channel.invokeMethod<void>('setPreviewSize', <String, dynamic>{
@@ -183,17 +185,17 @@ class CamerawesomePlugin {
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
   static Future<Size> getEffectivPreviewSize() async {
-    Map<dynamic, dynamic> sizeMap =
-        await _channel.invokeMethod("getEffectivPreviewSize");
-    int width = sizeMap["width"];
-    int height = sizeMap["height"];
+    final sizeMap = await _channel
+        .invokeMapMethod<String, dynamic>("getEffectivPreviewSize");
+
+    final int width = sizeMap?["width"] ?? 0;
+    final int height = sizeMap?["height"] ?? 0;
     return Size(width.toDouble(), height.toDouble());
   }
 
   /// Just for android
   /// you can set a different size for preview and for photo
   static Future<void> setPhotoSize(int width, int height) {
-    if (width == null || height == null) return Future.value();
     return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic>{
       'width': width,
       'height': height,
@@ -260,7 +262,7 @@ class CamerawesomePlugin {
   }
 
   // listen for luminosity level
-  static Stream<SensorData> listenLuminosityLevel() {
+  static Stream<SensorData>? listenLuminosityLevel() {
     if (!Platform.isAndroid) {
       // Not available
       throw "not available on this OS for now... only Android";
@@ -277,18 +279,18 @@ class CamerawesomePlugin {
   }
 
   /// returns the max zoom available on device
-  static Future<num> getMaxZoom() => _channel.invokeMethod("getMaxZoom");
+  static Future<num?> getMaxZoom() => _channel.invokeMethod("getMaxZoom");
 
   // ---------------------------------------------------
   // UTILITY METHODS
   // ---------------------------------------------------
 
-  static Future<bool> checkPermissions() async {
+  static Future<bool?> checkPermissions() async {
     try {
       if (Platform.isAndroid) {
         var missingPermissions =
             await CamerawesomePlugin.checkAndroidPermissions();
-        if (missingPermissions != null && missingPermissions.length > 0) {
+        if (missingPermissions.length > 0) {
           return CamerawesomePlugin.requestPermissions()
               .then((value) => value == null);
         } else {
