@@ -207,20 +207,20 @@ Feel free to **contribute** to improve this **compatibility list**.
 <summary>Reveal grid</summary>
 <p>
 
-| Devices              | Flash         | Focus | Zoom | Flip |
-|----------------------|---------------|-------|------|------|
-| iPhone 5s            | ✅             | ✅     | ✅    | ✅    |
-| iPhone X             | ✅             | ✅     | ✅    | ✅    |
-| iPhone 7             | ✅             | ✅     | ✅    | ✅    |
-| iPhone 12 Pro        | ✅             | ✅     | ✅    | ✅    |
-| iPhone SE (2nd gen)  | ✅             | ✅     | ✅    | ✅    |
-| One Plus 6T          | ✅             | ✅     | ✅    | ✅    |
-| Xiaomi redmi         | ✅             | ✅     | ✅    | ✅    |
-| Honor 7              | ✅             | ✅     | ✅    | ✅    |
-| Sony Xperia XZ F8331 | ✅             | ✅     | ✅    | ✅    |
-| Pixel 4              | ❌ (torch:yes) | ✅     | ✅    | ✅    |
-| Galaxy S7            | ✅             | ✅     | ✅    | ✅    |
-| LG k50s              | ✅             | ✅     | ✅    | ✅    |
+| Devices              | Flash | Focus | Zoom | Flip |
+|----------------------|-------|-------|------|------|
+| iPhone 5s            | ✅     | ✅     | ✅    | ✅    |
+| iPhone X             | ✅     | ✅     | ✅    | ✅    |
+| iPhone 7             | ✅     | ✅     | ✅    | ✅    |
+| iPhone 12 Pro        | ✅     | ✅     | ✅    | ✅    |
+| iPhone SE (2nd gen)  | ✅     | ✅     | ✅    | ✅    |
+| One Plus 6T          | ✅     | ✅     | ✅    | ✅    |
+| Xiaomi redmi         | ✅     | ✅     | ✅    | ✅    |
+| Honor 7              | ✅     | ✅     | ✅    | ✅    |
+| Sony Xperia XZ F8331 | ✅     | ✅     | ✅    | ✅    |
+| Pixel 4              | ✅     | ✅     | ✅    | ✅    |
+| Galaxy S7            | ✅     | ✅     | ✅    | ✅    |
+| LG k50s              | ✅     | ✅     | ✅    | ✅    |
 
 </p>
 </details>
