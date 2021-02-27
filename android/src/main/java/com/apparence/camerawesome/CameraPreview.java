@@ -291,8 +291,6 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
 
     @Override
     public void onStateChanged(CameraPictureStates state) {
-        Log.e(TAG, "[CameraPreview] onStateChanged: " + state);
-
         if(state == null)
             return;
         switch (state) {
