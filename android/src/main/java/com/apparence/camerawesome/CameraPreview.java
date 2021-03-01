@@ -346,27 +346,22 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
                 if(afState == null) {
                     return;
                 }
-
                 /// Time to start the capture
                 if (
-                        // We have passive focus lock (some devices use passive)
-                        afState == CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED ||
-
-                                // We have active focus lock
-                                afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
-
-                                // Passive focus is inactive but AE says we are ready to capture
-                                (afState == CaptureResult.CONTROL_AF_STATE_INACTIVE && aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) ||
-
-                                // Focus failed, take the picture anyways
-                                afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
-
-                    // CONTROL_AE_STATE can be null on some devices
-                    if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
-                        mCameraSession.setState(STATE_REQUEST_PHOTO_AFTER_FOCUS);
-                    } else {
-                        mCameraSession.setState(STATE_PRECAPTURE);
-                    }
+                    // We have passive focus lock (some devices use passive)
+                    afState == CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED ||
+                    // We have active focus lock
+                    afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
+                    // Passive focus is inactive but AE says we are ready to capture
+                    (afState == CaptureResult.CONTROL_AF_STATE_INACTIVE && aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) ||
+                    // Focus failed, take the picture anyways
+                    afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
+                        // CONTROL_AE_STATE can be null on some devices
+                        if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
+                            mCameraSession.setState(STATE_REQUEST_PHOTO_AFTER_FOCUS);
+                        } else {
+                            mCameraSession.setState(STATE_PRECAPTURE);
+                        }
                 } 
                 break;
             case STATE_PRECAPTURE: {
