@@ -141,21 +141,21 @@ _captureMode.value = CaptureModes.VIDEO;
 <summary>Reveal parameters list</summary>
 <p>
 
-| Param | Type  | Description | Required |
-| ---   | ---   | ---         | --- |
-| testMode | ```boolean``` | true to wrap texture |  |
-| onPermissionsResult | ```OnPermissionsResult``` | implement this to have a callback after CameraAwesome asked for permissions |  |
-| selectDefaultSize | ```OnAvailableSizes``` | implement this to select a default size from device available size list | ✅ |
-| onCameraStarted | ```OnCameraStarted``` | notify client that camera started |  |
-| onOrientationChanged | ```OnOrientationChanged``` | notify client that orientation changed |  |
-| switchFlashMode | ```**ValueNotifier**<CameraFlashes>``` | change flash mode |  |
-| zoom | ```ValueNotifier<double>``` | Zoom from native side. Must be between **0** and **1** |  |
-| sensor | ```ValueNotifier<Sensors>``` | sensor to initiate **BACK** or **FRONT** | ✅ |
-| photoSize | ```ValueNotifier<Size>``` | choose your photo size from the [selectDefaultSize] method |  |
-| captureMode | ```ValueNotifier<CaptureModes>``` | choose capture mode between **PHOTO** or **VIDEO** |  |
-| orientation | ```DeviceOrientation``` | initial orientation |  |
-| fitted | ```bool``` | whether camera preview must be as big as it needs or cropped to fill with. false by default |  |
-| imagesStreamBuilder | ```Function``` | returns an imageStream when camera has started preview |  |
+| Param                | Type                                   | Description                                                                                 | Required |
+|----------------------|----------------------------------------|---------------------------------------------------------------------------------------------|----------|
+| testMode             | ```boolean```                          | true to wrap texture                                                                        |          |
+| onPermissionsResult  | ```OnPermissionsResult```              | implement this to have a callback after CameraAwesome asked for permissions                 |          |
+| selectDefaultSize    | ```OnAvailableSizes```                 | implement this to select a default size from device available size list                     | ✅        |
+| onCameraStarted      | ```OnCameraStarted```                  | notify client that camera started                                                           |          |
+| onOrientationChanged | ```OnOrientationChanged```             | notify client that orientation changed                                                      |          |
+| switchFlashMode      | ```**ValueNotifier**<CameraFlashes>``` | change flash mode                                                                           |          |
+| zoom                 | ```ValueNotifier<double>```            | Zoom from native side. Must be between **0** and **1**                                      |          |
+| sensor               | ```ValueNotifier<Sensors>```           | sensor to initiate **BACK** or **FRONT**                                                    | ✅        |
+| photoSize            | ```ValueNotifier<Size>```              | choose your photo size from the [selectDefaultSize] method                                  |          |
+| captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
+| orientation          | ```DeviceOrientation```                | initial orientation                                                                         |          |
+| fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
+| imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
 
 </p>
 </details>
@@ -207,13 +207,20 @@ Feel free to **contribute** to improve this **compatibility list**.
 <summary>Reveal grid</summary>
 <p>
 
-| Devices       | Flash | Focus | Zoom | Flip |
-| ------------- | ----- | ----- | ---- | ---- |
-| iPhone X      | ✅    | ✅    | ✅    | ✅   |
-| iPhone 7      | ✅    | ✅    | ✅    | ✅   |
-| One Plus 6T   | ✅    | ✅    | ✅    | ✅   |
-| Xiaomi redmi  | ✅    | ✅    | ✅    | ✅   |
-| Honor 7       | ✅    | ✅    | ✅    | ✅   |
+| Devices              | Flash | Focus | Zoom | Flip |
+|----------------------|-------|-------|------|------|
+| iPhone 5s            | ✅     | ✅     | ✅    | ✅    |
+| iPhone X             | ✅     | ✅     | ✅    | ✅    |
+| iPhone 7             | ✅     | ✅     | ✅    | ✅    |
+| iPhone 12 Pro        | ✅     | ✅     | ✅    | ✅    |
+| iPhone SE (2nd gen)  | ✅     | ✅     | ✅    | ✅    |
+| One Plus 6T          | ✅     | ✅     | ✅    | ✅    |
+| Xiaomi redmi         | ✅     | ✅     | ✅    | ✅    |
+| Honor 7              | ✅     | ✅     | ✅    | ✅    |
+| Sony Xperia XZ F8331 | ✅     | ✅     | ✅    | ✅    |
+| Pixel 4              | ✅     | ✅     | ✅    | ✅    |
+| Galaxy S7            | ✅     | ✅     | ✅    | ✅    |
+| LG k50s              | ✅     | ✅     | ✅    | ✅    |
 
 </p>
 </details>

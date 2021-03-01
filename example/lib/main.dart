@@ -47,10 +47,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
   /// use this to call a take picture
-  PictureController _pictureController = new PictureController();
+  PictureController _pictureController = PictureController();
 
   /// use this to record a video
-  VideoController _videoController = new VideoController();
+  VideoController _videoController = VideoController();
 
   /// list of available sizes
   List<Size> _availableSizes;
@@ -297,7 +297,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         content: Text(
             'It seems you doesn\'t authorized some permissions. Please check on your settings and try again.'),
         actions: [
-          FlatButton(
+          TextButton(
             child: Text('OK'),
             onPressed: () => Navigator.of(context).pop(),
           ),
