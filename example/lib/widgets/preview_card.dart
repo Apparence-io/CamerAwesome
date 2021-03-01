@@ -87,7 +87,7 @@ class PreviewCardWidget extends StatelessWidget {
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
                   child: Image.file(
-                    new File(lastPhotoPath),
+                    File(lastPhotoPath),
                     width: OrientationUtils.isOnPortraitMode(orientation.value)
                         ? 128
                         : 256,

@@ -41,7 +41,7 @@ class _CameraPreviewState extends State<CameraPreview> {
         title: Text('Video preview'),
       ),
       body: Center(
-        child: _videoPlayerController.value.initialized
+        child: _videoPlayerController.value.isInitialized
             ? AspectRatio(
                 aspectRatio: _videoPlayerController.value.aspectRatio,
                 child: VideoPlayer(_videoPlayerController),
