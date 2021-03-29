@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -47,6 +48,7 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
     public void checkAndRequestPermissions(Activity activity) {
         String[] permissionsToAsk = checkPermissions(activity);
         if(permissionsToAsk.length > 0) {
+            Log.d(TAG, "_checkAndRequestPermissions: " + String.join(",", permissionsToAsk));
             ActivityCompat.requestPermissions(
                     activity,
                     permissionsToAsk,
@@ -90,6 +92,7 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
             }
         }
         if(this.events != null) {
+            Log.d(TAG, "_onRequestPermissionsResult: granted " + String.join(", ", permissions));
             this.events.success(permissionGranted);
         } else {
             Log.d(TAG, "_onRequestPermissionsResult: received permissions but the EventSink is closed");
