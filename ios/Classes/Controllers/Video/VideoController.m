@@ -43,15 +43,16 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 /// Stop recording video
 - (void)stopRecordingVideo {
-    print('stopping record')
+        NSLog(@"Stopping record");
+
     if (_isRecording) {
-          print('stopping record 2 ')
+        NSLog(@"Stopping record2");
         _isRecording = NO;
         if (_videoWriter.status != AVAssetWriterStatusUnknown) {
-                      print('stopping record 3 ')
+        NSLog(@"Stopping record3");
             [_videoWriter finishWritingWithCompletionHandler:^{
                 if (self->_videoWriter.status == AVAssetWriterStatusCompleted) {
-                    print('stopping record 4 ')
+        NSLog(@"Stopping record4");
                     self->_result(nil);
                 } else {
                     self->_result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to completely write video" details:@""]);
