@@ -152,7 +152,8 @@ class CameraAwesomeState extends State<CameraAwesome>
     selectedPreviewSize = ValueNotifier(null);
     selectedAndroidPhotoSize = ValueNotifier(null);
     brightnessCorrectionData = PublishSubject();
-    initPlatformState();
+
+    scheduleInitPlatformState();
     super.didChangeDependencies();
   }
 
@@ -184,17 +185,25 @@ class CameraAwesomeState extends State<CameraAwesome>
     super.dispose();
   }
 
-  Future<void> initPlatformState() async {
+  Future<void> scheduleInitPlatformState() async {
+    bool hadPermission = false;
+
     // wait user accept permissions to init widget completely on android
     if (Platform.isAndroid) {
       _permissionStreamSub =
           CamerawesomePlugin.listenPermissionResult().listen((res) {
-        if (res) {
+        if (res && !hadPermission) {
           initPlatformState();
         }
         widget.onPermissionsResult(res);
+        hadPermission = res;
       });
     }
+
+    initPlatformState();
+  }
+
+  Future<void> initPlatformState() async {
     hasPermissions = await CamerawesomePlugin.checkPermissions();
     if (widget.onPermissionsResult != null) {
       widget.onPermissionsResult(hasPermissions);
