@@ -80,7 +80,7 @@ packages:
       name: image
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0-nullsafety.0"
+    version: "3.0.2"
   matcher:
     dependency: transitive
     description:
@@ -115,7 +115,7 @@ packages:
       name: rxdart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.26.0-nullsafety.1"
+    version: "0.27.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -162,7 +162,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.19"
+    version: "0.3.0"
   typed_data:
     dependency: transitive
     description:

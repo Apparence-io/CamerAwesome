@@ -9,8 +9,8 @@ environment:
   flutter: ">=1.10.0"
 
 dependencies:
-  image: ^3.0.0-nullsafety.0
-  rxdart: ^0.26.0-nullsafety.1
+  image: ^3.0.2
+  rxdart: ^0.27.0
   flutter:
     sdk: flutter
 dev_dependencies:
