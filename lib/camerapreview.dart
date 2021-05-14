@@ -185,7 +185,9 @@ class CameraAwesomeState extends State<CameraAwesome>
         if (res) {
           initPlatformState();
         }
-        widget.onPermissionsResult!(res);
+        if (widget.onPermissionsResult != null) {
+          widget.onPermissionsResult!(res);
+        }
       });
     }
     hasPermissions = await CamerawesomePlugin.checkPermissions();
