@@ -71,7 +71,7 @@ class TopBarWidget extends StatelessWidget {
                         opacity: isRecording ? 0.3 : 1.0,
                         child: ValueListenableBuilder(
                           valueListenable: photoSize,
-                          builder: (context, value, child) => FlatButton(
+                          builder: (context, value, child) => TextButton(
                             key: ValueKey("resolutionButton"),
                             onPressed: () {
                               HapticFeedback.selectionClick();

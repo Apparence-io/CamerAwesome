@@ -50,6 +50,7 @@
         return;
     }
     _completionBlock();
+    _result(nil);
 }
 
 - (UIImageOrientation)getJpegOrientation {

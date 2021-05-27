@@ -13,11 +13,11 @@ dependencies:
     sdk: flutter
   camerawesome:
     path: ../
-  cupertino_icons: ^0.1.3
-  image: ^2.1.19
-  path_provider: ^1.6.24
-  rxdart: ^0.25.0
-  video_player: ^1.0.1
+  cupertino_icons: ^1.0.2
+  image: ^3.0.2
+  path_provider: ^2.0.0
+  rxdart: ^0.27.0
+  video_player: ^2.0.0
 
 dev_dependencies:
   flutter_driver:
@@ -26,7 +26,7 @@ dev_dependencies:
     sdk: flutter
   integration_test: ^1.0.1
   test: any
-  flutter_launcher_icons: ^0.8.1
+  flutter_launcher_icons: ^0.9.0
 
 flutter_icons:
   ios: true

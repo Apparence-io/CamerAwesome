@@ -337,8 +337,6 @@
             [self->_captureDevice setTorchMode:AVCaptureTorchModeOn];
             [self->_captureDevice unlockForConfiguration];
         }
-        
-        self->_result(nil);
     }];
     
     // Create settings instance

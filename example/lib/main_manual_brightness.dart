@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   double sliderBrightnessValue = 0;
 
   /// use this to call a take picture
-  PictureController _pictureController = new PictureController();
+  PictureController _pictureController = PictureController();
 
   /// list of available sizes
   List<Size> availableSizes;
@@ -193,7 +193,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
                   child: Image.file(
-                    new File(_lastPhotoPath),
+                    File(_lastPhotoPath),
                     width: OrientationUtils.isOnPortraitMode(_orientation.value)
                         ? 128
                         : 256,
@@ -274,7 +274,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   children: <Widget>[
                     ValueListenableBuilder(
                       valueListenable: photoSize,
-                      builder: (context, value, child) => FlatButton(
+                      builder: (context, value, child) => TextButton(
                         key: ValueKey("resolutionButton"),
                         onPressed: _buildChangeResolutionDialog,
                         child: Text(
@@ -448,7 +448,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         content: Text(
             'It seems you doesn\'t authorized some permissions. Please check on your settings and try again.'),
         actions: [
-          FlatButton(
+          TextButton(
             child: Text('OK'),
             onPressed: () => Navigator.of(context).pop(),
           ),
