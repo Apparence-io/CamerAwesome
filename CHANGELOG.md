@@ -1,7 +1,8 @@
-## 1.0.0
+## 0.3.0
 - Migrate null safety.
 - Fixed aspect ratio of camera preview when using smaller image sizes.
 - Fixed image capture on older android devices which use continuous (passive) focus.
+- Fix image capture on iOS
 ## 0.2.1+1
 - build won't show red screen in debug if camerAwesome is running on slow phones
 - [Android] bind activity 
