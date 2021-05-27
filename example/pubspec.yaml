@@ -3,7 +3,7 @@ description: Demonstrates how to use the camerawesome plugin.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -14,20 +14,18 @@ dependencies:
   camerawesome:
     path: ../
   cupertino_icons: ^1.0.2
-  image: ^3.0.2
+  image: ^2.1.19
   path_provider: ^2.0.0
   rxdart: ^0.27.0
   video_player: ^2.0.0
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_driver:
     sdk: flutter
   flutter_test:
     sdk: flutter
-  integration_test: ^1.0.1
-  test: any
-  flutter_launcher_icons: ^0.9.0
-
 flutter_icons:
   ios: true
   android: false
@@ -37,7 +35,6 @@ flutter_icons:
 # following page: https://dart.dev/tools/pub/pubspec
 # The following section is specific to Flutter.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
