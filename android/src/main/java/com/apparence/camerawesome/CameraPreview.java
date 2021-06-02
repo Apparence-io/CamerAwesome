@@ -353,7 +353,7 @@ public class CameraPreview implements CameraSession.OnCaptureSession, EventChann
                     // We have active focus lock
                     afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
                     // Passive focus is inactive but AE says we are ready to capture
-                    (afState == CaptureResult.CONTROL_AF_STATE_INACTIVE && aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) ||
+                    (afState == CaptureResult.CONTROL_AF_STATE_INACTIVE && (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED)) ||
                     // Focus failed, take the picture anyways
                     afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
                         // CONTROL_AE_STATE can be null on some devices
