@@ -203,7 +203,6 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
   // ----------------------------
 
   private void _handleCheckPermissions(MethodCall call, Result result) {
-    Log.d(TAG, "_handleCheckPermissions: ");
     try {
       assert(pluginActivity !=null);
       String[] missingPermissions = cameraPermissions.checkPermissions(pluginActivity);
@@ -511,8 +510,12 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
   public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
     this.pluginActivity = binding.getActivity();
     binding.addRequestPermissionsResultListener(this.cameraPermissions);
-    if (this.mCameraPreview != null)
+    if (this.mCameraPreview != null) {
       this.mCameraPreview.setMainHandler(new Handler(pluginActivity.getMainLooper()));
+      try {
+        this.mCameraStateManager.startCamera(this.mCameraSetup.getCameraId());
+      } catch(CameraManagerException e) {}
+    }
   }
 
   @Override
@@ -527,7 +530,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     binding.addRequestPermissionsResultListener(this.cameraPermissions);
     this.mCameraPreview.setMainHandler(new Handler(pluginActivity.getMainLooper()));
   }
-
+  
   @Override
   public void onDetachedFromActivity() {
     this.pluginActivity = null;
@@ -536,7 +539,7 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
     }
     if(this.mCameraStateManager != null) {
       this.mCameraStateManager.stopCamera();
-      this.mCameraStateManager = null;
+      //this.mCameraStateManager = null;
     }
     if(this.mCameraPreview != null) {
       this.mCameraPreview.setMainHandler(null);

@@ -74,7 +74,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         } catch (InterruptedException e) {
             Log.e(TAG, "INTERRUPTED: ", e);
             throw new CameraManagerException(CameraManagerException.Codes.INTERRUPTED, e);
-        }
+        } 
     }
 
     public void switchCamera(String cameraId, CameraCharacteristicsModel characteristicsModel) throws CameraManagerException {
@@ -93,6 +93,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
         try {
             if(mCameraSession != null && mCameraSession.getCaptureSession() != null) {
                 try {
+                    mCameraSession.clearSurface();
                     mCameraSession.getCaptureSession().stopRepeating();
                     mCameraSession.getCaptureSession().abortCaptures();
                     mCameraSession.getCaptureSession().close();
@@ -143,6 +144,7 @@ public class CameraStateManager extends CameraDevice.StateCallback {
 
     @Override
     public void onDisconnected(@NonNull CameraDevice camera) {
+        Log.d(TAG, "onDisconnected");
         stopCamera();
     }
 
