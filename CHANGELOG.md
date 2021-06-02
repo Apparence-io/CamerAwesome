@@ -1,3 +1,5 @@
+## 0.3.1
+- handle app lifecycle (stop camera on background)
 ## 0.3.0
 - Migrate null safety.
 - Fixed aspect ratio of camera preview when using smaller image sizes.
