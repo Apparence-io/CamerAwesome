@@ -129,7 +129,6 @@ _captureMode.value = CaptureModes.VIDEO;
       photoSize: _photoSize,
       switchFlashMode: _switchFlash,
       captureMode: _captureMode,
-      orientation: DeviceOrientation.portraitUp,
       fitted: true,
     );
   };
@@ -153,7 +152,6 @@ _captureMode.value = CaptureModes.VIDEO;
 | sensor               | ```ValueNotifier<Sensors>```           | sensor to initiate **BACK** or **FRONT**                                                    | ✅        |
 | photoSize            | ```ValueNotifier<Size>```              | choose your photo size from the [selectDefaultSize] method                                  |          |
 | captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
-| orientation          | ```DeviceOrientation```                | initial orientation                                                                         |          |
 | fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
 | imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
 
