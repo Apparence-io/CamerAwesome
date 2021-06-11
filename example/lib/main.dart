@@ -10,16 +10,12 @@ import 'package:camerawesome_example/widgets/top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imgUtils;
-// import 'package:rxdart/rxdart.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
-  runApp(MaterialApp(
-    home: MyApp(),
-    debugShowCheckedModeBanner: false,
-  ));
+  runApp(MaterialApp(home: MyApp(), debugShowCheckedModeBanner: false));
 }
 
 class MyApp extends StatefulWidget {

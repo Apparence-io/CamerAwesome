@@ -1,6 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -93,7 +92,6 @@ class CameraView extends StatelessWidget {
       sensor: _sensor,
       photoSize: _photoSize,
       switchFlashMode: _switchFlash,
-      orientation: DeviceOrientation.portraitUp,
       fitted: fit,
     );
   }
