@@ -38,8 +38,8 @@ CamerAwesome include a lot of useful features like:
     <td>Resolution changing 🌇</td>
   </tr>
   <tr>
-    <td><center><img src="https://i.ibb.co/X4BLPsd/example1.gif" width="200" alt="camerawesome_example1"></center></td>
-    <td><center><img src="https://i.ibb.co/HKjjs5t/example2.gif" width="200" alt="camerawesome_example2"></center></td>
+    <td><center><img src="medias/examples/example1.gif?raw=true" width="200" alt="camerawesome_example1"></center></td>
+    <td><center><img src="medias/examples/example2.gif?raw=true" width="200" alt="camerawesome_example2"></center></td>
   </tr>
 </table>
 
@@ -129,7 +129,6 @@ _captureMode.value = CaptureModes.VIDEO;
       photoSize: _photoSize,
       switchFlashMode: _switchFlash,
       captureMode: _captureMode,
-      orientation: DeviceOrientation.portraitUp,
       fitted: true,
     );
   };
@@ -153,7 +152,6 @@ _captureMode.value = CaptureModes.VIDEO;
 | sensor               | ```ValueNotifier<Sensors>```           | sensor to initiate **BACK** or **FRONT**                                                    | ✅        |
 | photoSize            | ```ValueNotifier<Size>```              | choose your photo size from the [selectDefaultSize] method                                  |          |
 | captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
-| orientation          | ```DeviceOrientation```                | initial orientation                                                                         |          |
 | fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
 | imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
 

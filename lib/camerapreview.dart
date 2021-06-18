@@ -73,9 +73,6 @@ class CameraAwesome extends StatefulWidget {
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
 
-  /// initial orientation
-  final DeviceOrientation orientation;
-
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
@@ -93,7 +90,6 @@ class CameraAwesome extends StatefulWidget {
     this.selectDefaultSize,
     this.onCameraStarted,
     this.switchFlashMode,
-    this.orientation = DeviceOrientation.portraitUp,
     this.fitted = false,
     this.zoom,
     this.onOrientationChanged,
@@ -146,7 +142,9 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
 
   @override
   void didChangeDependencies() {
-    SystemChrome.setPreferredOrientations([widget.orientation]);
+    // lock by default orientation to portrait up
+    // can be used as landscape too
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     selectedPreviewSize = ValueNotifier(null);
     selectedAndroidPhotoSize = ValueNotifier(null);
     brightnessCorrectionData = PublishSubject();
