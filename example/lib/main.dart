@@ -347,6 +347,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       right: 0,
       child: Center(
         child: CameraAwesome(
+          ignoreExternalStorage: true,
           onPermissionsResult: _onPermissionsResult,
           selectDefaultSize: (availableSizes) {
             this._availableSizes = availableSizes;
