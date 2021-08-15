@@ -82,6 +82,9 @@ class CameraAwesome extends StatefulWidget {
   /// (optional) returns a Stream containing images from camera preview - TODO only Android, iOS to be done
   final LuminosityLevelStreamBuilder? luminosityLevelStreamBuilder;
 
+  /// Ignore android storage permission. false by default
+  final bool ignoreExternalStorage;
+
   CameraAwesome({
     Key? key,
     this.testMode = false,
@@ -93,6 +96,7 @@ class CameraAwesome extends StatefulWidget {
     this.fitted = false,
     this.zoom,
     this.onOrientationChanged,
+    this.ignoreExternalStorage = false,
     required this.sensor,
     required this.captureMode,
     this.enableAudio,
@@ -115,6 +119,8 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   bool started = false;
 
   bool stopping = false;
+
+  bool inited = false;
 
   /// we use this subject to have a little debounce time between changes
   late PublishSubject<double> brightnessCorrectionData;
@@ -157,7 +163,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!started) {
+        if (inited && !started) {
           CamerawesomePlugin.start().then((res) {
             started = true;
             if (mounted) {
@@ -204,7 +210,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
         }
       });
     }
-    hasPermissions = await CamerawesomePlugin.checkPermissions();
+    hasPermissions = await CamerawesomePlugin.checkPermissions(ignoreExternalStorage: widget.ignoreExternalStorage);
     if (widget.onPermissionsResult != null) {
       widget.onPermissionsResult!(hasPermissions);
     }
@@ -222,11 +228,11 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
       _initImageStream();
     }
     // init camera --
-    await CamerawesomePlugin.init(
+    inited = await CamerawesomePlugin.init(
       widget.sensor.value,
       widget.imagesStreamBuilder != null,
       captureMode: widget.captureMode.value,
-    );
+    ) ?? true;
     if (Platform.isAndroid) {
       _initImageStream();
     }
