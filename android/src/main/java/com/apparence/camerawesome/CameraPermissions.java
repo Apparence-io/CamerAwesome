@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -22,7 +23,7 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
 
     private static final String TAG = CameraPermissions.class.getName();
 
-    private static  final String[] permissions = new String[]{ CAMERA, WRITE_EXTERNAL_STORAGE };
+    private static final List<String> permissions = new ArrayList<String>();
 
     private static final int PERMISSIONS_MULTIPLE_REQUEST = 5;
 
@@ -31,9 +32,16 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
     private EventChannel.EventSink events;
 
 
-    public String[] checkPermissions(Activity activity) {
+
+    public String[] checkPermissions(Activity activity, boolean ignoreExternalStorage) {
         if(activity == null) {
             throw new RuntimeException("NULL_ACTIVITY");
+        }
+        if (permissions.isEmpty()) {
+            permissions.add(CAMERA);
+            if (!ignoreExternalStorage) {
+                permissions.add(WRITE_EXTERNAL_STORAGE);
+            }
         }
         List<String> permissionsToAsk = new ArrayList<>();
         for(String permission : permissions) {
@@ -45,8 +53,8 @@ public class CameraPermissions implements EventChannel.StreamHandler, PluginRegi
         return permissionsToAsk.toArray(new String[0]);
     }
 
-    public void checkAndRequestPermissions(Activity activity) {
-        String[] permissionsToAsk = checkPermissions(activity);
+    public void checkAndRequestPermissions(Activity activity, boolean ignoreExternalStorage) {
+        String[] permissionsToAsk = checkPermissions(activity, ignoreExternalStorage);
         if(permissionsToAsk.length > 0) {
             Log.d(TAG, "_checkAndRequestPermissions: " + String.join(",", permissionsToAsk));
             ActivityCompat.requestPermissions(

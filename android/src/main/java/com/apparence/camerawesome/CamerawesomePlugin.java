@@ -205,7 +205,11 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
   private void _handleCheckPermissions(MethodCall call, Result result) {
     try {
       assert(pluginActivity !=null);
-      String[] missingPermissions = cameraPermissions.checkPermissions(pluginActivity);
+      boolean ignoreExternalStorage = false;
+      if (call.argument("ignoreExternalStorage") != null) {
+        ignoreExternalStorage = call.argument("ignoreExternalStorage");
+      }
+      String[] missingPermissions = cameraPermissions.checkPermissions(pluginActivity, ignoreExternalStorage);
       if(missingPermissions.length == 0) {
         result.success(new ArrayList<>());
       } else {
@@ -218,7 +222,11 @@ public class CamerawesomePlugin implements FlutterPlugin, MethodCallHandler, Act
   }
 
   private void _handleRequestPermissions(MethodCall call, Result result) {
-    cameraPermissions.checkAndRequestPermissions(pluginActivity);
+    boolean ignoreExternalStorage = false;
+    if (call.argument("ignoreExternalStorage") != null) {
+      ignoreExternalStorage = call.argument("ignoreExternalStorage");
+    }
+    cameraPermissions.checkAndRequestPermissions(pluginActivity, ignoreExternalStorage);
   }
 
   private void _handleSetup(MethodCall call, Result result) {
