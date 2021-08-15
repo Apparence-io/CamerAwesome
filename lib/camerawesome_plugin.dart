@@ -47,8 +47,8 @@ class CamerawesomePlugin {
 
   static CameraState currentState = CameraState.STOPPED;
 
-  static Future<List<String>> checkAndroidPermissions() => _channel
-      .invokeMethod("checkPermissions")
+  static Future<List<String>> checkAndroidPermissions({bool ignoreExternalStorage = false}) => _channel
+      .invokeMethod("checkPermissions", <String, dynamic>{'ignoreExternalStorage': ignoreExternalStorage})
       .then((res) => res.cast<String>());
 
   static Future<bool?> checkiOSPermissions() =>
@@ -285,11 +285,12 @@ class CamerawesomePlugin {
   // UTILITY METHODS
   // ---------------------------------------------------
 
-  static Future<bool?> checkPermissions() async {
+  static Future<bool?> checkPermissions({bool ignoreExternalStorage = false}) async {
     try {
       if (Platform.isAndroid) {
         var missingPermissions =
-            await CamerawesomePlugin.checkAndroidPermissions();
+            await CamerawesomePlugin.checkAndroidPermissions(ignoreExternalStorage: ignoreExternalStorage);
+        print('Hello $ignoreExternalStorage : $missingPermissions');
         if (missingPermissions.length > 0) {
           return CamerawesomePlugin.requestPermissions()
               .then((value) => value == null);
