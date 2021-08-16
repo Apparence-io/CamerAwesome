@@ -1,3 +1,7 @@
+## BREAKING CHANGE
+- add optional for requesting write storage permission on Android
+- fix error in example pointed that we should init before starting.
+
 ## 0.3.1
 - handle app lifecycle (stop camera on background)
 ## 0.3.0
