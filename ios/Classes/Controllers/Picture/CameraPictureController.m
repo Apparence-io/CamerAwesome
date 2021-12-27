@@ -56,7 +56,7 @@
 - (UIImageOrientation)getJpegOrientation {
     switch (_orientation) {
         case UIDeviceOrientationPortrait:
-            return UIImageOrientationRight;
+            return UIImageOrientationLeftMirrored;
             break;
         case UIDeviceOrientationLandscapeRight:
             return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;

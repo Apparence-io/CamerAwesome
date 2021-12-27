@@ -88,7 +88,7 @@
     
     // Mirror the preview only on portrait mode
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-    [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
+    [_captureConnection setVideoMirrored:(sensor == Front)];
     [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
     
     [self setCameraPresset:CGSizeMake(0, 0)];
