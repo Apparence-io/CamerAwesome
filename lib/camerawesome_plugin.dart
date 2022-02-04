@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -47,16 +48,15 @@ class CamerawesomePlugin {
 
   static CameraState currentState = CameraState.STOPPED;
 
-  static Future<List<String>> checkAndroidPermissions() => _channel
-      .invokeMethod("checkPermissions")
-      .then((res) => res.cast<String>());
+  static Future<List<String?>> checkAndroidPermissions() =>
+      CameraInterface().checkPermissions();
 
   static Future<bool?> checkiOSPermissions() =>
       _channel.invokeMethod("checkPermissions");
 
   /// only available on Android
-  static Future<List<String>?> requestPermissions() =>
-      _channel.invokeMethod("requestPermissions");
+  static Future<void> requestPermissions() =>
+      CameraInterface().requestPermissions();
 
   static Future<bool> start() async {
     if (currentState == CameraState.STARTED ||
@@ -144,6 +144,7 @@ class CamerawesomePlugin {
     bool enableImageStream, {
     CaptureModes captureMode = CaptureModes.PHOTO,
   }) async {
+    return CameraInterface().setupCamera().then((value) => true);
     return _channel.invokeMethod("init", <String, dynamic>{
       'sensor': sensor.toString().split(".")[1],
       'captureMode': captureMode.toString().split(".")[1],
@@ -168,7 +169,9 @@ class CamerawesomePlugin {
   }
 
   static Future<num?> getPreviewTexture() {
-    return _channel.invokeMethod<num?>('previewTexture');
+    return CameraInterface()
+        .getPreviewTextureId(0)
+        .then((value) => value.textureId);
   }
 
   static Future<void> setPreviewSize(int width, int height) {
@@ -291,8 +294,7 @@ class CamerawesomePlugin {
         var missingPermissions =
             await CamerawesomePlugin.checkAndroidPermissions();
         if (missingPermissions.length > 0) {
-          return CamerawesomePlugin.requestPermissions()
-              .then((value) => value == null);
+          CamerawesomePlugin.requestPermissions();
         } else {
           return Future.value(true);
         }
