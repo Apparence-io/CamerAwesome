@@ -137,7 +137,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -180,7 +180,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   void dispose() {
     started = false;
     stopping = true;
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     CamerawesomePlugin.stop();
     selectedAndroidPhotoSize!.dispose();
     selectedPreviewSize!.dispose();
