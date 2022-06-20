@@ -1,3 +1,8 @@
+## 0.3.2
+- Update to Flutter 3.
+- Update Android example project.
+- Upgrade dependencies.
+- Clean some code.
 ## 0.3.1
 - handle app lifecycle (stop camera on background)
 ## 0.3.0

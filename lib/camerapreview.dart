@@ -5,11 +5,8 @@ import 'dart:typed_data';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
-
-import 'models/flashmodes.dart';
 
 /// Used to set a permission result callback
 typedef OnPermissionsResult = void Function(bool? result);
@@ -137,7 +134,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -180,7 +177,7 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
   void dispose() {
     started = false;
     stopping = true;
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     CamerawesomePlugin.stop();
     selectedAndroidPhotoSize!.dispose();
     selectedPreviewSize!.dispose();
@@ -235,7 +232,6 @@ class CameraAwesomeState extends State<CameraAwesome> with WidgetsBindingObserve
     camerasAvailableSizes = await CamerawesomePlugin.getSizes();
     if (widget.selectDefaultSize != null) {
       widget.photoSize.value = widget.selectDefaultSize!(camerasAvailableSizes);
-      assert(widget.photoSize.value != null, "A size from the list must be selected");
     } else {
       widget.photoSize.value = camerasAvailableSizes[0];
     }

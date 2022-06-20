@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:camerawesome/camerapreview.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome_example/main.dart';
 import 'package:flutter/material.dart';
@@ -84,7 +83,7 @@ void main() {
         (find.byKey(ValueKey('resolutionTxt')).evaluate().first.widget as Text)
             .data;
     var resolButtonFinder = find.byKey(ValueKey('resolutionButton'));
-    (resolButtonFinder.evaluate().first.widget as FlatButton).onPressed();
+    (resolButtonFinder.evaluate().first.widget as TextButton).onPressed();
     await tester.pump(Duration(milliseconds: 2000));
     await tester.pumpAndSettle(Duration(milliseconds: 2000));
     var optionsFinder = find.byKey(ValueKey('resOption'));
