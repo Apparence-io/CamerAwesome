@@ -6,7 +6,6 @@ import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
 import 'package:camerawesome_example/widgets/take_photo_button.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imgUtils;
