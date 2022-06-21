@@ -285,14 +285,33 @@ class CamerawesomePlugin {
   // UTILITY METHODS
   // ---------------------------------------------------
 
-  static Future<bool?> checkPermissions() async {
+  /// returns true if all permissions are granted
+  static Future<bool> checkPermissions() async {
+    try {
+      if (Platform.isAndroid) {
+        var missingPermissions =
+            await CamerawesomePlugin.checkAndroidPermissions();
+        return Future.value(missingPermissions.length > 0);
+      } else if (Platform.isIOS) {
+        return CamerawesomePlugin.checkiOSPermissions()
+            .then((value) => value ?? false);
+      }
+    } catch (err, stacktrace) {
+      debugPrint("failed to check permissions here...");
+      debugPrintStack(stackTrace: stacktrace);
+    }
+    return Future.value(false);
+  }
+
+  static Future<bool?> checkAndRequestPermissions() async {
     try {
       if (Platform.isAndroid) {
         var missingPermissions =
             await CamerawesomePlugin.checkAndroidPermissions();
         if (missingPermissions.length > 0) {
-          return CamerawesomePlugin.requestPermissions()
-              .then((value) => value == null);
+          return CamerawesomePlugin.requestPermissions().then((value) {
+            return value == null;
+          });
         } else {
           return Future.value(true);
         }
