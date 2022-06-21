@@ -1,3 +1,6 @@
+## 0.3.3
+- update android build tools to 30
+- fix first permission request crash
 ## 0.3.2
 - Update to Flutter 3.
 - Update Android example project.
