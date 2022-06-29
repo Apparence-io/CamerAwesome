@@ -147,7 +147,8 @@ _captureMode.value = CaptureModes.VIDEO;
 | selectDefaultSize    | ```OnAvailableSizes```                 | implement this to select a default size from device available size list                     | ✅        |
 | onCameraStarted      | ```OnCameraStarted```                  | notify client that camera started                                                           |          |
 | onOrientationChanged | ```OnOrientationChanged```             | notify client that orientation changed                                                      |          |
-| switchFlashMode      | ```**ValueNotifier**<CameraFlashes>``` | change flash mode                                                                           |          |
+| switchFlashMode      | ```ValueNotifier<CameraFlashes>```     | change flash mode                                                                           |          |
+| enablePinchToZoom    | ```ValueNotifier<bool>```              | enable/Disable pinch to zoom                                                                |          |
 | zoom                 | ```ValueNotifier<double>```            | Zoom from native side. Must be between **0** and **1**                                      |          |
 | sensor               | ```ValueNotifier<Sensors>```           | sensor to initiate **BACK** or **FRONT**                                                    | ✅        |
 | photoSize            | ```ValueNotifier<Size>```              | choose your photo size from the [selectDefaultSize] method                                  |          |
