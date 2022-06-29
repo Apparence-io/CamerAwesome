@@ -35,6 +35,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
 
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<double> _zoomNotifier = ValueNotifier(0);
+  ValueNotifier<bool> _enablePinchToZoom = ValueNotifier(true);
   ValueNotifier<Size> _photoSize = ValueNotifier(null);
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
@@ -97,7 +98,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       body: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+          this._fullscreen ? buildFullScreenCamera() : buildSizedScreenCamera(),
           _buildInterface(),
           (!_isRecordingVideo)
               ? PreviewCardWidget(
@@ -121,6 +122,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               isRecording: _isRecordingVideo,
               enableAudio: _enableAudio,
               photoSize: _photoSize,
+              enablePinchToZoom: _enablePinchToZoom,
               captureMode: _captureMode,
               switchFlash: _switchFlash,
               orientation: _orientation,
@@ -140,6 +142,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                     _switchFlash.value = CameraFlashes.NONE;
                     break;
                 }
+                setState(() {});
+              },
+              onPinchToZoomChange: () {
+                this._enablePinchToZoom.value = !this._enablePinchToZoom.value;
                 setState(() {});
               },
               onAudioChange: () {
@@ -339,7 +345,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   //   );
   // }
 
-  Widget buildFullscreenCamera() {
+  Widget buildFullScreenCamera() {
     return Positioned(
       top: 0,
       left: 0,
@@ -358,6 +364,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           enableAudio: _enableAudio,
           switchFlashMode: _switchFlash,
           zoom: _zoomNotifier,
+          enablePinchToZoom: _enablePinchToZoom,
           onOrientationChanged: _onOrientationChange,
           // imagesStreamBuilder: (imageStream) {
           //   /// listen for images preview stream
@@ -403,6 +410,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               sensor: _sensor,
               fitted: true,
               switchFlashMode: _switchFlash,
+              enablePinchToZoom: _enablePinchToZoom,
               zoom: _zoomNotifier,
               onOrientationChanged: _onOrientationChange,
             ),
