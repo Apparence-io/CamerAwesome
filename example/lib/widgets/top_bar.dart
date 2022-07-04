@@ -14,11 +14,13 @@ class TopBarWidget extends StatelessWidget {
   final ValueNotifier<CaptureModes> captureMode;
   final ValueNotifier<bool> enableAudio;
   final ValueNotifier<CameraFlashes> switchFlash;
+  final ValueNotifier<bool> enablePinchToZoom;
   final Function onFullscreenTap;
   final Function onResolutionTap;
   final Function onChangeSensorTap;
   final Function onFlashTap;
   final Function onAudioChange;
+  final Function onPinchToZoomChange;
 
   const TopBarWidget({
     Key key,
@@ -30,11 +32,13 @@ class TopBarWidget extends StatelessWidget {
     @required this.orientation,
     @required this.rotationController,
     @required this.switchFlash,
+    @required this.enablePinchToZoom,
     @required this.onFullscreenTap,
     @required this.onAudioChange,
     @required this.onFlashTap,
     @required this.onChangeSensorTap,
     @required this.onResolutionTap,
+    @required this.onPinchToZoomChange,
   }) : super(key: key);
 
   @override
@@ -109,14 +113,23 @@ class TopBarWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              OptionButton(
+                rotationController: rotationController,
+                icon: enablePinchToZoom.value ? Icons.pinch_rounded : Icons.pinch_outlined,
+                orientation: orientation,
+                onTapCallback: () => onPinchToZoomChange?.call(),
+              ),
               captureMode.value == CaptureModes.VIDEO
-                  ? OptionButton(
-                      icon: enableAudio.value ? Icons.mic : Icons.mic_off,
-                      rotationController: rotationController,
-                      orientation: orientation,
-                      isEnabled: !isRecording,
-                      onTapCallback: () => onAudioChange?.call(),
-                    )
+                  ? Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                    child: OptionButton(
+                        icon: enableAudio.value ? Icons.mic : Icons.mic_off,
+                        rotationController: rotationController,
+                        orientation: orientation,
+                        isEnabled: !isRecording,
+                        onTapCallback: () => onAudioChange?.call(),
+                      ),
+                  )
                   : Container(),
             ],
           ),

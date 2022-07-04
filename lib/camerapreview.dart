@@ -62,6 +62,9 @@ class CameraAwesome extends StatefulWidget {
   /// choose to record video with audio or not - Video mode TODO only iOS, Android to be done
   final ValueNotifier<bool>? enableAudio;
 
+  /// choose to enable pinch to zoom
+  final ValueNotifier<bool>? enablePinchToZoom;
+
   /// choose between [BACK] and [FRONT]
   final ValueNotifier<Sensors> sensor;
 
@@ -91,6 +94,7 @@ class CameraAwesome extends StatefulWidget {
     this.fitted = false,
     this.zoom,
     this.onOrientationChanged,
+    this.enablePinchToZoom,
     required this.sensor,
     required this.captureMode,
     this.enableAudio,
@@ -114,6 +118,9 @@ class CameraAwesomeState extends State<CameraAwesome>
   bool started = false;
 
   bool stopping = false;
+
+  late double _previousZoomScale;
+  late double _zoomScale;
 
   /// we use this subject to have a little debounce time between changes
   late PublishSubject<double> brightnessCorrectionData;
@@ -284,12 +291,34 @@ class CameraAwesomeState extends State<CameraAwesome>
         }
         //TODO show an icon if permission not granted ??
         if (!hasPermissions! || !snapshot.hasData) return _loading();
-        return _CameraPreviewWidget(
-          size: selectedPreviewSize!.value,
-          fitted: widget.fitted,
-          textureId: snapshot.data?.toInt(),
-        );
+
+        final int? textureId = snapshot.data?.toInt();
+        if (widget.enablePinchToZoom?.value == true) {
+          return GestureDetector(
+            onScaleStart: (_) {
+              _previousZoomScale = _zoomScale + 1;
+            },
+            onScaleUpdate: (ScaleUpdateDetails details) {
+              double result = _previousZoomScale * details.scale - 1;
+              if (result < 1 && result > 0) {
+                _zoomScale = result;
+                CamerawesomePlugin.setZoom(_zoomScale);
+              }
+            },
+            child: _buildCameraPreview(textureId),
+          );
+        } else {
+          return _buildCameraPreview(textureId);
+        }
       },
+    );
+  }
+
+  Widget _buildCameraPreview(int? textureId) {
+    return _CameraPreviewWidget(
+      size: selectedPreviewSize!.value,
+      fitted: widget.fitted,
+      textureId: textureId,
     );
   }
 
@@ -319,12 +348,16 @@ class CameraAwesomeState extends State<CameraAwesome>
   /// Zoom value must be between 0 and 1
   _initZoom() {
     if (widget.zoom != null) {
+      _zoomScale = widget.zoom!.value;
+
       widget.zoom!.addListener(() {
         if (widget.zoom!.value < 0 || widget.zoom!.value > 1) {
           throw "Zoom value must be between 0 and 1";
         }
         CamerawesomePlugin.setZoom(widget.zoom!.value);
       });
+    } else {
+      _zoomScale = 0;
     }
   }
 

@@ -1,3 +1,5 @@
+## 0.3.4
+- Add pinch to zoom.
 ## 0.3.3
 - update android build tools to 30
 - fix first permission request crash
