@@ -242,7 +242,7 @@ Feel free to help by submitting PR !
 - [x] ~~⌛️ Auto focus~~
 
 ## 📣&nbsp; Sponsor
-<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/apparence_logo.png" width="30" />
+<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/apparence_logo.png" />
 <br />
 
 [Initiated and sponsored by Apparence.io.](https://apparence.io)
