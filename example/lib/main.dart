@@ -200,6 +200,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   _takePhoto() async {
+    // lets just make our phone vibrate
+    HapticFeedback.mediumImpact();
+
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
         await Directory('${extDir.path}/test').create(recursive: true);
@@ -207,8 +210,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'
         : '${testDir.path}/photo_test.jpg';
     await _pictureController.takePicture(filePath);
-    // lets just make our phone vibrate
-    HapticFeedback.mediumImpact();
+    final file = File(filePath);
+    // precache the image before display it
+    await precacheImage(FileImage(file), context);
     _lastPhotoPath = filePath;
     setState(() {});
     if (_previewAnimationController.status == AnimationStatus.completed) {
@@ -217,7 +221,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     _previewAnimationController.forward();
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
-    final file = File(filePath);
     print("==> hastakePhoto : ${file.exists()} | path : $filePath");
     final img = imgUtils.decodeImage(file.readAsBytesSync());
     print("==> img.width : ${img.width} | img.height : ${img.height}");
