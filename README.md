@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://apparence.io/">
-		<img src="https://back.apparence.io/media/111/camerawesome.jpeg" width="456" alt="camerawesome_logo">
+		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/logo.png" width="456" alt="camerawesome_logo">
 	</a>
 </p>
 
@@ -242,7 +242,7 @@ Feel free to help by submitting PR !
 - [x] ~~⌛️ Auto focus~~
 
 ## 📣&nbsp; Sponsor
-<img src="https://en.apparence.io/assets/images/logo.svg" width="30" />
+<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/apparence_logo.png" width="30" />
 <br />
 
 [Initiated and sponsored by Apparence.io.](https://apparence.io)
