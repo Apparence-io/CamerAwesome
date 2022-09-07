@@ -33,6 +33,8 @@
     [_captureVideoOutput setAlwaysDiscardsLateVideoFrames:YES];
     [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
     [_captureSession addOutputWithNoConnections:_captureVideoOutput];
+
+    _cameraSensor = sensor;
     
     [self initCameraPreview:sensor];
     
@@ -46,8 +48,6 @@
     
     _previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:_captureSession];
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-    
-    _cameraSensor = sensor;
     
     // Controllers init
     _videoController = [[VideoController alloc] initWithEventSink:videoRecordingEventSink result:result];
@@ -88,7 +88,7 @@
     
     // Mirror the preview only on portrait mode
     [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-    [_captureConnection setVideoMirrored:(_cameraSensor == Back)];
+    [_captureConnection setVideoMirrored:(_cameraSensor == Front)];
     [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
     
     [self setCameraPresset:CGSizeMake(0, 0)];
@@ -188,12 +188,12 @@
     [_captureSession removeOutput:_capturePhotoOutput];
     [_captureSession removeConnection:_captureConnection];
     
+    _cameraSensor = sensor;
+
     // Init the camera preview with the selected sensor
     [self initCameraPreview:sensor];
     
     [_captureSession commitConfiguration];
-    
-    _cameraSensor = sensor;
 }
 
 /// Set zoom level
