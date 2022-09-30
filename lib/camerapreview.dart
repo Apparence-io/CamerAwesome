@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/orientations.dart';
@@ -482,6 +481,7 @@ class _CameraPreviewWidget extends StatelessWidget {
     this.size,
     this.textureId,
     this.fitted = false,
+    // ignore: unused_element
     this.testMode = false,
   });
 

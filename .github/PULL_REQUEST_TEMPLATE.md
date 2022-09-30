@@ -8,7 +8,7 @@ Before creating any Pull Request, confirm that it meets all requirements listed 
 
 - [ ] 📕 I read the [Contributing page](https://github.com/Apparence-io/camera_awesome/blob/master/CONTRIBUTING.md).
 - [ ] 🤝 I match the actual coding style.
-- [ ] ✅ I ran ```flutter analyse``` without any issues.
+- [ ] ✅ I ran ```flutter analyze``` without any issues.
 
 ## Breaking Change
 
