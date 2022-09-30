@@ -74,6 +74,8 @@ class CameraAwesome extends StatefulWidget {
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
 
+  final SavedExifData? savedExifData;
+
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
@@ -98,6 +100,7 @@ class CameraAwesome extends StatefulWidget {
     required this.sensor,
     required this.captureMode,
     this.enableAudio,
+    this.savedExifData,
     this.imagesStreamBuilder,
     this.brightness,
     this.luminosityLevelStreamBuilder,
@@ -270,7 +273,14 @@ class CameraAwesomeState extends State<CameraAwesome>
     _initAudioMode();
     _initManualBrightness();
     _initBrightnessStream();
+    _initExifData();
     if (mounted) setState(() {});
+  }
+
+  _initExifData() {
+    if (widget.savedExifData != null) {
+      CamerawesomePlugin.setExifPreferences(widget.savedExifData!);
+    }
   }
 
   _initImageStream() {
@@ -383,6 +393,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     if (widget.enableAudio == null) {
       return;
     }
+    CamerawesomePlugin.setAudioMode(widget.enableAudio!.value);
     widget.enableAudio!.addListener(() async {
       await CamerawesomePlugin.setAudioMode(widget.enableAudio!.value);
     });

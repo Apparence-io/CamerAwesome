@@ -9,6 +9,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 #import <CoreMotion/CoreMotion.h>
+#import <CoreLocation/CoreLocation.h>
 
 #import "CameraSensor.h"
 
@@ -18,6 +19,7 @@ typedef void(^OnPictureTaken)(void);
 
 @interface CameraPictureController : NSObject <AVCapturePhotoCaptureDelegate>
 @property(readonly, nonatomic) NSString *path;
+@property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) CameraSensor sensor;
 @property NSInteger orientation;
@@ -28,6 +30,7 @@ typedef void(^OnPictureTaken)(void);
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
                       sensor:(CameraSensor)sensor
+             saveGPSLocation:(bool)saveGPSLocation
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback;
 @end

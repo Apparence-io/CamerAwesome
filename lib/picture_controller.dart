@@ -4,4 +4,10 @@ class PictureController {
   Future<void> takePicture(String filePath) async {
     await CamerawesomePlugin.takePhoto(filePath);
   }
+
+  Future setExifPreferences(SavedExifData savedExifData) async {
+    await CamerawesomePlugin.setExifPreferences(
+      savedExifData,
+    );
+  }
 }

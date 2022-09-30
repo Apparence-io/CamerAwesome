@@ -18,6 +18,7 @@ dependencies:
   path_provider: ^2.0.2
   rxdart: ^0.27.1
   video_player: ^2.1.6
+  exif: ^3.1.2
 
 dev_dependencies:
   integration_test:

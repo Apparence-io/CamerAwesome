@@ -29,6 +29,7 @@ CamerAwesome include a lot of useful features like:
 - 🎮 Complete example.
 - 🎞 Taking a **picture** ( of course 😃 ).
 - 🎥 Video recording (iOS only for now).
+- 🛰 **GPS Location** saved in image (iOS only for now).
 
 ## 🧐&nbsp; Live example
 
@@ -54,6 +55,9 @@ CamerAwesome include a lot of useful features like:
 
 <key>NSMicrophoneUsageDescription</key>
 <string>To enable microphone access when recording video</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>To enable GPS location access for Exif data</string>
 ```
 
   - **Android**
@@ -155,6 +159,7 @@ _captureMode.value = CaptureModes.VIDEO;
 | captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
 | fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
 | imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
+| savedExifData        | ```SavedExifData```                    | set exif data when a picture was taken, GPS location can be saved to image file for ex.     |          |
 
 </p>
 </details>

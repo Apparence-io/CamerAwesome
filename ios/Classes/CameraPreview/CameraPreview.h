@@ -11,6 +11,7 @@
 #import <Foundation/Foundation.h>
 
 #import "MotionController.h"
+#import "LocationController.h"
 #import "VideoController.h"
 #import "ImageStreamController.h"
 #import "CameraSensor.h"
@@ -40,14 +41,16 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) NSString *currentPresset;
+@property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
+@property(readonly, nonatomic) LocationController *locationController;
 @property(readonly, nonatomic) VideoController *videoController;
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
-    
+
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                          captureMode:(CaptureModes)captureMode
@@ -61,6 +64,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)setCaptureMode:(CaptureModes)captureMode;
 - (void)setRecordingAudioMode:(bool)enableAudio;
+- (void)setExifPreferencesGPSLocation:(bool)gpsLocation;
 - (void)refresh;
 - (void)start;
 - (void)stop;

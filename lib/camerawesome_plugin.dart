@@ -10,12 +10,14 @@ export 'camerapreview.dart';
 export 'picture_controller.dart';
 export 'video_controller.dart';
 
+import 'models/saved_exif_data.dart';
 import 'models/sensor_data.dart';
 import 'models/sensors.dart';
 import 'models/capture_modes.dart';
 import 'models/flashmodes.dart';
 export 'models/sensors.dart';
 export 'models/capture_modes.dart';
+export 'models/saved_exif_data.dart';
 export 'models/flashmodes.dart';
 import 'models/orientations.dart';
 export 'models/sensor_data.dart';
@@ -139,15 +141,12 @@ class CamerawesomePlugin {
     return _imagesStream;
   }
 
-  static Future<bool?> init(
-    Sensors sensor,
-    bool enableImageStream, {
-    CaptureModes captureMode = CaptureModes.PHOTO,
-  }) async {
+  static Future<bool?> init(Sensors sensor, bool enableImageStream,
+      {CaptureModes captureMode = CaptureModes.PHOTO}) async {
     return _channel.invokeMethod("init", <String, dynamic>{
       'sensor': sensor.toString().split(".")[1],
       'captureMode': captureMode.toString().split(".")[1],
-      'streamImages': enableImageStream
+      'streamImages': enableImageStream,
     });
   }
 
@@ -249,6 +248,12 @@ class CamerawesomePlugin {
   static Future<void> setAudioMode(bool enableAudio) =>
       _channel.invokeMethod('setRecordingAudioMode', <String, dynamic>{
         'enableAudio': enableAudio,
+      });
+
+  /// set exif preferences when a photo is saved
+  static Future<void> setExifPreferences(SavedExifData savedExifData) =>
+      _channel.invokeMethod('setExifPreferences', <String, dynamic>{
+        'saveGPSLocation': savedExifData.saveGPSLocation,
       });
 
   /// set brightness manually with range [0,1]
