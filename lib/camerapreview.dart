@@ -73,6 +73,9 @@ class CameraAwesome extends StatefulWidget {
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
 
+  /// Set the recording to pause when set to true and to resume when set to false
+  final ValueNotifier<bool>? recordingPaused;
+
   final ExifPreferences? exifPreferences;
 
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
@@ -103,6 +106,7 @@ class CameraAwesome extends StatefulWidget {
     this.imagesStreamBuilder,
     this.brightness,
     this.luminosityLevelStreamBuilder,
+    this.recordingPaused,
   }) : super(key: key);
 
   @override
@@ -210,15 +214,15 @@ class CameraAwesomeState extends State<CameraAwesome>
   Future<void> initPlatformState() async {
     // wait user accept permissions to init widget completely on android
     if (Platform.isAndroid) {
-      _permissionStreamSub =
-          CamerawesomePlugin.listenPermissionResult()!.listen((res) {
-        if (res) {
-          initPlatformState();
-        }
-        if (widget.onPermissionsResult != null) {
-          widget.onPermissionsResult!(res);
-        }
-      });
+      // _permissionStreamSub =
+      //     CamerawesomePlugin.listenPermissionResult()!.listen((res) {
+      //   if (res) {
+      //     initPlatformState();
+      //   }
+      //   if (widget.onPermissionsResult != null) {
+      //     widget.onPermissionsResult!(res);
+      //   }
+      // });
     }
     hasPermissions = await CamerawesomePlugin.checkAndRequestPermissions();
     if (widget.onPermissionsResult != null) {
@@ -255,6 +259,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     } else {
       widget.photoSize.value = camerasAvailableSizes[0];
     }
+
     // start camera --
     try {
       started = await CamerawesomePlugin.start();
@@ -272,6 +277,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     _initAudioMode();
     _initManualBrightness();
     _initBrightnessStream();
+    _initRecordingPaused();
     _initExifData();
     if (mounted) setState(() {});
   }
@@ -336,10 +342,11 @@ class CameraAwesomeState extends State<CameraAwesome>
         child: Center(child: CircularProgressIndicator()),
       );
 
-  bool get hasInit =>
-      selectedPreviewSize!.value != null &&
-      camerasAvailableSizes.length > 0 &&
-      started;
+  bool get hasInit {
+    return selectedPreviewSize!.value != null &&
+        camerasAvailableSizes.length > 0 &&
+        started;
+  }
 
   /// inits the Flash mode switcher using [ValueNotifier]
   /// Each time user call to switch flashMode we send a call to iOS or Android Plugins
@@ -428,6 +435,8 @@ class CameraAwesomeState extends State<CameraAwesome>
           widget.photoSize.value.height.toInt());
       var effectivPreviewSize =
           await CamerawesomePlugin.getEffectivPreviewSize();
+      print("new preview size: $effectivPreviewSize from ${widget.photoSize} ");
+
       if (selectedPreviewSize != null) {
         // this future can take time and be called after we disposed
         selectedPreviewSize!.value = effectivPreviewSize;
@@ -457,6 +466,19 @@ class CameraAwesomeState extends State<CameraAwesome>
     }
     widget.luminosityLevelStreamBuilder!(
         CamerawesomePlugin.listenLuminosityLevel());
+  }
+
+  _initRecordingPaused() {
+    if (widget.recordingPaused == null) {
+      return;
+    }
+    widget.recordingPaused!.addListener(() {
+      if (widget.recordingPaused!.value == true) {
+        CamerawesomePlugin.pauseVideoRecording();
+      } else {
+        CamerawesomePlugin.resumeVideoRecording();
+      }
+    });
   }
 
   _retryStartCamera(int nbTry) async {

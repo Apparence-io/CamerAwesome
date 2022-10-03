@@ -1,4 +1,3 @@
-import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/models/flashmodes.dart';
 import 'package:camerawesome/models/orientations.dart';
@@ -16,6 +15,7 @@ class TopBarWidget extends StatelessWidget {
   final ValueNotifier<bool> enableAudio;
   final ValueNotifier<CameraFlashes> switchFlash;
   final ValueNotifier<bool> enablePinchToZoom;
+  final ValueNotifier<bool> pausedRecording;
   final ExifPreferences exifPreferences;
   final Function onFullscreenTap;
   final Function onResolutionTap;
@@ -23,6 +23,7 @@ class TopBarWidget extends StatelessWidget {
   final Function onFlashTap;
   final Function onAudioChange;
   final Function onPinchToZoomChange;
+  final Function onPausedRecordingChange;
   final Function onSetExifPreferences;
 
   const TopBarWidget({
@@ -36,12 +37,14 @@ class TopBarWidget extends StatelessWidget {
     @required this.rotationController,
     @required this.switchFlash,
     @required this.enablePinchToZoom,
+    @required this.pausedRecording,
     @required this.onFullscreenTap,
     @required this.onAudioChange,
     @required this.onFlashTap,
     @required this.onChangeSensorTap,
     @required this.onResolutionTap,
     @required this.onPinchToZoomChange,
+    @required this.onPausedRecordingChange,
     @required this.exifPreferences,
     @required this.onSetExifPreferences,
   }) : super(key: key);
@@ -140,6 +143,17 @@ class TopBarWidget extends StatelessWidget {
                   : Container(),
             ],
           ),
+          SizedBox(height: 20),
+          if (captureMode.value == CaptureModes.VIDEO &&
+              onPausedRecordingChange != null)
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              OptionButton(
+                rotationController: rotationController,
+                icon: pausedRecording.value ? Icons.play_arrow : Icons.pause,
+                orientation: orientation,
+                onTapCallback: () => onPausedRecordingChange?.call(),
+              ),
+            ]),
           SizedBox(height: 20.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,

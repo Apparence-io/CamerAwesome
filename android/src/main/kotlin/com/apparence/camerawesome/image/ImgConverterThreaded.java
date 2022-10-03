@@ -1,6 +1,5 @@
 package com.apparence.camerawesome.image;
 
-import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.os.HandlerThread;

@@ -15,7 +15,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  pigeon: ^1.0.16
+  pigeon: ^4.2.0
   
 
 # For information on the generic Dart part of this file, see the

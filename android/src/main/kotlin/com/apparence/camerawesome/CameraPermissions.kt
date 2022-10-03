@@ -4,14 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
-import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
-import io.flutter.plugin.common.EventChannel.EventSink
-import com.apparence.camerawesome.CameraPermissions
-import androidx.core.content.ContextCompat
 import androidx.core.app.ActivityCompat
-import java.lang.RuntimeException
-import java.util.ArrayList
+import androidx.core.content.ContextCompat
+import com.apparence.camerawesome.CameraPermissions
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.EventChannel.EventSink
+import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 
 class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultListener {
     private var permissionGranted = false
@@ -100,7 +98,11 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
     companion object {
         private val TAG = CameraPermissions::class.java.name
         private val permissions =
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.RECORD_AUDIO,
+            )
         private const val PERMISSIONS_MULTIPLE_REQUEST = 5
     }
 }
