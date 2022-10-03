@@ -73,6 +73,8 @@ class CameraAwesome extends StatefulWidget {
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
 
+  final ExifPreferences? exifPreferences;
+
   /// whether camera preview must be as big as it needs or cropped to fill with. false by default
   final bool fitted;
 
@@ -97,6 +99,7 @@ class CameraAwesome extends StatefulWidget {
     required this.sensor,
     required this.captureMode,
     this.enableAudio,
+    this.exifPreferences,
     this.imagesStreamBuilder,
     this.brightness,
     this.luminosityLevelStreamBuilder,
@@ -269,7 +272,14 @@ class CameraAwesomeState extends State<CameraAwesome>
     _initAudioMode();
     _initManualBrightness();
     _initBrightnessStream();
+    _initExifData();
     if (mounted) setState(() {});
+  }
+
+  _initExifData() {
+    if (widget.exifPreferences != null) {
+      CamerawesomePlugin.setExifPreferences(widget.exifPreferences!);
+    }
   }
 
   _initImageStream() {
@@ -334,13 +344,17 @@ class CameraAwesomeState extends State<CameraAwesome>
   /// inits the Flash mode switcher using [ValueNotifier]
   /// Each time user call to switch flashMode we send a call to iOS or Android Plugins
   _initFlashModeSwitcher() {
-    if (widget.switchFlashMode != null) {
-      widget.switchFlashMode!.addListener(() async {
-        if (started) {
-          await CamerawesomePlugin.setFlashMode(widget.switchFlashMode!.value);
-        }
-      });
+    if (widget.switchFlashMode?.value == null) {
+      return;
     }
+
+    CamerawesomePlugin.setFlashMode(widget.switchFlashMode!.value);
+
+    widget.switchFlashMode!.addListener(() async {
+      if (started) {
+        await CamerawesomePlugin.setFlashMode(widget.switchFlashMode!.value);
+      }
+    });
   }
 
   /// handle zoom notifier
@@ -379,9 +393,11 @@ class CameraAwesomeState extends State<CameraAwesome>
   }
 
   _initAudioMode() {
-    if (widget.enableAudio == null) {
+    if (widget.enableAudio?.value == null) {
       return;
     }
+
+    CamerawesomePlugin.setAudioMode(widget.enableAudio!.value);
     widget.enableAudio!.addListener(() async {
       await CamerawesomePlugin.setAudioMode(widget.enableAudio!.value);
     });
@@ -423,9 +439,11 @@ class CameraAwesomeState extends State<CameraAwesome>
   }
 
   _initManualBrightness() {
-    if (widget.brightness == null) {
+    if (widget.brightness?.value == null) {
       return;
     }
+
+    CamerawesomePlugin.setBrightness(widget.brightness!.value);
     _brightnessCorrectionDataSub = brightnessCorrectionData
         .debounceTime(Duration(milliseconds: 500))
         .listen((value) => CamerawesomePlugin.setBrightness(value));

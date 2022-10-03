@@ -1,3 +1,4 @@
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/models/flashmodes.dart';
 import 'package:camerawesome/models/orientations.dart';
@@ -15,12 +16,14 @@ class TopBarWidget extends StatelessWidget {
   final ValueNotifier<bool> enableAudio;
   final ValueNotifier<CameraFlashes> switchFlash;
   final ValueNotifier<bool> enablePinchToZoom;
+  final ExifPreferences exifPreferences;
   final Function onFullscreenTap;
   final Function onResolutionTap;
   final Function onChangeSensorTap;
   final Function onFlashTap;
   final Function onAudioChange;
   final Function onPinchToZoomChange;
+  final Function onSetExifPreferences;
 
   const TopBarWidget({
     Key key,
@@ -39,6 +42,8 @@ class TopBarWidget extends StatelessWidget {
     @required this.onChangeSensorTap,
     @required this.onResolutionTap,
     @required this.onPinchToZoomChange,
+    @required this.exifPreferences,
+    @required this.onSetExifPreferences,
   }) : super(key: key);
 
   @override
@@ -115,22 +120,42 @@ class TopBarWidget extends StatelessWidget {
             children: [
               OptionButton(
                 rotationController: rotationController,
-                icon: enablePinchToZoom.value ? Icons.pinch_rounded : Icons.pinch_outlined,
+                icon: enablePinchToZoom.value
+                    ? Icons.pinch_rounded
+                    : Icons.pinch_outlined,
                 orientation: orientation,
                 onTapCallback: () => onPinchToZoomChange?.call(),
               ),
               captureMode.value == CaptureModes.VIDEO
                   ? Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                    child: OptionButton(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: OptionButton(
                         icon: enableAudio.value ? Icons.mic : Icons.mic_off,
                         rotationController: rotationController,
                         orientation: orientation,
                         isEnabled: !isRecording,
                         onTapCallback: () => onAudioChange?.call(),
                       ),
-                  )
+                    )
                   : Container(),
+            ],
+          ),
+          SizedBox(height: 20.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OptionButton(
+                rotationController: rotationController,
+                icon: exifPreferences.saveGPSLocation
+                    ? Icons.gps_fixed_rounded
+                    : Icons.gps_not_fixed_outlined,
+                orientation: orientation,
+                onTapCallback: () {
+                  exifPreferences.saveGPSLocation =
+                      !exifPreferences.saveGPSLocation;
+                  onSetExifPreferences?.call(exifPreferences);
+                },
+              ),
             ],
           ),
         ],

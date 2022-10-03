@@ -9,8 +9,8 @@
 #define CaptureModes_h
 
 typedef enum {
-    Photo,
-    Video,
+  Photo,
+  Video,
 } CaptureModes;
 
 #endif /* CaptureModes_h */

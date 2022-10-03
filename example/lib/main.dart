@@ -6,6 +6,7 @@ import 'package:camerawesome_example/widgets/bottom_bar.dart';
 import 'package:camerawesome_example/widgets/camera_preview.dart';
 import 'package:camerawesome_example/widgets/preview_card.dart';
 import 'package:camerawesome_example/widgets/top_bar.dart';
+import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imgUtils;
@@ -56,6 +57,10 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   Timer _previewDismissTimer;
   // StreamSubscription<Uint8List> previewStreamSub;
   Stream<Uint8List> previewStream;
+
+  ExifPreferences _exifPreferences = ExifPreferences(
+    saveGPSLocation: false,
+  );
 
   @override
   void initState() {
@@ -126,6 +131,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               switchFlash: _switchFlash,
               orientation: _orientation,
               rotationController: _iconsAnimationController,
+              exifPreferences: _exifPreferences,
+              onSetExifPreferences: (newExifData) {
+                _pictureController.setExifPreferences(newExifData);
+                setState(() {});
+              },
               onFlashTap: () {
                 switch (_switchFlash.value) {
                   case CameraFlashes.NONE:
@@ -218,11 +228,17 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       _previewAnimationController.reset();
     }
     _previewAnimationController.forward();
+    final bytes = file.readAsBytesSync();
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
     print("==> hastakePhoto : ${file.exists()} | path : $filePath");
-    final img = imgUtils.decodeImage(file.readAsBytesSync());
+    final img = imgUtils.decodeImage(bytes);
     print("==> img.width : ${img.width} | img.height : ${img.height}");
+    final exifData = await readExifFromBytes(bytes);
+    for (var exif in exifData.entries) {
+      print("==> exifData : ${exif.key} : ${exif.value}");
+    }
+
     print("----------------------------------");
   }
 
@@ -360,6 +376,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             this._availableSizes = availableSizes;
             return availableSizes[0];
           },
+          exifPreferences: _exifPreferences,
           captureMode: _captureMode,
           photoSize: _photoSize,
           sensor: _sensor,
@@ -407,6 +424,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 this._availableSizes = availableSizes;
                 return availableSizes[0];
               },
+              exifPreferences: _exifPreferences,
               captureMode: _captureMode,
               photoSize: _photoSize,
               sensor: _sensor,
