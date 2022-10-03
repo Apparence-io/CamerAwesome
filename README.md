@@ -159,7 +159,7 @@ _captureMode.value = CaptureModes.VIDEO;
 | captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
 | fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
 | imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
-| savedExifData        | ```SavedExifData```                    | set exif data when a picture was taken, GPS location can be saved to image file for ex.     |          |
+| exifPreferences        | ```ExifPreferences```                    | set exif data when a picture was taken, GPS location can be saved to image file for ex.     |          |
 
 </p>
 </details>

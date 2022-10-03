@@ -1,3 +1,6 @@
+## 0.3.6
+- Add GPS location in Exif photo on iOS.
+- Fix some issues
 ## 0.3.4
 - Add pinch to zoom.
 ## 0.3.3
