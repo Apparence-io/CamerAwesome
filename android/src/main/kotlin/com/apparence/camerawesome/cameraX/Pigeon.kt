@@ -35,37 +35,13 @@ data class PreviewSize(
   }
 }
 
-/** Generated class from Pigeon that represents data sent in messages. */
-data class PreviewData(
-  val textureId: Double? = null,
-  val size: PreviewSize? = null
-) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromMap(map: Map<String, Any?>): PreviewData {
-      val textureId = map["textureId"] as? Double
-      val size: PreviewSize? = (map["size"] as? Map<String, Any?>)?.let {
-        PreviewSize.fromMap(it)
-      }
-
-      return PreviewData(textureId, size)
-    }
-  }
-  fun toMap(): Map<String, Any?> {
-    val map = mutableMapOf<String, Any?>()
-    textureId?.let { map["textureId"] = it }
-    size?.let { map["size"] = it.toMap() }
-    return map
-  }
-}
-
 @Suppress("UNCHECKED_CAST")
 private object CameraInterfaceCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       128.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          PreviewData.fromMap(it)
+          PreviewSize.fromMap(it)
         }
       }
       129.toByte() -> {
@@ -78,7 +54,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is PreviewData -> {
+      is PreviewSize -> {
         stream.write(128)
         writeValue(stream, value.toMap())
       }
@@ -93,12 +69,14 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(callback: () -> Unit)
+  fun setupCamera(sensor: String, captureMode: String, enableImageStream: Boolean)
   fun checkPermissions(): List<String>
   fun requestPermissions(): List<String>
-  fun getPreviewTextureId(cameraId: Long): PreviewData
-  fun takePhoto(): String
-  fun takeVideo(): String
+  fun getPreviewTextureId(): Double
+  fun takePhoto(path: String, callback: (Boolean) -> Unit)
+  fun recordVideo(path: String)
+  fun pauseVideoRecording()
+  fun resumeVideoRecording()
   fun stopRecordingVideo()
   fun start(): Boolean
   fun stop(): Boolean
@@ -113,8 +91,9 @@ interface CameraInterface {
   fun setRecordingAudioMode(enableAudio: Boolean)
   fun availableSizes(): List<PreviewSize>
   fun refresh()
-  fun getEffectivPreviewSize(): PreviewSize
+  fun getEffectivPreviewSize(): PreviewSize?
   fun setPhotoSize(size: PreviewSize)
+  fun setPreviewSize(size: PreviewSize)
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -127,16 +106,19 @@ val codec: MessageCodec<Any?> by lazy {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupCamera", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
-              api.setupCamera() {
-                reply.reply(null)
-              }
+              val args = message as List<Any?>
+              val sensorArg = args[0] as String
+              val captureModeArg = args[1] as String
+              val enableImageStreamArg = args[2] as Boolean
+              api.setupCamera(sensorArg, captureModeArg, enableImageStreamArg)
+              wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
-              reply.reply(wrapped)
             }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -177,12 +159,10 @@ val codec: MessageCodec<Any?> by lazy {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getPreviewTextureId", codec)
         if (api != null) {
-          channel.setMessageHandler { message, reply ->
+          channel.setMessageHandler { _, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
-              val args = message as List<Any?>
-              val cameraIdArg = args[0].let { if (it is Int) it.toLong() else it as Long }
-              wrapped["result"] = api.getPreviewTextureId(cameraIdArg)
+              wrapped["result"] = api.getPreviewTextureId()
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
             }
@@ -195,10 +175,33 @@ val codec: MessageCodec<Any?> by lazy {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.takePhoto", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
-              wrapped["result"] = api.takePhoto()
+              val args = message as List<Any?>
+              val pathArg = args[0] as String
+              api.takePhoto(pathArg) {
+                reply.reply(wrapResult(it))
+              }
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.recordVideo", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val pathArg = args[0] as String
+              api.recordVideo(pathArg)
+              wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
             }
@@ -209,12 +212,30 @@ val codec: MessageCodec<Any?> by lazy {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.takeVideo", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.pauseVideoRecording", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
-              wrapped["result"] = api.takeVideo()
+              api.pauseVideoRecording()
+              wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.resumeVideoRecording", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              api.resumeVideoRecording()
+              wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
             }
@@ -495,6 +516,25 @@ val codec: MessageCodec<Any?> by lazy {
               val args = message as List<Any?>
               val sizeArg = args[0] as PreviewSize
               api.setPhotoSize(sizeArg)
+              wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setPreviewSize", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val sizeArg = args[0] as PreviewSize
+              api.setPreviewSize(sizeArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)

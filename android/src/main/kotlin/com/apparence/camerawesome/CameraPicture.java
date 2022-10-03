@@ -5,7 +5,6 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageReader;
@@ -24,8 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static com.apparence.camerawesome.CameraPictureStates.STATE_PRECAPTURE;
-import static com.apparence.camerawesome.CameraPictureStates.STATE_READY_AFTER_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_RELEASE_FOCUS;
 import static com.apparence.camerawesome.CameraPictureStates.STATE_REQUEST_PHOTO_AFTER_FOCUS;
 

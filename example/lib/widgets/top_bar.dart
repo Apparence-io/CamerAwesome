@@ -15,12 +15,14 @@ class TopBarWidget extends StatelessWidget {
   final ValueNotifier<bool> enableAudio;
   final ValueNotifier<CameraFlashes> switchFlash;
   final ValueNotifier<bool> enablePinchToZoom;
+  final ValueNotifier<bool> pausedRecording;
   final Function onFullscreenTap;
   final Function onResolutionTap;
   final Function onChangeSensorTap;
   final Function onFlashTap;
   final Function onAudioChange;
   final Function onPinchToZoomChange;
+  final Function onPausedRecordingChange;
 
   const TopBarWidget({
     Key key,
@@ -33,12 +35,14 @@ class TopBarWidget extends StatelessWidget {
     @required this.rotationController,
     @required this.switchFlash,
     @required this.enablePinchToZoom,
+    @required this.pausedRecording,
     @required this.onFullscreenTap,
     @required this.onAudioChange,
     @required this.onFlashTap,
     @required this.onChangeSensorTap,
     @required this.onResolutionTap,
     @required this.onPinchToZoomChange,
+    @required this.onPausedRecordingChange,
   }) : super(key: key);
 
   @override
@@ -115,24 +119,37 @@ class TopBarWidget extends StatelessWidget {
             children: [
               OptionButton(
                 rotationController: rotationController,
-                icon: enablePinchToZoom.value ? Icons.pinch_rounded : Icons.pinch_outlined,
+                icon: enablePinchToZoom.value
+                    ? Icons.pinch_rounded
+                    : Icons.pinch_outlined,
                 orientation: orientation,
                 onTapCallback: () => onPinchToZoomChange?.call(),
               ),
               captureMode.value == CaptureModes.VIDEO
                   ? Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                    child: OptionButton(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: OptionButton(
                         icon: enableAudio.value ? Icons.mic : Icons.mic_off,
                         rotationController: rotationController,
                         orientation: orientation,
                         isEnabled: !isRecording,
                         onTapCallback: () => onAudioChange?.call(),
                       ),
-                  )
+                    )
                   : Container(),
             ],
           ),
+          SizedBox(height: 20),
+          if (captureMode.value == CaptureModes.VIDEO &&
+              onPausedRecordingChange != null)
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              OptionButton(
+                rotationController: rotationController,
+                icon: pausedRecording.value ? Icons.play_arrow : Icons.pause,
+                orientation: orientation,
+                onTapCallback: () => onPausedRecordingChange?.call(),
+              ),
+            ]),
         ],
       ),
     );

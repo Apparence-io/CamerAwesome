@@ -10,11 +10,9 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.media.Image;
 import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
-import android.util.Rational;
 import android.util.Size;
 import android.util.Log;
 import android.view.Surface;
@@ -23,16 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
-import com.apparence.camerawesome.image.ImgConverter;
 import com.apparence.camerawesome.image.ImgConverterThreaded;
 import com.apparence.camerawesome.image.YuvToJpgConverter;
 import com.apparence.camerawesome.models.CameraCharacteristicsModel;
 import com.apparence.camerawesome.models.FlashMode;
 import com.apparence.camerawesome.surface.SurfaceFactory;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 
 import io.flutter.plugin.common.EventChannel;
 

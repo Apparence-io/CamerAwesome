@@ -2,6 +2,10 @@ package com.apparence.camerawesome_example
 
 import android.Manifest
 import androidx.test.rule.ActivityTestRule
+import androidx.test.rule.GrantPermissionRule
+import dev.flutter.plugins.integration_test.FlutterTestRunner
+import org.junit.Rule
+import org.junit.runner.RunWith
 
 @RunWith(FlutterTestRunner::class)
 class MainActivityTest {
