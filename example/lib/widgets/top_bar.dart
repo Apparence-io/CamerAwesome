@@ -1,7 +1,7 @@
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/models/flashmodes.dart';
 import 'package:camerawesome/models/orientations.dart';
-import 'package:camerawesome/models/saved_exif_data.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +16,7 @@ class TopBarWidget extends StatelessWidget {
   final ValueNotifier<bool> enableAudio;
   final ValueNotifier<CameraFlashes> switchFlash;
   final ValueNotifier<bool> enablePinchToZoom;
-  final SavedExifData savedExifData;
+  final ExifPreferences exifPreferences;
   final Function onFullscreenTap;
   final Function onResolutionTap;
   final Function onChangeSensorTap;
@@ -42,7 +42,7 @@ class TopBarWidget extends StatelessWidget {
     @required this.onChangeSensorTap,
     @required this.onResolutionTap,
     @required this.onPinchToZoomChange,
-    @required this.savedExifData,
+    @required this.exifPreferences,
     @required this.onSetExifPreferences,
   }) : super(key: key);
 
@@ -146,14 +146,14 @@ class TopBarWidget extends StatelessWidget {
             children: [
               OptionButton(
                 rotationController: rotationController,
-                icon: savedExifData.saveGPSLocation
+                icon: exifPreferences.saveGPSLocation
                     ? Icons.gps_fixed_rounded
                     : Icons.gps_not_fixed_outlined,
                 orientation: orientation,
                 onTapCallback: () {
-                  savedExifData.saveGPSLocation =
-                      !savedExifData.saveGPSLocation;
-                  onSetExifPreferences?.call(savedExifData);
+                  exifPreferences.saveGPSLocation =
+                      !exifPreferences.saveGPSLocation;
+                  onSetExifPreferences?.call(exifPreferences);
                 },
               ),
             ],

@@ -9,14 +9,14 @@ export 'camerapreview.dart';
 export 'picture_controller.dart';
 export 'video_controller.dart';
 
-import 'models/saved_exif_data.dart';
+import 'models/exif_preferences_data.dart';
 import 'models/sensor_data.dart';
 import 'models/sensors.dart';
 import 'models/capture_modes.dart';
 import 'models/flashmodes.dart';
 export 'models/sensors.dart';
 export 'models/capture_modes.dart';
-export 'models/saved_exif_data.dart';
+export 'models/exif_preferences_data.dart';
 export 'models/flashmodes.dart';
 import 'models/orientations.dart';
 export 'models/sensor_data.dart';
@@ -250,7 +250,7 @@ class CamerawesomePlugin {
       });
 
   /// set exif preferences when a photo is saved
-  static Future<void> setExifPreferences(SavedExifData savedExifData) =>
+  static Future<void> setExifPreferences(ExifPreferences savedExifData) =>
       _channel.invokeMethod('setExifPreferences', <String, dynamic>{
         'saveGPSLocation': savedExifData.saveGPSLocation,
       });

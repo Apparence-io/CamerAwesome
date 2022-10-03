@@ -5,7 +5,7 @@ class PictureController {
     await CamerawesomePlugin.takePhoto(filePath);
   }
 
-  Future setExifPreferences(SavedExifData savedExifData) async {
+  Future setExifPreferences(ExifPreferences savedExifData) async {
     await CamerawesomePlugin.setExifPreferences(
       savedExifData,
     );

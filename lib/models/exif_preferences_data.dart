@@ -1,6 +1,6 @@
 /// used to save exif data when a picture is taken
-class SavedExifData {
+class ExifPreferences {
   bool saveGPSLocation;
 
-  SavedExifData({required this.saveGPSLocation});
+  ExifPreferences({required this.saveGPSLocation});
 }

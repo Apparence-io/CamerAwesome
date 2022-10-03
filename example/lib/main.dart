@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   // StreamSubscription<Uint8List> previewStreamSub;
   Stream<Uint8List> previewStream;
 
-  SavedExifData _savedExifData = SavedExifData(
+  ExifPreferences _exifPreferences = ExifPreferences(
     saveGPSLocation: false,
   );
 
@@ -131,7 +131,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               switchFlash: _switchFlash,
               orientation: _orientation,
               rotationController: _iconsAnimationController,
-              savedExifData: _savedExifData,
+              exifPreferences: _exifPreferences,
               onSetExifPreferences: (newExifData) {
                 _pictureController.setExifPreferences(newExifData);
                 setState(() {});
@@ -376,7 +376,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             this._availableSizes = availableSizes;
             return availableSizes[0];
           },
-          savedExifData: _savedExifData,
+          exifPreferences: _exifPreferences,
           captureMode: _captureMode,
           photoSize: _photoSize,
           sensor: _sensor,
@@ -424,7 +424,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 this._availableSizes = availableSizes;
                 return availableSizes[0];
               },
-              savedExifData: _savedExifData,
+              exifPreferences: _exifPreferences,
               captureMode: _captureMode,
               photoSize: _photoSize,
               sensor: _sensor,
