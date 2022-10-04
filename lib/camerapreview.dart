@@ -55,10 +55,10 @@ class CameraAwesome extends StatefulWidget {
   /// Zoom from native side. Must be between 0 and 1
   final ValueNotifier<double>? zoom;
 
-  /// current capture mode [PHOTO] or [VIDEO] - Video mode TODO only iOS, Android to be done
+  /// current capture mode [PHOTO] or [VIDEO] - Video mode
   final ValueNotifier<CaptureModes> captureMode;
 
-  /// choose to record video with audio or not - Video mode TODO only iOS, Android to be done
+  /// choose to record video with audio or not - Video mode
   final ValueNotifier<bool>? enableAudio;
 
   /// choose to enable pinch to zoom
@@ -232,7 +232,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     // Init orientation stream
     if (widget.onOrientationChanged != null) {
       _orientationStreamSub = CamerawesomePlugin.getNativeOrientation()
-          .listen(widget.onOrientationChanged);
+          ?.listen(widget.onOrientationChanged);
     }
 
     // All events sink need to be done before camera init
@@ -419,7 +419,6 @@ class CameraAwesomeState extends State<CameraAwesome>
           widget.photoSize.value.height.toInt());
       var effectivPreviewSize =
           await CamerawesomePlugin.getEffectivPreviewSize();
-      print("new preview size: $effectivPreviewSize from ${widget.photoSize} ");
 
       if (selectedPreviewSize != null) {
         // this future can take time and be called after we disposed
