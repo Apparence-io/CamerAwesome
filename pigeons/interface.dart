@@ -13,7 +13,8 @@ class PreviewData {
 
 @HostApi()
 abstract class CameraInterface {
-  void setupCamera(String sensor, String captureMode, bool enableImageStream);
+  @async
+  bool setupCamera(String sensor, String captureMode, bool enableImageStream);
   List<String> checkPermissions();
   List<String> requestPermissions();
   double getPreviewTextureId();

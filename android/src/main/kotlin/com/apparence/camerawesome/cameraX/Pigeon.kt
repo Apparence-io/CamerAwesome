@@ -69,7 +69,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensor: String, captureMode: String, enableImageStream: Boolean)
+  fun setupCamera(sensor: String, captureMode: String, enableImageStream: Boolean, callback: (Boolean) -> Unit)
   fun checkPermissions(): List<String>
   fun requestPermissions(): List<String>
   fun getPreviewTextureId(): Double
@@ -113,12 +113,13 @@ val codec: MessageCodec<Any?> by lazy {
               val sensorArg = args[0] as String
               val captureModeArg = args[1] as String
               val enableImageStreamArg = args[2] as Boolean
-              api.setupCamera(sensorArg, captureModeArg, enableImageStreamArg)
-              wrapped["result"] = null
+              api.setupCamera(sensorArg, captureModeArg, enableImageStreamArg) {
+                reply.reply(wrapResult(it))
+              }
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
+              reply.reply(wrapped)
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

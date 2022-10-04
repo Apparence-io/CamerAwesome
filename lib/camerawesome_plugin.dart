@@ -91,7 +91,7 @@ class CamerawesomePlugin {
 
   static Future<bool?> focus() => _channel.invokeMethod("focus");
 
-  static Stream<CameraOrientations?> getNativeOrientation() {
+  static Stream<CameraOrientations?>? getNativeOrientation() {
     if (_orientationStream == null) {
       _orientationStream = _orientationChannel
           .receiveBroadcastStream()
@@ -117,7 +117,7 @@ class CamerawesomePlugin {
         sink.add(newOrientation);
       }));
     }
-    return _orientationStream!;
+    return _orientationStream;
   }
 
   static Stream<bool>? listenPermissionResult() {
