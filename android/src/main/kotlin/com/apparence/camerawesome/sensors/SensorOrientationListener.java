@@ -19,10 +19,10 @@ public class SensorOrientationListener implements EventChannel.StreamHandler, Se
 
     @Override
     public void notify(int orientation) {
-        if(this.events == null) {
+        if (this.events == null) {
             return;
         }
-        switch (orientation ) {
+        switch (orientation) {
             case 0:
                 events.success("PORTRAIT_UP");
                 break;

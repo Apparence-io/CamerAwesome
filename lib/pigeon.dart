@@ -74,7 +74,7 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<void> setupCamera(String arg_sensor, String arg_captureMode, bool arg_enableImageStream) async {
+  Future<bool> setupCamera(String arg_sensor, String arg_captureMode, bool arg_enableImageStream) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -91,8 +91,13 @@ class CameraInterface {
         message: error['message'] as String?,
         details: error['details'],
       );
+    } else if (replyMap['result'] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
     } else {
-      return;
+      return (replyMap['result'] as bool?)!;
     }
   }
 

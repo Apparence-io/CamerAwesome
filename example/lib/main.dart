@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camerawesome/models/orientations.dart';
-import 'package:camerawesome_example/camerax_widget.dart';
 import 'package:camerawesome_example/widgets/bottom_bar.dart';
 import 'package:camerawesome_example/widgets/camera_preview.dart';
 import 'package:camerawesome_example/widgets/preview_card.dart';
@@ -14,6 +13,7 @@ import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MaterialApp(home: MyApp(), debugShowCheckedModeBanner: false));
@@ -44,6 +44,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   ValueNotifier<CameraOrientations> _orientation =
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
   ValueNotifier<bool> _recordingPaused = ValueNotifier(false);
+  ValueNotifier<double> _brightnessCorrection = ValueNotifier(0);
 
   /// use this to call a take picture
   PictureController _pictureController = PictureController();
@@ -92,6 +93,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    _brightnessCorrection.dispose();
     // previewStreamSub.cancel();
     _photoSize.dispose();
     _captureMode.dispose();
@@ -101,24 +103,21 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: false
-          ? CameraXWidget()
-          : Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                this._fullscreen
-                    ? buildFullScreenCamera()
-                    : buildSizedScreenCamera(),
-                _buildInterface(),
-                (!_isRecordingVideo)
-                    ? PreviewCardWidget(
-                        lastPhotoPath: _lastPhotoPath,
-                        orientation: _orientation,
-                        previewAnimation: _previewAnimation,
-                      )
-                    : Container(),
-              ],
-            ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          this._fullscreen ? buildFullScreenCamera() : buildSizedScreenCamera(),
+          _buildInterface(),
+          (!_isRecordingVideo)
+              ? PreviewCardWidget(
+                  lastPhotoPath: _lastPhotoPath,
+                  orientation: _orientation,
+                  previewAnimation: _previewAnimation,
+                )
+              : Container(),
+          _buildPreviewStream(),
+        ],
+      ),
     );
   }
 
@@ -221,6 +220,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           isRecording: _isRecordingVideo,
           captureMode: _captureMode,
         ),
+        _buildLeftManualBrightness(),
       ],
     );
   }
@@ -358,27 +358,49 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   // /// This use a bufferTime to take an image each 1500 ms
   // /// you cannot show every frame as flutter cannot draw them fast enough
   // /// [THIS IS JUST FOR DEMO PURPOSE]
-  // Widget _buildPreviewStream() {
-  //   if (previewStream == null) return Container();
-  //   return Positioned(
-  //     left: 32,
-  //     bottom: 120,
-  //     child: StreamBuilder(
-  //       stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
-  //       builder: (context, snapshot) {
-  //         print(snapshot);
-  //         if (!snapshot.hasData || snapshot.data == null) return Container();
-  //         List<Uint8List> data = snapshot.data;
-  //         print(
-  //             "...${DateTime.now()} new image received... ${data.last.lengthInBytes} bytes");
-  //         return Image.memory(
-  //           data.last,
-  //           width: 120,
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
+  Widget _buildPreviewStream() {
+    if (previewStream == null) return Container();
+    return Positioned(
+      left: 32,
+      bottom: 120,
+      child: StreamBuilder(
+        stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data == null) return Container();
+          List<Uint8List> data = snapshot.data;
+          return Image.memory(
+            data.last,
+            width: 120,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLeftManualBrightness() {
+    return Positioned(
+      left: 32,
+      bottom: 300,
+      child: RotatedBox(
+        quarterTurns: -1,
+        child: SliderTheme(
+          data: SliderThemeData(
+            trackHeight: 10,
+            inactiveTrackColor: Colors.white70,
+          ),
+          child: Slider(
+            value: _brightnessCorrection.value,
+            min: 0,
+            max: 1,
+            divisions: 10,
+            label: _brightnessCorrection.value.toStringAsFixed(2),
+            onChanged: (double value) =>
+                setState(() => _brightnessCorrection.value = value),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget buildFullScreenCamera() {
     return Positioned(
@@ -402,19 +424,20 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           zoom: _zoomNotifier,
           enablePinchToZoom: _enablePinchToZoom,
           onOrientationChanged: _onOrientationChange,
-          // imagesStreamBuilder: (imageStream) {
-          //   /// listen for images preview stream
-          //   /// you can use it to process AI recognition or anything else...
-          //   print("-- init CamerAwesome images stream");
-          //   setState(() {
-          //     previewStream = imageStream;
-          //   });
+          brightness: _brightnessCorrection,
+          imagesStreamBuilder: (imageStream) {
+            /// listen for images preview stream
+            /// you can use it to process AI recognition or anything else...
+            print("-- init CamerAwesome images stream");
+            setState(() {
+              previewStream = imageStream;
+            });
 
-          //   imageStream.listen((Uint8List imageData) {
-          //     print(
-          //         "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
-          //   });
-          // },
+            // imageStream.listen((Uint8List imageData) {
+            //   print(
+            //       "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
+            // });
+          },
           onCameraStarted: () {
             // camera started here -- do your after start stuff
           },
@@ -451,7 +474,16 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               enablePinchToZoom: _enablePinchToZoom,
               zoom: _zoomNotifier,
               onOrientationChanged: _onOrientationChange,
+              brightness: _brightnessCorrection,
               recordingPaused: _recordingPaused,
+              imagesStreamBuilder: (imageStream) {
+                /// listen for images preview stream
+                /// you can use it to process AI recognition or anything else...
+                print("-- init CamerAwesome images stream");
+                setState(() {
+                  previewStream = imageStream;
+                });
+              },
             ),
           ),
         ),
