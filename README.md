@@ -28,8 +28,8 @@ CamerAwesome include a lot of useful features like:
 - 🖼 **Fullscreen** or **SizedBox** preview support.
 - 🎮 Complete example.
 - 🎞 Taking a **picture** ( of course 😃 ).
-- 🎥 Video recording (iOS only for now).
-- 🛰 **GPS Location** saved in image (iOS only for now).
+- 🎥 Video recording (with pause and resume on Android only for now).
+- 🛰 **GPS Location** saved in image.
 
 ## 🧐&nbsp; Live example
 
@@ -61,13 +61,19 @@ CamerAwesome include a lot of useful features like:
 ```
 
   - **Android**
-    - Set permissions before ```<application>```
+    - These permissions will be merged into your manifest (you should not need to add them again)
     <br />
 
     ```xml
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     ```
+
+       - CamerAwesome will ask for these permissions at runtime using `CamerawesomePlugin.checkAndRequestPermissions()`. You might want to ask these permissions earlier with explanations on why you need them.
+
+      <br/>
 
     - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
     <br />
@@ -91,7 +97,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
+class _MyAppState extends State<MyApp> {
   // [...]
   // Notifiers
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
@@ -160,6 +166,7 @@ _captureMode.value = CaptureModes.VIDEO;
 | fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
 | imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
 | exifPreferences        | ```ExifPreferences```                    | set exif data when a picture was taken, GPS location can be saved to image file for ex.     |          |
+|recordingPaused|ValueNotifier<bool>?|Set it to `true` to pause a video recording, `false` to resume|
 
 </p>
 </details>
@@ -233,7 +240,7 @@ Feel free to **contribute** to improve this **compatibility list**.
 
 Feel free to help by submitting PR !
 
-- [ ] 🎥 Record video (partially, iOS only)
+- [x] 🎥 Record video (Pause/Resume missing on iOS)
 - [ ] 🌠 Focus on specific point
 - [x] ~~📡 Broadcast live image stream~~
 - [x] ~~🌤 Exposure level~~

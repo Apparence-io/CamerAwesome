@@ -73,7 +73,7 @@ class CameraAwesome extends StatefulWidget {
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
 
-  /// Set the recording to pause when set to true and to resume when set to false
+  /// Set the recording to pause when set to true and to resume when set to false - TODO only Android, iOS to be done
   final ValueNotifier<bool>? recordingPaused;
 
   final ExifPreferences? exifPreferences;
