@@ -28,16 +28,16 @@ class CamerawesomePlugin {
   static const MethodChannel _channel = MethodChannel('camerawesome');
 
   static const EventChannel _orientationChannel =
-  EventChannel('camerawesome/orientation');
+      EventChannel('camerawesome/orientation');
 
   static const EventChannel _permissionsChannel =
-  EventChannel('camerawesome/permissions');
+      EventChannel('camerawesome/permissions');
 
   static const EventChannel _imagesChannel =
-  EventChannel('camerawesome/images');
+      EventChannel('camerawesome/images');
 
   static const EventChannel _luminosityChannel =
-  EventChannel('camerawesome/luminosity');
+      EventChannel('camerawesome/luminosity');
 
   static Stream<CameraOrientations?>? _orientationStream;
 
@@ -98,26 +98,26 @@ class CamerawesomePlugin {
       _orientationStream = _orientationChannel
           .receiveBroadcastStream()
           .transform(
-          StreamTransformer<dynamic, CameraOrientations?>.fromHandlers(
-              handleData: (data, sink) {
-                CameraOrientations? newOrientation;
-                switch (data) {
-                  case 'LANDSCAPE_LEFT':
-                    newOrientation = CameraOrientations.LANDSCAPE_LEFT;
-                    break;
-                  case 'LANDSCAPE_RIGHT':
-                    newOrientation = CameraOrientations.LANDSCAPE_RIGHT;
-                    break;
-                  case 'PORTRAIT_UP':
-                    newOrientation = CameraOrientations.PORTRAIT_UP;
-                    break;
-                  case 'PORTRAIT_DOWN':
-                    newOrientation = CameraOrientations.PORTRAIT_DOWN;
-                    break;
-                  default:
-                }
-                sink.add(newOrientation);
-              }));
+              StreamTransformer<dynamic, CameraOrientations?>.fromHandlers(
+                  handleData: (data, sink) {
+        CameraOrientations? newOrientation;
+        switch (data) {
+          case 'LANDSCAPE_LEFT':
+            newOrientation = CameraOrientations.LANDSCAPE_LEFT;
+            break;
+          case 'LANDSCAPE_RIGHT':
+            newOrientation = CameraOrientations.LANDSCAPE_RIGHT;
+            break;
+          case 'PORTRAIT_UP':
+            newOrientation = CameraOrientations.PORTRAIT_UP;
+            break;
+          case 'PORTRAIT_DOWN':
+            newOrientation = CameraOrientations.PORTRAIT_DOWN;
+            break;
+          default:
+        }
+        sink.add(newOrientation);
+      }));
     }
     return _orientationStream;
   }
@@ -127,9 +127,9 @@ class CamerawesomePlugin {
       _permissionsStream = _permissionsChannel
           .receiveBroadcastStream()
           .transform(StreamTransformer<dynamic, bool>.fromHandlers(
-          handleData: (data, sink) {
-            sink.add(data);
-          }));
+              handleData: (data, sink) {
+        sink.add(data);
+      }));
     }
     return _permissionsStream;
   }
@@ -139,8 +139,8 @@ class CamerawesomePlugin {
       _imagesStream = _imagesChannel.receiveBroadcastStream().transform(
           StreamTransformer<dynamic, Uint8List>.fromHandlers(
               handleData: (data, sink) {
-                sink.add(data);
-              }));
+        sink.add(data);
+      }));
     }
     return _imagesStream;
   }
@@ -170,7 +170,7 @@ class CamerawesomePlugin {
     } else {
       try {
         final sizes =
-        await _channel.invokeMethod<List<dynamic>>("availableSizes");
+            await _channel.invokeMethod<List<dynamic>>("availableSizes");
         final res = <Size>[];
         sizes?.forEach((el) {
           int width = el["width"];
@@ -207,7 +207,7 @@ class CamerawesomePlugin {
 
   static Future<void> refresh() {
     if (Platform.isAndroid) {
-      CameraInterface().refresh();
+      return CameraInterface().refresh();
     } else {
       return _channel.invokeMethod<void>('refresh');
     }
@@ -357,10 +357,20 @@ class CamerawesomePlugin {
   }
 
   /// set exif preferences when a photo is saved
-  static Future<void> setExifPreferences(ExifPreferences savedExifData) =>
-      _channel.invokeMethod('setExifPreferences', <String, dynamic>{
+  /// 
+  /// The GPS value can be null on Android if:
+  /// - Location is disabled on the phone
+  /// - ExifPreferences.saveGPSLocation is false
+  /// - Permission ACCESS_FINE_LOCATION has not been granted
+  static Future<void> setExifPreferences(ExifPreferences savedExifData) {
+    if (Platform.isAndroid) {
+      return CameraInterface().saveGpsLocation(savedExifData.saveGPSLocation);
+    } else {
+      return _channel.invokeMethod('setExifPreferences', <String, dynamic>{
         'saveGPSLocation': savedExifData.saveGPSLocation,
       });
+    }
+  }
 
   /// set brightness manually with range [0,1]
   static Future<void> setBrightness(double brightness) {
@@ -386,9 +396,9 @@ class CamerawesomePlugin {
       _luminositySensorDataStream = _luminosityChannel
           .receiveBroadcastStream()
           .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
-          handleData: (data, sink) {
-            sink.add(SensorData(data));
-          }));
+              handleData: (data, sink) {
+        sink.add(SensorData(data));
+      }));
     }
     return _luminositySensorDataStream;
   }
@@ -411,7 +421,7 @@ class CamerawesomePlugin {
     try {
       if (Platform.isAndroid) {
         var missingPermissions =
-        await CamerawesomePlugin.checkAndroidPermissions();
+            await CamerawesomePlugin.checkAndroidPermissions();
         return Future.value(missingPermissions.length > 0);
       } else if (Platform.isIOS) {
         return CamerawesomePlugin.checkiOSPermissions()
@@ -428,7 +438,7 @@ class CamerawesomePlugin {
     try {
       if (Platform.isAndroid) {
         var missingPermissions =
-        await CamerawesomePlugin.checkAndroidPermissions();
+            await CamerawesomePlugin.checkAndroidPermissions();
         if (missingPermissions.length > 0) {
           return CamerawesomePlugin.requestPermissions().then((value) {
             return value.isEmpty;

@@ -42,4 +42,5 @@ abstract class CameraInterface {
   PreviewSize? getEffectivPreviewSize();
   void setPhotoSize(PreviewSize size);
   void setPreviewSize(PreviewSize size);
+  void saveGpsLocation(bool saveGPSLocation);
 }

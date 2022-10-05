@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.apparence.camerawesome.CameraPermissions
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
@@ -102,6 +101,7 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
                 Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.ACCESS_FINE_LOCATION,
             )
         private const val PERMISSIONS_MULTIPLE_REQUEST = 5
     }

@@ -3,17 +3,24 @@ package com.apparence.camerawesome.cameraX
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.pm.PackageManager
+import android.location.Location
 import android.util.Log
 import android.util.Size
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.VideoRecordEvent
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import com.apparence.camerawesome.*
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.SensorOrientationListener
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -40,6 +47,9 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private val sensorOrientationListener: SensorOrientationListener = SensorOrientationListener()
 
     private lateinit var cameraState: CameraXState
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val exifPreferences: ExifPreferences = ExifPreferences()
+    private var cancellationTokenSource = CancellationTokenSource()
 
 
     @SuppressLint("RestrictedApi")
@@ -96,13 +106,60 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         return textureEntry!!.id().toDouble()
     }
 
+    /***
+     * [fusedLocationClient.getCurrentLocation] takes time, we might want to use
+     * [fusedLocationClient.lastLocation] instead to go faster
+     */
+    private fun retrieveLocation(callback: (Location?) -> Unit) {
+        fusedLocationClient.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            cancellationTokenSource.token
+        ).addOnCompleteListener {
+            if (it.isSuccessful) {
+                callback(it.result)
+            } else {
+                if (it.exception != null) {
+                    Log.e(
+                        CamerawesomePlugin.TAG,
+                        "Error finding location",
+                        it.exception
+                    )
+                }
+                callback(null)
+            }
+        }
+    }
 
     override fun takePhoto(path: String, callback: (Boolean) -> Unit) {
         val imageFile = File(path)
         imageFile.parentFile?.mkdirs()
+        if (exifPreferences.saveGpsLocation &&
+            ActivityCompat.checkSelfPermission(
+                activity!!,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            retrieveLocation { takePhotoWith(imageFile, it, callback) }
+        } else {
+            takePhotoWith(imageFile, null, callback)
+        }
+    }
+
+    private fun takePhotoWith(
+        imageFile: File,
+        retrievedLocation: Location?,
+        callback: (Boolean) -> Unit
+    ) {
         val outputFileOptions = ImageCapture.OutputFileOptions
             .Builder(imageFile)
-//            .setMetadata()
+            .setMetadata(
+                ImageCapture.Metadata().apply {
+                    if (exifPreferences.saveGpsLocation) {
+                        location = retrievedLocation
+                    }
+                }
+            )
             .build()
 
         cameraState.imageCapture!!.takePicture(
@@ -318,6 +375,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
+    override fun saveGpsLocation(saveGPSLocation: Boolean) {
+        exifPreferences.saveGpsLocation = saveGPSLocation
+    }
+
     //    FLUTTER ATTACHMENTS
     override fun onAttachedToEngine(binding: FlutterPluginBinding) {
         this.binding = binding
@@ -334,6 +395,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(binding.activity)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -346,14 +408,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun onDetachedFromActivity() {
         activity = null
-    }
-
-    companion object {
-        private val permissions =
-            arrayOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.RECORD_AUDIO
-            )
+        cancellationTokenSource.cancel()
     }
 }

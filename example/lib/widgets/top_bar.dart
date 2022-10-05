@@ -1,4 +1,5 @@
 import 'package:camerawesome/models/capture_modes.dart';
+import 'package:camerawesome/models/exif_preferences_data.dart';
 import 'package:camerawesome/models/flashmodes.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/widgets/camera_buttons.dart';
