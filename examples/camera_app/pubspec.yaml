@@ -11,6 +11,9 @@ dependencies:
     sdk: flutter
   camerawesome:
     path: ../..
+  path_provider: ^2.0.2
+  open_file: ^3.2.1
+
 
 dev_dependencies:
   flutter_test:

@@ -2,30 +2,41 @@ import 'dart:io';
 
 import 'package:camerawesome/controllers/picture_camera_controller.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:flutter/material.dart';
 
 import '../camerawesome_plugin.dart';
+import '../models/media_capture.dart';
+
+
 
 abstract class CameraController {
-  Sensors cameraSensor;
+
 
   /// (optional) returns a Stream containing images from camera preview - TODO only Android, iOS to be done
   final ImagesStreamBuilder? imagesStreamBuilder;
+
+  /// returns the file path of the picture/video to be taken
+  final Future<String> Function() filePathBuilder;
 
   late int textureId;
 
   String? lastPhoto;
 
-  bool loading = false;
+  final ValueNotifier<MediaCapture?> mediaCapture = ValueNotifier(null);
+  final ValueNotifier<Sensors> cameraSensor;
+  final ValueNotifier<CameraFlashes> flashMode;
 
   CaptureModes get captureMode => runtimeType == PictureCameraController
       ? CaptureModes.PHOTO
       : CaptureModes.VIDEO;
 
   CameraController({
-    required this.cameraSensor,
+    required Sensors sensor,
     this.imagesStreamBuilder,
-  });
-
+    required this.filePathBuilder,
+    CameraFlashes? cameraFlashes,
+  })  : this.cameraSensor = ValueNotifier(sensor),
+        this.flashMode = ValueNotifier(cameraFlashes ?? CameraFlashes.NONE);
 
   Future<bool> init() async {
     final hasPermissions =
@@ -44,7 +55,7 @@ abstract class CameraController {
     }
     // init camera --
     await CamerawesomePlugin.init(
-      cameraSensor,
+      cameraSensor.value,
       imagesStreamBuilder != null,
       captureMode: captureMode,
     );
@@ -81,10 +92,12 @@ abstract class CameraController {
     // _initExifData();
 
     textureId = (await CamerawesomePlugin.getPreviewTexture())!.toInt();
-    return true;
+    _isReady = true;
+    return _isReady;
   }
 
-  bool get isReady => false;
+  bool get isReady => _isReady;
+  bool _isReady = false;
 
   /// Recover previous config (for instance use same preview size)
   void updateWithPreviousConfig(CameraController previousConfig);
@@ -97,9 +110,9 @@ abstract class CameraController {
 
   Future<void> switchSensor() {
     final newSensor =
-        cameraSensor == Sensors.BACK ? Sensors.FRONT : Sensors.BACK;
+        cameraSensor.value == Sensors.BACK ? Sensors.FRONT : Sensors.BACK;
+    print("PreviousSensor: $cameraSensor - newSensor: $newSensor");
+    cameraSensor.value = newSensor;
     return CamerawesomePlugin.setSensor(newSensor);
   }
-
-
 }
