@@ -330,6 +330,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   }
 
   _onPermissionsResult(bool granted) {
+    // TODO This popup is displayed when we don't have the permissions, but it stays displayed even if we give 
+    // the permissions in the meantime
     if (!granted) {
       AlertDialog alert = AlertDialog(
         title: Text('Error'),

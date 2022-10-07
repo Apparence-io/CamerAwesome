@@ -214,15 +214,16 @@ class CameraAwesomeState extends State<CameraAwesome>
   Future<void> initPlatformState() async {
     // wait user accept permissions to init widget completely on android
     if (Platform.isAndroid) {
-      // _permissionStreamSub =
-      //     CamerawesomePlugin.listenPermissionResult()!.listen((res) {
-      //   if (res) {
-      //     initPlatformState();
-      //   }
-      //   if (widget.onPermissionsResult != null) {
-      //     widget.onPermissionsResult!(res);
-      //   }
-      // });
+      _permissionStreamSub =
+          CamerawesomePlugin.listenPermissionResult()!.listen((res) {
+        print("Permissions result : ${res}");
+        if (res) {
+          initPlatformState();
+        }
+        if (widget.onPermissionsResult != null) {
+          widget.onPermissionsResult!(res);
+        }
+      });
     }
     hasPermissions = await CamerawesomePlugin.checkAndRequestPermissions();
     if (widget.onPermissionsResult != null) {

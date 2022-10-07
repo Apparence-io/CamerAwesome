@@ -47,6 +47,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private val sensorOrientationListener: SensorOrientationListener = SensorOrientationListener()
 
     private lateinit var cameraState: CameraXState
+    private val cameraPermissions = CameraPermissions()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val exifPreferences: ExifPreferences = ExifPreferences()
     private var cancellationTokenSource = CancellationTokenSource()
@@ -86,11 +87,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun checkPermissions(): List<String> {
-        return listOf(*CameraPermissions().checkPermissions(activity))
+        return listOf(*cameraPermissions.checkPermissions(activity))
     }
 
     override fun requestPermissions(): List<String> {
-        CameraPermissions().checkAndRequestPermissions(activity)
+        cameraPermissions.checkAndRequestPermissions(activity)
         return checkPermissions()
     }
 
@@ -387,6 +388,9 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         orientationStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/orientation")
         orientationStreamChannel.setStreamHandler(sensorOrientationListener)
         imageStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/images")
+        EventChannel(binding.binaryMessenger, "camerawesome/permissions").setStreamHandler(
+            cameraPermissions
+        )
     }
 
     override fun onDetachedFromEngine(binding: FlutterPluginBinding) {
@@ -395,6 +399,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
+        binding.addRequestPermissionsResultListener(cameraPermissions)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(binding.activity)
     }
 
@@ -404,10 +409,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         activity = binding.activity
+        binding.addRequestPermissionsResultListener(cameraPermissions)
     }
 
     override fun onDetachedFromActivity() {
         activity = null
         cancellationTokenSource.cancel()
+        cameraPermissions.onCancel(null)
     }
 }

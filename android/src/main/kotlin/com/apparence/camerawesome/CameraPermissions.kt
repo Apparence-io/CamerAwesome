@@ -53,11 +53,11 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
     // ---------------------------------------------
     // EventChannel.StreamHandler
     // ---------------------------------------------
-    override fun onListen(arguments: Any, events: EventSink) {
+    override fun onListen(arguments: Any?, events: EventSink?) {
         this.events = events
     }
 
-    override fun onCancel(arguments: Any) {
+    override fun onCancel(arguments: Any?) {
         if (events != null) {
             events!!.endOfStream()
             events = null
