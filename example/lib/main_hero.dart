@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({super.key, required this.title});
 
   final String title;
 
@@ -72,12 +72,12 @@ class _MyHomePageState extends State<MyHomePage> {
 class CameraView extends StatelessWidget {
   final _switchFlash = ValueNotifier(CameraFlashes.NONE);
   final _sensor = ValueNotifier(Sensors.BACK);
-  final _photoSize = ValueNotifier<Size>(null);
+  final _photoSize = ValueNotifier<Size?>(null);
   final _captureMode = ValueNotifier(CaptureModes.PHOTO);
   final cameraKey = ValueKey("camera");
   final bool fit;
 
-  CameraView({Key key, this.fit = true}) : super(key: key);
+  CameraView({super.key, this.fit = true});
 
   @override
   Widget build(BuildContext context) {

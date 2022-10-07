@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:integration_test/integration_test.dart';
 import 'package:integration_test/integration_test_driver.dart';
 import 'dart:async';
 

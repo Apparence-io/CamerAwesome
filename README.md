@@ -1,6 +1,6 @@
 <p align="center">
 	<a href="https://apparence.io/">
-		<img src="https://back.apparence.io/media/111/camerawesome.jpeg" width="456" alt="camerawesome_logo">
+		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/logo.png" width="456" alt="camerawesome_logo">
 	</a>
 </p>
 
@@ -28,7 +28,8 @@ CamerAwesome include a lot of useful features like:
 - 🖼 **Fullscreen** or **SizedBox** preview support.
 - 🎮 Complete example.
 - 🎞 Taking a **picture** ( of course 😃 ).
-- 🎥 Video recording (iOS only for now).
+- 🎥 Video recording (with pause and resume on Android only for now).
+- 🛰 **GPS Location** saved in image.
 
 ## 🧐&nbsp; Live example
 
@@ -54,16 +55,25 @@ CamerAwesome include a lot of useful features like:
 
 <key>NSMicrophoneUsageDescription</key>
 <string>To enable microphone access when recording video</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>To enable GPS location access for Exif data</string>
 ```
 
   - **Android**
-    - Set permissions before ```<application>```
+    - These permissions will be merged into your manifest (you should not need to add them again)
     <br />
 
     ```xml
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     ```
+
+       - CamerAwesome will ask for these permissions at runtime using `CamerawesomePlugin.checkAndRequestPermissions()`. You might want to ask these permissions earlier with explanations on why you need them.
+
+      <br/>
 
     - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
     <br />
@@ -87,7 +97,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
+class _MyAppState extends State<MyApp> {
   // [...]
   // Notifiers
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
@@ -147,13 +157,16 @@ _captureMode.value = CaptureModes.VIDEO;
 | selectDefaultSize    | ```OnAvailableSizes```                 | implement this to select a default size from device available size list                     | ✅        |
 | onCameraStarted      | ```OnCameraStarted```                  | notify client that camera started                                                           |          |
 | onOrientationChanged | ```OnOrientationChanged```             | notify client that orientation changed                                                      |          |
-| switchFlashMode      | ```**ValueNotifier**<CameraFlashes>``` | change flash mode                                                                           |          |
+| switchFlashMode      | ```ValueNotifier<CameraFlashes>```     | change flash mode                                                                           |          |
+| enablePinchToZoom    | ```ValueNotifier<bool>```              | enable/Disable pinch to zoom                                                                |          |
 | zoom                 | ```ValueNotifier<double>```            | Zoom from native side. Must be between **0** and **1**                                      |          |
 | sensor               | ```ValueNotifier<Sensors>```           | sensor to initiate **BACK** or **FRONT**                                                    | ✅        |
 | photoSize            | ```ValueNotifier<Size>```              | choose your photo size from the [selectDefaultSize] method                                  |          |
 | captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
 | fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
 | imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
+| exifPreferences        | ```ExifPreferences```                    | set exif data when a picture was taken, GPS location can be saved to image file for ex.     |          |
+|recordingPaused|ValueNotifier<bool>?|Set it to `true` to pause a video recording, `false` to resume|
 
 </p>
 </details>
@@ -227,7 +240,7 @@ Feel free to **contribute** to improve this **compatibility list**.
 
 Feel free to help by submitting PR !
 
-- [ ] 🎥 Record video (partially, iOS only)
+- [x] 🎥 Record video (Pause/Resume missing on iOS)
 - [ ] 🌠 Focus on specific point
 - [x] ~~📡 Broadcast live image stream~~
 - [x] ~~🌤 Exposure level~~
@@ -241,7 +254,7 @@ Feel free to help by submitting PR !
 - [x] ~~⌛️ Auto focus~~
 
 ## 📣&nbsp; Sponsor
-<img src="https://en.apparence.io/assets/images/logo.svg" width="30" />
+<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/apparence_logo.png" />
 <br />
 
 [Initiated and sponsored by Apparence.io.](https://apparence.io)

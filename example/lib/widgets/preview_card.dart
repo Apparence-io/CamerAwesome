@@ -4,18 +4,19 @@ import 'dart:math';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 
 class PreviewCardWidget extends StatelessWidget {
-  final String lastPhotoPath;
+  final String? lastPhotoPath;
   final Animation<Offset> previewAnimation;
   final ValueNotifier<CameraOrientations> orientation;
 
   const PreviewCardWidget({
-    Key key,
-    @required this.lastPhotoPath,
-    @required this.previewAnimation,
-    @required this.orientation,
-  }) : super(key: key);
+    super.key,
+    required this.lastPhotoPath,
+    required this.previewAnimation,
+    required this.orientation,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -64,50 +65,56 @@ class PreviewCardWidget extends StatelessWidget {
   }
 
   Widget _buildPreviewPicture({bool reverseImage = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(
-          Radius.circular(15),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black45,
-            offset: Offset(2, 2),
-            blurRadius: 25,
+    return InkWell(
+      onTap: () {
+        OpenFile.open(lastPhotoPath);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(
+            Radius.circular(15),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(3.0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(13.0),
-          child: lastPhotoPath != null
-              ? Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
-                  child: Image.file(
-                    File(lastPhotoPath),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black45,
+              offset: Offset(2, 2),
+              blurRadius: 25,
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(3.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(13.0),
+            child: lastPhotoPath != null
+                ? Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
+                    child: Image.file(
+                      File(lastPhotoPath!),
+                      width:
+                          OrientationUtils.isOnPortraitMode(orientation.value)
+                              ? 128
+                              : 256,
+                    ),
+                  )
+                : Container(
                     width: OrientationUtils.isOnPortraitMode(orientation.value)
                         ? 128
                         : 256,
-                  ),
-                )
-              : Container(
-                  width: OrientationUtils.isOnPortraitMode(orientation.value)
-                      ? 128
-                      : 256,
-                  height: 228,
-                  decoration: BoxDecoration(
-                    color: Colors.black38,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.photo,
-                      color: Colors.white,
+                    height: 228,
+                    decoration: BoxDecoration(
+                      color: Colors.black38,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.photo,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
+          ),
         ),
       ),
     );

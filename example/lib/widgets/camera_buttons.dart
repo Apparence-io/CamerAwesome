@@ -11,13 +11,13 @@ class OptionButton extends StatefulWidget {
   final ValueNotifier<CameraOrientations> orientation;
   final bool isEnabled;
   const OptionButton({
-    Key key,
-    this.icon,
-    this.onTapCallback,
-    this.rotationController,
-    this.orientation,
+    super.key,
+    required this.icon,
+    required this.onTapCallback,
+    required this.rotationController,
+    required this.orientation,
     this.isEnabled = true,
-  }) : super(key: key);
+  });
 
   @override
   _OptionButtonState createState() => _OptionButtonState();
@@ -75,7 +75,7 @@ class _OptionButtonState extends State<OptionButton>
     return AnimatedBuilder(
       animation: widget.rotationController,
       builder: (context, child) {
-        double newAngle;
+        double? newAngle;
 
         if (_oldOrientation == CameraOrientations.LANDSCAPE_LEFT) {
           if (widget.orientation.value == CameraOrientations.PORTRAIT_UP) {
@@ -115,12 +115,8 @@ class _OptionButtonState extends State<OptionButton>
                       ),
                     ),
                     onTap: () {
-                      if (widget.onTapCallback != null) {
-                        // Trigger short vibration
-                        HapticFeedback.selectionClick();
-
-                        widget.onTapCallback();
-                      }
+                      HapticFeedback.selectionClick();
+                      widget.onTapCallback();
                     },
                   ),
                 ),

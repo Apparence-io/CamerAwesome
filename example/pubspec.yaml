@@ -6,7 +6,7 @@ description: Demonstrates how to use the camerawesome plugin.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -15,9 +15,11 @@ dependencies:
     path: ../
   cupertino_icons: ^1.0.3
   image: ^3.0.2
+  open_file: ^3.2.1
   path_provider: ^2.0.2
   rxdart: ^0.27.1
   video_player: ^2.1.6
+  exif: ^3.1.2
 
 dev_dependencies:
   integration_test:

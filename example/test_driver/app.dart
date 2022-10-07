@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:camerawesome/camerapreview.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome_example/main.dart';
 import 'package:flutter/material.dart';
@@ -50,8 +49,8 @@ void main() {
     expect(await File(filePath).exists(), isTrue);
     var file = File(filePath);
     var img = imgUtils.decodeImage(file.readAsBytesSync());
-    expect(img.width, equals(cameraPreview.photoSize.value.width));
-    expect(img.height, equals(cameraPreview.photoSize.value.height));
+    expect(img!.width, equals(cameraPreview.photoSize.value?.width));
+    expect(img.height, equals(cameraPreview.photoSize.value?.height));
     // delete photo
     file.deleteSync();
   });
@@ -84,7 +83,7 @@ void main() {
         (find.byKey(ValueKey('resolutionTxt')).evaluate().first.widget as Text)
             .data;
     var resolButtonFinder = find.byKey(ValueKey('resolutionButton'));
-    (resolButtonFinder.evaluate().first.widget as FlatButton).onPressed();
+    (resolButtonFinder.evaluate().first.widget as TextButton).onPressed?.call();
     await tester.pump(Duration(milliseconds: 2000));
     await tester.pumpAndSettle(Duration(milliseconds: 2000));
     var optionsFinder = find.byKey(ValueKey('resOption'));
@@ -105,8 +104,8 @@ void main() {
     expect(await File(filePath).exists(), isTrue);
     var file = File(filePath);
     var img = imgUtils.decodeImage(file.readAsBytesSync());
-    expect(img.width, equals(cameraPreview.photoSize.value.width));
-    expect(img.height, equals(cameraPreview.photoSize.value.height));
+    expect(img!.width, equals(cameraPreview.photoSize.value?.width));
+    expect(img.height, equals(cameraPreview.photoSize.value?.height));
     // delete photo
     file.deleteSync();
   });
@@ -114,7 +113,7 @@ void main() {
   testWidgets(
     'Image stream properly delivers images',
     (WidgetTester tester) async {
-      ValueNotifier<Size> photoSize = ValueNotifier(null);
+      ValueNotifier<Size?> photoSize = ValueNotifier(null);
       ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
       ValueNotifier<CaptureModes> captureMode =
           ValueNotifier(CaptureModes.PHOTO);
@@ -137,12 +136,12 @@ void main() {
                       sensor: sensor,
                       captureMode: captureMode,
                       imagesStreamBuilder: (stream) async {
-                        imageStream = stream;
+                        imageStream = stream!;
                         imgData = await imageStream.first;
                         expect(imgData, isNotNull);
                         var img = imgUtils.decodeImage(imgData);
                         expect(img, isNotNull);
-                        expect(img.getBytes().length, greaterThan(0));
+                        expect(img!.getBytes().length, greaterThan(0));
                         expect(img.width, greaterThan(0));
                         expect(img.height, greaterThan(0));
                         print('check stream image has been done');

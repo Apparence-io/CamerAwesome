@@ -1,3 +1,21 @@
+## 0.4.0
+- Migrate to CameraX instead of Camera2 on Android.
+- Add GPS location in Exif photo on Android.
+- Add Video recording for Android.
+
+## 0.3.6
+- Add GPS location in Exif photo on iOS.
+- Fix some issues
+## 0.3.4
+- Add pinch to zoom.
+## 0.3.3
+- update android build tools to 30
+- fix first permission request crash
+## 0.3.2
+- Update to Flutter 3.
+- Update Android example project.
+- Upgrade dependencies.
+- Clean some code.
 ## 0.3.1
 - handle app lifecycle (stop camera on background)
 ## 0.3.0

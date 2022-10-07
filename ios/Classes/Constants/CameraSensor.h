@@ -9,8 +9,8 @@
 #define CameraSensor_h
 
 typedef enum {
-    Front,
-    Back,
+  Front,
+  Back,
 } CameraSensor;
 
 #endif /* CameraSensor_h */

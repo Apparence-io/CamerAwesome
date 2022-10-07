@@ -7,16 +7,16 @@ class CameraPreview extends StatefulWidget {
   final String videoPath;
 
   CameraPreview({
-    Key key,
-    @required this.videoPath,
-  }) : super(key: key);
+    super.key,
+    required this.videoPath,
+  });
 
   @override
   _CameraPreviewState createState() => _CameraPreviewState();
 }
 
 class _CameraPreviewState extends State<CameraPreview> {
-  VideoPlayerController _videoPlayerController;
+  late VideoPlayerController _videoPlayerController;
 
   @override
   void initState() {

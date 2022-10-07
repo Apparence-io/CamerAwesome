@@ -16,16 +16,16 @@ class BottomBarWidget extends StatelessWidget {
   final Function onCaptureModeSwitchChange;
 
   const BottomBarWidget({
-    Key key,
-    @required this.rotationController,
-    @required this.orientation,
-    @required this.isRecording,
-    @required this.captureMode,
-    @required this.onZoomOutTap,
-    @required this.onZoomInTap,
-    @required this.onCaptureTap,
-    @required this.onCaptureModeSwitchChange,
-  }) : super(key: key);
+    super.key,
+    required this.rotationController,
+    required this.orientation,
+    required this.isRecording,
+    required this.captureMode,
+    required this.onZoomOutTap,
+    required this.onZoomInTap,
+    required this.onCaptureTap,
+    required this.onCaptureModeSwitchChange,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +50,19 @@ class BottomBarWidget extends StatelessWidget {
                       icon: Icons.zoom_out,
                       rotationController: rotationController,
                       orientation: orientation,
-                      onTapCallback: () => onZoomOutTap?.call(),
+                      onTapCallback: () => onZoomOutTap.call(),
                     ),
                     CameraButton(
                       key: ValueKey('cameraButton'),
                       captureMode: captureMode.value,
                       isRecording: isRecording,
-                      onTap: () => onCaptureTap?.call(),
+                      onTap: () => onCaptureTap.call(),
                     ),
                     OptionButton(
                       icon: Icons.zoom_in,
                       rotationController: rotationController,
                       orientation: orientation,
-                      onTapCallback: () => onZoomInTap?.call(),
+                      onTapCallback: () => onZoomInTap.call(),
                     ),
                   ],
                 ),
@@ -81,7 +81,7 @@ class BottomBarWidget extends StatelessWidget {
                       onChanged: !isRecording
                           ? (value) {
                               HapticFeedback.heavyImpact();
-                              onCaptureModeSwitchChange?.call();
+                              onCaptureModeSwitchChange.call();
                             }
                           : null,
                     ),

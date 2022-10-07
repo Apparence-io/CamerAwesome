@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/widgets/bottom_bar.dart';
 import 'package:camerawesome_example/widgets/camera_preview.dart';
 import 'package:camerawesome_example/widgets/preview_card.dart';
 import 'package:camerawesome_example/widgets/top_bar.dart';
+import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MaterialApp(home: MyApp(), debugShowCheckedModeBanner: false));
@@ -30,17 +31,20 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  String _lastPhotoPath, _lastVideoPath;
+  String? _lastPhotoPath, _lastVideoPath;
   bool _focus = false, _fullscreen = true, _isRecordingVideo = false;
 
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<double> _zoomNotifier = ValueNotifier(0);
-  ValueNotifier<Size> _photoSize = ValueNotifier(null);
+  ValueNotifier<bool> _enablePinchToZoom = ValueNotifier(true);
+  ValueNotifier<Size?> _photoSize = ValueNotifier(null);
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
   ValueNotifier<bool> _enableAudio = ValueNotifier(true);
   ValueNotifier<CameraOrientations> _orientation =
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
+  ValueNotifier<bool> _recordingPaused = ValueNotifier(false);
+  ValueNotifier<double> _brightnessCorrection = ValueNotifier(0);
 
   /// use this to call a take picture
   PictureController _pictureController = PictureController();
@@ -49,13 +53,18 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   VideoController _videoController = VideoController();
 
   /// list of available sizes
-  List<Size> _availableSizes;
+  List<Size>? _availableSizes;
 
-  AnimationController _iconsAnimationController, _previewAnimationController;
-  Animation<Offset> _previewAnimation;
-  Timer _previewDismissTimer;
+  late AnimationController _iconsAnimationController,
+      _previewAnimationController;
+  late Animation<Offset> _previewAnimation;
+  Timer? _previewDismissTimer;
   // StreamSubscription<Uint8List> previewStreamSub;
-  Stream<Uint8List> previewStream;
+  Stream<Uint8List>? previewStream;
+
+  ExifPreferences _exifPreferences = ExifPreferences(
+    saveGPSLocation: false,
+  );
 
   @override
   void initState() {
@@ -85,6 +94,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   void dispose() {
     _iconsAnimationController.dispose();
     _previewAnimationController.dispose();
+    _brightnessCorrection.dispose();
     // previewStreamSub.cancel();
     _photoSize.dispose();
     _captureMode.dispose();
@@ -97,7 +107,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       body: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          this._fullscreen ? buildFullscreenCamera() : buildSizedScreenCamera(),
+          this._fullscreen ? buildFullScreenCamera() : buildSizedScreenCamera(),
           _buildInterface(),
           (!_isRecordingVideo)
               ? PreviewCardWidget(
@@ -106,6 +116,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   previewAnimation: _previewAnimation,
                 )
               : Container(),
+          _buildPreviewStream(),
         ],
       ),
     );
@@ -117,48 +128,70 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         SafeArea(
           bottom: false,
           child: TopBarWidget(
-              isFullscreen: _fullscreen,
-              isRecording: _isRecordingVideo,
-              enableAudio: _enableAudio,
-              photoSize: _photoSize,
-              captureMode: _captureMode,
-              switchFlash: _switchFlash,
-              orientation: _orientation,
-              rotationController: _iconsAnimationController,
-              onFlashTap: () {
-                switch (_switchFlash.value) {
-                  case CameraFlashes.NONE:
-                    _switchFlash.value = CameraFlashes.ON;
-                    break;
-                  case CameraFlashes.ON:
-                    _switchFlash.value = CameraFlashes.AUTO;
-                    break;
-                  case CameraFlashes.AUTO:
-                    _switchFlash.value = CameraFlashes.ALWAYS;
-                    break;
-                  case CameraFlashes.ALWAYS:
-                    _switchFlash.value = CameraFlashes.NONE;
-                    break;
-                }
-                setState(() {});
-              },
-              onAudioChange: () {
-                this._enableAudio.value = !this._enableAudio.value;
-                setState(() {});
-              },
-              onChangeSensorTap: () {
-                this._focus = !_focus;
-                if (_sensor.value == Sensors.FRONT) {
-                  _sensor.value = Sensors.BACK;
-                } else {
-                  _sensor.value = Sensors.FRONT;
-                }
-              },
-              onResolutionTap: () => _buildChangeResolutionDialog(),
-              onFullscreenTap: () {
-                this._fullscreen = !this._fullscreen;
-                setState(() {});
-              }),
+            isFullscreen: _fullscreen,
+            isRecording: _isRecordingVideo,
+            enableAudio: _enableAudio,
+            photoSize: _photoSize,
+            enablePinchToZoom: _enablePinchToZoom,
+            pausedRecording: _recordingPaused,
+            captureMode: _captureMode,
+            switchFlash: _switchFlash,
+            orientation: _orientation,
+            rotationController: _iconsAnimationController,
+            exifPreferences: _exifPreferences,
+            onSetExifPreferences: (newExifData) {
+              _pictureController.setExifPreferences(newExifData);
+              setState(() {});
+            },
+            onFlashTap: () {
+              switch (_switchFlash.value) {
+                case CameraFlashes.NONE:
+                  _switchFlash.value = CameraFlashes.ON;
+                  break;
+                case CameraFlashes.ON:
+                  _switchFlash.value = CameraFlashes.AUTO;
+                  break;
+                case CameraFlashes.AUTO:
+                  _switchFlash.value = CameraFlashes.ALWAYS;
+                  break;
+                case CameraFlashes.ALWAYS:
+                  _switchFlash.value = CameraFlashes.NONE;
+                  break;
+              }
+              setState(() {});
+            },
+            onPinchToZoomChange: () {
+              this._enablePinchToZoom.value = !this._enablePinchToZoom.value;
+              setState(() {});
+            },
+            onAudioChange: () {
+              this._enableAudio.value = !this._enableAudio.value;
+              setState(() {});
+            },
+            onChangeSensorTap: () {
+              this._focus = !_focus;
+              if (_sensor.value == Sensors.FRONT) {
+                _sensor.value = Sensors.BACK;
+              } else {
+                _sensor.value = Sensors.FRONT;
+              }
+            },
+            onResolutionTap: () => _buildChangeResolutionDialog(),
+            onFullscreenTap: () {
+              this._fullscreen = !this._fullscreen;
+              setState(() {});
+            },
+            onPausedRecordingChange: _isRecordingVideo
+                ? () {
+                    if (_recordingPaused.value == true) {
+                      _recordingPaused.value = false;
+                    } else {
+                      _recordingPaused.value = true;
+                    }
+                    setState(() {});
+                  }
+                : null,
+          ),
         ),
         BottomBarWidget(
           onZoomInTap: () {
@@ -189,11 +222,15 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           isRecording: _isRecordingVideo,
           captureMode: _captureMode,
         ),
+        _buildLeftManualBrightness(),
       ],
     );
   }
 
   _takePhoto() async {
+    // lets just make our phone vibrate
+    HapticFeedback.mediumImpact();
+
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
         await Directory('${extDir.path}/test').create(recursive: true);
@@ -201,20 +238,26 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         ? '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg'
         : '${testDir.path}/photo_test.jpg';
     await _pictureController.takePicture(filePath);
-    // lets just make our phone vibrate
-    HapticFeedback.mediumImpact();
+    final file = File(filePath);
+    // precache the image before display it
+    await precacheImage(FileImage(file), context);
     _lastPhotoPath = filePath;
     setState(() {});
     if (_previewAnimationController.status == AnimationStatus.completed) {
       _previewAnimationController.reset();
     }
     _previewAnimationController.forward();
+    final bytes = file.readAsBytesSync();
     print("----------------------------------");
     print("TAKE PHOTO CALLED");
-    final file = File(filePath);
-    print("==> hastakePhoto : ${file.exists()} | path : $filePath");
-    final img = imgUtils.decodeImage(file.readAsBytesSync());
-    print("==> img.width : ${img.width} | img.height : ${img.height}");
+    print("==> hastakePhoto : ${await file.exists()} | path : $filePath");
+    final img = imgUtils.decodeImage(bytes);
+    print("==> img.width : ${img?.width} | img.height : ${img?.height}");
+    final exifData = await readExifFromBytes(bytes);
+    for (var exif in exifData.entries) {
+      print("==> exifData : ${exif.key} : ${exif.value}");
+    }
+
     print("----------------------------------");
   }
 
@@ -228,7 +271,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       _isRecordingVideo = false;
       setState(() {});
 
-      final file = File(_lastVideoPath);
+      final file = File(_lastVideoPath!);
       print("----------------------------------");
       print("VIDEO RECORDED");
       print(
@@ -240,7 +283,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         context,
         MaterialPageRoute(
           builder: (context) => CameraPreview(
-            videoPath: _lastVideoPath,
+            videoPath: _lastVideoPath!,
           ),
         ),
       );
@@ -265,16 +308,16 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         itemBuilder: (context, index) => ListTile(
           key: ValueKey("resOption"),
           onTap: () {
-            this._photoSize.value = _availableSizes[index];
+            this._photoSize.value = _availableSizes?[index];
             setState(() {});
             Navigator.of(context).pop();
           },
           leading: Icon(Icons.aspect_ratio),
           title: Text(
-              "${_availableSizes[index].width}/${_availableSizes[index].height}"),
+              "${_availableSizes?[index].width}/${_availableSizes?[index].height}"),
         ),
         separatorBuilder: (context, index) => Divider(),
-        itemCount: _availableSizes.length,
+        itemCount: _availableSizes?.length ?? 0,
       ),
     );
   }
@@ -282,11 +325,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   _onOrientationChange(CameraOrientations newOrientation) {
     _orientation.value = newOrientation;
     if (_previewDismissTimer != null) {
-      _previewDismissTimer.cancel();
+      _previewDismissTimer!.cancel();
     }
   }
 
   _onPermissionsResult(bool granted) {
+    // TODO This popup is displayed when we don't have the permissions, but it stays displayed even if we give 
+    // the permissions in the meantime
     if (!granted) {
       AlertDialog alert = AlertDialog(
         title: Text('Error'),
@@ -317,29 +362,51 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   // /// This use a bufferTime to take an image each 1500 ms
   // /// you cannot show every frame as flutter cannot draw them fast enough
   // /// [THIS IS JUST FOR DEMO PURPOSE]
-  // Widget _buildPreviewStream() {
-  //   if (previewStream == null) return Container();
-  //   return Positioned(
-  //     left: 32,
-  //     bottom: 120,
-  //     child: StreamBuilder(
-  //       stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
-  //       builder: (context, snapshot) {
-  //         print(snapshot);
-  //         if (!snapshot.hasData || snapshot.data == null) return Container();
-  //         List<Uint8List> data = snapshot.data;
-  //         print(
-  //             "...${DateTime.now()} new image received... ${data.last.lengthInBytes} bytes");
-  //         return Image.memory(
-  //           data.last,
-  //           width: 120,
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
+  Widget _buildPreviewStream() {
+    if (previewStream == null) return Container();
+    return Positioned(
+      left: 32,
+      bottom: 120,
+      child: StreamBuilder<List<Uint8List>>(
+        stream: previewStream!.bufferTime(Duration(milliseconds: 1500)),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data == null) return Container();
+          List<Uint8List> data = snapshot.data!;
+          return Image.memory(
+            data.last,
+            width: 120,
+          );
+        },
+      ),
+    );
+  }
 
-  Widget buildFullscreenCamera() {
+  Widget _buildLeftManualBrightness() {
+    return Positioned(
+      left: 32,
+      bottom: 300,
+      child: RotatedBox(
+        quarterTurns: -1,
+        child: SliderTheme(
+          data: SliderThemeData(
+            trackHeight: 10,
+            inactiveTrackColor: Colors.white70,
+          ),
+          child: Slider(
+            value: _brightnessCorrection.value,
+            min: 0,
+            max: 1,
+            divisions: 10,
+            label: _brightnessCorrection.value.toStringAsFixed(2),
+            onChanged: (double value) =>
+                setState(() => _brightnessCorrection.value = value),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildFullScreenCamera() {
     return Positioned(
       top: 0,
       left: 0,
@@ -352,29 +419,33 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             this._availableSizes = availableSizes;
             return availableSizes[0];
           },
+          exifPreferences: _exifPreferences,
           captureMode: _captureMode,
           photoSize: _photoSize,
           sensor: _sensor,
           enableAudio: _enableAudio,
           switchFlashMode: _switchFlash,
           zoom: _zoomNotifier,
+          enablePinchToZoom: _enablePinchToZoom,
           onOrientationChanged: _onOrientationChange,
-          // imagesStreamBuilder: (imageStream) {
-          //   /// listen for images preview stream
-          //   /// you can use it to process AI recognition or anything else...
-          //   print("-- init CamerAwesome images stream");
-          //   setState(() {
-          //     previewStream = imageStream;
-          //   });
+          brightness: _brightnessCorrection,
+          imagesStreamBuilder: (imageStream) {
+            /// listen for images preview stream
+            /// you can use it to process AI recognition or anything else...
+            print("-- init CamerAwesome images stream");
+            setState(() {
+              previewStream = imageStream;
+            });
 
-          //   imageStream.listen((Uint8List imageData) {
-          //     print(
-          //         "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
-          //   });
-          // },
+            // imageStream.listen((Uint8List imageData) {
+            //   print(
+            //       "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
+            // });
+          },
           onCameraStarted: () {
             // camera started here -- do your after start stuff
           },
+          recordingPaused: _recordingPaused,
         ),
       ),
     );
@@ -398,13 +469,25 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 this._availableSizes = availableSizes;
                 return availableSizes[0];
               },
+              exifPreferences: _exifPreferences,
               captureMode: _captureMode,
               photoSize: _photoSize,
               sensor: _sensor,
               fitted: true,
               switchFlashMode: _switchFlash,
+              enablePinchToZoom: _enablePinchToZoom,
               zoom: _zoomNotifier,
               onOrientationChanged: _onOrientationChange,
+              brightness: _brightnessCorrection,
+              recordingPaused: _recordingPaused,
+              imagesStreamBuilder: (imageStream) {
+                /// listen for images preview stream
+                /// you can use it to process AI recognition or anything else...
+                print("-- init CamerAwesome images stream");
+                setState(() {
+                  previewStream = imageStream;
+                });
+              },
             ),
           ),
         ),
