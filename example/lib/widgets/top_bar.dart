@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 class TopBarWidget extends StatelessWidget {
   final bool isFullscreen;
   final bool isRecording;
-  final ValueNotifier<Size> photoSize;
+  final ValueNotifier<Size?> photoSize;
   final AnimationController rotationController;
   final ValueNotifier<CameraOrientations> orientation;
   final ValueNotifier<CaptureModes> captureMode;
@@ -24,31 +24,31 @@ class TopBarWidget extends StatelessWidget {
   final Function onFlashTap;
   final Function onAudioChange;
   final Function onPinchToZoomChange;
-  final Function onPausedRecordingChange;
+  final Function? onPausedRecordingChange;
   final Function onSetExifPreferences;
 
   const TopBarWidget({
-    Key key,
-    @required this.isFullscreen,
-    @required this.isRecording,
-    @required this.captureMode,
-    @required this.enableAudio,
-    @required this.photoSize,
-    @required this.orientation,
-    @required this.rotationController,
-    @required this.switchFlash,
-    @required this.enablePinchToZoom,
-    @required this.pausedRecording,
-    @required this.onFullscreenTap,
-    @required this.onAudioChange,
-    @required this.onFlashTap,
-    @required this.onChangeSensorTap,
-    @required this.onResolutionTap,
-    @required this.onPinchToZoomChange,
-    @required this.onPausedRecordingChange,
-    @required this.exifPreferences,
-    @required this.onSetExifPreferences,
-  }) : super(key: key);
+    super.key,
+    required this.isFullscreen,
+    required this.isRecording,
+    required this.captureMode,
+    required this.enableAudio,
+    required this.photoSize,
+    required this.orientation,
+    required this.rotationController,
+    required this.switchFlash,
+    required this.enablePinchToZoom,
+    required this.pausedRecording,
+    required this.onFullscreenTap,
+    required this.onAudioChange,
+    required this.onFlashTap,
+    required this.onChangeSensorTap,
+    required this.onResolutionTap,
+    required this.onPinchToZoomChange,
+     this.onPausedRecordingChange,
+    required this.exifPreferences,
+    required this.onSetExifPreferences,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +69,7 @@ class TopBarWidget extends StatelessWidget {
                       color: Colors.white,
                     ),
                     onPressed:
-                        isRecording ? null : () => onFullscreenTap?.call(),
+                        isRecording ? null : () => onFullscreenTap.call(),
                   ),
                 ),
               ),
@@ -82,17 +82,17 @@ class TopBarWidget extends StatelessWidget {
                       ignoring: isRecording,
                       child: Opacity(
                         opacity: isRecording ? 0.3 : 1.0,
-                        child: ValueListenableBuilder(
+                        child: ValueListenableBuilder<Size?>(
                           valueListenable: photoSize,
                           builder: (context, value, child) => TextButton(
                             key: ValueKey("resolutionButton"),
                             onPressed: () {
                               HapticFeedback.selectionClick();
 
-                              onResolutionTap?.call();
+                              onResolutionTap.call();
                             },
                             child: Text(
-                              '${value?.width?.toInt()} / ${value?.height?.toInt()}',
+                              '${value?.width.toInt()} / ${value?.height.toInt()}',
                               key: ValueKey("resolutionTxt"),
                               style: TextStyle(color: Colors.white),
                             ),
@@ -107,14 +107,14 @@ class TopBarWidget extends StatelessWidget {
                 icon: Icons.switch_camera,
                 rotationController: rotationController,
                 orientation: orientation,
-                onTapCallback: () => onChangeSensorTap?.call(),
+                onTapCallback: () => onChangeSensorTap.call(),
               ),
               SizedBox(width: 20.0),
               OptionButton(
                 rotationController: rotationController,
                 icon: _getFlashIcon(),
                 orientation: orientation,
-                onTapCallback: () => onFlashTap?.call(),
+                onTapCallback: () => onFlashTap.call(),
               ),
             ],
           ),
@@ -128,7 +128,7 @@ class TopBarWidget extends StatelessWidget {
                     ? Icons.pinch_rounded
                     : Icons.pinch_outlined,
                 orientation: orientation,
-                onTapCallback: () => onPinchToZoomChange?.call(),
+                onTapCallback: () => onPinchToZoomChange.call(),
               ),
               captureMode.value == CaptureModes.VIDEO
                   ? Padding(
@@ -138,7 +138,7 @@ class TopBarWidget extends StatelessWidget {
                         rotationController: rotationController,
                         orientation: orientation,
                         isEnabled: !isRecording,
-                        onTapCallback: () => onAudioChange?.call(),
+                        onTapCallback: () => onAudioChange.call(),
                       ),
                     )
                   : Container(),
@@ -168,7 +168,7 @@ class TopBarWidget extends StatelessWidget {
                 onTapCallback: () {
                   exifPreferences.saveGPSLocation =
                       !exifPreferences.saveGPSLocation;
-                  onSetExifPreferences?.call(exifPreferences);
+                  onSetExifPreferences.call(exifPreferences);
                 },
               ),
             ],

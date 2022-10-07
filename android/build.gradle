@@ -54,7 +54,7 @@ dependencies {
     implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'androidx.test:rules:1.4.0'
-    implementation project(path: ':integration_test')
+    // implementation project(path: ':integration_test')
     implementation 'com.google.android.gms:play-services-location:20.0.0'
     testImplementation 'junit:junit:4.13.2'
     // Optional -- Mockito framework

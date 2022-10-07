@@ -7,16 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 
 class PreviewCardWidget extends StatelessWidget {
-  final String lastPhotoPath;
+  final String? lastPhotoPath;
   final Animation<Offset> previewAnimation;
   final ValueNotifier<CameraOrientations> orientation;
 
   const PreviewCardWidget({
-    Key key,
-    @required this.lastPhotoPath,
-    @required this.previewAnimation,
-    @required this.orientation,
-  }) : super(key: key);
+    super.key,
+    required this.lastPhotoPath,
+    required this.previewAnimation,
+    required this.orientation,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +92,7 @@ class PreviewCardWidget extends StatelessWidget {
                     alignment: Alignment.center,
                     transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
                     child: Image.file(
-                      File(lastPhotoPath),
+                      File(lastPhotoPath!),
                       width:
                           OrientationUtils.isOnPortraitMode(orientation.value)
                               ? 128

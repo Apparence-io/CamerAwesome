@@ -32,9 +32,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  double bestSizeRatio;
+  double? bestSizeRatio;
 
-  String _lastPhotoPath;
+  String? _lastPhotoPath;
 
   bool focus = false;
 
@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   ValueNotifier<CameraFlashes> switchFlash = ValueNotifier(CameraFlashes.NONE);
 
   ValueNotifier<double> zoomNotifier = ValueNotifier(0);
-  ValueNotifier<Size> photoSize = ValueNotifier(null);
+  ValueNotifier<Size?> photoSize = ValueNotifier(null);
   ValueNotifier<Sensors> sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<double> brightnessCorrection = ValueNotifier(0);
   ValueNotifier<CaptureModes> captureMode = ValueNotifier(CaptureModes.PHOTO);
@@ -55,24 +55,24 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   PictureController _pictureController = PictureController();
 
   /// list of available sizes
-  List<Size> availableSizes;
+  List<Size>? availableSizes;
 
-  AnimationController _iconsAnimationController;
+  late AnimationController _iconsAnimationController;
 
-  AnimationController _previewAnimationController;
+  late AnimationController _previewAnimationController;
 
-  Animation<Offset> _previewAnimation;
+  late Animation<Offset> _previewAnimation;
 
   bool animationPlaying = false;
 
-  Timer _previewDismissTimer;
+  Timer? _previewDismissTimer;
 
   ValueNotifier<CameraOrientations> _orientation =
       ValueNotifier(CameraOrientations.PORTRAIT_UP);
 
   // StreamSubscription<Uint8List> previewStreamSub;
 
-  Stream<SensorData> brightnessStream;
+  Stream<SensorData>? brightnessStream;
 
   @override
   void initState() {
@@ -192,7 +192,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   alignment: Alignment.center,
                   transform: Matrix4.rotationY(reverseImage ? pi : 0.0),
                   child: Image.file(
-                    File(_lastPhotoPath),
+                    File(_lastPhotoPath!),
                     width: OrientationUtils.isOnPortraitMode(_orientation.value)
                         ? 128
                         : 256,
@@ -271,13 +271,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    ValueListenableBuilder(
+                    ValueListenableBuilder<Size?>(
                       valueListenable: photoSize,
                       builder: (context, value, child) => TextButton(
                         key: ValueKey("resolutionButton"),
                         onPressed: _buildChangeResolutionDialog,
                         child: Text(
-                          '${value?.width?.toInt()} / ${value?.height?.toInt()}',
+                          '${value?.width.toInt()} / ${value?.height.toInt()}',
                           key: ValueKey("resolutionTxt"),
                           style: TextStyle(color: Colors.white),
                         ),
@@ -367,6 +367,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             ),
             CameraButton(
               key: ValueKey("cameraButton"),
+              captureMode: captureMode.value,
+              isRecording: false,
               onTap: () async {
                 final Directory extDir = await getTemporaryDirectory();
                 var testDir = await Directory('${extDir.path}/test')
@@ -391,8 +393,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                 print("==> hastakePhoto : ${file.exists()}");
                 print("==> path : $filePath");
                 var img = imgUtils.decodeImage(file.readAsBytesSync());
-                print("==> img.width : ${img.width}");
-                print("==> img.height : ${img.height}");
+                print("==> img.width : ${img?.width}");
+                print("==> img.height : ${img?.height}");
                 print("----------------------------------");
               },
             ),
@@ -421,26 +423,26 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   key: ValueKey("resOption"),
                   onTap: () {
                     setState(() {
-                      this.photoSize.value = availableSizes[index];
+                      this.photoSize.value = availableSizes?[index];
                       Navigator.of(context).pop();
                     });
                   },
                   leading: Icon(Icons.aspect_ratio),
                   title: Text(
-                      "${availableSizes[index].width}/${availableSizes[index].height}"),
+                      "${availableSizes?[index].width}/${availableSizes?[index].height}"),
                 ),
             separatorBuilder: (context, index) => Divider(),
-            itemCount: availableSizes.length));
+            itemCount: availableSizes?.length ?? 0));
   }
 
   _onOrientationChange(CameraOrientations newOrientation) {
     _orientation.value = newOrientation;
     if (_previewDismissTimer != null) {
-      _previewDismissTimer.cancel();
+      _previewDismissTimer!.cancel();
     }
   }
 
-  _onPermissionsResult(bool granted) {
+  void _onPermissionsResult(bool granted) {
     if (!granted) {
       AlertDialog alert = AlertDialog(
         title: Text('Error'),

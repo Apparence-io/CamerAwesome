@@ -4,7 +4,7 @@ import 'package:camerawesome/models/orientations.dart';
 
 class OrientationUtils {
   static CameraOrientations convertRadianToOrientation(double radians) {
-    CameraOrientations orientation;
+    CameraOrientations? orientation;
     if (radians == -pi / 2) {
       orientation = CameraOrientations.LANDSCAPE_LEFT;
     } else if (radians == pi / 2) {
@@ -14,7 +14,7 @@ class OrientationUtils {
     } else if (radians == pi) {
       orientation = CameraOrientations.PORTRAIT_DOWN;
     }
-    return orientation;
+    return orientation!;
   }
 
   static double convertOrientationToRadian(CameraOrientations orientation) {
@@ -32,7 +32,6 @@ class OrientationUtils {
       case CameraOrientations.PORTRAIT_DOWN:
         radians = pi;
         break;
-      default:
     }
     return radians;
   }

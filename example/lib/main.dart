@@ -31,13 +31,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  String _lastPhotoPath, _lastVideoPath;
+  String? _lastPhotoPath, _lastVideoPath;
   bool _focus = false, _fullscreen = true, _isRecordingVideo = false;
 
   ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
   ValueNotifier<double> _zoomNotifier = ValueNotifier(0);
   ValueNotifier<bool> _enablePinchToZoom = ValueNotifier(true);
-  ValueNotifier<Size> _photoSize = ValueNotifier(null);
+  ValueNotifier<Size?> _photoSize = ValueNotifier(null);
   ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
   ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
   ValueNotifier<bool> _enableAudio = ValueNotifier(true);
@@ -53,13 +53,14 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   VideoController _videoController = VideoController();
 
   /// list of available sizes
-  List<Size> _availableSizes;
+  List<Size>? _availableSizes;
 
-  AnimationController _iconsAnimationController, _previewAnimationController;
-  Animation<Offset> _previewAnimation;
-  Timer _previewDismissTimer;
+  late AnimationController _iconsAnimationController,
+      _previewAnimationController;
+  late Animation<Offset> _previewAnimation;
+  Timer? _previewDismissTimer;
   // StreamSubscription<Uint8List> previewStreamSub;
-  Stream<Uint8List> previewStream;
+  Stream<Uint8List>? previewStream;
 
   ExifPreferences _exifPreferences = ExifPreferences(
     saveGPSLocation: false,
@@ -138,10 +139,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
             orientation: _orientation,
             rotationController: _iconsAnimationController,
             exifPreferences: _exifPreferences,
-              onSetExifPreferences: (newExifData) {
-                _pictureController.setExifPreferences(newExifData);
-                setState(() {});
-              },onFlashTap: () {
+            onSetExifPreferences: (newExifData) {
+              _pictureController.setExifPreferences(newExifData);
+              setState(() {});
+            },
+            onFlashTap: () {
               switch (_switchFlash.value) {
                 case CameraFlashes.NONE:
                   _switchFlash.value = CameraFlashes.ON;
@@ -250,7 +252,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     print("TAKE PHOTO CALLED");
     print("==> hastakePhoto : ${await file.exists()} | path : $filePath");
     final img = imgUtils.decodeImage(bytes);
-    print("==> img.width : ${img.width} | img.height : ${img.height}");
+    print("==> img.width : ${img?.width} | img.height : ${img?.height}");
     final exifData = await readExifFromBytes(bytes);
     for (var exif in exifData.entries) {
       print("==> exifData : ${exif.key} : ${exif.value}");
@@ -269,7 +271,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
       _isRecordingVideo = false;
       setState(() {});
 
-      final file = File(_lastVideoPath);
+      final file = File(_lastVideoPath!);
       print("----------------------------------");
       print("VIDEO RECORDED");
       print(
@@ -281,7 +283,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         context,
         MaterialPageRoute(
           builder: (context) => CameraPreview(
-            videoPath: _lastVideoPath,
+            videoPath: _lastVideoPath!,
           ),
         ),
       );
@@ -306,16 +308,16 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
         itemBuilder: (context, index) => ListTile(
           key: ValueKey("resOption"),
           onTap: () {
-            this._photoSize.value = _availableSizes[index];
+            this._photoSize.value = _availableSizes?[index];
             setState(() {});
             Navigator.of(context).pop();
           },
           leading: Icon(Icons.aspect_ratio),
           title: Text(
-              "${_availableSizes[index].width}/${_availableSizes[index].height}"),
+              "${_availableSizes?[index].width}/${_availableSizes?[index].height}"),
         ),
         separatorBuilder: (context, index) => Divider(),
-        itemCount: _availableSizes.length,
+        itemCount: _availableSizes?.length ?? 0,
       ),
     );
   }
@@ -323,7 +325,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   _onOrientationChange(CameraOrientations newOrientation) {
     _orientation.value = newOrientation;
     if (_previewDismissTimer != null) {
-      _previewDismissTimer.cancel();
+      _previewDismissTimer!.cancel();
     }
   }
 
@@ -363,11 +365,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     return Positioned(
       left: 32,
       bottom: 120,
-      child: StreamBuilder(
-        stream: previewStream.bufferTime(Duration(milliseconds: 1500)),
+      child: StreamBuilder<List<Uint8List>>(
+        stream: previewStream!.bufferTime(Duration(milliseconds: 1500)),
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.data == null) return Container();
-          List<Uint8List> data = snapshot.data;
+          List<Uint8List> data = snapshot.data!;
           return Image.memory(
             data.last,
             width: 120,

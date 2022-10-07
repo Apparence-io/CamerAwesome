@@ -5,22 +5,25 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-export 'camerapreview.dart';
-
-export 'picture_controller.dart';
-export 'video_controller.dart';
-
+import 'models/capture_modes.dart';
 import 'models/exif_preferences_data.dart';
+import 'models/flashmodes.dart';
+import 'models/orientations.dart';
 import 'models/sensor_data.dart';
 import 'models/sensors.dart';
-import 'models/capture_modes.dart';
-import 'models/flashmodes.dart';
-export 'models/sensors.dart';
+
+export 'camerapreview.dart';
 export 'models/capture_modes.dart';
 export 'models/exif_preferences_data.dart';
 export 'models/flashmodes.dart';
-import 'models/orientations.dart';
 export 'models/sensor_data.dart';
+export 'models/sensors.dart';
+export 'picture_controller.dart';
+export 'video_controller.dart';
+export 'widgets/camera_button_widget.dart';
+export 'widgets/camera_preview_widget.dart';
+export 'widgets/camera_widget.dart';
+export 'widgets/pinch_to_zoom.dart';
 
 enum CameraState { STARTING, STARTED, STOPPING, STOPPED }
 
@@ -39,7 +42,7 @@ class CamerawesomePlugin {
   static const EventChannel _luminosityChannel =
       EventChannel('camerawesome/luminosity');
 
-  static Stream<CameraOrientations?>? _orientationStream;
+  static Stream<CameraOrientations>? _orientationStream;
 
   static Stream<bool>? _permissionsStream;
 
@@ -93,12 +96,12 @@ class CamerawesomePlugin {
 
   static Future<bool?> focus() => _channel.invokeMethod("focus");
 
-  static Stream<CameraOrientations?>? getNativeOrientation() {
+  static Stream<CameraOrientations>? getNativeOrientation() {
     if (_orientationStream == null) {
       _orientationStream = _orientationChannel
           .receiveBroadcastStream()
           .transform(
-              StreamTransformer<dynamic, CameraOrientations?>.fromHandlers(
+              StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
                   handleData: (data, sink) {
         CameraOrientations? newOrientation;
         switch (data) {
@@ -116,7 +119,7 @@ class CamerawesomePlugin {
             break;
           default:
         }
-        sink.add(newOrientation);
+        sink.add(newOrientation!);
       }));
     }
     return _orientationStream;
@@ -357,7 +360,7 @@ class CamerawesomePlugin {
   }
 
   /// set exif preferences when a photo is saved
-  /// 
+  ///
   /// The GPS value can be null on Android if:
   /// - Location is disabled on the phone
   /// - ExifPreferences.saveGPSLocation is false

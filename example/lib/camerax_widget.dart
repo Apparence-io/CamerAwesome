@@ -21,7 +21,7 @@ class _CameraXWidgetState extends State<CameraXWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<num>(
+    return FutureBuilder<num?>(
       future: CamerawesomePlugin.getPreviewTexture(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -29,7 +29,7 @@ class _CameraXWidgetState extends State<CameraXWidget> {
         }
         if (!snapshot.hasData || !loaded) return CircularProgressIndicator();
 
-        final int textureId = snapshot.data.toInt();
+        final int textureId = snapshot.data!.toInt();
         return Texture(textureId: textureId);
       },
     );

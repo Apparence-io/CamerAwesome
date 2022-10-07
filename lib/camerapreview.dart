@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Used to set a permission result callback
-typedef OnPermissionsResult = void Function(bool? result);
+typedef OnPermissionsResult = void Function(bool result);
 
 /// used by [OnAvailableSizes]
 typedef SelectSize = List<Size> Function();
@@ -28,7 +28,7 @@ typedef LuminosityLevelStreamBuilder = void Function(
 
 /// used to send notification when the device rotate
 /// FIXME use [DeviceOrientation] instead
-typedef OnOrientationChanged = void Function(CameraOrientations?);
+typedef OnOrientationChanged = void Function(CameraOrientations);
 
 /// -------------------------------------------------
 /// CameraAwesome preview Widget
@@ -68,7 +68,7 @@ class CameraAwesome extends StatefulWidget {
   final ValueNotifier<Sensors> sensor;
 
   /// choose your photo size from the [selectDefaultSize] method
-  final ValueNotifier<Size> photoSize;
+  final ValueNotifier<Size?> photoSize;
 
   /// set brightness correction manually range [0,1] (optionnal)
   final ValueNotifier<double>? brightness;
@@ -226,7 +226,7 @@ class CameraAwesomeState extends State<CameraAwesome>
     }
     hasPermissions = await CamerawesomePlugin.checkAndRequestPermissions();
     if (widget.onPermissionsResult != null) {
-      widget.onPermissionsResult!(hasPermissions);
+      widget.onPermissionsResult!(hasPermissions!);
     }
     if (!hasPermissions!) {
       return;
@@ -431,8 +431,8 @@ class CameraAwesomeState extends State<CameraAwesome>
       }
       selectedAndroidPhotoSize!.value = widget.photoSize.value;
       await CamerawesomePlugin.setPreviewSize(
-          widget.photoSize.value.width.toInt(),
-          widget.photoSize.value.height.toInt());
+          widget.photoSize.value!.width.toInt(),
+          widget.photoSize.value!.height.toInt());
       var effectivPreviewSize =
           await CamerawesomePlugin.getEffectivPreviewSize();
 

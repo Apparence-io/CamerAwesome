@@ -85,7 +85,6 @@ data class CameraXState(
         }
         var imageAnalysis: ImageAnalysis? = null
         if (enableImageStream) {
-            // TODO implement imageanalysis usecase
             imageAnalysis = ImageAnalysis.Builder()
                 // TODO What should the targetResolutionSize be?
                 .setTargetResolution(Size(640, 480))
@@ -115,7 +114,7 @@ data class CameraXState(
             if (currentCaptureMode == CaptureModes.PHOTO)
                 imageCapture
             else videoCapture,
-        ).apply { if (imageAnalysis != null) add(imageAnalysis!!) }
+        ).apply { if (imageAnalysis != null) add(imageAnalysis) }
 
         cameraProvider.unbindAll()
         previewCamera = cameraProvider.bindToLifecycle(

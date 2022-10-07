@@ -7,11 +7,11 @@ class CameraButton extends StatefulWidget {
   final Function onTap;
 
   CameraButton({
-    Key key,
-    this.captureMode,
-    this.isRecording,
-    this.onTap,
-  }) : super(key: key);
+    super.key,
+    required this.captureMode,
+    required this.isRecording,
+    required this.onTap,
+  });
 
   @override
   _CameraButtonState createState() => _CameraButtonState();
@@ -19,8 +19,8 @@ class CameraButton extends StatefulWidget {
 
 class _CameraButtonState extends State<CameraButton>
     with SingleTickerProviderStateMixin {
-  AnimationController _animationController;
-  double _scale;
+  late AnimationController _animationController;
+  late double _scale;
   Duration _duration = Duration(milliseconds: 100);
 
   @override
@@ -39,7 +39,7 @@ class _CameraButtonState extends State<CameraButton>
 
   @override
   void dispose() {
-    _animationController?.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -60,7 +60,7 @@ class _CameraButtonState extends State<CameraButton>
           scale: _scale,
           child: CustomPaint(
             painter: CameraButtonPainter(
-              widget.captureMode ?? CaptureModes.PHOTO,
+              widget.captureMode,
               isRecording: widget.isRecording,
             ),
           ),
@@ -78,7 +78,7 @@ class _CameraButtonState extends State<CameraButton>
       _animationController.reverse();
     });
 
-    this.widget.onTap?.call();
+    this.widget.onTap.call();
   }
 
   _onTapCancel() {
