@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:camerawesome/controllers/picture_camera_controller.dart';
-import 'package:camerawesome/controllers/video_camera_controller.dart';
-import 'package:camerawesome/models/sensors.dart';
+import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/widgets/camera_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
@@ -21,40 +19,79 @@ class _CameraPageState extends State<CameraPage> {
   List<CameraMode> cameraModes = [
     CameraMode(
       title: "Photo",
-      cameraController: PictureCameraController(
-        sensor: Sensors.BACK,
-        filePathBuilder: () async {
-          final Directory extDir = await getTemporaryDirectory();
-          final testDir =
-              await Directory('${extDir.path}/test').create(recursive: true);
-          final String filePath =
-              '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-          return filePath;
-        },
-      ),
+      captureMode: CaptureModes.PHOTO,
     ),
     CameraMode(
       title: "Video",
-      cameraController: VideoCameraController(
-        sensor: Sensors.BACK,
-        filePathBuilder: () async {
-          final Directory extDir = await getTemporaryDirectory();
-          final testDir =
-              await Directory('${extDir.path}/test').create(recursive: true);
-          final String filePath =
-              '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
-          return filePath;
-        },
-      ),
+      captureMode: CaptureModes.VIDEO,
     ),
   ];
   int currentCameraModeIndex = 0;
 
+  /// If we go this way, each method must have a guard to say that the camera should probably call setup
+  /// before calling any other method
+  patternInit() {
+    // final cameraSetup = CameraSetup.picture(
+    //   sensorConfig: SensorConfig(
+    //     flashMode: CameraFlashes.ALWAYS,
+    //     zoom: 0.5,
+    //   ),
+    //   pictureController: PictureController(
+    //     exifPreferences: exifPreferences,
+    //   ),
+    // );
+
+    // return FutureBuilder<bool>(
+    //   future: cameraSetup.init(),
+    //   builder: (context, snapshot) {
+    //     if (snapshot.data == true) {
+    //       return Stack(children: [
+    //         CameraPreview(
+    //           config: cameraSetup.sensorConfig,
+    //         ),
+    //         IconButton(
+    //           icon: StreamBuilder<CameraFlashes>(
+    //             stream: cameraSetup.sensorConfig.flashMode,
+    //             builder: ((context, snapshot) => const Icon(Icons.flash_auto)),
+    //           ),
+    //           onPressed: () {},
+    //         ),
+    //         IconButton(
+    //           onPressed: () {
+    //             cameraSetup.pictureController?.takePhoto("some/path/file.jpg");
+    //           },
+    //           icon: const Icon(Icons.camera),
+    //         ),
+    //         IconButton(
+    //           onPressed: () {
+    //             cameraSetup.switchSensor(
+    //               cameraSetup.sensorConfig.copyWith(sensor: Sensors.FRONT),
+    //             );
+    //           },
+    //           icon: const Icon(Icons.cameraswitch),
+    //         )
+    //       ]);
+    //     } else {
+    //       if (snapshot.hasError) {
+    //         return Text("There was an error");
+    //       } else {
+    //         return const Center(child: CircularProgressIndicator());
+    //       }
+    //     }
+    //   },
+    // );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: CameraWidget.withModes(
-      cameraController: cameraModes[currentCameraModeIndex].cameraController,
+      body: _cameraWidget(),
+    );
+  }
+
+  Widget _cameraWidget() {
+    return CameraWidget.withModes(
+      captureMode: cameraModes[currentCameraModeIndex].captureMode,
       cameraModes: cameraModes,
       onCameraModeChanged: (cameraMode, index) {
         setState(() {
@@ -64,6 +101,14 @@ class _CameraPageState extends State<CameraPage> {
       onMediaTap: (mediaCapture) {
         OpenFile.open(mediaCapture.filePath);
       },
-    ));
+      filePathBuilder: (captureMode) async {
+        final Directory extDir = await getTemporaryDirectory();
+        final testDir =
+            await Directory('${extDir.path}/test').create(recursive: true);
+        final String filePath =
+            '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.${captureMode == CaptureModes.PHOTO ? 'jpg' : 'mp4'}';
+        return filePath;
+      },
+    );
   }
 }

@@ -4,24 +4,40 @@ enum MediaCaptureStatus {
   failure,
 }
 
+enum VideoState {
+  started,
+  paused,
+  resumed,
+  stopped,
+  error,
+}
+
 class MediaCapture {
   final Exception? exception;
   final String filePath;
   final MediaCaptureStatus status;
+  final VideoState? videoState;
 
   MediaCapture.capturing({
     this.exception,
     required this.filePath,
+    this.videoState,
   }) : status = MediaCaptureStatus.capturing;
   MediaCapture.success({
     this.exception,
     required this.filePath,
-  }) : status = MediaCaptureStatus.success;
+  })  : status = MediaCaptureStatus.success,
+        videoState = VideoState.stopped;
   MediaCapture.failure({
     required this.exception,
     required this.filePath,
-  }) : status = MediaCaptureStatus.failure;
+  })  : status = MediaCaptureStatus.failure,
+        videoState = VideoState.error;
 
   bool get isPicture => filePath.endsWith("jpg");
   bool get isVideo => filePath.endsWith("mp4");
+
+  bool get isRecordingVideo {
+    return isVideo && status == MediaCaptureStatus.capturing;
+  }
 }

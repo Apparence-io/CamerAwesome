@@ -1,42 +1,60 @@
-import 'package:camerawesome/controllers/camera_controller.dart';
+import 'package:camerawesome/controllers/camera_setup.dart';
 import 'package:flutter/material.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
-  final CameraController cameraController;
+  final CameraSetup cameraSetup;
+  final Widget loadingWidget;
 
-  const CameraPreviewWidget({super.key, required this.cameraController});
+  const CameraPreviewWidget({
+    super.key,
+    required this.cameraSetup,
+    this.loadingWidget = const Center(
+      child: CircularProgressIndicator(),
+    ),
+  });
 
   @override
   Widget build(BuildContext context) {
-    return OrientationBuilder(builder: (context, orientation) {
-      return LayoutBuilder(
-        builder: (_, constraints) {
-          final size = cameraController.previewSize;
-          final double ratio = size.height / size.width;
+    return FutureBuilder<List>(
+      future: Future.wait([cameraSetup.previewSize(), cameraSetup.textureId()]),
+      builder: (_, snapshot) {
+        if (!snapshot.hasData) {
+          return loadingWidget;
+        }
 
-          return Container(
-            color: Colors.black,
-            child: Center(
-              child: Transform.scale(
-                scale: _calculateScale(constraints, ratio, orientation),
-                child: AspectRatio(
-                  aspectRatio: ratio,
-                  child: SizedBox(
-                    height: orientation == Orientation.portrait
-                        ? constraints.maxHeight
-                        : constraints.maxWidth,
-                    width: orientation == Orientation.portrait
-                        ? constraints.maxWidth
-                        : constraints.maxHeight,
-                    child: Texture(textureId: cameraController.textureId),
+        return OrientationBuilder(builder: (context, orientation) {
+          return LayoutBuilder(
+            builder: (_, constraints) {
+              final data = snapshot.data!;
+              final size = data[0] as Size;
+              final textureId = data[1] as int;
+              final double ratio = size.height / size.width;
+
+              return Container(
+                color: Colors.black,
+                child: Center(
+                  child: Transform.scale(
+                    scale: _calculateScale(constraints, ratio, orientation),
+                    child: AspectRatio(
+                      aspectRatio: ratio,
+                      child: SizedBox(
+                        height: orientation == Orientation.portrait
+                            ? constraints.maxHeight
+                            : constraints.maxWidth,
+                        width: orientation == Orientation.portrait
+                            ? constraints.maxWidth
+                            : constraints.maxHeight,
+                        child: Texture(textureId: textureId),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
-        },
-      );
-    });
+        });
+      },
+    );
   }
 
   double _calculateScale(

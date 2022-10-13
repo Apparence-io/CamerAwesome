@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:camerawesome/models/media_capture.dart';
 import 'package:flutter/material.dart';
 
-class MediaPreview extends StatelessWidget {
+class MediaPreviewWidget extends StatelessWidget {
   final MediaCapture? mediaCapture;
   final Function(MediaCapture) onMediaTap;
 
-  const MediaPreview({
+  const MediaPreviewWidget({
     super.key,
     required this.mediaCapture,
     required this.onMediaTap,
@@ -44,14 +44,24 @@ class MediaPreview extends StatelessWidget {
   Widget _buildMedia(MediaCapture? mediaCapture) {
     switch (mediaCapture?.status) {
       case MediaCaptureStatus.capturing:
-        return const CircularProgressIndicator();
+        return const Center(
+            child: Padding(
+          padding: EdgeInsets.all(8),
+          child: CircularProgressIndicator(),
+        ));
       case MediaCaptureStatus.success:
-        return Ink.image(
-          fit: BoxFit.cover,
-          image: FileImage(
-            File(mediaCapture!.filePath),
-          ),
-        );
+        if (mediaCapture!.isPicture) {
+          return Ink.image(
+            fit: BoxFit.cover,
+            image: FileImage(
+              File(mediaCapture.filePath),
+            ),
+          );
+        } else {
+          return Ink(
+            child: Icon(Icons.play_arrow),
+          );
+        }
       case MediaCaptureStatus.failure:
         return Icon(Icons.error);
       case null:

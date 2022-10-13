@@ -1,13 +1,13 @@
-import 'package:camerawesome/controllers/camera_controller.dart';
+import 'package:camerawesome/controllers/sensor_config.dart';
 import 'package:flutter/material.dart';
 
 class PinchToZoom extends StatefulWidget {
-  final CameraController cameraController;
+  final SensorConfig sensorConfig;
   final Widget child;
 
   const PinchToZoom({
     super.key,
-    required this.cameraController,
+    required this.sensorConfig,
     required this.child,
   });
 
@@ -31,7 +31,7 @@ class _PinchToZoomState extends State<PinchToZoom> {
         double result = _previousZoomScale * details.scale - 1;
         if (result < 1 && result > 0) {
           _zoomScale = result;
-          widget.cameraController.setZoom(_zoomScale);
+          widget.sensorConfig.setZoom(_zoomScale);
         }
       },
       child: widget.child,
