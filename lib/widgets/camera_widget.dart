@@ -1,10 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/controllers/image_analysis_controller.dart';
 import 'package:camerawesome/controllers/picture_camera_controller.dart';
 import 'package:camerawesome/controllers/camera_setup.dart';
 import 'package:camerawesome/models/media_capture.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';
 import 'package:camerawesome/widgets/pinch_to_zoom.dart';
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../controllers/video_camera_controller.dart';
 import 'camera_button_widget.dart';
@@ -95,6 +99,8 @@ class _CameraWidgetState extends State<CameraWidget> {
           PictureCameraController.create(cameraSetup: cameraSetup),
       videoCameraControllerBuilder: (cameraSetup) =>
           VideoCameraController.create(cameraSetup: cameraSetup),
+      imageAnalysisControllerBuilder: (cameraSetup) =>
+          ImageAnalysisController(cameraSetup: cameraSetup),
     ).then(((value) {
       _cameraSetup = value;
       if (mounted) setState(() {});
@@ -308,7 +314,33 @@ class _CameraWidgetState extends State<CameraWidget> {
                   }),
             ],
           ),
-        )
+        ),
+        if (cameraSetup.imageAnalysisController != null)
+          Positioned(
+            left: 32,
+            bottom: 122,
+            child: StreamBuilder<List<Uint8List>>(
+              stream:
+                  (cameraSetup.imageAnalysisController!.analysisImagesStream!)
+                      .bufferTime(Duration(milliseconds: 1500)),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData ||
+                    snapshot.data == null ||
+                    snapshot.data?.isEmpty == true)
+                  return Text("No data stream");
+                List<Uint8List> data = snapshot.data!;
+                return Image.memory(
+                  data.last,
+                  width: 120,
+                );
+              },
+            ),
+          )
+        else
+          Positioned(
+              left: 32,
+              bottom: 240,
+              child: Text("No image analysis controller"))
       ]),
     );
   }

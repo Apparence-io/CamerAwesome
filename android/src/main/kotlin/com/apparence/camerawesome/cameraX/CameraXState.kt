@@ -42,6 +42,7 @@ data class CameraXState(
     var previewSize: Size? = null,
     var flashMode: FlashMode = FlashMode.NONE,
     var previewStreamSink: EventChannel.EventSink? = null,
+    val onStreamReady: (state: CameraXState) -> Unit,
 ) : EventChannel.StreamHandler {
 
     val maxZoomRatio: Double
@@ -115,7 +116,6 @@ data class CameraXState(
                 imageCapture
             else videoCapture,
         ).apply { if (imageAnalysis != null) add(imageAnalysis) }
-
         cameraProvider.unbindAll()
         previewCamera = cameraProvider.bindToLifecycle(
             activity as LifecycleOwner,
@@ -172,7 +172,13 @@ data class CameraXState(
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        val previous = previewStreamSink;
+        val next = events;
+
         this.previewStreamSink = events
+        if (previous == null && next != null) {
+            onStreamReady(this)
+        }
     }
 
     override fun onCancel(arguments: Any?) {

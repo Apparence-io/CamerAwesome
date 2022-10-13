@@ -64,8 +64,8 @@ class CameraSetup {
   VideoCameraController? _videoCameraController;
 
   /// Use [imageAnalysisController] to setup images stream
-  // ImageAnalysisController? get imageAnalysisController =>
-  //     _imageAnalysisController;
+  ImageAnalysisController? get imageAnalysisController =>
+      _imageAnalysisController;
   ImageAnalysisController? _imageAnalysisController;
 
   /// implement this to have a callback after CameraAwesome asked for permissions
@@ -82,10 +82,6 @@ class CameraSetup {
 
   Stream<CameraOrientations>? get orientationStream =>
       CamerawesomePlugin.getNativeOrientation();
-
-  /// Stream of images in bytes format for analysis usage
-  Stream<Uint8List>? get analysisImagesStream =>
-      CamerawesomePlugin.listenCameraImages();
 
   final BehaviorSubject<MediaCapture?> _mediaCaptureController =
       BehaviorSubject.seeded(null);
@@ -124,7 +120,10 @@ class CameraSetup {
       captureMode: CaptureModes.PHOTO,
       onPermissionsResult: onPermissionsResult,
     );
-    await creation._init(sensorConfig);
+    await creation._init(
+      sensorConfig,
+      enableImageStream: imageAnalysisControllerBuilder != null,
+    );
 
     creation._pictureCameraController =
         await pictureCameraControllerBuilder(creation);
@@ -148,7 +147,10 @@ class CameraSetup {
       captureMode: CaptureModes.VIDEO,
       onPermissionsResult: onPermissionsResult,
     );
-    await creation._init(sensorConfig);
+    await creation._init(
+      sensorConfig,
+      enableImageStream: imageAnalysisControllerBuilder != null,
+    );
     creation._videoCameraController =
         await videoCameraControllerBuilder(creation);
     if (imageAnalysisControllerBuilder != null) {
@@ -174,7 +176,10 @@ class CameraSetup {
       captureMode: initialCaptureMode,
       onPermissionsResult: onPermissionsResult,
     );
-    await creation._init(sensorConfig);
+    await creation._init(
+      sensorConfig,
+      enableImageStream: imageAnalysisControllerBuilder != null,
+    );
 
     creation._pictureCameraController =
         await pictureCameraControllerBuilder(creation);
@@ -244,9 +249,14 @@ class CameraSetup {
     _sensorConfigController.sink.add(newConfig);
   }
 
-  Future<bool> _init(SensorConfig sensorConfig) async {
+  // TODO Should we allow to disable the image stream?
+  Future<bool> _init(SensorConfig sensorConfig,
+      {required bool enableImageStream}) async {
     // General setup
-    _initPermissions(sensorConfig);
+    _initPermissions(
+      sensorConfig,
+      enableImageStream: enableImageStream,
+    );
 
     // All events sink need to be done before camera init
     // if (Platform.isIOS) {
@@ -254,7 +264,7 @@ class CameraSetup {
     // }
     await CamerawesomePlugin.init(
       sensorConfig.sensor,
-      _imageAnalysisController != null,
+      enableImageStream,
       captureMode: _captureMode,
     );
     // if (Platform.isAndroid) {
@@ -279,13 +289,14 @@ class CameraSetup {
     return _isReady;
   }
 
-  Future<void> _initPermissions(SensorConfig sensorConfig) async {
+  Future<void> _initPermissions(SensorConfig sensorConfig,
+      {required bool enableImageStream}) async {
     // wait user accept permissions to init widget completely on android
     if (Platform.isAndroid) {
       _permissionStreamSub =
           CamerawesomePlugin.listenPermissionResult()!.listen((res) {
         if (res && !_isReady) {
-          _init(sensorConfig);
+          _init(sensorConfig, enableImageStream: enableImageStream);
         }
         if (onPermissionsResult != null) {
           onPermissionsResult!(res);

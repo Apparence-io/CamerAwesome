@@ -77,6 +77,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             cameraSelector = cameraSelector,
             currentCaptureMode = CaptureModes.valueOf(captureMode),
             enableImageStream = enableImageStream,
+            onStreamReady = { state -> state.updateLifecycle(activity!!) }
         )
         if (enableImageStream) {
             imageStreamChannel.setStreamHandler(cameraState)
