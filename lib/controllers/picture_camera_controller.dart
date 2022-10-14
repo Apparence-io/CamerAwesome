@@ -6,9 +6,10 @@ import 'camera_setup.dart';
 
 class PictureCameraController extends CaptureController {
   ExifPreferences? exifPreferences;
-
+  final Future<String> Function()? picturePathBuilder;
   PictureCameraController._({
     required super.cameraSetup,
+    this.picturePathBuilder,
     this.exifPreferences,
   }) {
     if (exifPreferences != null) {
@@ -18,12 +19,14 @@ class PictureCameraController extends CaptureController {
 
   static Future<PictureCameraController> create({
     required CameraSetup cameraSetup,
+    Future<String> Function()? picturePathBuilder,
     ExifPreferences? exifPreferences,
   }) async {
     // We can't use async on constructors or factories, so we make a
     // kind of factory using a static method
     final creation = PictureCameraController._(
       cameraSetup: cameraSetup,
+      picturePathBuilder: picturePathBuilder,
       exifPreferences: exifPreferences,
     );
 
@@ -37,19 +40,20 @@ class PictureCameraController extends CaptureController {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> takePhoto(String filePath) async {
-    if (!filePath.endsWith(".jpg")) {
+  Future<String> takePhoto() async {
+    String path = await picturePathBuilder!();
+    if (!path.endsWith(".jpg")) {
       throw ("You can only capture .jpg files with CamerAwesome");
     }
-    cameraSetup.setMediaCapture(MediaCapture.capturing(filePath: filePath));
+    cameraSetup.setMediaCapture(MediaCapture.capturing(filePath: path));
     try {
-      await CamerawesomePlugin.takePhoto(filePath);
-      cameraSetup.setMediaCapture(MediaCapture.success(filePath: filePath));
+      await CamerawesomePlugin.takePhoto(path);
+      cameraSetup.setMediaCapture(MediaCapture.success(filePath: path));
     } on Exception catch (e) {
-      cameraSetup.setMediaCapture(
-          MediaCapture.failure(filePath: filePath, exception: e));
+      cameraSetup
+          .setMediaCapture(MediaCapture.failure(filePath: path, exception: e));
     }
-    return filePath;
+    return path;
   }
 
   /// Use this to determine if you want to save the GPS location with the picture

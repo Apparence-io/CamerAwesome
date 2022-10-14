@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/widgets/camera_widget.dart';
+import 'package:camerawesome/widgets/camera_widget_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -85,7 +86,12 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _cameraWidget(),
+      body: CameraWidgetBuilder.awesome(
+        picturePathBuilder: _path,
+        onMediaTap: (mediaCapture) {
+          OpenFile.open(mediaCapture.filePath);
+        },
+      ),
     );
   }
 
@@ -110,5 +116,14 @@ class _CameraPageState extends State<CameraPage> {
         return filePath;
       },
     );
+  }
+
+  Future<String> _path() async {
+    final Directory extDir = await getTemporaryDirectory();
+    final testDir =
+        await Directory('${extDir.path}/test').create(recursive: true);
+    final String filePath =
+        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+    return filePath;
   }
 }

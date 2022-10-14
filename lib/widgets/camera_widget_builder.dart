@@ -1,4 +1,8 @@
 import 'package:camerawesome/models/exif_preferences_data.dart';
+import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/widgets/base_view/bottom_widget.dart';
+import 'package:camerawesome/widgets/base_view/mid_widget.dart';
+import 'package:camerawesome/widgets/base_view/top_widget.dart';
 import 'package:camerawesome/widgets/camera_controls_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +27,9 @@ class CameraWidgetBuilder extends StatefulWidget {
   final List<CaptureModes> availableModes;
   final ExifPreferences? exifPreferences;
   final bool enableAudio;
+  final Future<String> Function()? picturePathBuilder;
+  final Future<String> Function()? videoPathBuilder;
+  final Function(MediaCapture)? onMediaTap;
 
   // Widgets
   final Widget? progressIndicator;
@@ -38,9 +45,12 @@ class CameraWidgetBuilder extends StatefulWidget {
     required this.enableAudio,
     required this.progressIndicator,
     required this.builder,
+    required this.picturePathBuilder,
+    required this.videoPathBuilder,
+    required this.onMediaTap,
   });
 
-  CameraWidgetBuilder.awesome({
+  factory CameraWidgetBuilder.awesome({
     CaptureModes captureMode = CaptureModes.PHOTO,
     Sensors sensor = Sensors.BACK,
     CameraFlashes flashMode = CameraFlashes.NONE,
@@ -55,38 +65,67 @@ class CameraWidgetBuilder extends StatefulWidget {
     LineBuilder? top,
     LineBuilder? middle,
     LineBuilder? bottom,
-  }) : this._(
-          captureMode: captureMode,
-          sensor: sensor,
-          flashMode: flashMode,
-          zoom: zoom,
-          availableModes: availableModes,
-          exifPreferences: exifPreferences,
-          enableAudio: enableAudio,
-          progressIndicator: progressIndicator,
-          builder: ((cameraSetup, sensorConfig) => CameraControlsWidget(
-                cameraSetup: cameraSetup,
-                sensorConfig: sensorConfig,
-                top: top ?? (setup, sensorConfig) => Text("top"),
-                middle: middle ?? (setup, sensorConfig) => Text("mid"),
-                bottom: bottom ?? (setup, sensorConfig) => Text("bot"),
-              )),
-        );
+    Future<String> Function()? picturePathBuilder,
+    Future<String> Function()? videoPathBuilder,
+    final Function(MediaCapture)? onMediaTap,
+  }) {
+    if (availableModes.contains(CaptureModes.PHOTO) &&
+        picturePathBuilder == null) {
+      throw ("You have to provide a path through [picturePathBuilder] to save your picture");
+    }
+    // if (availableModes.contains(CaptureModes.VIDEO) &&
+    //     videoPathBuilder == null) {
+    //   throw ("You have to provide a path through [videoPathBuilder] to save your picture");
+    // }
+    return CameraWidgetBuilder._(
+      captureMode: captureMode,
+      sensor: sensor,
+      flashMode: flashMode,
+      zoom: zoom,
+      availableModes: availableModes,
+      exifPreferences: exifPreferences,
+      enableAudio: enableAudio,
+      progressIndicator: progressIndicator,
+      builder: ((cameraSetup, sensorConfig) => CameraControlsWidget(
+            cameraSetup: cameraSetup,
+            sensorConfig: sensorConfig,
+            top: top ??
+                (setup, sensorConfig) => TopWidget(sensorConfig: sensorConfig),
+            middle: middle ??
+                (setup, sensorConfig) => MidWidget(
+                      sensorConfig: sensorConfig,
+                      cameraSetup: cameraSetup,
+                    ),
+            bottom: bottom ??
+                (setup, sensorConfig) => BottomWidget(
+                      cameraSetup: cameraSetup,
+                      sensorConfig: sensorConfig,
+                      onMediaTap: onMediaTap,
+                    ),
+          )),
+      picturePathBuilder: picturePathBuilder,
+      videoPathBuilder: videoPathBuilder,
+      onMediaTap: onMediaTap,
+    );
+  }
 
-  CameraWidgetBuilder.custom({
-    CaptureModes captureMode = CaptureModes.PHOTO,
-    Sensors sensor = Sensors.BACK,
-    CameraFlashes flashMode = CameraFlashes.NONE,
-    double zoom = 0.0,
-    List<CaptureModes> availableModes = const [
-      CaptureModes.PHOTO,
-      CaptureModes.VIDEO
-    ],
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
-    Widget? progressIndicator,
-    required LineBuilder builder,
-  }) : this._(
+  CameraWidgetBuilder.custom(
+      {CaptureModes captureMode = CaptureModes.PHOTO,
+      Sensors sensor = Sensors.BACK,
+      CameraFlashes flashMode = CameraFlashes.NONE,
+      double zoom = 0.0,
+      List<CaptureModes> availableModes = const [
+        CaptureModes.PHOTO,
+        CaptureModes.VIDEO
+      ],
+      ExifPreferences? exifPreferences,
+      bool enableAudio = true,
+      Widget? progressIndicator,
+      required LineBuilder builder,
+      Future<String> Function()? picturePathBuilder,
+      Future<String> Function()? videoPathBuilder,
+      Function(MediaCapture)? onMediaTap})
+      : this._(
           captureMode: captureMode,
           sensor: sensor,
           flashMode: flashMode,
@@ -96,6 +135,9 @@ class CameraWidgetBuilder extends StatefulWidget {
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
           builder: builder,
+          picturePathBuilder: picturePathBuilder,
+          videoPathBuilder: videoPathBuilder,
+          onMediaTap: onMediaTap,
         );
 
   @override
@@ -182,9 +224,13 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
         initialCaptureMode: widget.captureMode,
         sensorConfig: sensorConfig,
         pictureCameraControllerBuilder: (cameraSetup) =>
-            PictureCameraController.create(cameraSetup: cameraSetup),
+            PictureCameraController.create(
+                cameraSetup: cameraSetup,
+                picturePathBuilder: widget.picturePathBuilder),
         videoCameraControllerBuilder: (cameraSetup) =>
-            VideoCameraController.create(cameraSetup: cameraSetup),
+            VideoCameraController.create(
+          cameraSetup: cameraSetup,
+        ),
       );
     } else if (widget.availableModes.contains(CaptureModes.PHOTO)) {
       if (widget.captureMode != CaptureModes.PHOTO) {
@@ -208,10 +254,10 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
       throw "No CaptureModes available";
     }
 
-    future.then(((value) {
+    future.then((value) {
       _cameraSetup = value;
       if (mounted) setState(() {});
-    }));
+    });
   }
 
   @override
@@ -228,25 +274,27 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
       builder: (context, sensorSnapshot) {
         if (sensorSnapshot.hasData) {
           _sensorConfig = sensorSnapshot.data;
-          return Container(
-            color: Colors.black,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                Positioned.fill(
-                  child: PinchToZoom(
-                    sensorConfig: sensorSnapshot.data!,
-                    child: CameraPreviewWidget(
-                      cameraSetup: _cameraSetup!,
+          return SafeArea(
+            child: Container(
+              color: Colors.black,
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  Positioned.fill(
+                    child: PinchToZoom(
+                      sensorConfig: sensorSnapshot.data!,
+                      child: CameraPreviewWidget(
+                        cameraSetup: _cameraSetup!,
+                      ),
                     ),
                   ),
-                ),
-                Positioned.fill(
-                    child: widget.builder(
-                  _cameraSetup!,
-                  sensorSnapshot.data!,
-                )),
-              ],
+                  Positioned.fill(
+                      child: widget.builder(
+                    _cameraSetup!,
+                    sensorSnapshot.data!,
+                  )),
+                ],
+              ),
             ),
           );
         } else {

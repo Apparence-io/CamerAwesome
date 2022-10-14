@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class MediaPreviewWidget extends StatelessWidget {
   final MediaCapture? mediaCapture;
-  final Function(MediaCapture) onMediaTap;
+  final Function(MediaCapture)? onMediaTap;
 
   const MediaPreviewWidget({
     super.key,
@@ -30,8 +30,8 @@ class MediaPreviewWidget extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                  onTap: mediaCapture != null
-                      ? () => onMediaTap(mediaCapture!)
+                  onTap: mediaCapture != null && onMediaTap != null
+                      ? () => onMediaTap!(mediaCapture!)
                       : null,
                   child: _buildMedia(mediaCapture)),
             ),

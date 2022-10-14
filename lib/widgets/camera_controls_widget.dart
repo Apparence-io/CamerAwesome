@@ -1,4 +1,5 @@
 import 'package:camerawesome/controllers/sensor_config.dart';
+import 'package:camerawesome/widgets/camera_widget_builder.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/camera_setup.dart';
@@ -6,9 +7,9 @@ import '../controllers/camera_setup.dart';
 class CameraControlsWidget extends StatelessWidget {
   final CameraSetup cameraSetup;
   final SensorConfig sensorConfig;
-  final Widget Function(CameraSetup, SensorConfig)? top;
-  final Widget Function(CameraSetup, SensorConfig)? middle;
-  final Widget Function(CameraSetup, SensorConfig)? bottom;
+  final LineBuilder? top;
+  final LineBuilder? middle;
+  final LineBuilder? bottom;
 
   const CameraControlsWidget({
     super.key,
@@ -25,7 +26,7 @@ class CameraControlsWidget extends StatelessWidget {
       children: [
         if (top != null) top!(cameraSetup, sensorConfig) else SizedBox(),
         if (middle != null) Expanded(child: middle!(cameraSetup, sensorConfig)),
-        if (bottom != null) top!(cameraSetup, sensorConfig) else SizedBox(),
+        if (bottom != null) bottom!(cameraSetup, sensorConfig) else SizedBox(),
       ],
     );
   }

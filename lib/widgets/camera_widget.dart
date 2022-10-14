@@ -284,9 +284,7 @@ class _CameraWidgetState extends State<CameraWidget> {
                                             CaptureModes.PHOTO) {
                                           final controller = cameraSetup
                                               .pictureCameraController;
-                                          controller.takePhoto(
-                                              await widget.filePathBuilder(
-                                                  CaptureModes.PHOTO));
+                                          controller.takePhoto();
                                         }
                                       },
                                     );
