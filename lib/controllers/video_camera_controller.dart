@@ -5,16 +5,20 @@ import 'camera_setup.dart';
 import '../models/media_capture.dart';
 
 class VideoCameraController extends CaptureController {
+  final Future<String> Function(CaptureModes)? videoPathBuilder;
   VideoCameraController._({
     required super.cameraSetup,
+    this.videoPathBuilder,
   });
 
   static Future<VideoCameraController> create({
     required CameraSetup cameraSetup,
+    final Future<String> Function(CaptureModes)? videoPathBuilder,
     bool enableAudio = true,
   }) async {
     final creation = VideoCameraController._(
       cameraSetup: cameraSetup,
+      videoPathBuilder: videoPathBuilder,
     );
 
     await creation.setAudioEnabled(enableAudio);
@@ -30,7 +34,8 @@ class VideoCameraController extends CaptureController {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> startRecording(String filePath) async {
+  Future<String> startRecording() async {
+    String filePath = await videoPathBuilder!(CaptureModes.VIDEO);
     if (!filePath.endsWith(".mp4")) {
       throw ("You can only capture .mp4 files with CamerAwesome");
     }

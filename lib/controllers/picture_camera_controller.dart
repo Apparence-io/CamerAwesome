@@ -6,7 +6,7 @@ import 'camera_setup.dart';
 
 class PictureCameraController extends CaptureController {
   ExifPreferences? exifPreferences;
-  final Future<String> Function()? picturePathBuilder;
+  final Future<String> Function(CaptureModes)? picturePathBuilder;
   PictureCameraController._({
     required super.cameraSetup,
     this.picturePathBuilder,
@@ -19,7 +19,7 @@ class PictureCameraController extends CaptureController {
 
   static Future<PictureCameraController> create({
     required CameraSetup cameraSetup,
-    Future<String> Function()? picturePathBuilder,
+    Future<String> Function(CaptureModes)? picturePathBuilder,
     ExifPreferences? exifPreferences,
   }) async {
     // We can't use async on constructors or factories, so we make a
@@ -41,7 +41,7 @@ class PictureCameraController extends CaptureController {
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
   Future<String> takePhoto() async {
-    String path = await picturePathBuilder!();
+    String path = await picturePathBuilder!(CaptureModes.PHOTO);
     if (!path.endsWith(".jpg")) {
       throw ("You can only capture .jpg files with CamerAwesome");
     }

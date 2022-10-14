@@ -27,8 +27,8 @@ class CameraWidgetBuilder extends StatefulWidget {
   final List<CaptureModes> availableModes;
   final ExifPreferences? exifPreferences;
   final bool enableAudio;
-  final Future<String> Function()? picturePathBuilder;
-  final Future<String> Function()? videoPathBuilder;
+  final Future<String> Function(CaptureModes)? picturePathBuilder;
+  final Future<String> Function(CaptureModes)? videoPathBuilder;
   final Function(MediaCapture)? onMediaTap;
 
   // Widgets
@@ -65,18 +65,18 @@ class CameraWidgetBuilder extends StatefulWidget {
     LineBuilder? top,
     LineBuilder? middle,
     LineBuilder? bottom,
-    Future<String> Function()? picturePathBuilder,
-    Future<String> Function()? videoPathBuilder,
+    Future<String> Function(CaptureModes)? picturePathBuilder,
+    Future<String> Function(CaptureModes)? videoPathBuilder,
     final Function(MediaCapture)? onMediaTap,
   }) {
     if (availableModes.contains(CaptureModes.PHOTO) &&
         picturePathBuilder == null) {
       throw ("You have to provide a path through [picturePathBuilder] to save your picture");
     }
-    // if (availableModes.contains(CaptureModes.VIDEO) &&
-    //     videoPathBuilder == null) {
-    //   throw ("You have to provide a path through [videoPathBuilder] to save your picture");
-    // }
+    if (availableModes.contains(CaptureModes.VIDEO) &&
+        videoPathBuilder == null) {
+      throw ("You have to provide a path through [videoPathBuilder] to save your picture");
+    }
     return CameraWidgetBuilder._(
       captureMode: captureMode,
       sensor: sensor,
@@ -122,8 +122,8 @@ class CameraWidgetBuilder extends StatefulWidget {
       bool enableAudio = true,
       Widget? progressIndicator,
       required LineBuilder builder,
-      Future<String> Function()? picturePathBuilder,
-      Future<String> Function()? videoPathBuilder,
+      Future<String> Function(CaptureModes)? picturePathBuilder,
+      Future<String> Function(CaptureModes)? videoPathBuilder,
       Function(MediaCapture)? onMediaTap})
       : this._(
           captureMode: captureMode,
@@ -177,6 +177,7 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
                       widget.captureMode == CaptureModes.PHOTO
                   ? (setup) => PictureCameraController.create(
                         cameraSetup: setup,
+                        picturePathBuilder: widget.picturePathBuilder,
                         exifPreferences: widget.exifPreferences,
                       )
                   : null,
@@ -184,7 +185,9 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
               _cameraSetup?.videoCameraController == null &&
                       widget.captureMode == CaptureModes.VIDEO
                   ? (setup) => VideoCameraController.create(
-                      cameraSetup: setup, enableAudio: widget.enableAudio)
+                      cameraSetup: setup,
+                      videoPathBuilder: widget.videoPathBuilder,
+                      enableAudio: widget.enableAudio)
                   : null,
         );
       }
@@ -230,6 +233,7 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
         videoCameraControllerBuilder: (cameraSetup) =>
             VideoCameraController.create(
           cameraSetup: cameraSetup,
+          videoPathBuilder: widget.videoPathBuilder,
         ),
       );
     } else if (widget.availableModes.contains(CaptureModes.PHOTO)) {
@@ -239,7 +243,9 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
       future = CameraSetup.picture(
         sensorConfig: sensorConfig,
         pictureCameraControllerBuilder: ((cameraSetup) =>
-            PictureCameraController.create(cameraSetup: cameraSetup)),
+            PictureCameraController.create(
+                cameraSetup: cameraSetup,
+                picturePathBuilder: widget.picturePathBuilder)),
       );
     } else if (widget.availableModes.contains(CaptureModes.VIDEO)) {
       if (widget.captureMode != CaptureModes.VIDEO) {
@@ -248,7 +254,10 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
       future = CameraSetup.video(
         sensorConfig: sensorConfig,
         videoCameraControllerBuilder: (cameraSetup) =>
-            VideoCameraController.create(cameraSetup: cameraSetup),
+            VideoCameraController.create(
+          cameraSetup: cameraSetup,
+          videoPathBuilder: widget.videoPathBuilder,
+        ),
       );
     } else {
       throw "No CaptureModes available";

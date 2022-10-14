@@ -1,5 +1,7 @@
 import 'package:camerawesome/controllers/camera_setup.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';
+import 'package:camerawesome/widgets/focus.dart';
+
 import 'package:flutter/material.dart';
 
 class MidWidget extends StatelessWidget {
@@ -10,9 +12,6 @@ class MidWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      Icons.ac_unit,
-      color: Colors.black,
-    );
+    return TapToFocus(onTap: (_) {});
   }
 }

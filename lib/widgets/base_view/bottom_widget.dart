@@ -4,6 +4,7 @@ import 'package:camerawesome/controllers/camera_setup.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';
 import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/widgets/camera_button_widget.dart';
+import 'package:camerawesome/widgets/camera_mode_pager_widget.dart';
 import 'package:camerawesome/widgets/camera_widget.dart';
 import 'package:camerawesome/widgets/media_preview_widget.dart';
 import 'package:flutter/material.dart';
@@ -28,81 +29,21 @@ class BottomWidget extends StatefulWidget {
   State<BottomWidget> createState() => _BottomWidgetState();
 }
 
-class _BottomWidgetState extends State<BottomWidget> {
-  final PageController _pageController = PageController();
-  List<CameraMode> cameraModes = [
-    CameraMode(
-      title: "Photo",
-      captureMode: CaptureModes.PHOTO,
-    ),
-    CameraMode(
-      title: "Video",
-      captureMode: CaptureModes.VIDEO,
-    ),
-  ];
+class _BottomWidgetState extends State<BottomWidget>
+    with TickerProviderStateMixin {
+  TabController? _tabController;
 
   @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  void initState() {
+    _tabController = TabController(length: 2, vsync: this);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (cameraModes.isNotEmpty == true)
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 60,
-                  child: PageView.builder(
-                    scrollDirection: Axis.horizontal,
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      final cameraMode = cameraModes[index];
-                      widget.onCameraModeChanged?.call(cameraMode, index);
-                      widget.cameraSetup.setCaptureMode(cameraMode.captureMode);
-                      setState(() {
-                        //_selectedCameraMode = index;
-                      });
-                    },
-                    itemCount: cameraModes.length,
-                    itemBuilder: ((context, index) {
-                      final cameraMode = cameraModes[index];
-                      return InkWell(
-                        child: Center(
-                          child: Text(
-                            cameraMode.title,
-                            style: TextStyle(
-                                color: Colors.white,
-                                //  _selectedCameraMode == index
-                                //     ? Colors.amber
-                                //     : Colors.white,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    blurRadius: 4,
-                                    color: Colors.black,
-                                  )
-                                ]),
-                          ),
-                        ),
-                        onTap: () {
-                          _pageController.animateToPage(
-                            index,
-                            curve: Curves.easeIn,
-                            duration: const Duration(milliseconds: 300),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                ),
-              )
-            ],
-          ),
+        CameraModePager(cameraSetup: widget.cameraSetup),
         StreamBuilder<MediaCapture?>(
             stream: widget.cameraSetup.mediaCaptureStream,
             builder: (context, snapshot) {
@@ -144,9 +85,7 @@ class _BottomWidgetState extends State<BottomWidget> {
                                         true) {
                                       controller.stopRecording(mediaCapture!);
                                     } else {
-                                      // controller.startRecording(
-                                      //     await widget.filePathBuilder(
-                                      //         CaptureModes.VIDEO));
+                                      controller.startRecording();
                                     }
                                   } else if (widget.cameraSetup.captureMode ==
                                       CaptureModes.PHOTO) {

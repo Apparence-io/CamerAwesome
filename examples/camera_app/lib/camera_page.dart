@@ -87,7 +87,8 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraWidgetBuilder.awesome(
-        picturePathBuilder: _path,
+        picturePathBuilder: (captureMode) => _path(captureMode),
+        videoPathBuilder: (captureMode) => _path(captureMode),
         onMediaTap: (mediaCapture) {
           OpenFile.open(mediaCapture.filePath);
         },
@@ -118,12 +119,12 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
-  Future<String> _path() async {
+  Future<String> _path(CaptureModes captureMode) async {
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
         await Directory('${extDir.path}/test').create(recursive: true);
     final String filePath =
-        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.${captureMode == CaptureModes.PHOTO ? 'jpg' : 'mp4'}';
     return filePath;
   }
 }

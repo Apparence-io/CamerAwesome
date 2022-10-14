@@ -276,9 +276,7 @@ class _CameraWidgetState extends State<CameraWidget> {
                                             controller
                                                 .stopRecording(mediaCapture!);
                                           } else {
-                                            controller.startRecording(
-                                                await widget.filePathBuilder(
-                                                    CaptureModes.VIDEO));
+                                            controller.startRecording();
                                           }
                                         } else if (cameraSetup.captureMode ==
                                             CaptureModes.PHOTO) {
