@@ -113,28 +113,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
      * [fusedLocationClient.lastLocation] instead to go faster
      */
     private fun retrieveLocation(callback: (Location?) -> Unit) {
-        fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            cancellationTokenSource.token
-        ).addOnCompleteListener {
-            if (it.isSuccessful) {
-                callback(it.result)
-            } else {
-                if (it.exception != null) {
-                    Log.e(
-                        CamerawesomePlugin.TAG,
-                        "Error finding location",
-                        it.exception
-                    )
-                }
-                callback(null)
-            }
-        }
-    }
-
-    override fun takePhoto(path: String, callback: (Boolean) -> Unit) {
-        val imageFile = File(path)
-        imageFile.parentFile?.mkdirs()
         if (exifPreferences.saveGpsLocation &&
             ActivityCompat.checkSelfPermission(
                 activity!!,
@@ -142,26 +120,44 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             ) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            retrieveLocation { takePhotoWith(imageFile, it, callback) }
+            fusedLocationClient.getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                cancellationTokenSource.token
+            ).addOnCompleteListener {
+                if (it.isSuccessful) {
+                    callback(it.result)
+                } else {
+                    if (it.exception != null) {
+                        Log.e(
+                            CamerawesomePlugin.TAG,
+                            "Error finding location",
+                            it.exception
+                        )
+                    }
+                    callback(null)
+                }
+            }
         } else {
-            takePhotoWith(imageFile, null, callback)
+            callback(null)
         }
     }
 
+    override fun takePhoto(path: String, callback: (Boolean) -> Unit) {
+        val imageFile = File(path)
+        imageFile.parentFile?.mkdirs()
+
+        takePhotoWith(imageFile, callback)
+
+    }
+
+    @SuppressLint("RestrictedApi")
     private fun takePhotoWith(
         imageFile: File,
-        retrievedLocation: Location?,
         callback: (Boolean) -> Unit
     ) {
         val outputFileOptions = ImageCapture.OutputFileOptions
             .Builder(imageFile)
-            .setMetadata(
-                ImageCapture.Metadata().apply {
-                    if (exifPreferences.saveGpsLocation) {
-                        location = retrievedLocation
-                    }
-                }
-            )
+            .setMetadata(ImageCapture.Metadata())
             .build()
 
         cameraState.imageCapture!!.takePicture(
@@ -173,7 +169,15 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         CamerawesomePlugin.TAG,
                         "Success capturing picture ${outputFileResults.savedUri}"
                     )
-                    callback(true)
+//                    comprendre pourquoi les logs s'affichent meme pas'
+                    if (exifPreferences.saveGpsLocation) {
+                        retrieveLocation {
+                            outputFileOptions.metadata.location = it
+                            callback(true)
+                        }
+                    } else {
+                        callback(true)
+                    }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
