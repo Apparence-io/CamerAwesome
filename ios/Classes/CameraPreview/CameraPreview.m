@@ -104,6 +104,14 @@
   [self setCameraPresset:CGSizeMake(0, 0)];
 }
 
+- (void)getSizes {
+    // TODO implement this method, map the formats to an NSArray of sizes so we can return them to flutter
+    NSArray<AVCaptureDeviceFormat *>* formats = [_captureDevice formats];
+    for(int i=0; i<formats.count;i++){
+        NSLog(@"Format %i : %@", i, [formats[i]  description]);
+    }
+}
+
 - (void)dealloc {
   if (_latestPixelBuffer) {
     CFRelease(_latestPixelBuffer);

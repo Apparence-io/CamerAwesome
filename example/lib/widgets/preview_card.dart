@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/models/orientations.dart';
 import 'package:camerawesome_example/utils/orientation_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:open_file/open_file.dart';
 
 class PreviewCardWidget extends StatelessWidget {
   final String? lastPhotoPath;

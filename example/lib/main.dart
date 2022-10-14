@@ -9,11 +9,13 @@ import 'package:camerawesome_example/widgets/top_bar.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:image/image.dart' as imgUtils;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MaterialApp(home: MyApp(), debugShowCheckedModeBanner: false));
@@ -65,6 +67,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
   ExifPreferences _exifPreferences = ExifPreferences(
     saveGPSLocation: false,
   );
+  StreamSubscription? _previewStreamSubscription;
 
   @override
   void initState() {
@@ -98,6 +101,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     // previewStreamSub.cancel();
     _photoSize.dispose();
     _captureMode.dispose();
+    _previewStreamSubscription?.cancel();
     super.dispose();
   }
 
@@ -116,7 +120,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
                   previewAnimation: _previewAnimation,
                 )
               : Container(),
-          _buildPreviewStream(),
         ],
       ),
     );
@@ -358,31 +361,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
     }
   }
 
-  // /// this is just to preview images from stream
-  // /// This use a bufferTime to take an image each 1500 ms
-  // /// you cannot show every frame as flutter cannot draw them fast enough
-  // /// [THIS IS JUST FOR DEMO PURPOSE]
-  Widget _buildPreviewStream() {
-    if (previewStream == null) return Container();
-    return Positioned(
-      left: 32,
-      bottom: 120,
-      child: StreamBuilder<List<Uint8List>>(
-        stream: previewStream!.bufferTime(Duration(milliseconds: 1500)),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData ||
-              snapshot.data == null ||
-              snapshot.data?.isEmpty == true) return Container();
-          List<Uint8List> data = snapshot.data!;
-          return Image.memory(
-            data.last,
-            width: 120,
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildLeftManualBrightness() {
     return Positioned(
       left: 32,
@@ -432,17 +410,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
           onOrientationChanged: _onOrientationChange,
           brightness: _brightnessCorrection,
           imagesStreamBuilder: (imageStream) {
-            /// listen for images preview stream
-            /// you can use it to process AI recognition or anything else...
-            print("-- init CamerAwesome images stream");
-            setState(() {
-              previewStream = imageStream;
-            });
-
-            // imageStream.listen((Uint8List imageData) {
-            //   print(
-            //       "...${DateTime.now()} new image received... ${imageData.lengthInBytes} bytes");
-            // });
+            // listen for images preview stream
+            // you can use it to process AI recognition or anything else...
+            _previewStreamSubscription?.cancel();
+            _previewStreamSubscription = imageStream
+                // use bufferTime to only analyze images every 1500 ms
+                ?.bufferTime(Duration(milliseconds: 1500))
+                .listen(_previewStreamHandler);
           },
           onCameraStarted: () {
             // camera started here -- do your after start stuff
@@ -483,17 +457,49 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
               brightness: _brightnessCorrection,
               recordingPaused: _recordingPaused,
               imagesStreamBuilder: (imageStream) {
-                /// listen for images preview stream
-                /// you can use it to process AI recognition or anything else...
-                print("-- init CamerAwesome images stream");
-                setState(() {
-                  previewStream = imageStream;
-                });
+                // listen for images preview stream
+                // you can use it to process AI recognition or anything else...
+                _previewStreamSubscription?.cancel();
+                _previewStreamSubscription = imageStream
+                    // use bufferTime to only analyze images every 1500 ms
+                    ?.bufferTime(Duration(milliseconds: 1500))
+                    .listen(_previewStreamHandler);
               },
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _previewStreamHandler(List<Uint8List> data) async {
+    // In this example, we will handle only the last event
+    final dir = await getTemporaryDirectory();
+    final file =
+        File("${dir.path}/test/${DateTime.now().millisecondsSinceEpoch}.jpg");
+    await file.writeAsBytes(data.last);
+
+    final List<BarcodeFormat> formats = [BarcodeFormat.all];
+    final barcodeScanner = BarcodeScanner(formats: formats);
+    List<Barcode> barcodesData =
+        await barcodeScanner.processImage(InputImage.fromFile(file));
+    List<String> barcodes = [];
+    for (var b in barcodesData) {
+      barcodes.add(b.rawValue.toString());
+    }
+    // For this example, we only check if the first barcode detected is an url
+    // and propose to open it
+    if (barcodes.isNotEmpty && Uri.parse(barcodes.first).isAbsolute) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Open ${barcodes.first} ?"),
+          action: SnackBarAction(
+              label: "GO",
+              onPressed: () {
+                launchUrl(Uri.parse(barcodes.first));
+              }),
+        ),
+      );
+    }
   }
 }

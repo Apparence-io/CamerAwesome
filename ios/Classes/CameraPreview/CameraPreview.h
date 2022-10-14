@@ -79,7 +79,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
 - (void)setUpCaptureSessionForAudio;
-
+- (void)getSizes;
 @end
 
 NS_ASSUME_NONNULL_END
