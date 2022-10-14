@@ -74,7 +74,7 @@ class VideoCameraController extends CaptureController {
     if (currentCapture.status != MediaCaptureStatus.capturing) {
       throw "Trying to pause a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
     }
-    await CamerawesomePlugin.resumeVideoRecording();
+    await CamerawesomePlugin.pauseVideoRecording();
     cameraSetup.setMediaCapture(MediaCapture.capturing(
         filePath: currentCapture.filePath, videoState: VideoState.paused));
   }
