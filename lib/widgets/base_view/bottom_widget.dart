@@ -31,14 +31,6 @@ class BottomWidget extends StatefulWidget {
 
 class _BottomWidgetState extends State<BottomWidget>
     with TickerProviderStateMixin {
-  TabController? _tabController;
-
-  @override
-  void initState() {
-    _tabController = TabController(length: 2, vsync: this);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(

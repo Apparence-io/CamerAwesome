@@ -12,8 +12,8 @@ class CameraModePager extends StatefulWidget {
 }
 
 class _CameraModePagerState extends State<CameraModePager> {
-  final PageController _pageController = PageController();
-
+  final PageController _pageController = PageController(viewportFraction: 0.25);
+  int _index = 0;
   List<CameraMode> cameraModes = [
     CameraMode(
       title: "Photo",
@@ -45,36 +45,42 @@ class _CameraModePagerState extends State<CameraModePager> {
                 final cameraMode = cameraModes[index];
                 // widget.onCameraModeChanged?.call(cameraMode, index);
                 widget.cameraSetup.setCaptureMode(cameraMode.captureMode);
-                setState(() {});
+                setState(() {
+                  _index = index;
+                });
               },
               itemCount: cameraModes.length,
               itemBuilder: ((context, index) {
                 final cameraMode = cameraModes[index];
-                return InkWell(
-                  child: Center(
-                    child: Text(
-                      cameraMode.title,
-                      style: TextStyle(
-                          color: Colors.white,
-                          //  _selectedCameraMode == index
-                          //     ? Colors.amber
-                          //     : Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 4,
-                              color: Colors.black,
-                            )
-                          ]),
+                return AnimatedOpacity(
+                  duration: Duration(milliseconds: 300),
+                  opacity: index == _index ? 1 : 0.2,
+                  child: InkWell(
+                    child: Center(
+                      child: Text(
+                        cameraMode.title,
+                        style: TextStyle(
+                            color: Colors.white,
+                            //  _selectedCameraMode == index
+                            //     ? Colors.amber
+                            //     : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 4,
+                                color: Colors.black,
+                              )
+                            ]),
+                      ),
                     ),
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        curve: Curves.easeIn,
+                        duration: const Duration(milliseconds: 200),
+                      );
+                    },
                   ),
-                  onTap: () {
-                    _pageController.animateToPage(
-                      index,
-                      curve: Curves.easeIn,
-                      duration: const Duration(milliseconds: 300),
-                    );
-                  },
                 );
               }),
             ),
