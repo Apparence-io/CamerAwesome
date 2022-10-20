@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';
+import 'package:camerawesome/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
 import 'package:camerawesome/src/orchestrator/picture_state.dart';
 import 'package:rxdart/rxdart.dart';
@@ -18,7 +19,29 @@ typedef OnPictureMode = Function(PictureCameraState);
 typedef OnPreparingCamera = Function(PreparingCameraState);
 
 abstract class CameraModeState {
+  // TODO protect this
+  CameraOrchestrator orchestrator;
+
+  CameraModeState(this.orchestrator);
+
+  // TODO remove this
   abstract final CaptureModes? captureMode;
+
+  when({
+    OnVideoMode? onVideoMode,
+    OnPictureMode? onPictureMode,
+    OnPreparingCamera? onPreparingCamera,
+  }) {
+    if (this is VideoCameraState && onVideoMode != null) {
+      onVideoMode(this as VideoCameraState);
+    }
+    if (this is PictureCameraState && onPictureMode != null) {
+      onPictureMode(this as PictureCameraState);
+    }
+    if (this is PreparingCameraState && onPreparingCamera != null) {
+      onPreparingCamera(this as PreparingCameraState);
+    }
+  }
 
   void start();
 
@@ -27,6 +50,8 @@ abstract class CameraModeState {
 
 /// When is not ready
 class PreparingCameraState extends CameraModeState {
+  PreparingCameraState(CameraOrchestrator orchestrator) : super(orchestrator);
+
   @override
   CaptureModes? get captureMode => null;
 
@@ -43,8 +68,10 @@ class PreparingCameraState extends CameraModeState {
 class CameraOrchestrator {
   // final BehaviorSubject<MediaCapture?> _mediaCaptureController =
   //     BehaviorSubject.seeded(null);
-  BehaviorSubject<CameraModeState> stateController;
-  late Stream<CameraModeState> state$;
+  late final BehaviorSubject<CameraModeState> stateController;
+  late final Stream<CameraModeState> state$;
+
+  late final BehaviorSubject<MediaCapture?> mediaCaptureController;
 
   CameraModeState get state => stateController.value;
 
@@ -58,10 +85,9 @@ class CameraOrchestrator {
   CameraOrchestrator._({
     required this.sensorConfigController,
     this.onPermissionsResult,
-  })  : sensorConfigStream = sensorConfigController.stream,
-        stateController = BehaviorSubject.seeded(
-          PreparingCameraState(),
-        ) {
+  }) : sensorConfigStream = sensorConfigController.stream {
+    stateController = BehaviorSubject.seeded(PreparingCameraState(this));
+    mediaCaptureController = BehaviorSubject.seeded(null);
     state$ = stateController.stream;
   }
 
@@ -74,38 +100,34 @@ class CameraOrchestrator {
         onPermissionsResult: onPermissionsResult,
       );
 
+  // TODO move this to a state
   Future startVideoMode(FilePathBuilder filePathBuilder) async {
-    stateController.add(PreparingCameraState());
+    stateController.add(PreparingCameraState(this));
     await Future.delayed(Duration(milliseconds: 500));
     // TODO await creation.setAudioEnabled(enableAudio);
     // FIXME CHECK camera state is ready before assigning
-    stateController.add(VideoCameraState(filePathBuilder: filePathBuilder));
+    stateController.add(VideoCameraState(
+      filePathBuilder: filePathBuilder,
+      orchestrator: this,
+    ));
     init(enableImageStream: false);
   }
 
+  // TODO move this to a state
   Future startPictureMode(FilePathBuilder filePathBuilder) async {
-    stateController.add(PreparingCameraState());
+    stateController.add(PreparingCameraState(this));
     //TODO await CamerawesomePlugin.setExifPreferences(preferences);
     // FIXME CHECK camera state is ready before assigning
     await Future.delayed(Duration(milliseconds: 500));
-    stateController.add(PictureCameraState(filePathBuilder: filePathBuilder));
+    stateController.add(PictureCameraState(
+      filePathBuilder: filePathBuilder,
+      orchestrator: this,
+    ));
     init(enableImageStream: false);
   }
 
-  when({
-    OnVideoMode? onVideoMode,
-    OnPictureMode? onPictureMode,
-    OnPreparingCamera? onPreparingCamera,
-  }) {
-    if (state is VideoCameraState && onVideoMode != null) {
-      onVideoMode(state as VideoCameraState);
-    }
-    if (state is PictureCameraState && onPictureMode != null) {
-      onPictureMode(state as PictureCameraState);
-    }
-    if (state is PreparingCameraState && onPreparingCamera != null) {
-      onPreparingCamera(state as PreparingCameraState);
-    }
+  changeState(CameraModeState state) {
+    stateController.add(state);
   }
 
   // TODO Refactor this (make it stream providing state)

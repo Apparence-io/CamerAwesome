@@ -92,23 +92,23 @@ class CameraWidgetBuilder extends StatefulWidget {
       exifPreferences: exifPreferences,
       enableAudio: enableAudio,
       progressIndicator: progressIndicator,
-      builder: ((cameraSetup, sensorConfig) => CameraControlsWidget(
-            cameraSetup: cameraSetup,
-            sensorConfig: sensorConfig,
-            top: top ??
-                (setup, sensorConfig) => TopWidget(sensorConfig: sensorConfig),
-            middle: middle ??
-                (setup, sensorConfig) => MidWidget(
-                      sensorConfig: sensorConfig,
-                      cameraSetup: cameraSetup,
-                    ),
-            bottom: bottom ??
-                (setup, sensorConfig) => BottomWidget(
-                      cameraSetup: cameraSetup,
-                      sensorConfig: sensorConfig,
-                      onMediaTap: onMediaTap,
-                    ),
-          )),
+      builder: (cameraSetup, sensorConfig) => CameraControlsWidget(
+        cameraSetup: cameraSetup,
+        sensorConfig: sensorConfig,
+        top: top ??
+            (setup, sensorConfig) => TopWidget(sensorConfig: sensorConfig),
+        middle: middle ??
+            (setup, sensorConfig) => MidWidget(
+                  sensorConfig: sensorConfig,
+                  cameraSetup: cameraSetup,
+                ),
+        bottom: bottom ??
+            (setup, sensorConfig) => BottomWidget(
+                  cameraSetup: cameraSetup,
+                  sensorConfig: sensorConfig,
+                  onMediaTap: onMediaTap,
+                ),
+      ),
       picturePathBuilder: picturePathBuilder,
       videoPathBuilder: videoPathBuilder,
       onMediaTap: onMediaTap,

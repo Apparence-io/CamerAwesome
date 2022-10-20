@@ -11,16 +11,14 @@ import 'camera_orchestrator.dart';
 /// When Camera is in Video mode
 class VideoCameraState extends CameraModeState {
   VideoCameraState({
-    // required this.videoCameraController,
+    required CameraOrchestrator orchestrator,
     this.imageAnalysisController,
     required this.filePathBuilder,
-  }) : mediaCaptureController = BehaviorSubject.seeded(null);
+  }) : super(orchestrator);
 
   // final VideoCameraController videoCameraController;
 
   final ImageAnalysisController? imageAnalysisController;
-
-  final BehaviorSubject<MediaCapture?> mediaCaptureController;
 
   final FilePathBuilder filePathBuilder;
 
@@ -42,7 +40,8 @@ class VideoCameraState extends CameraModeState {
     return currentCapture?.isRecordingVideo == true;
   }
 
-  Stream<MediaCapture?> get mediaCaptureStream => mediaCaptureController.stream;
+  Stream<MediaCapture?> get mediaCaptureStream =>
+      orchestrator.mediaCaptureController.stream;
 
   /// Recording is not in MP4 format. [filePath] must end with .mp4.
   ///
@@ -115,6 +114,6 @@ class VideoCameraState extends CameraModeState {
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
-    mediaCaptureController.sink.add(media);
+    orchestrator.mediaCaptureController.add(media);
   }
 }

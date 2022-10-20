@@ -10,13 +10,12 @@ import 'camera_orchestrator.dart';
 /// When Camera is in Image mode
 class PictureCameraState extends CameraModeState {
   PictureCameraState({
+    required CameraOrchestrator orchestrator,
     required this.filePathBuilder,
-    this.imageAnalysisController,
-  }) : mediaCaptureController = BehaviorSubject.seeded(null);
+    // this.imageAnalysisController,
+  }) : super(orchestrator);
 
-  ImageAnalysisController? imageAnalysisController;
-
-  final BehaviorSubject<MediaCapture?> mediaCaptureController;
+  // ImageAnalysisController? imageAnalysisController;
 
   final FilePathBuilder filePathBuilder;
 
@@ -61,6 +60,6 @@ class PictureCameraState extends CameraModeState {
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
-    mediaCaptureController.sink.add(media);
+    orchestrator.mediaCaptureController.add(media);
   }
 }
