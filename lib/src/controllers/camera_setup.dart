@@ -8,14 +8,13 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:rxdart/subjects.dart';
 
-import '../camerawesome_plugin.dart';
-import 'image_analysis_controller.dart';
-import 'picture_camera_controller.dart';
-import 'video_camera_controller.dart';
-import '../models/capture_modes.dart';
-import '../models/media_capture.dart';
-import '../models/orientations.dart';
-import 'sensor_config.dart';
+import '../../camerawesome_plugin.dart';
+import '../../controllers/image_analysis_controller.dart';
+import '../../controllers/picture_camera_controller.dart';
+import '../../controllers/video_camera_controller.dart';
+import '../../models/media_capture.dart';
+import '../../models/orientations.dart';
+import '../../controllers/sensor_config.dart';
 
 // On peut être en captureMode.VIDEO et pourtant utiliser le pictureCameraController.
 // Peut-être qu'on devrait avoir un currentControllers qui nous donne les controllers dispo

@@ -1,6 +1,6 @@
-import 'package:camerawesome/controllers/camera_setup.dart';
+import 'package:camerawesome/src/controllers/camera_setup.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';
-import 'package:camerawesome/widgets/focus.dart';
+import 'package:camerawesome/src/widgets/focus.dart';
 
 import 'package:flutter/material.dart';
 

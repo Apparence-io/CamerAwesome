@@ -3,17 +3,16 @@ import 'dart:typed_data';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/controllers/image_analysis_controller.dart';
 import 'package:camerawesome/controllers/picture_camera_controller.dart';
-import 'package:camerawesome/controllers/camera_setup.dart';
+import 'package:camerawesome/src/controllers/camera_setup.dart';
 import 'package:camerawesome/models/media_capture.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';
-import 'package:camerawesome/widgets/pinch_to_zoom.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../controllers/video_camera_controller.dart';
-import 'camera_button_widget.dart';
-import 'camera_preview_widget.dart';
+import '../../controllers/video_camera_controller.dart';
 import 'media_preview_widget.dart';
+
+/// DEPRECATED ???
 
 class CameraMode {
   final CaptureModes captureMode;
@@ -22,7 +21,8 @@ class CameraMode {
   CameraMode({required this.captureMode, required this.title});
 }
 
-class CameraWidget extends StatefulWidget {
+@deprecated
+class CameraWidgetDeprecated extends StatefulWidget {
   final CaptureModes captureMode;
   final List<CameraMode>? cameraModes;
   final Widget progressIndicator;
@@ -33,7 +33,7 @@ class CameraWidget extends StatefulWidget {
   // final VideoCameraController videoCameraController;
   // final PictureCameraController pictureCameraController;
 
-  const CameraWidget({
+  const CameraWidgetDeprecated({
     super.key,
     required this.captureMode,
     this.progressIndicator = const Center(child: CircularProgressIndicator()),
@@ -42,7 +42,7 @@ class CameraWidget extends StatefulWidget {
   })  : this.cameraModes = null,
         this.onCameraModeChanged = null;
 
-  const CameraWidget.withModes({
+  const CameraWidgetDeprecated.withModes({
     super.key,
     required this.captureMode,
     this.progressIndicator = const Center(child: CircularProgressIndicator()),
@@ -54,11 +54,11 @@ class CameraWidget extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _CameraWidgetState();
+    return _CameraWidgetDeprecatedState();
   }
 }
 
-class _CameraWidgetState extends State<CameraWidget> {
+class _CameraWidgetDeprecatedState extends State<CameraWidgetDeprecated> {
   // CameraState cameraState;
   int _selectedCameraMode = 0;
   final PageController _pageController = PageController(
@@ -67,7 +67,7 @@ class _CameraWidgetState extends State<CameraWidget> {
   CameraSetup? _cameraSetup;
 
   @override
-  void didUpdateWidget(covariant CameraWidget oldWidget) {
+  void didUpdateWidget(covariant CameraWidgetDeprecated oldWidget) {
     if (widget.captureMode != oldWidget.captureMode) {
       if (widget.cameraModes != null) {
         for (int i = 0; i < widget.cameraModes!.length; i++) {
@@ -133,8 +133,8 @@ class _CameraWidgetState extends State<CameraWidget> {
           child: PinchToZoom(
             sensorConfig: sensorConfig,
             child: CameraPreviewWidget(
-              cameraSetup: cameraSetup,
-            ),
+                // cameraSetup: cameraSetup,
+                ),
           ),
         ),
         Positioned(

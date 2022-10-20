@@ -18,12 +18,16 @@ export 'models/exif_preferences_data.dart';
 export 'models/flashmodes.dart';
 export 'models/sensor_data.dart';
 export 'models/sensors.dart';
-export 'picture_controller.dart';
-export 'video_controller.dart';
-export 'widgets/camera_button_widget.dart';
-export 'widgets/camera_preview_widget.dart';
-export 'widgets/camera_widget.dart';
-export 'widgets/pinch_to_zoom.dart';
+
+// controllers
+export 'src/controllers/picture_controller.dart';
+export 'src/controllers/video_controller.dart';
+// built in widgets
+export 'src/widgets/camera_button_widget.dart';
+export 'src/widgets/camera_preview.dart';
+export 'src/widgets/camera_widget.dart';
+export 'src/builder/camera_widget_builder.dart';
+export 'src/widgets/pinch_to_zoom.dart';
 
 enum CameraState { STARTING, STARTED, STOPPING, STOPPED }
 

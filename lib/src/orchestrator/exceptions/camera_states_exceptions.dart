@@ -1,0 +1,1 @@
+class CameraNotReadyException implements Exception {}

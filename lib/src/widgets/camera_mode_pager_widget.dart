@@ -1,6 +1,6 @@
-import 'package:camerawesome/controllers/camera_setup.dart';
+import 'package:camerawesome/src/controllers/camera_setup.dart';
 import 'package:camerawesome/models/capture_modes.dart';
-import 'package:camerawesome/widgets/camera_widget.dart';
+import 'package:camerawesome/src/widgets/camera_widget.dart';
 import 'package:flutter/material.dart';
 
 class CameraModePager extends StatefulWidget {

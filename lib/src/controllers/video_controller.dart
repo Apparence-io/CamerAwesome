@@ -1,4 +1,4 @@
-import 'camerawesome_plugin.dart';
+import '../../camerawesome_plugin.dart';
 
 class VideoController {
   Future<void> recordVideo(String filePath) async {

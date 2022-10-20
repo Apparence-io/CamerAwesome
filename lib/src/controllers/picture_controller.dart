@@ -1,4 +1,4 @@
-import 'camerawesome_plugin.dart';
+import '../../camerawesome_plugin.dart';
 
 class PictureController {
   Future<void> takePicture(String filePath) async {

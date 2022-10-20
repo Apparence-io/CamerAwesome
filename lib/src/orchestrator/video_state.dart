@@ -1,51 +1,64 @@
-import 'package:camerawesome/controllers/capture_controller.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/controllers/video_camera_controller.dart';
+import 'package:rxdart/rxdart.dart';
 
-import '../camerawesome_plugin.dart';
-import '../src/controllers/camera_setup.dart';
-import '../models/media_capture.dart';
+// import '../../camerawesome_plugin.dart';
+import '../../controllers/capture_controller.dart';
+import '../../controllers/image_analysis_controller.dart';
+import '../../models/media_capture.dart';
+import 'camera_orchestrator.dart';
 
-class VideoCameraController extends CaptureController {
-  final Future<String> Function(CaptureModes)? videoPathBuilder;
-  VideoCameraController._({
-    required super.cameraSetup,
-    this.videoPathBuilder,
-  });
+/// When Camera is in Video mode
+class VideoCameraState extends CameraModeState {
+  VideoCameraState({
+    // required this.videoCameraController,
+    this.imageAnalysisController,
+    required this.filePathBuilder,
+  }) : mediaCaptureController = BehaviorSubject.seeded(null);
 
-  static Future<VideoCameraController> create({
-    required CameraSetup cameraSetup,
-    final Future<String> Function(CaptureModes)? videoPathBuilder,
-    bool enableAudio = true,
-  }) async {
-    final creation = VideoCameraController._(
-      cameraSetup: cameraSetup,
-      videoPathBuilder: videoPathBuilder,
-    );
+  // final VideoCameraController videoCameraController;
 
-    await creation.setAudioEnabled(enableAudio);
-    return creation;
+  final ImageAnalysisController? imageAnalysisController;
+
+  final BehaviorSubject<MediaCapture?> mediaCaptureController;
+
+  final FilePathBuilder filePathBuilder;
+
+  @override
+  void start() {
+    // TODO: implement start
   }
+
+  @override
+  void stop() {
+    // TODO: implement stop
+  }
+
+  @override
+  CaptureModes get captureMode => CaptureModes.VIDEO;
 
   Future<bool> get isRecording async {
-    final currentCapture = await cameraSetup.mediaCaptureStream.last;
+    final currentCapture = await mediaCaptureStream.last;
     return currentCapture?.isRecordingVideo == true;
   }
+
+  Stream<MediaCapture?> get mediaCaptureStream => mediaCaptureController.stream;
 
   /// Recording is not in MP4 format. [filePath] must end with .mp4.
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
   Future<String> startRecording() async {
-    String filePath = await videoPathBuilder!(CaptureModes.VIDEO);
+    String filePath = await filePathBuilder!(CaptureModes.VIDEO);
     if (!filePath.endsWith(".mp4")) {
       throw ("You can only capture .mp4 files with CamerAwesome");
     }
-    cameraSetup.setMediaCapture(MediaCapture.capturing(
-        filePath: filePath, videoState: VideoState.started));
+    _mediaCapture = MediaCapture.capturing(
+        filePath: filePath, videoState: VideoState.started);
     try {
       await CamerawesomePlugin.recordVideo(filePath);
     } on Exception catch (e) {
-      cameraSetup.setMediaCapture(
-          MediaCapture.failure(filePath: filePath, exception: e));
+      _mediaCapture = MediaCapture.failure(filePath: filePath, exception: e);
     }
     return filePath;
   }
@@ -60,8 +73,8 @@ class VideoCameraController extends CaptureController {
       throw "Trying to resume a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
     }
     await CamerawesomePlugin.resumeVideoRecording();
-    cameraSetup.setMediaCapture(MediaCapture.capturing(
-        filePath: currentCapture.filePath, videoState: VideoState.resumed));
+    _mediaCapture = MediaCapture.capturing(
+        filePath: currentCapture.filePath, videoState: VideoState.resumed);
   }
 
   /// Pauses a video recording.
@@ -75,8 +88,8 @@ class VideoCameraController extends CaptureController {
       throw "Trying to pause a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
     }
     await CamerawesomePlugin.pauseVideoRecording();
-    cameraSetup.setMediaCapture(MediaCapture.capturing(
-        filePath: currentCapture.filePath, videoState: VideoState.paused));
+    _mediaCapture = MediaCapture.capturing(
+        filePath: currentCapture.filePath, videoState: VideoState.paused);
   }
 
   // TODO Video recording might end due to other reasons (not enough space left...)
@@ -89,14 +102,19 @@ class VideoCameraController extends CaptureController {
       throw "Trying to stop a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
     }
     await CamerawesomePlugin.stopRecordingVideo();
-    cameraSetup.setMediaCapture(
-        MediaCapture.success(filePath: currentCapture.filePath));
+    _mediaCapture = MediaCapture.success(filePath: currentCapture.filePath);
   }
 
   /// Wether the video recording should [enableAudio].
   /// This method applies to the next recording. If a recording is ongoing, it will not be affected.
-  Future<void> setAudioEnabled(bool enableAudio) {
-    // TODO Add ability to mute temporarly a video recording
+  // TODO Add ability to mute temporarly a video recording
+  Future<void> enableAudio(bool enableAudio) {
     return CamerawesomePlugin.setAudioMode(enableAudio);
+  }
+
+  /// PRIVATES
+
+  set _mediaCapture(MediaCapture media) {
+    mediaCaptureController.sink.add(media);
   }
 }

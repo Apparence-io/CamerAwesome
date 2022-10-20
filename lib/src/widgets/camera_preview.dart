@@ -1,13 +1,11 @@
-import 'package:camerawesome/controllers/camera_setup.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
-  final CameraSetup cameraSetup;
   final Widget loadingWidget;
 
   const CameraPreviewWidget({
     super.key,
-    required this.cameraSetup,
     this.loadingWidget = const Center(
       child: CircularProgressIndicator(),
     ),
@@ -16,7 +14,7 @@ class CameraPreviewWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List>(
-      future: Future.wait([cameraSetup.previewSize(), cameraSetup.textureId()]),
+      future: Future.wait([previewSize(), textureId()]),
       builder: (_, snapshot) {
         if (!snapshot.hasData) {
           return loadingWidget;
@@ -66,5 +64,14 @@ class CameraPreviewWidget extends StatelessWidget {
     }
 
     return scale;
+  }
+
+  Future<Size> previewSize() {
+    return CamerawesomePlugin.getEffectivPreviewSize();
+  }
+
+  Future<int?> textureId() {
+    return CamerawesomePlugin.getPreviewTexture()
+        .then(((value) => value?.toInt()));
   }
 }
