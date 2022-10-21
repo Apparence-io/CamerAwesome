@@ -67,4 +67,9 @@ abstract class CameraModeState {
   /// - handle luminosity or get it
   /// - adjust brightness
   SensorConfig get config => orchestrator.sensorConfig;
+
+  /// Switch to a state between
+  /// - [CaptureModes.PHOTO]
+  /// - [CaptureModes.VIDEO]
+  void setState(CaptureModes captureMode);
 }

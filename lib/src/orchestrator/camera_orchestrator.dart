@@ -1,7 +1,6 @@
 // ignore_for_file: close_sinks
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/controllers/sensor_config.dart';

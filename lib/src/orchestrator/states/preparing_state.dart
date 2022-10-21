@@ -103,4 +103,12 @@ class PreparingCameraState extends CameraModeState {
       onPermissionsResult!(hasPermissions!);
     }
   }
+
+  @override
+  void setState(CaptureModes captureMode) {
+    throw CameraNotReadyException(
+      message:
+          '''You can't change current state while camera is in PreparingCameraState''',
+    );
+  }
 }

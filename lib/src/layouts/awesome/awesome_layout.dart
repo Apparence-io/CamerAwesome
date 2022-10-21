@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
 import '../../orchestrator/states/state_definition.dart';
+import 'widgets/camera_mode_selector.dart';
 import 'widgets/flash_button.dart';
 import 'widgets/media_preview.dart';
 import 'widgets/switch_camera.dart';
@@ -26,6 +27,8 @@ class AwesomeCameraLayout extends StatelessWidget {
         const SizedBox(height: 16),
         AwesomeTopActions(state: state),
         Spacer(),
+        AwesomeCameraModeSelector(state: state),
+        const SizedBox(height: 12),
         AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
         const SizedBox(height: 32),
       ],

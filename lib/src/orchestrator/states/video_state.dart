@@ -4,6 +4,7 @@ import 'package:camerawesome/controllers/image_analysis_controller.dart';
 // import '../../camerawesome_plugin.dart';
 import 'package:camerawesome/models/media_capture.dart';
 import '../camera_orchestrator.dart';
+import 'picture_state.dart';
 import 'state_definition.dart';
 
 /// When Camera is in Video mode
@@ -32,6 +33,14 @@ class VideoCameraState extends CameraModeState {
   @override
   void stop() {
     // TODO: implement stop
+  }
+
+  @override
+  void setState(CaptureModes captureMode) {
+    if (captureMode == CaptureModes.VIDEO) {
+      return;
+    }
+    orchestrator.changeState(PictureCameraState.from(orchestrator));
   }
 
   @override

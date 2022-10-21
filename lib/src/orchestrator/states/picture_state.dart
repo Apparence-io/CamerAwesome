@@ -2,6 +2,7 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/models/media_capture.dart';
 import '../camera_orchestrator.dart';
 import 'state_definition.dart';
+import 'video_state.dart';
 
 /// When Camera is in Image mode
 class PictureCameraState extends CameraModeState {
@@ -63,5 +64,13 @@ class PictureCameraState extends CameraModeState {
 
   set _mediaCapture(MediaCapture media) {
     orchestrator.mediaCaptureController.add(media);
+  }
+
+  @override
+  void setState(CaptureModes captureMode) {
+    if (captureMode == CaptureModes.PHOTO) {
+      return;
+    }
+    orchestrator.changeState(VideoCameraState.from(orchestrator));
   }
 }
