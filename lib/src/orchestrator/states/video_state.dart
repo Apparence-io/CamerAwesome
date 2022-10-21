@@ -29,6 +29,7 @@ class VideoCameraState extends CameraModeState {
 
   @override
   Future<void> start() async {
+    await CamerawesomePlugin.setCaptureMode(CaptureModes.VIDEO);
     await startRecording();
     orchestrator.changeState(VideoRecordingCameraState.from(orchestrator));
   }
@@ -76,35 +77,6 @@ class VideoCameraState extends CameraModeState {
       _mediaCapture = MediaCapture.failure(filePath: filePath, exception: e);
     }
     return filePath;
-  }
-
-  /// Resumes a paused video recording.
-  /// [pauseRecording] should have been called before.
-  Future<void> resumeRecording(MediaCapture currentCapture) async {
-    if (!currentCapture.isVideo) {
-      throw "Trying to resume a video while currentCapture is not a video (${currentCapture.filePath})";
-    }
-    if (currentCapture.status != MediaCaptureStatus.capturing) {
-      throw "Trying to resume a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
-    }
-    await CamerawesomePlugin.resumeVideoRecording();
-    _mediaCapture = MediaCapture.capturing(
-        filePath: currentCapture.filePath, videoState: VideoState.resumed);
-  }
-
-  /// Pauses a video recording.
-  /// [startRecording] must have been called before.
-  /// Call [resumeRecording] to resume the capture.
-  Future<void> pauseRecording(MediaCapture currentCapture) async {
-    if (!currentCapture.isVideo) {
-      throw "Trying to pause a video while currentCapture is not a video (${currentCapture.filePath})";
-    }
-    if (currentCapture.status != MediaCaptureStatus.capturing) {
-      throw "Trying to pause a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
-    }
-    await CamerawesomePlugin.pauseVideoRecording();
-    _mediaCapture = MediaCapture.capturing(
-        filePath: currentCapture.filePath, videoState: VideoState.paused);
   }
 
   /// Wether the video recording should [enableAudio].

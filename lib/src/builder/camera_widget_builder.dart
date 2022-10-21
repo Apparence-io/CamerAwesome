@@ -318,7 +318,6 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
     return StreamBuilder<CameraModeState>(
       stream: cameraOrchestrator.state$,
       builder: (context, snapshot) {
-        print("build ${snapshot.data?.captureMode}");
         if (!snapshot.hasData || snapshot.data!.captureMode == null) {
           return widget.progressIndicator ??
               const Center(

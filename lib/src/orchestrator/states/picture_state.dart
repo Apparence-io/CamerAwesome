@@ -24,6 +24,7 @@ class PictureCameraState extends CameraModeState {
 
   @override
   Future<void> start() async {
+    await CamerawesomePlugin.setCaptureMode(CaptureModes.PHOTO);
     await takePhoto();
   }
 
