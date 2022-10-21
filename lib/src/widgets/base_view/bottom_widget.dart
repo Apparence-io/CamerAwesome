@@ -43,11 +43,12 @@ class _BottomWidgetState extends State<BottomWidget>
               return Row(children: [
                 Spacer(),
                 Expanded(
-                    flex: 2,
-                    child: MediaPreviewWidget(
-                      mediaCapture: mediaCapture,
-                      onMediaTap: widget.onMediaTap,
-                    )),
+                  flex: 2,
+                  child: MediaPreviewWidget(
+                    mediaCapture: mediaCapture,
+                    onMediaTap: widget.onMediaTap,
+                  ),
+                ),
                 Spacer(),
                 Expanded(
                   flex: 5,

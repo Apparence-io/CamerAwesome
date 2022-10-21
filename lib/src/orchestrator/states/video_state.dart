@@ -1,12 +1,10 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/video_camera_controller.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:camerawesome/controllers/image_analysis_controller.dart';
 
 // import '../../camerawesome_plugin.dart';
-import '../../controllers/capture_controller.dart';
-import '../../controllers/image_analysis_controller.dart';
-import '../../models/media_capture.dart';
-import 'camera_orchestrator.dart';
+import 'package:camerawesome/models/media_capture.dart';
+import '../camera_orchestrator.dart';
+import 'state_definition.dart';
 
 /// When Camera is in Video mode
 class VideoCameraState extends CameraModeState {

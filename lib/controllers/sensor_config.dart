@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
 
-
 class SensorConfig {
   late Stream<CameraFlashes> flashMode;
 
@@ -63,6 +62,10 @@ class SensorConfig {
     // The stream will debounce before actually setting the brightness
     _brightnessController.sink.add(brightness);
   }
+
+  /// Only available on Android
+  Stream<SensorData>? get luminosityLevelStream =>
+      CamerawesomePlugin.listenLuminosityLevel();
 
   void dispose() {
     _brightnessController.close();
