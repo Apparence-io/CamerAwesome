@@ -23,12 +23,12 @@ class PictureCameraState extends CameraModeState {
   final FilePathBuilder filePathBuilder;
 
   @override
-  void start() {
-    // TODO: implement start
+  Future<void> start() async {
+    await takePhoto();
   }
 
   @override
-  void stop() {
+  Future<void> stop() async {
     // TODO: implement stop
   }
 

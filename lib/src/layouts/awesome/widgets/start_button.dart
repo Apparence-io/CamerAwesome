@@ -1,16 +1,13 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
 class StartCameraButton extends StatefulWidget {
-  final bool isRecording;
-  final CaptureModes captureMode; // FIXME remove this
-  final Function onTap;
+  final CameraModeState state;
 
   StartCameraButton({
     super.key,
-    required this.isRecording,
-    required this.onTap,
-    required this.captureMode,
+    required this.state,
   });
 
   @override
@@ -52,16 +49,18 @@ class _StartCameraButtonState extends State<StartCameraButton>
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
       child: Container(
-        key: ValueKey('cameraButton' +
-            (widget.captureMode == CaptureModes.PHOTO ? 'Photo' : 'Video')),
+        key: ValueKey('cameraButton'),
         height: 80,
         width: 80,
         child: Transform.scale(
           scale: _scale,
           child: CustomPaint(
-            painter: CameraButtonPainter(
-              widget.captureMode,
-              isRecording: widget.isRecording,
+            painter: widget.state.when(
+              onPictureMode: (_) => CameraButtonPainter(),
+              onPreparingCamera: (_) => CameraButtonPainter(),
+              onVideoMode: (_) => VideoButtonPainter(),
+              onVideoRecordingMode: (_) =>
+                  VideoButtonPainter(isRecording: true),
             ),
           ),
         ),
@@ -78,20 +77,47 @@ class _StartCameraButtonState extends State<StartCameraButton>
       _animationController.reverse();
     });
 
-    widget.onTap.call();
+    onTap.call();
   }
 
   _onTapCancel() {
     _animationController.reverse();
   }
+
+  get onTap => () {
+        widget.state.when(
+          onPictureMode: (pictureState) => pictureState.start(),
+          onVideoMode: (videoState) => videoState.start(),
+          onVideoRecordingMode: (videoState) => videoState.start(),
+        );
+      };
 }
 
 class CameraButtonPainter extends CustomPainter {
-  final CaptureModes captureMode;
+  CameraButtonPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    var bgPainter = Paint()
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+    var radius = size.width / 2;
+    var center = Offset(size.width / 2, size.height / 2);
+    bgPainter.color = Colors.white.withOpacity(.5);
+    canvas.drawCircle(center, radius, bgPainter);
+
+    bgPainter.color = Colors.white;
+    canvas.drawCircle(center, radius - 8, bgPainter);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+class VideoButtonPainter extends CustomPainter {
   final bool isRecording;
 
-  CameraButtonPainter(
-    this.captureMode, {
+  VideoButtonPainter({
     this.isRecording = false,
   });
 
@@ -105,7 +131,7 @@ class CameraButtonPainter extends CustomPainter {
     bgPainter.color = Colors.white.withOpacity(.5);
     canvas.drawCircle(center, radius, bgPainter);
 
-    if (this.captureMode == CaptureModes.VIDEO && this.isRecording) {
+    if (this.isRecording) {
       bgPainter.color = Colors.red;
       canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -118,8 +144,7 @@ class CameraButtonPainter extends CustomPainter {
               Radius.circular(12.0)),
           bgPainter);
     } else {
-      bgPainter.color =
-          captureMode == CaptureModes.PHOTO ? Colors.white : Colors.red;
+      bgPainter.color = Colors.red;
       canvas.drawCircle(center, radius - 8, bgPainter);
     }
   }

@@ -77,17 +77,7 @@ class AwesomeBottomActions extends StatelessWidget {
         ),
         Spacer(),
         StartCameraButton(
-          captureMode: state.when(
-            onPictureMode: (_) => CaptureModes.PHOTO,
-            onVideoMode: (_) => CaptureModes.VIDEO,
-          ),
-          isRecording: false, // FIXME
-          onTap: () async {
-            state.when(
-              onPictureMode: (pictureState) => pictureState.takePhoto(),
-              onVideoMode: (videoState) => videoState.startRecording(),
-            );
-          },
+          state: state,
         ),
         Spacer(),
         Flexible(

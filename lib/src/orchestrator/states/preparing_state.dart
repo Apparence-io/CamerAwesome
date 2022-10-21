@@ -28,56 +28,24 @@ class PreparingCameraState extends CameraModeState {
   CaptureModes? get captureMode => null;
 
   @override
-  void start() {
+  Future<void> start() async {
     switch (nextCaptureMode) {
       case CaptureModes.PHOTO:
-        startPictureMode();
+        _startPictureMode();
         break;
       case CaptureModes.VIDEO:
-        startVideoMode();
+        _startVideoMode();
         break;
     }
   }
 
   @override
-  void stop() => throw CameraNotReadyException();
-
-  Future startVideoMode() async {
-    await Future.delayed(Duration(milliseconds: 500));
-    // TODO await creation.setAudioEnabled(enableAudio);
-    await init(enableImageStream: false);
-    orchestrator.changeState(VideoCameraState.from(orchestrator));
-  }
-
-  Future startPictureMode() async {
-    //TODO await CamerawesomePlugin.setExifPreferences(preferences);
-    await Future.delayed(Duration(milliseconds: 500));
-    await init(enableImageStream: false);
-    orchestrator.changeState(PictureCameraState.from(orchestrator));
-  }
-
-  // TODO Refactor this (make it stream providing state)
-  Future<bool> init({
-    required bool enableImageStream,
-  }) async {
-    initPermissions(
-      orchestrator.sensorConfig,
-      enableImageStream: enableImageStream,
-    );
-    await CamerawesomePlugin.init(
-      orchestrator.sensorConfig.sensor,
-      enableImageStream,
-      captureMode: nextCaptureMode,
-    );
-    _isReady = true;
-    return true;
+  Future<void> stop() async {
+    throw CameraNotReadyException();
   }
 
   /// subscription for permissions
   StreamSubscription? _permissionStreamSub;
-
-  /// only if
-  bool _isReady = false;
 
   Future<void> initPermissions(
     SensorConfig sensorConfig, {
@@ -89,7 +57,7 @@ class PreparingCameraState extends CameraModeState {
           CamerawesomePlugin.listenPermissionResult()!.listen(
         (res) {
           if (res && !_isReady) {
-            init(enableImageStream: enableImageStream);
+            _init(enableImageStream: enableImageStream);
           }
           if (onPermissionsResult != null) {
             onPermissionsResult!(res);
@@ -110,5 +78,42 @@ class PreparingCameraState extends CameraModeState {
       message:
           '''You can't change current state while camera is in PreparingCameraState''',
     );
+  }
+
+  /////////////////////////////////////
+  // PRIVATES
+  /////////////////////////////////////
+
+  Future _startVideoMode() async {
+    await Future.delayed(Duration(milliseconds: 500));
+    // TODO await creation.setAudioEnabled(enableAudio);
+    await _init(enableImageStream: false);
+    orchestrator.changeState(VideoCameraState.from(orchestrator));
+  }
+
+  Future _startPictureMode() async {
+    //TODO await CamerawesomePlugin.setExifPreferences(preferences);
+    await Future.delayed(Duration(milliseconds: 500));
+    await _init(enableImageStream: false);
+    orchestrator.changeState(PictureCameraState.from(orchestrator));
+  }
+
+  bool _isReady = false;
+
+  // TODO Refactor this (make it stream providing state)
+  Future<bool> _init({
+    required bool enableImageStream,
+  }) async {
+    initPermissions(
+      orchestrator.sensorConfig,
+      enableImageStream: enableImageStream,
+    );
+    await CamerawesomePlugin.init(
+      orchestrator.sensorConfig.sensor,
+      enableImageStream,
+      captureMode: nextCaptureMode,
+    );
+    _isReady = true;
+    return true;
   }
 }

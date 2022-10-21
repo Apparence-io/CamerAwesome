@@ -3,6 +3,7 @@ import 'package:camerawesome/models/capture_modes.dart';
 import 'package:camerawesome/models/flashmodes.dart';
 import 'package:camerawesome/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/preparing_state.dart';
+import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 
 import '../../../models/sensors.dart';
 import '../camera_orchestrator.dart';
@@ -14,6 +15,8 @@ typedef OnVideoMode = Function(VideoCameraState);
 typedef OnPictureMode = Function(PictureCameraState);
 
 typedef OnPreparingCamera = Function(PreparingCameraState);
+
+typedef OnVideoRecordingMode = Function(VideoRecordingCameraState);
 
 abstract class CameraModeState {
   // TODO protect this
@@ -28,6 +31,7 @@ abstract class CameraModeState {
     OnVideoMode? onVideoMode,
     OnPictureMode? onPictureMode,
     OnPreparingCamera? onPreparingCamera,
+    OnVideoRecordingMode? onVideoRecordingMode,
   }) {
     if (this is VideoCameraState && onVideoMode != null) {
       return onVideoMode(this as VideoCameraState);
@@ -38,11 +42,26 @@ abstract class CameraModeState {
     if (this is PreparingCameraState && onPreparingCamera != null) {
       return onPreparingCamera(this as PreparingCameraState);
     }
+    if (this is VideoRecordingCameraState && onVideoRecordingMode != null) {
+      return onVideoRecordingMode(this as VideoRecordingCameraState);
+    }
   }
 
-  void start();
+  /// This actions act differently depending on the current state
+  /// check the differents states in
+  /// - [PreparingCameraState]
+  /// - [PictureCameraState]
+  /// - [VideoCameraState]
+  /// - [VideoRecordingCameraState]
+  Future<void> start();
 
-  void stop();
+  /// This actions act differently depending on the current state
+  /// check the differents states in
+  /// - [PreparingCameraState]
+  /// - [PictureCameraState]
+  /// - [VideoCameraState]
+  /// - [VideoRecordingCameraState]
+  Future<void> stop();
 
   /// Use this stream to listen for capture state
   /// - while recording a video
