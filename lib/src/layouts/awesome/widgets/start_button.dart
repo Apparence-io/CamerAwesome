@@ -2,7 +2,7 @@ import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
 class StartCameraButton extends StatefulWidget {
-  final CameraModeState state;
+  final CameraState state;
 
   StartCameraButton({
     super.key,

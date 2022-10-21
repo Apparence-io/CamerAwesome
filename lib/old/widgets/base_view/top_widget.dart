@@ -1,6 +1,6 @@
-import 'package:camerawesome/controllers/sensor_config.dart';
-import 'package:camerawesome/models/flashmodes.dart';
-import 'package:camerawesome/src/widgets/camera_widget.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
+import 'package:camerawesome/src/orchestrator/models/flashmodes.dart';
+import 'package:camerawesome/old/widgets/camera_widget.dart';
 import 'package:flutter/material.dart';
 
 class TopWidget extends StatelessWidget {

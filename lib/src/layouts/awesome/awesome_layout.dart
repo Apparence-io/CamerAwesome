@@ -1,4 +1,4 @@
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/layouts/awesome/widgets/start_button.dart';
 import 'package:flutter/material.dart';
 
@@ -11,7 +11,7 @@ import 'widgets/switch_camera.dart';
 
 /// This widget doesnt handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {
-  final CameraModeState state;
+  final CameraState state;
   final OnMediaTap onMediaTap;
 
   const AwesomeCameraLayout({
@@ -37,7 +37,7 @@ class AwesomeCameraLayout extends StatelessWidget {
 }
 
 class AwesomeTopActions extends StatelessWidget {
-  final CameraModeState state;
+  final CameraState state;
 
   const AwesomeTopActions({
     super.key,
@@ -57,7 +57,7 @@ class AwesomeTopActions extends StatelessWidget {
 }
 
 class AwesomeBottomActions extends StatelessWidget {
-  final CameraModeState state;
+  final CameraState state;
   final OnMediaTap onMediaTap;
 
   const AwesomeBottomActions({

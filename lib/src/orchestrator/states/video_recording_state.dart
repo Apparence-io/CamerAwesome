@@ -1,16 +1,15 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/image_analysis_controller.dart';
+import 'package:camerawesome/old/controllers_older/image_analysis_controller.dart';
 
 // import '../../camerawesome_plugin.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import 'package:flutter/material.dart';
 import '../camera_orchestrator.dart';
-import 'picture_state.dart';
 import 'state_definition.dart';
 
 /// When Camera is in Video mode
-class VideoRecordingCameraState extends CameraModeState {
+class VideoRecordingCameraState extends CameraState {
   VideoRecordingCameraState({
     required CameraOrchestrator orchestrator,
     this.imageAnalysisController,
@@ -35,27 +34,19 @@ class VideoRecordingCameraState extends CameraModeState {
 
   @override
   Future<void> stop() async {
-    ///
+    await stopRecording();
+    orchestrator.changeState(VideoCameraState.from(orchestrator));
   }
 
   @override
   void setState(CaptureModes captureMode) {
-    if (captureMode == CaptureModes.VIDEO) {
-      return;
-    }
-    orchestrator.changeState(PictureCameraState.from(orchestrator));
+    debugPrint(''' 
+      warning: You must stop recoring before changing state.  
+    ''');
   }
 
   @override
   CaptureModes get captureMode => CaptureModes.VIDEO;
-
-  Future<bool> get isRecording async {
-    final currentCapture = await mediaCaptureStream.last;
-    return currentCapture?.isRecordingVideo == true;
-  }
-
-  Stream<MediaCapture?> get mediaCaptureStream =>
-      orchestrator.mediaCaptureController.stream;
 
   /// Pauses a video recording.
   /// [startRecording] must have been called before.

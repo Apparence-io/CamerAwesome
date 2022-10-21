@@ -3,8 +3,8 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/sensor_config.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -17,11 +17,11 @@ import 'states/state_definition.dart';
 /// - [VideoCameraState]
 class CameraOrchestrator {
   /// Listen current state from child widgets
-  late final BehaviorSubject<CameraModeState> stateController;
+  late final BehaviorSubject<CameraState> stateController;
 
-  late final Stream<CameraModeState> state$;
+  late final Stream<CameraState> state$;
 
-  CameraModeState get state => stateController.value;
+  CameraState get state => stateController.value;
 
   /// on media capturing stream controller
   late final BehaviorSubject<MediaCapture?> mediaCaptureController;
@@ -74,7 +74,7 @@ class CameraOrchestrator {
         videoPathBuilder: videoPathBuilder,
       );
 
-  changeState(CameraModeState state) {
+  changeState(CameraState state) {
     stateController.add(state);
   }
 

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/sensor_config.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 
@@ -11,7 +11,7 @@ import '../exceptions/camera_states_exceptions.dart';
 import 'picture_state.dart';
 
 /// When is not ready
-class PreparingCameraState extends CameraModeState {
+class PreparingCameraState extends CameraState {
   /// this is the next state we are preparing to
   final CaptureModes nextCaptureMode;
 

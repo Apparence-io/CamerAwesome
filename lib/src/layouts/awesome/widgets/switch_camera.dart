@@ -2,7 +2,7 @@ import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
 class CameraSwitcher extends StatelessWidget {
-  final CameraModeState state;
+  final CameraState state;
 
   const CameraSwitcher({super.key, required this.state});
 

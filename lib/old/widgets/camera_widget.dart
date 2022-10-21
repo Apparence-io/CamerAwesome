@@ -1,15 +1,15 @@
 import 'dart:typed_data';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/image_analysis_controller.dart';
-import 'package:camerawesome/controllers/picture_camera_controller.dart';
-import 'package:camerawesome/src/controllers/camera_setup.dart';
-import 'package:camerawesome/models/media_capture.dart';
-import 'package:camerawesome/controllers/sensor_config.dart';
+import 'package:camerawesome/old/controllers_older/image_analysis_controller.dart';
+import 'package:camerawesome/old/controllers_older/picture_camera_controller.dart';
+import 'package:camerawesome/old/controllers/camera_setup.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../../controllers/video_camera_controller.dart';
+import '../controllers_older/video_camera_controller.dart';
 import 'media_preview_widget.dart';
 
 /// DEPRECATED ???

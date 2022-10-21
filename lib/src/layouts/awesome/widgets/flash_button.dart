@@ -1,9 +1,9 @@
-import 'package:camerawesome/models/flashmodes.dart';
+import 'package:camerawesome/src/orchestrator/models/flashmodes.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeFlashButton extends StatelessWidget {
-  final CameraModeState state;
+  final CameraState state;
 
   const AwesomeFlashButton({
     super.key,

@@ -1,21 +1,21 @@
-import 'package:camerawesome/models/exif_preferences_data.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/models/exif_preferences_data.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_layout.dart';
 import 'package:flutter/material.dart';
 
-import '../controllers/camera_setup.dart';
-import '../../controllers/sensor_config.dart';
-import '../../models/capture_modes.dart';
-import '../../models/flashmodes.dart';
-import '../../models/sensors.dart';
+import '../../old/controllers/camera_setup.dart';
+import '../orchestrator/sensor_config.dart';
+import '../orchestrator/models/capture_modes.dart';
+import '../orchestrator/models/flashmodes.dart';
+import '../orchestrator/models/sensors.dart';
 import '../orchestrator/camera_orchestrator.dart';
 import '../orchestrator/states/state_definition.dart';
-import '../widgets/camera_preview.dart';
-import '../widgets/pinch_to_zoom.dart';
+import '../layouts/awesome/widgets/camera_preview.dart';
+import '../layouts/awesome/widgets/pinch_to_zoom.dart';
 
 typedef LineBuilder = Widget Function(CameraSetup, SensorConfig);
 
-typedef CameraLayoutBuilder = Widget Function(CameraModeState cameraModeState);
+typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
 
 typedef FilePathBuilder = Future<String> Function(CaptureModes)?;
 
@@ -112,44 +112,36 @@ class CameraWidgetBuilder extends StatefulWidget {
     );
   }
 
-  // CameraWidgetBuilder.custom({
-  //   CaptureModes captureMode = CaptureModes.PHOTO,
-  //   Sensors sensor = Sensors.BACK,
-  //   CameraFlashes flashMode = CameraFlashes.NONE,
-  //   double zoom = 0.0,
-  //   List<CaptureModes> availableModes = const [
-  //     CaptureModes.PHOTO,
-  //     CaptureModes.VIDEO
-  //   ],
-  //   ExifPreferences? exifPreferences,
-  //   bool enableAudio = true,
-  //   Widget? progressIndicator,
-  //   required CameraLayoutBuilder builder,
-  //   Future<String> Function(CaptureModes)? picturePathBuilder,
-  //   Future<String> Function(CaptureModes)? videoPathBuilder,
-  //   Function(MediaCapture)? onMediaTap,
-  // }) : this._(
-  //         initialCaptureMode: captureMode,
-  //         sensor: sensor,
-  //         flashMode: flashMode,
-  //         zoom: zoom,
-  //         availableModes: availableModes,
-  //         exifPreferences: exifPreferences,
-  //         enableAudio: enableAudio,
-  //         progressIndicator: progressIndicator,
-  //         builder: builder,
-  //         picturePathBuilder: picturePathBuilder,
-  //         videoPathBuilder: videoPathBuilder,
-  //         onMediaTap: onMediaTap,
-  //         cameraOrchestrator: CameraOrchestrator.create(
-  //           SensorConfig(
-  //             sensor: sensor,
-  //             flash: flashMode,
-  //             currentZoom: zoom,
-  //           ),
-  //           initialCaptureMode: captureMode,
-  //         ),
-  //       );
+  CameraWidgetBuilder.custom({
+    CaptureModes captureMode = CaptureModes.PHOTO,
+    Sensors sensor = Sensors.BACK,
+    CameraFlashes flashMode = CameraFlashes.NONE,
+    double zoom = 0.0,
+    List<CaptureModes> availableModes = const [
+      CaptureModes.PHOTO,
+      CaptureModes.VIDEO
+    ],
+    ExifPreferences? exifPreferences,
+    bool enableAudio = true,
+    Widget? progressIndicator,
+    required CameraLayoutBuilder builder,
+    Future<String> Function(CaptureModes)? picturePathBuilder,
+    Future<String> Function(CaptureModes)? videoPathBuilder,
+    Function(MediaCapture)? onMediaTap,
+  }) : this._(
+          initialCaptureMode: captureMode,
+          sensor: sensor,
+          flashMode: flashMode,
+          zoom: zoom,
+          availableModes: availableModes,
+          exifPreferences: exifPreferences,
+          enableAudio: enableAudio,
+          progressIndicator: progressIndicator,
+          builder: builder,
+          picturePathBuilder: picturePathBuilder,
+          videoPathBuilder: videoPathBuilder,
+          onMediaTap: onMediaTap,
+        );
 
   @override
   State<StatefulWidget> createState() {
@@ -182,44 +174,6 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
     // }
     super.didUpdateWidget(oldWidget);
   }
-
-  // @override
-  // void didUpdateWidget(covariant CameraWidgetBuilder oldWidget) {
-  //   // Check for differences between previous config and this one and update _cameraSetup and sensorConfig accordingly
-  //   if (widget.flashMode != oldWidget.flashMode) {
-  //     _sensorConfig?.setFlashMode(widget.flashMode);
-  //   }
-  //   if (widget.zoom != oldWidget.zoom) {
-  //     _sensorConfig?.setZoom(widget.zoom);
-  //   }
-  //   if (widget.captureMode != oldWidget.captureMode) {
-  //     if (widget.availableModes.contains(widget.captureMode)) {
-  //       // Check if we already have picture / video controller, if not add them
-  //       _cameraSetup?.setCaptureMode(
-  //         widget.captureMode,
-  //         pictureCameraControllerBuilder:
-  //             _cameraSetup?.pictureCameraController == null &&
-  //                     widget.captureMode == CaptureModes.PHOTO
-  //                 ? (setup) => PictureCameraController.create(
-  //                       cameraSetup: setup,
-  //                       picturePathBuilder: widget.picturePathBuilder,
-  //                       exifPreferences: widget.exifPreferences,
-  //                     )
-  //                 : null,
-  //         videoCameraControllerBuilder:
-  //             _cameraSetup?.videoCameraController == null &&
-  //                     widget.captureMode == CaptureModes.VIDEO
-  //                 ? (setup) => VideoCameraController.create(
-  //                     cameraSetup: setup,
-  //                     videoPathBuilder: widget.videoPathBuilder,
-  //                     enableAudio: widget.enableAudio)
-  //                 : null,
-  //       );
-  //     }
-  //   }
-
-  //   super.didUpdateWidget(oldWidget);
-  // }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -255,67 +209,9 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
     cameraOrchestrator.state.start();
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addObserver(this);
-  //   final sensorConfig = SensorConfig(
-  //     sensor: widget.sensor,
-  //     currentZoom: widget.zoom,
-  //     flash: widget.flashMode,
-  //   );
-  //   final Future<CameraSetup> future;
-  //   if (widget.availableModes.contains(CaptureModes.PHOTO) &&
-  //       widget.availableModes.contains(CaptureModes.VIDEO)) {
-  //     future = CameraSetup.photoAndVideo(
-  //       initialCaptureMode: widget.captureMode,
-  //       sensorConfig: sensorConfig,
-  //       pictureCameraControllerBuilder: (cameraSetup) =>
-  //           PictureCameraController.create(
-  //               cameraSetup: cameraSetup,
-  //               picturePathBuilder: widget.picturePathBuilder),
-  //       videoCameraControllerBuilder: (cameraSetup) =>
-  //           VideoCameraController.create(
-  //         cameraSetup: cameraSetup,
-  //         videoPathBuilder: widget.videoPathBuilder,
-  //       ),
-  //     );
-  //   } else if (widget.availableModes.contains(CaptureModes.PHOTO)) {
-  //     if (widget.captureMode != CaptureModes.PHOTO) {
-  //       throw "InitialCaptureMode can't be ${widget.captureMode} when only availalble modes are ${widget.availableModes}";
-  //     }
-  //     future = CameraSetup.picture(
-  //       sensorConfig: sensorConfig,
-  //       pictureCameraControllerBuilder: ((cameraSetup) =>
-  //           PictureCameraController.create(
-  //               cameraSetup: cameraSetup,
-  //               picturePathBuilder: widget.picturePathBuilder)),
-  //     );
-  //   } else if (widget.availableModes.contains(CaptureModes.VIDEO)) {
-  //     if (widget.captureMode != CaptureModes.VIDEO) {
-  //       throw "InitialCaptureMode can't be ${widget.captureMode} when only availalble modes are ${widget.availableModes}";
-  //     }
-  //     future = CameraSetup.video(
-  //       sensorConfig: sensorConfig,
-  //       videoCameraControllerBuilder: (cameraSetup) =>
-  //           VideoCameraController.create(
-  //         cameraSetup: cameraSetup,
-  //         videoPathBuilder: widget.videoPathBuilder,
-  //       ),
-  //     );
-  //   } else {
-  //     throw "No CaptureModes available";
-  //   }
-
-  //   future.then((value) {
-  //     _cameraSetup = value;
-  //     if (mounted) setState(() {});
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CameraModeState>(
+    return StreamBuilder<CameraState>(
       stream: cameraOrchestrator.state$,
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.captureMode == null) {
@@ -348,49 +244,4 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
       },
     );
   }
-
-  //   if (_cameraSetup == null) {
-  //     return widget.progressIndicator ??
-  //         const Center(
-  //           child: CircularProgressIndicator(),
-  //         );
-  //   }
-
-  //   return StreamBuilder<SensorConfig>(
-  //     stream: _cameraSetup!.sensorConfigStream,
-  //     builder: (context, sensorSnapshot) {
-  //       if (sensorSnapshot.hasData) {
-  //         _sensorConfig = sensorSnapshot.data;
-  //         return SafeArea(
-  //           child: Container(
-  //             color: Colors.black,
-  //             child: Stack(
-  //               fit: StackFit.expand,
-  //               children: <Widget>[
-  //                 Positioned.fill(
-  //                   child: PinchToZoom(
-  //                     sensorConfig: sensorSnapshot.data!,
-  //                     child: CameraPreviewWidget(
-  //                       cameraSetup: _cameraSetup!,
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 Positioned.fill(
-  //                     child: widget.builder(
-  //                   _cameraSetup!,
-  //                   sensorSnapshot.data!,
-  //                 )),
-  //               ],
-  //             ),
-  //           ),
-  //         );
-  //       } else {
-  //         return widget.progressIndicator ??
-  //             const Center(
-  //               child: CircularProgressIndicator(),
-  //             );
-  //       }
-  //     },
-  //   );
-  // }
 }

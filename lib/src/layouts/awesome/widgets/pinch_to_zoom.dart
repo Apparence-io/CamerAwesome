@@ -1,4 +1,4 @@
-import 'package:camerawesome/controllers/sensor_config.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:flutter/material.dart';
 
 class PinchToZoom extends StatefulWidget {

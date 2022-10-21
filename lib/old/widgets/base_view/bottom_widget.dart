@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:camerawesome/src/controllers/camera_setup.dart';
-import 'package:camerawesome/controllers/sensor_config.dart';
-import 'package:camerawesome/models/capture_modes.dart';
-import 'package:camerawesome/src/widgets/camera_button_widget.dart';
-import 'package:camerawesome/src/widgets/camera_mode_pager_widget.dart';
-import 'package:camerawesome/src/widgets/camera_widget.dart';
-import 'package:camerawesome/src/widgets/media_preview_widget.dart';
+import 'package:camerawesome/old/controllers/camera_setup.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
+import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
+import 'package:camerawesome/old/widgets/camera_button_widget.dart';
+import 'package:camerawesome/old/widgets/camera_mode_pager_widget.dart';
+import 'package:camerawesome/old/widgets/camera_widget.dart';
+import 'package:camerawesome/old/widgets/media_preview_widget.dart';
 import 'package:flutter/material.dart';
 
-import '../../../models/media_capture.dart';
+import '../../../src/orchestrator/models/media_capture.dart';
 
 class BottomWidget extends StatefulWidget {
   final CameraSetup cameraSetup;

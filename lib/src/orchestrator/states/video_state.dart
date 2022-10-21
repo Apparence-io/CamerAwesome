@@ -1,8 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/image_analysis_controller.dart';
+import 'package:camerawesome/old/controllers_older/image_analysis_controller.dart';
 
 // import '../../camerawesome_plugin.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 import 'package:flutter/material.dart';
 import '../camera_orchestrator.dart';
@@ -10,7 +10,7 @@ import 'picture_state.dart';
 import 'state_definition.dart';
 
 /// When Camera is in Video mode
-class VideoCameraState extends CameraModeState {
+class VideoCameraState extends CameraState {
   VideoCameraState({
     required CameraOrchestrator orchestrator,
     this.imageAnalysisController,
@@ -51,14 +51,6 @@ class VideoCameraState extends CameraModeState {
 
   @override
   CaptureModes get captureMode => CaptureModes.VIDEO;
-
-  Future<bool> get isRecording async {
-    final currentCapture = await mediaCaptureStream.last;
-    return currentCapture?.isRecordingVideo == true;
-  }
-
-  Stream<MediaCapture?> get mediaCaptureStream =>
-      orchestrator.mediaCaptureController.stream;
 
   /// Recording is not in MP4 format. [filePath] must end with .mp4.
   ///

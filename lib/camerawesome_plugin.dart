@@ -5,31 +5,31 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'models/capture_modes.dart';
-import 'models/exif_preferences_data.dart';
-import 'models/flashmodes.dart';
-import 'models/orientations.dart';
-import 'models/sensor_data.dart';
-import 'models/sensors.dart';
+import 'src/orchestrator/models/capture_modes.dart';
+import 'src/orchestrator/models/exif_preferences_data.dart';
+import 'src/orchestrator/models/flashmodes.dart';
+import 'src/orchestrator/models/orientations.dart';
+import 'src/orchestrator/models/sensor_data.dart';
+import 'src/orchestrator/models/sensors.dart';
 
-export 'camerapreview.dart';
-export 'models/capture_modes.dart';
-export 'models/exif_preferences_data.dart';
-export 'models/flashmodes.dart';
-export 'models/sensor_data.dart';
-export 'models/sensors.dart';
+export 'old/camerapreview.dart';
+export 'src/orchestrator/models/capture_modes.dart';
+export 'src/orchestrator/models/exif_preferences_data.dart';
+export 'src/orchestrator/models/flashmodes.dart';
+export 'src/orchestrator/models/sensor_data.dart';
+export 'src/orchestrator/models/sensors.dart';
 
 // controllers
-export 'src/controllers/picture_controller.dart';
-export 'src/controllers/video_controller.dart';
+export 'old/controllers/picture_controller.dart';
+export 'old/controllers/video_controller.dart';
 // built in widgets
-export 'src/widgets/camera_button_widget.dart';
-export 'src/widgets/camera_preview.dart';
-export 'src/widgets/camera_widget.dart';
+export 'old/widgets/camera_button_widget.dart';
+export 'src/layouts/awesome/widgets/camera_preview.dart';
+export 'old/widgets/camera_widget.dart';
 export 'src/builder/camera_widget_builder.dart';
-export 'src/widgets/pinch_to_zoom.dart';
+export 'src/layouts/awesome/widgets/pinch_to_zoom.dart';
 
-enum CameraState { STARTING, STARTED, STOPPING, STOPPED }
+enum CameraRunningState { STARTING, STARTED, STOPPING, STOPPED }
 
 class CamerawesomePlugin {
   static const MethodChannel _channel = MethodChannel('camerawesome');
@@ -54,7 +54,7 @@ class CamerawesomePlugin {
 
   static Stream<Uint8List>? _imagesStream;
 
-  static CameraState currentState = CameraState.STOPPED;
+  static CameraRunningState currentState = CameraRunningState.STOPPED;
 
   static Future<List<String?>> checkAndroidPermissions() =>
       CameraInterface().checkPermissions();
@@ -67,34 +67,34 @@ class CamerawesomePlugin {
       CameraInterface().requestPermissions();
 
   static Future<bool> start() async {
-    if (currentState == CameraState.STARTED ||
-        currentState == CameraState.STARTING) {
+    if (currentState == CameraRunningState.STARTED ||
+        currentState == CameraRunningState.STARTING) {
       return true;
     }
-    currentState = CameraState.STARTING;
+    currentState = CameraRunningState.STARTING;
     bool res;
     if (Platform.isAndroid) {
       res = await CameraInterface().start();
     } else {
       res = await _channel.invokeMethod("start");
     }
-    if (res) currentState = CameraState.STARTED;
+    if (res) currentState = CameraRunningState.STARTED;
     return res;
   }
 
   static Future<bool> stop() async {
-    if (currentState == CameraState.STOPPED ||
-        currentState == CameraState.STOPPING) {
+    if (currentState == CameraRunningState.STOPPED ||
+        currentState == CameraRunningState.STOPPING) {
       return true;
     }
     _orientationStream = null;
-    currentState = CameraState.STOPPING;
+    currentState = CameraRunningState.STOPPING;
     try {
       await _channel.invokeMethod("stop");
     } catch (e) {
       return false;
     }
-    currentState = CameraState.STOPPED;
+    currentState = CameraRunningState.STOPPED;
     return true;
   }
 

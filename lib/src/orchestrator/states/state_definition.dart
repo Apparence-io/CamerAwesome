@@ -1,11 +1,11 @@
-import 'package:camerawesome/controllers/sensor_config.dart';
-import 'package:camerawesome/models/capture_modes.dart';
-import 'package:camerawesome/models/flashmodes.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
+import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
+import 'package:camerawesome/src/orchestrator/models/flashmodes.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/preparing_state.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 
-import '../../../models/sensors.dart';
+import '../models/sensors.dart';
 import '../camera_orchestrator.dart';
 import 'picture_state.dart';
 import 'video_state.dart';
@@ -18,11 +18,11 @@ typedef OnPreparingCamera = Function(PreparingCameraState);
 
 typedef OnVideoRecordingMode = Function(VideoRecordingCameraState);
 
-abstract class CameraModeState {
+abstract class CameraState {
   // TODO protect this
   CameraOrchestrator orchestrator;
 
-  CameraModeState(this.orchestrator);
+  CameraState(this.orchestrator);
 
   // TODO remove this
   abstract final CaptureModes? captureMode;

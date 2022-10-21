@@ -3,7 +3,7 @@ import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeCameraModeSelector extends StatelessWidget {
-  final CameraModeState state;
+  final CameraState state;
 
   const AwesomeCameraModeSelector({
     super.key,

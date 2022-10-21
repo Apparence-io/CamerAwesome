@@ -1,4 +1,4 @@
-import 'package:camerawesome/src/controllers/camera_setup.dart';
+import 'package:camerawesome/old/controllers/camera_setup.dart';
 
 abstract class CaptureController {
   final CameraSetup cameraSetup;

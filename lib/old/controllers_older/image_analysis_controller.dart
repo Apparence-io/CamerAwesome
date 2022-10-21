@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../camerawesome_plugin.dart';
+import '../../camerawesome_plugin.dart';
 import 'capture_controller.dart';
 
 class ImageAnalysisController extends CaptureController {

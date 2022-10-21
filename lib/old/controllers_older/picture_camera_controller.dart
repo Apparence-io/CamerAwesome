@@ -1,8 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/controllers/capture_controller.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/old/controllers_older/capture_controller.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 
-import '../src/controllers/camera_setup.dart';
+import '../controllers/camera_setup.dart';
 
 class PictureCameraController extends CaptureController {
   ExifPreferences? exifPreferences;

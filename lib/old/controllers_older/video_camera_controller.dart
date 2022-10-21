@@ -1,8 +1,8 @@
-import 'package:camerawesome/controllers/capture_controller.dart';
+import 'package:camerawesome/old/controllers_older/capture_controller.dart';
 
-import '../camerawesome_plugin.dart';
-import '../src/controllers/camera_setup.dart';
-import '../models/media_capture.dart';
+import '../../camerawesome_plugin.dart';
+import '../controllers/camera_setup.dart';
+import '../../src/orchestrator/models/media_capture.dart';
 
 class VideoCameraController extends CaptureController {
   final Future<String> Function(CaptureModes)? videoPathBuilder;

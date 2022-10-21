@@ -1,11 +1,11 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import '../camera_orchestrator.dart';
 import 'state_definition.dart';
 import 'video_state.dart';
 
 /// When Camera is in Image mode
-class PictureCameraState extends CameraModeState {
+class PictureCameraState extends CameraState {
   PictureCameraState({
     required CameraOrchestrator orchestrator,
     required this.filePathBuilder,

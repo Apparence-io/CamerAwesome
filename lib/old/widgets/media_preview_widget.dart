@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:camerawesome/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/material.dart';
 
 class MediaPreviewWidget extends StatelessWidget {
