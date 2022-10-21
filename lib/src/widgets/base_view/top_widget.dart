@@ -13,7 +13,7 @@ class TopWidget extends StatelessWidget {
       children: [
         // Flash button
         StreamBuilder<CameraFlashes>(
-            stream: sensorConfig.flashMode,
+            stream: sensorConfig.flashMode$,
             builder: (_, snapshot) {
               if (!snapshot.hasData) {
                 return SizedBox();

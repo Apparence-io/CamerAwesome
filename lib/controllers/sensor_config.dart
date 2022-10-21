@@ -4,7 +4,7 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SensorConfig {
-  late Stream<CameraFlashes> flashMode;
+  late Stream<CameraFlashes> flashMode$;
 
   /// Zoom from native side. Must be between 0 and 1
   late Stream<double> zoom;
@@ -31,7 +31,7 @@ class SensorConfig {
     double currentZoom = 0.0,
   }) {
     _flashModeController = BehaviorSubject<CameraFlashes>.seeded(flash);
-    flashMode = _flashModeController.stream;
+    flashMode$ = _flashModeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
     zoom = _zoomController.stream;
@@ -49,9 +49,37 @@ class SensorConfig {
     _zoomController.sink.add(zoom);
   }
 
+  /// Set manually the CameraFlashes between
+  /// [CameraFlashes.NONE] no flash
+  /// [CameraFlashes.ON] always flashing when taking photo
+  /// [CameraFlashes.AUTO] let the decide wether or not using the flash
+  /// [CameraFlashes.ALWAYS] flash light stays open
   Future<void> setFlashMode(CameraFlashes flashMode) async {
     await CamerawesomePlugin.setFlashMode(flashMode);
     _flashModeController.sink.add(flashMode);
+  }
+
+  /// Returns the current flash mode without stream
+  CameraFlashes get flashMode => _flashModeController.value;
+
+  /// Switch the flash according to the previous state
+  void switchCameraFlash() {
+    final CameraFlashes newFlashMode;
+    switch (flashMode) {
+      case CameraFlashes.NONE:
+        newFlashMode = CameraFlashes.AUTO;
+        break;
+      case CameraFlashes.ON:
+        newFlashMode = CameraFlashes.ALWAYS;
+        break;
+      case CameraFlashes.AUTO:
+        newFlashMode = CameraFlashes.ON;
+        break;
+      case CameraFlashes.ALWAYS:
+        newFlashMode = CameraFlashes.NONE;
+        break;
+    }
+    setFlashMode(newFlashMode);
   }
 
   /// set brightness correction manually range [0,1] (optionnal)
