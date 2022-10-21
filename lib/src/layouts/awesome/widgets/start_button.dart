@@ -78,7 +78,7 @@ class _StartCameraButtonState extends State<StartCameraButton>
       _animationController.reverse();
     });
 
-    this.widget.onTap.call();
+    widget.onTap.call();
   }
 
   _onTapCancel() {

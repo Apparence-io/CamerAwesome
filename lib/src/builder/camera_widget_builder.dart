@@ -19,6 +19,8 @@ typedef CameraLayoutBuilder = Widget Function(CameraModeState cameraModeState);
 
 typedef FilePathBuilder = Future<String> Function(CaptureModes)?;
 
+typedef OnMediaTap = Function(MediaCapture mediaState)?;
+
 class CameraWidgetBuilder extends StatefulWidget {
   // Initial camera config
   final CaptureModes initialCaptureMode;
@@ -39,9 +41,7 @@ class CameraWidgetBuilder extends StatefulWidget {
 
   final FilePathBuilder videoPathBuilder;
 
-  final Function(MediaCapture)? onMediaTap;
-
-  final CameraOrchestrator cameraOrchestrator;
+  final OnMediaTap onMediaTap;
 
   // Widgets
   final Widget? progressIndicator;
@@ -60,7 +60,6 @@ class CameraWidgetBuilder extends StatefulWidget {
     required this.picturePathBuilder,
     required this.videoPathBuilder,
     required this.onMediaTap,
-    required this.cameraOrchestrator,
     required this.builder,
   });
 
@@ -103,18 +102,13 @@ class CameraWidgetBuilder extends StatefulWidget {
       exifPreferences: exifPreferences,
       enableAudio: enableAudio,
       progressIndicator: progressIndicator,
-      builder: (cameraModeState) => AwesomeCameraLayout(state: cameraModeState),
+      builder: (cameraModeState) => AwesomeCameraLayout(
+        state: cameraModeState,
+        onMediaTap: onMediaTap,
+      ),
       picturePathBuilder: picturePathBuilder,
       videoPathBuilder: videoPathBuilder,
       onMediaTap: onMediaTap,
-      cameraOrchestrator: CameraOrchestrator.create(
-        SensorConfig(
-          sensor: sensor,
-          flash: flashMode,
-          currentZoom: zoom,
-        ),
-        initialCaptureMode: captureMode,
-      ),
     );
   }
 
@@ -165,10 +159,12 @@ class CameraWidgetBuilder extends StatefulWidget {
 
 class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
     with WidgetsBindingObserver {
+  late CameraOrchestrator cameraOrchestrator;
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    widget.cameraOrchestrator.dispose();
+    cameraOrchestrator.dispose();
     super.dispose();
   }
 
@@ -230,12 +226,12 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
     super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
-        widget.cameraOrchestrator.state.start();
+        cameraOrchestrator.state.start();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        widget.cameraOrchestrator.state.stop();
+        cameraOrchestrator.state.stop();
         break;
     }
   }
@@ -245,7 +241,18 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    widget.cameraOrchestrator.state.start();
+    cameraOrchestrator = CameraOrchestrator.create(
+      SensorConfig(
+        sensor: widget.sensor,
+        flash: widget.flashMode,
+        currentZoom: widget.zoom,
+      ),
+      initialCaptureMode: widget.initialCaptureMode,
+      picturePathBuilder: widget.picturePathBuilder,
+      videoPathBuilder: widget.videoPathBuilder,
+    );
+
+    cameraOrchestrator.state.start();
   }
 
   // @override
@@ -309,8 +316,9 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<CameraModeState>(
-      stream: widget.cameraOrchestrator.state$,
+      stream: cameraOrchestrator.state$,
       builder: (context, snapshot) {
+        print("build ${snapshot.data?.captureMode}");
         if (!snapshot.hasData || snapshot.data!.captureMode == null) {
           return widget.progressIndicator ??
               const Center(
@@ -325,7 +333,7 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
               children: <Widget>[
                 Positioned.fill(
                   child: PinchToZoom(
-                    sensorConfig: widget.cameraOrchestrator.sensorConfig,
+                    sensorConfig: cameraOrchestrator.sensorConfig,
                     child: CameraPreviewWidget(
                       key: UniqueKey(),
                     ),

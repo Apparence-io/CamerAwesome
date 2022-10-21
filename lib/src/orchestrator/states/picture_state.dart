@@ -11,6 +11,12 @@ class PictureCameraState extends CameraModeState {
     // this.imageAnalysisController,
   }) : super(orchestrator);
 
+  factory PictureCameraState.from(CameraOrchestrator orchestrator) =>
+      PictureCameraState(
+        orchestrator: orchestrator,
+        filePathBuilder: orchestrator.picturePathBuilder,
+      );
+
   // ImageAnalysisController? imageAnalysisController;
 
   final FilePathBuilder filePathBuilder;

@@ -1,6 +1,9 @@
+import 'package:camerawesome/controllers/sensor_config.dart';
 import 'package:camerawesome/models/capture_modes.dart';
+import 'package:camerawesome/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/preparing_state.dart';
 
+import '../../../models/sensors.dart';
 import '../camera_orchestrator.dart';
 import 'picture_state.dart';
 import 'video_state.dart';
@@ -26,17 +29,34 @@ abstract class CameraModeState {
     OnPreparingCamera? onPreparingCamera,
   }) {
     if (this is VideoCameraState && onVideoMode != null) {
-      onVideoMode(this as VideoCameraState);
+      return onVideoMode(this as VideoCameraState);
     }
     if (this is PictureCameraState && onPictureMode != null) {
-      onPictureMode(this as PictureCameraState);
+      return onPictureMode(this as PictureCameraState);
     }
     if (this is PreparingCameraState && onPreparingCamera != null) {
-      onPreparingCamera(this as PreparingCameraState);
+      return onPreparingCamera(this as PreparingCameraState);
     }
   }
 
   void start();
 
   void stop();
+
+  /// Use this stream to listen for capture state
+  /// - while recording a video
+  /// - while saving an image
+  /// Accessible from all states
+  Stream<MediaCapture?> get captureState$ =>
+      orchestrator.mediaCaptureController.stream;
+
+  /// Switch camera from [Sensors.BACK] [Sensors.FRONT]
+  /// All states can switch this
+  Future<void> switchCameraSensor() async {
+    final previous = orchestrator.sensorConfig;
+    final next = SensorConfig(
+      sensor: previous.sensor == Sensors.BACK ? Sensors.FRONT : Sensors.BACK,
+    );
+    orchestrator.switchSensor(next);
+  }
 }

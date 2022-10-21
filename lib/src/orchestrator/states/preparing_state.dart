@@ -15,20 +15,12 @@ class PreparingCameraState extends CameraModeState {
   /// this is the next state we are preparing to
   final CaptureModes nextCaptureMode;
 
-  /// this is where we are going to store any picture
-  final FilePathBuilder picturePathBuilder;
-
-  /// this is where we are going to store any video
-  final FilePathBuilder videoPathBuilder;
-
   /// plugin user can execute some code once the permission has been granted
   final OnPermissionsResult? onPermissionsResult;
 
   PreparingCameraState(
     CameraOrchestrator orchestrator,
-    this.nextCaptureMode,
-    this.videoPathBuilder,
-    this.picturePathBuilder, {
+    this.nextCaptureMode, {
     this.onPermissionsResult,
   }) : super(orchestrator);
 
@@ -37,41 +29,31 @@ class PreparingCameraState extends CameraModeState {
 
   @override
   void start() {
-    switch (captureMode) {
+    switch (nextCaptureMode) {
       case CaptureModes.PHOTO:
-        startPictureMode(picturePathBuilder);
+        startPictureMode();
         break;
       case CaptureModes.VIDEO:
-        startVideoMode(videoPathBuilder);
+        startVideoMode();
         break;
-      case null:
-        throw NoValidCaptureModeException();
     }
   }
 
   @override
   void stop() => throw CameraNotReadyException();
 
-  Future startVideoMode(FilePathBuilder filePathBuilder) async {
+  Future startVideoMode() async {
     await Future.delayed(Duration(milliseconds: 500));
     // TODO await creation.setAudioEnabled(enableAudio);
     await init(enableImageStream: false);
-    orchestrator.changeState(
-      VideoCameraState(
-        filePathBuilder: filePathBuilder,
-        orchestrator: orchestrator,
-      ),
-    );
+    orchestrator.changeState(VideoCameraState.from(orchestrator));
   }
 
-  Future startPictureMode(FilePathBuilder filePathBuilder) async {
+  Future startPictureMode() async {
     //TODO await CamerawesomePlugin.setExifPreferences(preferences);
     await Future.delayed(Duration(milliseconds: 500));
     await init(enableImageStream: false);
-    orchestrator.changeState(PictureCameraState(
-      filePathBuilder: filePathBuilder,
-      orchestrator: orchestrator,
-    ));
+    orchestrator.changeState(PictureCameraState.from(orchestrator));
   }
 
   // TODO Refactor this (make it stream providing state)

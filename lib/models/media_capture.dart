@@ -23,11 +23,13 @@ class MediaCapture {
     required this.filePath,
     this.videoState,
   }) : status = MediaCaptureStatus.capturing;
+
   MediaCapture.success({
     this.exception,
     required this.filePath,
   })  : status = MediaCaptureStatus.success,
         videoState = VideoState.stopped;
+
   MediaCapture.failure({
     required this.exception,
     required this.filePath,
@@ -35,9 +37,9 @@ class MediaCapture {
         videoState = VideoState.error;
 
   bool get isPicture => filePath.endsWith("jpg");
+
   bool get isVideo => filePath.endsWith("mp4");
 
-  bool get isRecordingVideo {
-    return isVideo && status == MediaCaptureStatus.capturing;
-  }
+  bool get isRecordingVideo =>
+      isVideo && status == MediaCaptureStatus.capturing;
 }

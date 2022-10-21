@@ -54,8 +54,6 @@ class CameraOrchestrator {
     var preparingState = PreparingCameraState(
       this,
       initialCaptureMode,
-      videoPathBuilder,
-      picturePathBuilder,
     );
     stateController = BehaviorSubject.seeded(preparingState);
     mediaCaptureController = BehaviorSubject.seeded(null);

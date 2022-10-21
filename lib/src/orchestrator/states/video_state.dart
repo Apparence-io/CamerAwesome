@@ -14,7 +14,11 @@ class VideoCameraState extends CameraModeState {
     required this.filePathBuilder,
   }) : super(orchestrator);
 
-  // final VideoCameraController videoCameraController;
+  factory VideoCameraState.from(CameraOrchestrator orchestrator) =>
+      VideoCameraState(
+        orchestrator: orchestrator,
+        filePathBuilder: orchestrator.videoPathBuilder,
+      );
 
   final ImageAnalysisController? imageAnalysisController;
 
