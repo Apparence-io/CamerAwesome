@@ -12,16 +12,32 @@ import '../orchestrator/states/state_definition.dart';
 import '../layouts/awesome/widgets/camera_preview.dart';
 import '../layouts/awesome/widgets/pinch_to_zoom.dart';
 
+/// this is the builder for your camera interface
+/// Using the state you can do anything you need without having to think about the camera flow
+/// On app start we are in [PreparingCameraState]
+/// Then depending on the initialCaptureMode you set you will be [PictureCameraState] or [VideoCameraState]
+/// Starting a video will push a [VideoRecordingCameraState]
+/// Stopping the video will push back the [VideoCameraState]
+/// ----
+/// If you need to call specific function for a state use the 'when' function.
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
 
+/// configure the path where we save videos or pictures
 typedef FilePathBuilder = Future<String> Function(CaptureModes)?;
 
+/// Callback when a video or picture has been saved and user click on thumbnail
 typedef OnMediaTap = Function(MediaCapture mediaState)?;
 
 /// Used to set a permission result callback
 typedef OnPermissionsResult = void Function(bool result);
 
-class CameraWidgetBuilder extends StatefulWidget {
+/// This is the entry point of the CameraAwesome plugin
+/// You can either
+/// - build your custom layout
+/// or
+/// - use our built in interface
+/// with the awesome factory
+class CameraAwesomeBuilder extends StatefulWidget {
   // Initial camera config
   final CaptureModes initialCaptureMode;
 
@@ -48,7 +64,7 @@ class CameraWidgetBuilder extends StatefulWidget {
 
   final CameraLayoutBuilder builder;
 
-  CameraWidgetBuilder._({
+  CameraAwesomeBuilder._({
     required this.initialCaptureMode,
     required this.sensor,
     required this.flashMode,
@@ -63,8 +79,8 @@ class CameraWidgetBuilder extends StatefulWidget {
     required this.builder,
   });
 
-  factory CameraWidgetBuilder.awesome({
-    CaptureModes captureMode = CaptureModes.PHOTO,
+  factory CameraAwesomeBuilder.awesome({
+    CaptureModes initialCaptureMode = CaptureModes.PHOTO,
     Sensors sensor = Sensors.BACK,
     CameraFlashes flashMode = CameraFlashes.NONE,
     double zoom = 0.0,
@@ -90,8 +106,8 @@ class CameraWidgetBuilder extends StatefulWidget {
         videoPathBuilder == null) {
       throw ("You have to provide a path through [videoPathBuilder] to save your picture");
     }
-    return CameraWidgetBuilder._(
-      initialCaptureMode: captureMode,
+    return CameraAwesomeBuilder._(
+      initialCaptureMode: initialCaptureMode,
       sensor: sensor,
       flashMode: flashMode,
       zoom: zoom,
@@ -109,8 +125,8 @@ class CameraWidgetBuilder extends StatefulWidget {
     );
   }
 
-  CameraWidgetBuilder.custom({
-    CaptureModes captureMode = CaptureModes.PHOTO,
+  CameraAwesomeBuilder.custom({
+    CaptureModes initialCaptureMode = CaptureModes.PHOTO,
     Sensors sensor = Sensors.BACK,
     CameraFlashes flashMode = CameraFlashes.NONE,
     double zoom = 0.0,
@@ -126,7 +142,7 @@ class CameraWidgetBuilder extends StatefulWidget {
     Future<String> Function(CaptureModes)? videoPathBuilder,
     Function(MediaCapture)? onMediaTap,
   }) : this._(
-          initialCaptureMode: captureMode,
+          initialCaptureMode: initialCaptureMode,
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
@@ -146,7 +162,7 @@ class CameraWidgetBuilder extends StatefulWidget {
   }
 }
 
-class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
+class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     with WidgetsBindingObserver {
   late CameraOrchestrator cameraOrchestrator;
 
@@ -158,7 +174,7 @@ class _CameraWidgetBuilder extends State<CameraWidgetBuilder>
   }
 
   @override
-  void didUpdateWidget(covariant CameraWidgetBuilder oldWidget) {
+  void didUpdateWidget(covariant CameraAwesomeBuilder oldWidget) {
     // use freezed + copy with
     // cameraOrchestrator.state.setFlash(widget.flashMode);
     // cameraOrchestrator.state.setZoom(widget.zoom);

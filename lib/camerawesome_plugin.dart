@@ -20,7 +20,7 @@ export 'src/orchestrator/models/sensors.dart';
 
 // built in widgets
 export 'src/layouts/awesome/widgets/camera_preview.dart';
-export 'src/builder/camera_widget_builder.dart';
+export 'src/builder/camera_awesome_builder.dart';
 export 'src/layouts/awesome/widgets/pinch_to_zoom.dart';
 
 enum CameraRunningState { STARTING, STARTED, STOPPING, STOPPED }
