@@ -3,7 +3,6 @@ import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_layout.dart';
 import 'package:flutter/material.dart';
 
-import '../../old/controllers/camera_setup.dart';
 import '../orchestrator/sensor_config.dart';
 import '../orchestrator/models/capture_modes.dart';
 import '../orchestrator/models/flashmodes.dart';
@@ -13,13 +12,14 @@ import '../orchestrator/states/state_definition.dart';
 import '../layouts/awesome/widgets/camera_preview.dart';
 import '../layouts/awesome/widgets/pinch_to_zoom.dart';
 
-typedef LineBuilder = Widget Function(CameraSetup, SensorConfig);
-
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
 
 typedef FilePathBuilder = Future<String> Function(CaptureModes)?;
 
 typedef OnMediaTap = Function(MediaCapture mediaState)?;
+
+/// Used to set a permission result callback
+typedef OnPermissionsResult = void Function(bool result);
 
 class CameraWidgetBuilder extends StatefulWidget {
   // Initial camera config
@@ -75,9 +75,6 @@ class CameraWidgetBuilder extends StatefulWidget {
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
     Widget? progressIndicator,
-    LineBuilder? top,
-    LineBuilder? middle,
-    LineBuilder? bottom,
     Future<String> Function(CaptureModes)? picturePathBuilder,
     Future<String> Function(CaptureModes)? videoPathBuilder,
     final Function(MediaCapture)? onMediaTap,

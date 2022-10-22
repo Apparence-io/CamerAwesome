@@ -12,20 +12,14 @@ import 'src/orchestrator/models/orientations.dart';
 import 'src/orchestrator/models/sensor_data.dart';
 import 'src/orchestrator/models/sensors.dart';
 
-export 'old/camerapreview.dart';
 export 'src/orchestrator/models/capture_modes.dart';
 export 'src/orchestrator/models/exif_preferences_data.dart';
 export 'src/orchestrator/models/flashmodes.dart';
 export 'src/orchestrator/models/sensor_data.dart';
 export 'src/orchestrator/models/sensors.dart';
 
-// controllers
-export 'old/controllers/picture_controller.dart';
-export 'old/controllers/video_controller.dart';
 // built in widgets
-export 'old/widgets/camera_button_widget.dart';
 export 'src/layouts/awesome/widgets/camera_preview.dart';
-export 'old/widgets/camera_widget.dart';
 export 'src/builder/camera_widget_builder.dart';
 export 'src/layouts/awesome/widgets/pinch_to_zoom.dart';
 

@@ -1,5 +1,4 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/old/controllers_older/image_analysis_controller.dart';
 
 // import '../../camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
@@ -13,7 +12,7 @@ import 'state_definition.dart';
 class VideoCameraState extends CameraState {
   VideoCameraState({
     required CameraOrchestrator orchestrator,
-    this.imageAnalysisController,
+    // this.imageAnalysisController,
     required this.filePathBuilder,
   }) : super(orchestrator);
 
@@ -23,7 +22,7 @@ class VideoCameraState extends CameraState {
         filePathBuilder: orchestrator.videoPathBuilder,
       );
 
-  final ImageAnalysisController? imageAnalysisController;
+  // final ImageAnalysisController? imageAnalysisController;
 
   final FilePathBuilder filePathBuilder;
 

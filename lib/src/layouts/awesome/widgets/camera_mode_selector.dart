@@ -20,6 +20,13 @@ class AwesomeCameraModeSelector extends StatelessWidget {
   }
 }
 
+class CameraMode {
+  final CaptureModes captureMode;
+  final String title;
+
+  CameraMode({required this.captureMode, required this.title});
+}
+
 typedef OnChangeCameraRequest = Function(CameraMode mode);
 
 class CameraModePager extends StatefulWidget {
