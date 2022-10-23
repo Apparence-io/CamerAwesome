@@ -1,3 +1,10 @@
+TODO create header
+
+Beautifull and easy to use camera interface.
+Embedding a camera experience within your own app should't be that hard.
+
+<br/>
+<br/>
 This packages provides you a fully customizable camera experience that you can use within your app. 
 Use our awesome built in interface or customize it as you want. 
 ## Awesome build-in interface
@@ -84,12 +91,12 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 
 ## Roadmap
-- [] fixing iOS with new API (flutter, iOS)
-- [] Tests plugin flutter states (flutter)
-- [] Tests E2E (flutter)
-- [] Handle rotation (flutter)
-- [] Preview and capture ratios (flutter, iOS)
-- [] Image analysis state (flutter)
-- [] Timer before picture (flutter)
-- [] fullscreen preview (not affecting capture) (flutter only)
-- [] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)
+- [ ] fixing iOS with new API (flutter, iOS)
+- [ ] Tests plugin flutter states (flutter)
+- [ ] Tests E2E (flutter)
+- [ ] Handle rotation (flutter)
+- [ ] Preview and capture ratios (flutter, iOS)
+- [ ] Image analysis state (flutter)
+- [ ] Timer before picture (flutter)
+- [ ] fullscreen preview (not affecting capture) (flutter only)
+- [ ] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)
