@@ -95,6 +95,7 @@ interface CameraInterface {
   fun setPhotoSize(size: PreviewSize)
   fun setPreviewSize(size: PreviewSize)
   fun saveGpsLocation(saveGPSLocation: Boolean)
+  fun setAspectRatio(aspectRatio: String)
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -556,6 +557,25 @@ val codec: MessageCodec<Any?> by lazy {
               val args = message as List<Any?>
               val saveGPSLocationArg = args[0] as Boolean
               api.saveGpsLocation(saveGPSLocationArg)
+              wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setAspectRatio", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val aspectRatioArg = args[0] as String
+              api.setAspectRatio(aspectRatioArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)

@@ -5,9 +5,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.location.Location
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Rational
 import android.util.Size
 import androidx.camera.core.*
+import androidx.camera.core.impl.PreviewConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.VideoRecordEvent
@@ -162,7 +165,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
         cameraState.imageCapture!!.takePicture(
             outputFileOptions,
-            ContextCompat.getMainExecutor(activity),
+            ContextCompat.getMainExecutor(activity!!),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     Log.d(
@@ -383,6 +386,23 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun saveGpsLocation(saveGPSLocation: Boolean) {
         exifPreferences.saveGpsLocation = saveGPSLocation
+    }
+
+    override fun setAspectRatio(value: String) {
+        cameraState.apply {
+            aspectRatio = when (value) {
+                AspectRatio.RATIO_16_9.toString() -> {
+                    AspectRatio.RATIO_16_9
+                }
+                AspectRatio.RATIO_4_3.toString() -> {
+                    AspectRatio.RATIO_4_3
+                }
+                else -> {
+                    null
+                }
+            }
+            updateLifecycle(activity!!)
+        }
     }
 
     //    FLUTTER ATTACHMENTS

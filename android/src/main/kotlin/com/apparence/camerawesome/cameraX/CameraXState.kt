@@ -40,6 +40,7 @@ data class CameraXState(
     val enableImageStream: Boolean = false,
     var photoSize: Size? = null,
     var previewSize: Size? = null,
+    var aspectRatio: Int? = null,
     var flashMode: FlashMode = FlashMode.NONE,
     var previewStreamSink: EventChannel.EventSink? = null,
     val onStreamReady: (state: CameraXState) -> Unit,
@@ -59,7 +60,16 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
         // Preview
-        preview = Preview.Builder().setCameraSelector(cameraSelector).build()
+        if(aspectRatio != null) {
+            preview = Preview.Builder()
+                    .setTargetAspectRatio(aspectRatio!!)
+                    .setCameraSelector(cameraSelector).build()
+        } else {
+            preview = Preview.Builder()
+                    //.setTargetResolution(previewSize)
+                    .setCameraSelector(cameraSelector).build()
+        }
+
         preview!!.setSurfaceProvider(
             surfaceProvider(executor(activity))
         )
@@ -67,6 +77,7 @@ data class CameraXState(
         if (currentCaptureMode == CaptureModes.PHOTO) {
             imageCapture = ImageCapture.Builder()
                 .setCameraSelector(cameraSelector)
+                .setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
                 .apply {
                     photoSize?.let { setTargetResolution(it) }
                     setFlashMode(
@@ -126,13 +137,23 @@ data class CameraXState(
 
     }
 
+    @SuppressLint("RestrictedApi")
     private fun surfaceProvider(executor: Executor): Preview.SurfaceProvider {
+        //val metrics = DisplayMetrics().also { viewFinder.display.getRealMetrics(it) }
+        //val screenSize = Size(metrics.widthPixels, metrics.heightPixels)
+        //val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        //val preview = Preview.Builder()
+        //        .setTargetResolution(Size(640, 480))
+        //        .setTargetAspectRatio(screenAspectRatio)
+        //        .build()
+        //val previewFit = AutoFitPreviewBuilder.build(preview., viewFinder)
+
         return Preview.SurfaceProvider { request: SurfaceRequest ->
             val resolution = request.resolution
             val texture = textureEntry.surfaceTexture()
             texture.setDefaultBufferSize(resolution.width, resolution.height)
             val surface = Surface(texture)
-            request.provideSurface(surface, executor) { result: SurfaceRequest.Result? -> }
+            request.provideSurface(surface, executor) { _: SurfaceRequest.Result? -> }
         }
     }
 
@@ -165,6 +186,21 @@ data class CameraXState(
             Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo)
         )
         return CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
+    }
+
+    fun qualityAvailableSizes(): List<String> {
+        val supportedQualities = QualitySelector.getSupportedQualities(previewCamera!!.cameraInfo)
+        return supportedQualities.map {
+            when (it) {
+                Quality.UHD -> { "UHD" }
+                Quality.HIGHEST -> { "HIGHEST" }
+                Quality.FHD -> { "FHD" }
+                Quality.HD -> { "HD" }
+                Quality.LOWEST -> { "LOWEST" }
+                Quality.SD -> { "SD" }
+                else -> { "unknown" }
+            }
+        }
     }
 
     fun stop() {

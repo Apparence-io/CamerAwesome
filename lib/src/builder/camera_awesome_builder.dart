@@ -2,6 +2,7 @@ import 'package:camerawesome/src/orchestrator/models/exif_preferences_data.dart'
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../orchestrator/sensor_config.dart';
 import '../orchestrator/models/capture_modes.dart';
@@ -189,8 +190,14 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
   }
 
   @override
+  void didChangeDependencies() {
+    // lock by default orientation to portrait up
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    super.didChangeDependencies();
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
     switch (state) {
       case AppLifecycleState.resumed:
         cameraOrchestrator.state.start();
@@ -201,6 +208,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         cameraOrchestrator.state.stop();
         break;
     }
+    super.didChangeAppLifecycleState(state);
   }
 
   @override

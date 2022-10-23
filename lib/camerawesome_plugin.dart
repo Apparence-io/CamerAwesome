@@ -413,6 +413,19 @@ class CamerawesomePlugin {
     }
   }
 
+  /// change capture mode between [CaptureModes.PHOTO] and [CaptureModes.VIDEO]
+  static Future<void> setAspectRatio(String ratio) {
+    if (Platform.isAndroid) {
+      return CameraInterface().setAspectRatio(ratio);
+    } else {
+      // TODO
+      throw "Not implemented on iOS yet";
+      // return _channel.invokeMethod('setAspectRatio', <String, String>{
+      //   'ratio': ratio,
+      // });
+    }
+  }
+
   // ---------------------------------------------------
   // UTILITY METHODS
   // ---------------------------------------------------

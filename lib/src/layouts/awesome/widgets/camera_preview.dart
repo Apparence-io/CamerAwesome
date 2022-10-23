@@ -27,12 +27,19 @@ class CameraPreviewWidget extends StatelessWidget {
               final size = data[0] as Size;
               final textureId = data[1] as int;
               final double ratio = size.height / size.width;
-
+              debugPrint("- preview size: ${size.width}/${size.height}");
+              debugPrint("- ratio: $ratio");
+              debugPrint(
+                  "- pixelRatio: ${MediaQuery.of(context).devicePixelRatio}");
+              debugPrint(
+                  "- max available size: ${constraints.maxWidth}/${constraints.maxHeight}");
+              debugPrint(
+                  "- scale: ${_calculateScale(constraints, ratio, orientation)}");
               return Container(
                 color: Colors.black,
                 child: Center(
                   child: Transform.scale(
-                    scale: _calculateScale(constraints, ratio, orientation),
+                    scale: 1,
                     child: AspectRatio(
                       aspectRatio: ratio,
                       child: SizedBox(
@@ -46,6 +53,21 @@ class CameraPreviewWidget extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // child: Transform.scale(
+                  //   scale: _calculateScale(constraints, ratio, orientation),
+                  //   child: AspectRatio(
+                  //     aspectRatio: ratio,
+                  //     child: SizedBox(
+                  //       height: orientation == Orientation.portrait
+                  //           ? constraints.maxHeight
+                  //           : constraints.maxWidth,
+                  //       width: orientation == Orientation.portrait
+                  //           ? constraints.maxWidth
+                  //           : constraints.maxHeight,
+                  //       child: Texture(textureId: textureId),
+                  //     ),
+                  //   ),
+                  // ),
                 ),
               );
             },
@@ -55,8 +77,16 @@ class CameraPreviewWidget extends StatelessWidget {
     );
   }
 
+  // - preview size: 1440.0/1080.0
+  // - max available size: 384.0/755.5555555555555
+  // - device pixel ratio: 2.8125
+  // - scale: 1.4756944444444442
+  // - layout ratio: 0.75
   double _calculateScale(
-      BoxConstraints constraints, double ratio, Orientation orientation) {
+    BoxConstraints constraints,
+    double ratio,
+    Orientation orientation,
+  ) {
     final aspectRatio = constraints.maxWidth / constraints.maxHeight;
     var scale = ratio / aspectRatio;
     if (ratio < aspectRatio) {
