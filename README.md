@@ -1,6 +1,7 @@
 TODO create header
 
-Beautifull and easy to use camera interface.
+Beautifull and easy to use camera interface.<br>
+<br>
 Embedding a camera experience within your own app should't be that hard.
 
 <br/>
@@ -94,6 +95,8 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 
 ## Roadmap
+
+- [ ] create complete documentation (docs.page)
 - [ ] dispose all stream within orchestrator (flutter)
 - [ ] fixing iOS with new API (flutter, iOS)
 - [ ] Tests plugin flutter states (flutter)

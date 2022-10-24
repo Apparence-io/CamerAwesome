@@ -1,10 +1,18 @@
+// ignore_for_file: close_sinks
+
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SensorConfig {
+  late BehaviorSubject<CameraFlashes> _flashModeController;
+
   late Stream<CameraFlashes> flashMode$;
+
+  late BehaviorSubject<CameraAspectRatios> _aspectRatioController;
+
+  late Stream<CameraAspectRatios> aspectRatio$;
 
   /// Zoom from native side. Must be between 0 and 1
   late Stream<double> zoom;
@@ -18,7 +26,6 @@ class SensorConfig {
   /// set brightness correction manually range [0,1] (optionnal)
   late Stream<double>? brightness;
 
-  late BehaviorSubject<CameraFlashes> _flashModeController;
   late BehaviorSubject<double> _zoomController;
 
   /// Use this stream to debounce brightness events
@@ -28,6 +35,7 @@ class SensorConfig {
   SensorConfig({
     required this.sensor,
     CameraFlashes flash = CameraFlashes.NONE,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.RATIO_4_3,
     double currentZoom = 0.0,
   }) {
     _flashModeController = BehaviorSubject<CameraFlashes>.seeded(flash);
@@ -36,6 +44,10 @@ class SensorConfig {
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
     zoom = _zoomController.stream;
 
+    _aspectRatioController = BehaviorSubject.seeded(aspectRatio);
+    aspectRatio$ = _aspectRatioController.stream;
+
+    // FIXME dispose this
     _brightnessController.stream
         .debounceTime(Duration(milliseconds: 500))
         .listen((value) => CamerawesomePlugin.setBrightness(value));
@@ -81,6 +93,28 @@ class SensorConfig {
     }
     setFlashMode(newFlashMode);
   }
+
+  /// switch the camera preview / photo / video aspect ratio
+  /// [CameraAspectRatios.RATIO_16_9]
+  /// [CameraAspectRatios.RATIO_4_3]
+  Future<void> switchCameraRatio() async {
+    if (aspectRatio == CameraAspectRatios.RATIO_16_9) {
+      setAspectRatio(CameraAspectRatios.RATIO_4_3);
+    } else {
+      setAspectRatio(CameraAspectRatios.RATIO_16_9);
+    }
+  }
+
+  /// Change the current [CameraAspectRatios] one of
+  /// [CameraAspectRatios.RATIO_16_9]
+  /// [CameraAspectRatios.RATIO_4_3]
+  Future<void> setAspectRatio(CameraAspectRatios ratio) async {
+    await CamerawesomePlugin.setAspectRatio(ratio.name);
+    _aspectRatioController.add(ratio);
+  }
+
+  /// Returns the current camera aspect ratio
+  CameraAspectRatios get aspectRatio => _aspectRatioController.value;
 
   /// set brightness correction manually range [0,1] (optionnal)
   setBrightness(double brightness) {

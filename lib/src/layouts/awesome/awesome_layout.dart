@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
 import '../../orchestrator/states/state_definition.dart';
+import 'widgets/aspect_ratio.dart';
 import 'widgets/camera_mode_selector.dart';
 import 'widgets/flash_button.dart';
 import 'widgets/media_preview.dart';
@@ -51,6 +52,8 @@ class AwesomeTopActions extends StatelessWidget {
       children: [
         const SizedBox(width: 32),
         Flexible(child: AwesomeFlashButton(state: state)),
+        const SizedBox(width: 32),
+        Flexible(child: AwesomeAspectRatioButton(state: state)),
       ],
     );
   }
