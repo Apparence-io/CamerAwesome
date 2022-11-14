@@ -232,6 +232,8 @@
   // Init the camera preview with the selected sensor
   [self initCameraPreview:sensor];
   
+  [self setBestPreviewQuality];
+  
   [_captureSession commitConfiguration];
 }
 
