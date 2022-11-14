@@ -131,6 +131,10 @@ FlutterEventSink imageStreamEventSink;
     [self _handleTakePhoto:call result:result];
   } else if ([@"recordVideo" isEqualToString:call.method]) {
     [self _handleRecordVideo:call result:result];
+  } else if ([@"pauseVideoRecording" isEqualToString:call.method]) {
+    [self _handlePauseVideoRecording:call result:result];
+  } else if ([@"resumeVideoRecording" isEqualToString:call.method]) {
+    [self _handleResumeVideoRecording:call result:result];
   } else if ([@"stopRecordingVideo" isEqualToString:call.method]) {
     [self _handleStopRecordingVideo:call result:result];
   } else if ([@"setRecordingAudioMode" isEqualToString:call.method]) {
@@ -155,6 +159,14 @@ FlutterEventSink imageStreamEventSink;
     result(FlutterMethodNotImplemented);
     return;
   };
+}
+
+- (void)_handlePauseVideoRecording:(FlutterMethodCall*)call result:(FlutterResult)result {
+  [self.camera pauseVideoRecording];
+}
+
+- (void)_handleResumeVideoRecording:(FlutterMethodCall*)call result:(FlutterResult)result {
+  [self.camera resumeVideoRecording];
 }
 
 - (void)_handleRecordingAudioMode:(FlutterMethodCall*)call result:(FlutterResult)result {

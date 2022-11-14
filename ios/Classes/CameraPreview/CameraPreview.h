@@ -65,6 +65,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setCaptureMode:(CaptureModes)captureMode;
 - (void)setCameraPresset:(CGSize)currentPreviewSize;
 - (void)setRecordingAudioMode:(bool)enableAudio;
+- (void)pauseVideoRecording;
+- (void)resumeVideoRecording;
 - (void)setExifPreferencesGPSLocation:(bool)gpsLocation;
 - (void)refresh;
 - (void)start;

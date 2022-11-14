@@ -408,6 +408,16 @@
   }
 }
 
+/// Pause video recording
+- (void)pauseVideoRecording {
+  [_videoController pauseVideoRecording];
+}
+
+/// Resume video recording after being paused
+- (void)resumeVideoRecording {
+  [_videoController resumeVideoRecording];
+}
+
 /// Stop recording video
 - (void)stopRecordingVideo {
   if (_videoController.isRecording) {

@@ -17,6 +17,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _result = result;
   _isRecording = NO;
   _isAudioEnabled = YES;
+  _isPaused = NO;
   
   return self;
 }
@@ -57,6 +58,14 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   } else {
     _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
   }
+}
+
+- (void)pauseVideoRecording {
+  _isPaused = YES;
+}
+
+- (void)resumeVideoRecording {
+  _isPaused = NO;
 }
 
 # pragma mark - Audio & Video writers
@@ -156,6 +165,11 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 # pragma mark - Camera Delegates
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection captureVideoOutput:(AVCaptureVideoDataOutput *)captureVideoOutput {
+  
+  if (self.isPaused) {
+    return;
+  }
+  
   if (_videoWriter.status == AVAssetWriterStatusFailed) {
     _videoRecordingEventSink([NSString stringWithFormat:@"impossible to write video : %@", _videoWriter.error]);
     return;

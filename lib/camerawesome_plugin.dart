@@ -236,6 +236,7 @@ class CamerawesomePlugin {
   }
 
   /// you can set a different size for preview and for photo
+  /// for iOS, when taking a picture, best quality is automatically used
   static Future<void> setPhotoSize(int width, int height) {
     if (Platform.isAndroid) {
       return CameraInterface().setPhotoSize(
@@ -272,7 +273,7 @@ class CamerawesomePlugin {
     if (Platform.isAndroid) {
       return CameraInterface().pauseVideoRecording();
     } else {
-      // TODO Implement it on iOS
+      return _channel.invokeMethod<void>('pauseVideoRecording');
     }
   }
 
@@ -280,7 +281,7 @@ class CamerawesomePlugin {
     if (Platform.isAndroid) {
       return CameraInterface().resumeVideoRecording();
     } else {
-      // TODO Implement it on iOS
+      return _channel.invokeMethod<void>('resumeVideoRecording');
     }
   }
 
@@ -380,6 +381,7 @@ class CamerawesomePlugin {
     if (Platform.isAndroid) {
       return CameraInterface().setCorrection(brightness);
     } else {
+      // TODO Implement it on iOS
       return _channel.invokeMethod('setCorrection', <String, dynamic>{
         'brightness': brightness,
       });
@@ -390,6 +392,7 @@ class CamerawesomePlugin {
   static Stream<SensorData>? listenLuminosityLevel() {
     if (!Platform.isAndroid) {
       // Not available
+      // TODO Implement it on iOS
       throw "not available on this OS for now... only Android";
     }
     if (_luminositySensorDataStream == null) {
@@ -412,16 +415,12 @@ class CamerawesomePlugin {
     }
   }
 
-  /// change capture mode between [CaptureModes.PHOTO] and [CaptureModes.VIDEO]
+  /// [Android] only, change aspect ratio
   static Future<void> setAspectRatio(String ratio) {
     if (Platform.isAndroid) {
       return CameraInterface().setAspectRatio(ratio);
     } else {
-      // TODO
-      throw "Not implemented on iOS yet";
-      // return _channel.invokeMethod('setAspectRatio', <String, String>{
-      //   'ratio': ratio,
-      // });
+      throw 'not supported on iOS, use previewSize() instead';
     }
   }
 

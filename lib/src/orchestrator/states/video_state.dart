@@ -70,6 +70,14 @@ class VideoCameraState extends CameraState {
     return filePath;
   }
 
+  Future pauseRecording() {
+    return CamerawesomePlugin.pauseVideoRecording();
+  }
+
+  Future resumeRecording() {
+    return CamerawesomePlugin.resumeVideoRecording();
+  }
+
   /// Wether the video recording should [enableAudio].
   /// This method applies to the next recording. If a recording is ongoing, it will not be affected.
   // TODO Add ability to mute temporarly a video recording
