@@ -57,7 +57,23 @@
   
   [_motionController startMotionDetection];
   
+  [self setBestPreviewQuality];
+  
   return self;
+}
+
+/// Assign the default preview qualities
+- (void)setBestPreviewQuality {
+  NSArray *qualities = [self getSizes];
+  NSDictionary *firstSizeDict;
+  if ([qualities count] > 0) {
+    firstSizeDict = qualities.lastObject;
+  } else {
+    firstSizeDict = kCameraQualities.firstObject;
+  }
+  
+  CGSize firstSize = CGSizeMake([firstSizeDict[@"width"] floatValue], [firstSizeDict[@"height"] floatValue]);
+  [self setCameraPresset:firstSize];
 }
 
 /// Save exif preferences when taking picture
@@ -87,6 +103,8 @@
   _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
                                                               output:_captureVideoOutput];
   
+  
+  
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
   [_captureSession addConnection:_captureConnection];
@@ -100,16 +118,19 @@
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
   [_captureConnection setVideoMirrored:(_cameraSensor == Front)];
   [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-  
-  [self setCameraPresset:CGSizeMake(0, 0)];
 }
 
-- (void)getSizes {
-    // TODO implement this method, map the formats to an NSArray of sizes so we can return them to flutter
-    NSArray<AVCaptureDeviceFormat *>* formats = [_captureDevice formats];
-    for(int i=0; i<formats.count;i++){
-        NSLog(@"Format %i : %@", i, [formats[i]  description]);
-    }
+- (NSArray *)getSizes {
+  NSMutableArray *qualities = [[NSMutableArray alloc] init];
+  NSArray<AVCaptureDeviceFormat *>* formats = [_captureDevice formats];
+  for(int i = 0; i < formats.count; i++) {
+    AVCaptureDeviceFormat *format = formats[i];
+    [qualities addObject:@{
+      @"width": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width],
+      @"height": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height],
+    }];
+  }
+  return qualities;
 }
 
 - (void)dealloc {
@@ -360,6 +381,7 @@
   // Create settings instance
   AVCapturePhotoSettings *settings = [AVCapturePhotoSettings photoSettings];
   [settings setFlashMode:_flashMode];
+  [settings setHighResolutionPhotoEnabled:YES];
   
   [_capturePhotoOutput capturePhotoWithSettings:settings
                                        delegate:cameraPicture];

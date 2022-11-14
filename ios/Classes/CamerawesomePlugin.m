@@ -217,12 +217,17 @@ FlutterEventSink imageStreamEventSink;
   CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
   
   [_camera setSensor:sensor];
+  
+  result(nil);
 }
 
 - (void)_handleSetCaptureMode:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSString *captureModeName = call.arguments[@"captureMode"];
+  
   CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
   [_camera setCaptureMode:captureMode];
+  
+  result(nil);
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -234,8 +239,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleSizes:(FlutterMethodCall*)call result:(FlutterResult)result {
-  [_camera getSizes];
-  result(kCameraQualities);
+  result([_camera getSizes]);
 }
 
 - (void)_handlePreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -271,7 +275,7 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
-  // TODO: Set size inside camera
+  [self.camera setCameraPresset:CGSizeMake(width, height)];
   
   result(nil);
 }
@@ -344,6 +348,7 @@ FlutterEventSink imageStreamEventSink;
   
   // Assign texture id
   _textureId = [_registry registerTexture:self.camera];
+  
   result(@(YES));
 }
 

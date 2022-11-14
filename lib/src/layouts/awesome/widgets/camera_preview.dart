@@ -1,14 +1,15 @@
+import 'dart:io';
+
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
-  final Widget loadingWidget;
+  final Widget? loadingWidget;
 
   const CameraPreviewWidget({
     super.key,
-    this.loadingWidget = const Center(
-      child: CircularProgressIndicator(),
-    ),
+    this.loadingWidget,
   });
 
   @override
@@ -17,7 +18,12 @@ class CameraPreviewWidget extends StatelessWidget {
       future: Future.wait([previewSize(), textureId()]),
       builder: (_, snapshot) {
         if (!snapshot.hasData) {
-          return loadingWidget;
+          return loadingWidget ??
+              Center(
+                child: Platform.isIOS
+                    ? CupertinoActivityIndicator()
+                    : CircularProgressIndicator(),
+              );
         }
 
         return OrientationBuilder(builder: (context, orientation) {

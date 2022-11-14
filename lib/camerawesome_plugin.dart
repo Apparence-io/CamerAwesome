@@ -235,7 +235,6 @@ class CamerawesomePlugin {
     }
   }
 
-  /// Just for android
   /// you can set a different size for preview and for photo
   static Future<void> setPhotoSize(int width, int height) {
     if (Platform.isAndroid) {

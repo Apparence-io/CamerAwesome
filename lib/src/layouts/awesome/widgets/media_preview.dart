@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class MediaPreview extends StatelessWidget {
@@ -45,10 +46,12 @@ class MediaPreview extends StatelessWidget {
   Widget _buildMedia(MediaCapture? mediaCapture) {
     switch (mediaCapture?.status) {
       case MediaCaptureStatus.capturing:
-        return const Center(
+        return Center(
           child: Padding(
             padding: EdgeInsets.all(8),
-            child: CircularProgressIndicator(),
+            child: Platform.isIOS
+                ? CupertinoActivityIndicator()
+                : CircularProgressIndicator(),
           ),
         );
       case MediaCaptureStatus.success:

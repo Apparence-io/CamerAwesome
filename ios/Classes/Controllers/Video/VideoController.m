@@ -81,6 +81,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     _videoRecordingEventSink([NSString stringWithFormat:@"impossible to create video writer : %@", error.description]);
     return NO;
   }
+
   NSDictionary *videoSettings = [NSDictionary
                                  dictionaryWithObjectsAndKeys:AVVideoCodecH264, AVVideoCodecKey,
                                  [NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,

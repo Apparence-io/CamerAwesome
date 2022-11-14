@@ -63,6 +63,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setFlashMode:(CameraFlashMode)flashMode;
 - (void)setCaptureMode:(CaptureModes)captureMode;
+- (void)setCameraPresset:(CGSize)currentPreviewSize;
 - (void)setRecordingAudioMode:(bool)enableAudio;
 - (void)setExifPreferencesGPSLocation:(bool)gpsLocation;
 - (void)refresh;
@@ -79,7 +80,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
 - (void)setUpCaptureSessionForAudio;
-- (void)getSizes;
+- (NSArray *)getSizes;
 @end
 
 NS_ASSUME_NONNULL_END

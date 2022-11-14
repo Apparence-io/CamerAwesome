@@ -64,7 +64,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
                 error:(NSError *)error {
   selfReference = nil;
   if (error) {
-    _result([FlutterError errorWithCode:@"" message:@"" details:@""]);
+    _result([FlutterError errorWithCode:@"CAPTURE ERROR" message:error.description details:@""]);
     return;
   }
   

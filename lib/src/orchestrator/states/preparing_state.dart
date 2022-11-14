@@ -89,6 +89,7 @@ class PreparingCameraState extends CameraState {
     // TODO await creation.setAudioEnabled(enableAudio);
     await _init(enableImageStream: false);
     orchestrator.changeState(VideoCameraState.from(orchestrator));
+    CamerawesomePlugin.start();
   }
 
   Future _startPictureMode() async {
@@ -96,6 +97,7 @@ class PreparingCameraState extends CameraState {
     await Future.delayed(Duration(milliseconds: 500));
     await _init(enableImageStream: false);
     orchestrator.changeState(PictureCameraState.from(orchestrator));
+    CamerawesomePlugin.start();
   }
 
   bool _isReady = false;

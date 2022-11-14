@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:camerawesome/src/orchestrator/models/exif_preferences_data.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_layout.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -200,7 +203,6 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        cameraOrchestrator.state.start();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
@@ -237,30 +239,29 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.captureMode == null) {
           return widget.progressIndicator ??
-              const Center(
-                child: CircularProgressIndicator(),
+              Center(
+                child: Platform.isIOS
+                    ? CupertinoActivityIndicator()
+                    : CircularProgressIndicator(),
               );
         }
-        return SafeArea(
-          child: Container(
-            color: Colors.black,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                Positioned.fill(
-                  child: PinchToZoom(
-                    sensorConfig: cameraOrchestrator.sensorConfig,
-                    child: CameraPreviewWidget(
-                      key: UniqueKey(),
-                    ),
-                  ),
+        return Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            Positioned.fill(
+              child: PinchToZoom(
+                sensorConfig: cameraOrchestrator.sensorConfig,
+                child: CameraPreviewWidget(
+                  key: UniqueKey(),
                 ),
-                Positioned.fill(
-                  child: widget.builder(snapshot.requireData),
-                ),
-              ],
+              ),
             ),
-          ),
+            SafeArea(
+              child: Positioned.fill(
+                child: widget.builder(snapshot.requireData),
+              ),
+            ),
+          ],
         );
       },
     );
