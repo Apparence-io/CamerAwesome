@@ -42,10 +42,13 @@ class _AspectRatioButton extends StatelessWidget {
     final IconData icon;
     switch (aspectRatio) {
       case CameraAspectRatios.RATIO_16_9:
-        icon = Icons.crop_16_9;
+        icon = Icons.crop_16_9_rounded;
         break;
       case CameraAspectRatios.RATIO_4_3:
-        icon = Icons.crop_7_5;
+        icon = Icons.crop_7_5_rounded;
+        break;
+      case CameraAspectRatios.RATIO_1_1:
+        icon = Icons.crop_din_rounded;
         break;
     }
     return _AspectRatioButton(

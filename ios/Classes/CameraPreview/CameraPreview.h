@@ -20,6 +20,7 @@
 #import "CameraQualities.h"
 #import "CameraPictureController.h"
 #import "CameraPermissions.h"
+#import "AspectRatio.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -41,6 +42,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) NSString *currentPresset;
+@property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly) CVPixelBufferRef volatile latestPixelBuffer;
@@ -67,6 +69,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setRecordingAudioMode:(bool)enableAudio;
 - (void)pauseVideoRecording;
 - (void)resumeVideoRecording;
+- (void)setAspectRatio:(AspectRatio)ratio;
 - (void)setExifPreferencesGPSLocation:(bool)gpsLocation;
 - (void)refresh;
 - (void)start;

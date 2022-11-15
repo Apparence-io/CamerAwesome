@@ -97,9 +97,12 @@ class SensorConfig {
   /// switch the camera preview / photo / video aspect ratio
   /// [CameraAspectRatios.RATIO_16_9]
   /// [CameraAspectRatios.RATIO_4_3]
+  /// [CameraAspectRatios.RATIO_1_1]
   Future<void> switchCameraRatio() async {
     if (aspectRatio == CameraAspectRatios.RATIO_16_9) {
       setAspectRatio(CameraAspectRatios.RATIO_4_3);
+    } else if (aspectRatio == CameraAspectRatios.RATIO_4_3) {
+      setAspectRatio(CameraAspectRatios.RATIO_1_1);
     } else {
       setAspectRatio(CameraAspectRatios.RATIO_16_9);
     }
@@ -108,6 +111,7 @@ class SensorConfig {
   /// Change the current [CameraAspectRatios] one of
   /// [CameraAspectRatios.RATIO_16_9]
   /// [CameraAspectRatios.RATIO_4_3]
+  /// [CameraAspectRatios.RATIO_1_1]
   Future<void> setAspectRatio(CameraAspectRatios ratio) async {
     await CamerawesomePlugin.setAspectRatio(ratio.name);
     _aspectRatioController.add(ratio);

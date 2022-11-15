@@ -35,6 +35,7 @@
   [_captureSession addOutputWithNoConnections:_captureVideoOutput];
   
   _cameraSensor = sensor;
+  _aspectRatio = Ratio4_3;
   
   [self initCameraPreview:sensor];
   
@@ -60,6 +61,10 @@
   [self setBestPreviewQuality];
   
   return self;
+}
+
+- (void)setAspectRatio:(AspectRatio)ratio {
+  _aspectRatio = ratio;
 }
 
 /// Assign the default preview qualities
@@ -370,6 +375,7 @@
                                                                              orientation:_motionController.deviceOrientation
                                                                                   sensor:_cameraSensor
                                                                          saveGPSLocation:_saveGPSLocation
+                                                                             aspectRatio:_aspectRatio
                                                                                   result:_result
                                                                                 callback:^{
     // If flash mode is always on, restore it back after photo is taken

@@ -415,12 +415,14 @@ class CamerawesomePlugin {
     }
   }
 
-  /// [Android] only, change aspect ratio
+  /// Change aspect ratio when a picture is taken
   static Future<void> setAspectRatio(String ratio) {
     if (Platform.isAndroid) {
       return CameraInterface().setAspectRatio(ratio);
     } else {
-      throw 'not supported on iOS, use previewSize() instead';
+      return _channel.invokeMethod('setAspectRatio', <String, dynamic>{
+        'ratio': ratio,
+      });
     }
   }
 

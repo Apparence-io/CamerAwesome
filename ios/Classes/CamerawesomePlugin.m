@@ -143,6 +143,8 @@ FlutterEventSink imageStreamEventSink;
     [self _handleAutoFocus:call result:result];
   } else if ([@"setFlashMode" isEqualToString:call.method]) {
     [self _handleFlashMode:call result:result];
+  } else if ([@"setAspectRatio" isEqualToString:call.method]) {
+    [self _handleSetAspectRatio:call result:result];
   } else if ([@"setSensor" isEqualToString:call.method]) {
     [self _handleSetSensor:call result:result];
   } else if ([@"setCaptureMode" isEqualToString:call.method]) {
@@ -159,6 +161,27 @@ FlutterEventSink imageStreamEventSink;
     result(FlutterMethodNotImplemented);
     return;
   };
+}
+
+- (void)_handleSetAspectRatio:(FlutterMethodCall*)call result:(FlutterResult)result {
+  NSString *ratioArg = call.arguments[@"ratio"];
+  
+  if (ratioArg == nil || ratioArg.length <= 0) {
+    result([FlutterError errorWithCode:@"RATIO_NOT_SET" message:@"a ratio must be set" details:nil]);
+    return;
+  }
+  
+  AspectRatio aspectRatio;
+  if ([ratioArg isEqualToString:@"RATIO_4_3"]) {
+    aspectRatio = Ratio4_3;
+  } else if ([ratioArg isEqualToString:@"RATIO_16_9"]) {
+    aspectRatio = Ratio16_9;
+  } else {
+    aspectRatio = Ratio1_1;
+  }
+  
+  [self.camera setAspectRatio:aspectRatio];
+  result(nil);
 }
 
 - (void)_handlePauseVideoRecording:(FlutterMethodCall*)call result:(FlutterResult)result {
