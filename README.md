@@ -1,9 +1,9 @@
 <a href="https://apparence.io">
-  <img src="./docs/img/apparence.png" width="100%" />
+    <img src="./docs/img/apparence.png" width="100%" />
 </a>
-<div style="margin-top:16px" >
+<div style="margin-top:40px" >
     <img src="./docs/img/header.png" width="100%" />
-    <img src="./docs/img/features.png" width="100%" style="margin-top:16px" />
+    <img src="./docs/img/features.png" width="100%" style="margin-top:32px" />
 </div>
 
 <br/>
@@ -82,11 +82,13 @@ typedef CameraLayoutBuilder = Widget Function(CameraState cameraState);
 The only thing you have access is the cameraState.<br/>
 Depending on which state is our camera experience you will have access to some different method. <br/>
 <br/>
-Using the state you can do anything you need without having to think about the camera flow<br/>
-On app start we are in [PreparingCameraState]<br/>
-Then depending on the initialCaptureMode you set you will be [PictureCameraState] or [VideoCameraState]<br/>
-Starting a video will push a [VideoRecordingCameraState]<br/>
-Stopping the video will push back the [VideoCameraState]<br/>
+
+#### How camerAwesome states works ? 
+Using the state you can do anything you need without having to think about the camera flow<br/><br/>
+- On app start we are in [PreparingCameraState]<br/>
+- Then depending on the initialCaptureMode you set you will be [PictureCameraState] or [VideoCameraState]<br/>
+- Starting a video will push a [VideoRecordingCameraState]<br/>
+- Stopping the video will push back the [VideoCameraState]<br/>
 <br/>
 Also if you want to use some specific function you can use the when method so you can write like this.<br/>
 
@@ -102,7 +104,15 @@ state.when(
 
 -----
 ## Setting sensors settings
--- todo
+Through state you can access to a ```SensorConfig``` class. 
+This contains 
+| Function   | Comment |
+|------------------------------------|---------|
+| setZoom    | changing zoom |
+| setFlashMode    | changing flash between NONE,ON,AUTO,ALWAYS |
+| setBrightness    | change brightness level manually (better to let this auto) |
+
+All of this configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
 
 
 -------
@@ -110,12 +120,9 @@ state.when(
 
 - [ ] create complete documentation (docs.page)
 - [ ] dispose all stream within orchestrator (flutter)
-- [ ] fixing iOS with new API (flutter, iOS)
 - [ ] Tests plugin flutter states (flutter)
 - [ ] Tests E2E (flutter)
 - [ ] Handle rotation (flutter)
-- [ ] Preview and capture ratios (flutter, iOS)
 - [ ] Image analysis state (flutter)
 - [ ] Timer before picture (flutter)
-- [ ] fullscreen preview (not affecting capture) (flutter only)
 - [ ] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)
