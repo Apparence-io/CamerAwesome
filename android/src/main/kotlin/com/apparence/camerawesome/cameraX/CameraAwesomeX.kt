@@ -167,20 +167,18 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             outputFileOptions,
             ContextCompat.getMainExecutor(activity!!),
             object : ImageCapture.OnImageSavedCallback {
+
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     Log.d(
                         CamerawesomePlugin.TAG,
                         "Success capturing picture ${outputFileResults.savedUri}"
                     )
-//                    comprendre pourquoi les logs s'affichent meme pas'
                     if (exifPreferences.saveGpsLocation) {
                         retrieveLocation {
                             outputFileOptions.metadata.location = it
-                            callback(true)
                         }
-                    } else {
-                        callback(true)
                     }
+                    callback(true)
                 }
 
                 override fun onError(exception: ImageCaptureException) {

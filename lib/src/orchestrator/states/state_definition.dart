@@ -67,8 +67,7 @@ abstract class CameraState {
   /// - while recording a video
   /// - while saving an image
   /// Accessible from all states
-  Stream<MediaCapture?> get captureState$ =>
-      orchestrator.mediaCaptureController.stream;
+  Stream<MediaCapture?> get captureState$ => orchestrator.captureState$;
 
   /// Switch camera from [Sensors.BACK] [Sensors.FRONT]
   /// All states can switch this

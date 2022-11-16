@@ -31,7 +31,7 @@ class MediaCapture {
         videoState = VideoState.stopped;
 
   MediaCapture.failure({
-    required this.exception,
+    this.exception,
     required this.filePath,
   })  : status = MediaCaptureStatus.failure,
         videoState = VideoState.error;

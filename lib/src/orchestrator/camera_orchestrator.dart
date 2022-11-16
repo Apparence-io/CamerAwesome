@@ -26,6 +26,8 @@ class CameraOrchestrator {
   /// on media capturing stream controller
   late final BehaviorSubject<MediaCapture?> mediaCaptureController;
 
+  late final Stream<MediaCapture?> captureState$;
+
   /// The config associated with a [Sensors].
   /// [BACK] sensor frequently has flash while [FRONT] does not for instance.
   Stream<SensorConfig> sensorConfigStream;
@@ -57,6 +59,7 @@ class CameraOrchestrator {
     stateController = BehaviorSubject.seeded(preparingState);
     mediaCaptureController = BehaviorSubject.seeded(null);
     state$ = stateController.stream;
+    captureState$ = mediaCaptureController.stream;
   }
 
   factory CameraOrchestrator.create(

@@ -47,8 +47,12 @@ class PictureCameraState extends CameraState {
     }
     _mediaCapture = MediaCapture.capturing(filePath: path);
     try {
-      await CamerawesomePlugin.takePhoto(path);
-      _mediaCapture = MediaCapture.success(filePath: path);
+      var succeeded = await CamerawesomePlugin.takePhoto(path);
+      if (succeeded) {
+        _mediaCapture = MediaCapture.success(filePath: path);
+      } else {
+        _mediaCapture = MediaCapture.failure(filePath: path);
+      }
     } on Exception catch (e) {
       _mediaCapture = MediaCapture.failure(filePath: path, exception: e);
     }
