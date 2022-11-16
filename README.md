@@ -37,7 +37,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 -----
 
-## Awesome build-in interface
+## 👌 Awesome build-in interface
 
 Just use our builder. <br>
 That's all you need to create a complete camera experience within you app.
@@ -52,14 +52,14 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 ------
-## Creating a custom interface
+## 🎨 Creating a custom interface
 
 Our builder provides a custom factory. <br>
 Now you have access to the builder property and can create your own camera experience. <br>
 The camera preview will be visible behind what you will provide to our builder.
 
 > Note <br/>
-> The camera is not customizable yet
+> Only the camera preview is not customizable yet
 
 ```dart
 CameraAwesomeBuilder.custom(
@@ -103,7 +103,7 @@ state.when(
 <br/>
 
 -----
-## Setting sensors settings
+## 🐽 Setting sensors settings
 Through state you can access to a ```SensorConfig``` class. 
 This contains 
 | Function   | Comment |
@@ -116,10 +116,9 @@ All of this configurations are listenable through a stream so your UI can automa
 
 
 -------
-## Roadmap
+## 🚀 Roadmap
 
 - [ ] create complete documentation (docs.page)
-- [ ] dispose all stream within orchestrator (flutter)
 - [ ] Tests plugin flutter states (flutter)
 - [ ] Tests E2E (flutter)
 - [ ] Handle rotation (flutter)

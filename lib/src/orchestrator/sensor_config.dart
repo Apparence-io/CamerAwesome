@@ -137,5 +137,6 @@ class SensorConfig {
     _brightnessController.close();
     _zoomController.close();
     _flashModeController.close();
+    _aspectRatioController.close();
   }
 }

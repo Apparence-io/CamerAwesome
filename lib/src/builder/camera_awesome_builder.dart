@@ -7,11 +7,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../orchestrator/camera_context.dart';
 import '../orchestrator/sensor_config.dart';
 import '../orchestrator/models/capture_modes.dart';
 import '../orchestrator/models/flashmodes.dart';
 import '../orchestrator/models/sensors.dart';
-import '../orchestrator/camera_orchestrator.dart';
 import '../orchestrator/states/state_definition.dart';
 import '../layouts/awesome/widgets/camera_preview.dart';
 import '../layouts/awesome/widgets/pinch_to_zoom.dart';
@@ -168,33 +168,22 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
 class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     with WidgetsBindingObserver {
-  late CameraOrchestrator cameraOrchestrator;
+  late CameraContext cameraContext;
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    cameraOrchestrator.dispose();
+    cameraContext.dispose();
     super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant CameraAwesomeBuilder oldWidget) {
-    // use freezed + copy with
-    // cameraOrchestrator.state.setFlash(widget.flashMode);
-    // cameraOrchestrator.state.setZoom(widget.zoom);
-    // if (widget.initialCaptureMode != oldWidget.initialCaptureMode &&
-    //     widget.initialCaptureMode == CaptureModes.PHOTO) {
-    //   widget.cameraOrchestrator.startPictureMode(widget.picturePathBuilder);
-    // } else if (widget.initialCaptureMode != oldWidget.initialCaptureMode &&
-    //     widget.initialCaptureMode == CaptureModes.VIDEO) {
-    //   widget.cameraOrchestrator.startVideoMode(widget.videoPathBuilder);
-    // }
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   void didChangeDependencies() {
-    // lock by default orientation to portrait up
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.didChangeDependencies();
   }
@@ -207,7 +196,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        cameraOrchestrator.state.stop();
+        cameraContext.state.stop();
         break;
     }
     super.didChangeAppLifecycleState(state);
@@ -218,7 +207,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    cameraOrchestrator = CameraOrchestrator.create(
+    cameraContext = CameraContext.create(
       SensorConfig(
         sensor: widget.sensor,
         flash: widget.flashMode,
@@ -229,13 +218,13 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       videoPathBuilder: widget.videoPathBuilder,
     );
 
-    cameraOrchestrator.state.start();
+    cameraContext.state.start();
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<CameraState>(
-      stream: cameraOrchestrator.state$,
+      stream: cameraContext.state$,
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.captureMode == null) {
           return widget.progressIndicator ??
@@ -250,7 +239,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
           children: <Widget>[
             Positioned.fill(
               child: PinchToZoom(
-                sensorConfig: cameraOrchestrator.sensorConfig,
+                sensorConfig: cameraContext.sensorConfig,
                 child: CameraPreviewWidget(
                   key: UniqueKey(),
                 ),

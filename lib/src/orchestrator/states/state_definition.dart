@@ -5,8 +5,9 @@ import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/preparing_state.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 
+import '../camera_context.dart';
 import '../models/sensors.dart';
-import '../camera_orchestrator.dart';
+
 import 'picture_state.dart';
 import 'video_state.dart';
 
@@ -20,9 +21,9 @@ typedef OnVideoRecordingMode = Function(VideoRecordingCameraState);
 
 abstract class CameraState {
   // TODO protect this
-  CameraOrchestrator orchestrator;
+  CameraContext cameraContext;
 
-  CameraState(this.orchestrator);
+  CameraState(this.cameraContext);
 
   // TODO remove this
   abstract final CaptureModes? captureMode;
@@ -67,16 +68,16 @@ abstract class CameraState {
   /// - while recording a video
   /// - while saving an image
   /// Accessible from all states
-  Stream<MediaCapture?> get captureState$ => orchestrator.captureState$;
+  Stream<MediaCapture?> get captureState$ => cameraContext.captureState$;
 
   /// Switch camera from [Sensors.BACK] [Sensors.FRONT]
   /// All states can switch this
   void switchCameraSensor() {
-    final previous = orchestrator.sensorConfig;
+    final previous = cameraContext.sensorConfig;
     final next = SensorConfig(
       sensor: previous.sensor == Sensors.BACK ? Sensors.FRONT : Sensors.BACK,
     );
-    orchestrator.switchSensor(next);
+    cameraContext.switchSensor(next);
   }
 
   /// The sensor config allows you to
@@ -84,7 +85,7 @@ abstract class CameraState {
   /// - set the zoom level
   /// - handle luminosity or get it
   /// - adjust brightness
-  SensorConfig get config => orchestrator.sensorConfig;
+  SensorConfig get config => cameraContext.sensorConfig;
 
   /// Switch to a state between
   /// - [CaptureModes.PHOTO]

@@ -6,7 +6,7 @@ import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 
-import '../camera_orchestrator.dart';
+import '../camera_context.dart';
 import '../exceptions/camera_states_exceptions.dart';
 import 'picture_state.dart';
 
@@ -19,10 +19,10 @@ class PreparingCameraState extends CameraState {
   final OnPermissionsResult? onPermissionsResult;
 
   PreparingCameraState(
-    CameraOrchestrator orchestrator,
+    CameraContext cameraContext,
     this.nextCaptureMode, {
     this.onPermissionsResult,
-  }) : super(orchestrator);
+  }) : super(cameraContext);
 
   @override
   CaptureModes? get captureMode => null;
@@ -88,7 +88,7 @@ class PreparingCameraState extends CameraState {
     await Future.delayed(Duration(milliseconds: 500));
     // TODO await creation.setAudioEnabled(enableAudio);
     await _init(enableImageStream: false);
-    orchestrator.changeState(VideoCameraState.from(orchestrator));
+    cameraContext.changeState(VideoCameraState.from(cameraContext));
     CamerawesomePlugin.start();
   }
 
@@ -96,7 +96,7 @@ class PreparingCameraState extends CameraState {
     //TODO await CamerawesomePlugin.setExifPreferences(preferences);
     await Future.delayed(Duration(milliseconds: 500));
     await _init(enableImageStream: false);
-    orchestrator.changeState(PictureCameraState.from(orchestrator));
+    cameraContext.changeState(PictureCameraState.from(cameraContext));
     CamerawesomePlugin.start();
   }
 
@@ -107,11 +107,11 @@ class PreparingCameraState extends CameraState {
     required bool enableImageStream,
   }) async {
     initPermissions(
-      orchestrator.sensorConfig,
+      cameraContext.sensorConfig,
       enableImageStream: enableImageStream,
     );
     await CamerawesomePlugin.init(
-      orchestrator.sensorConfig.sensor,
+      cameraContext.sensorConfig.sensor,
       enableImageStream,
       captureMode: nextCaptureMode,
     );

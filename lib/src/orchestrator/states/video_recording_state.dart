@@ -4,20 +4,21 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import 'package:flutter/material.dart';
-import '../camera_orchestrator.dart';
+
+import '../camera_context.dart';
 import 'state_definition.dart';
 
 /// When Camera is in Video mode
 class VideoRecordingCameraState extends CameraState {
   VideoRecordingCameraState({
-    required CameraOrchestrator orchestrator,
+    required CameraContext cameraContext,
     // this.imageAnalysisController,
     required this.filePathBuilder,
-  }) : super(orchestrator);
+  }) : super(cameraContext);
 
-  factory VideoRecordingCameraState.from(CameraOrchestrator orchestrator) =>
+  factory VideoRecordingCameraState.from(CameraContext orchestrator) =>
       VideoRecordingCameraState(
-        orchestrator: orchestrator,
+        cameraContext: orchestrator,
         filePathBuilder: orchestrator.videoPathBuilder,
       );
 
@@ -28,13 +29,13 @@ class VideoRecordingCameraState extends CameraState {
   @override
   Future<void> start() async {
     await stopRecording();
-    orchestrator.changeState(VideoCameraState.from(orchestrator));
+    cameraContext.changeState(VideoCameraState.from(cameraContext));
   }
 
   @override
   Future<void> stop() async {
     await stopRecording();
-    orchestrator.changeState(VideoCameraState.from(orchestrator));
+    cameraContext.changeState(VideoCameraState.from(cameraContext));
   }
 
   @override
@@ -65,7 +66,7 @@ class VideoRecordingCameraState extends CameraState {
   // TODO Video recording might end due to other reasons (not enough space left...)
   // CameraAwesome is not notified in these cases atm
   Future<void> stopRecording() async {
-    var currentCapture = orchestrator.mediaCaptureController.value;
+    var currentCapture = cameraContext.mediaCaptureController.value;
     if (currentCapture == null) {
       return;
     }
@@ -83,6 +84,6 @@ class VideoRecordingCameraState extends CameraState {
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
-    orchestrator.mediaCaptureController.add(media);
+    cameraContext.mediaCaptureController.add(media);
   }
 }

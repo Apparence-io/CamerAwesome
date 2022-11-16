@@ -4,22 +4,22 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 import 'package:flutter/material.dart';
-import '../camera_orchestrator.dart';
+import '../camera_context.dart';
 import 'picture_state.dart';
 import 'state_definition.dart';
 
 /// When Camera is in Video mode
 class VideoCameraState extends CameraState {
   VideoCameraState({
-    required CameraOrchestrator orchestrator,
+    required CameraContext cameraContext,
     // this.imageAnalysisController,
     required this.filePathBuilder,
-  }) : super(orchestrator);
+  }) : super(cameraContext);
 
-  factory VideoCameraState.from(CameraOrchestrator orchestrator) =>
+  factory VideoCameraState.from(CameraContext cameraContext) =>
       VideoCameraState(
-        orchestrator: orchestrator,
-        filePathBuilder: orchestrator.videoPathBuilder,
+        cameraContext: cameraContext,
+        filePathBuilder: cameraContext.videoPathBuilder,
       );
 
   // final ImageAnalysisController? imageAnalysisController;
@@ -30,7 +30,7 @@ class VideoCameraState extends CameraState {
   Future<void> start() async {
     await CamerawesomePlugin.setCaptureMode(CaptureModes.VIDEO);
     await startRecording();
-    orchestrator.changeState(VideoRecordingCameraState.from(orchestrator));
+    cameraContext.changeState(VideoRecordingCameraState.from(cameraContext));
   }
 
   @override
@@ -45,7 +45,7 @@ class VideoCameraState extends CameraState {
     if (captureMode == CaptureModes.VIDEO) {
       return;
     }
-    orchestrator.changeState(PictureCameraState.from(orchestrator));
+    cameraContext.changeState(PictureCameraState.from(cameraContext));
   }
 
   @override
@@ -88,6 +88,6 @@ class VideoCameraState extends CameraState {
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
-    orchestrator.mediaCaptureController.add(media);
+    cameraContext.mediaCaptureController.add(media);
   }
 }

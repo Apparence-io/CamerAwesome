@@ -15,7 +15,7 @@ import 'states/state_definition.dart';
 /// This class handle the current state of the camera
 /// - [PictureCameraState]
 /// - [VideoCameraState]
-class CameraOrchestrator {
+class CameraContext {
   /// Listen current state from child widgets
   late final BehaviorSubject<CameraState> stateController;
 
@@ -45,7 +45,7 @@ class CameraOrchestrator {
   /// this is where we are going to store any video
   final FilePathBuilder videoPathBuilder;
 
-  CameraOrchestrator._({
+  CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
     this.videoPathBuilder,
@@ -62,14 +62,14 @@ class CameraOrchestrator {
     captureState$ = mediaCaptureController.stream;
   }
 
-  factory CameraOrchestrator.create(
+  factory CameraContext.create(
     SensorConfig sensorConfig, {
     required CaptureModes initialCaptureMode,
     OnPermissionsResult? onPermissionsResult,
     FilePathBuilder picturePathBuilder,
     FilePathBuilder videoPathBuilder,
   }) =>
-      CameraOrchestrator._(
+      CameraContext._(
         initialCaptureMode: initialCaptureMode,
         sensorConfigController: BehaviorSubject.seeded(sensorConfig),
         onPermissionsResult: onPermissionsResult,
@@ -95,12 +95,10 @@ class CameraOrchestrator {
   }
 
   dispose() {
+    sensorConfig.dispose();
+    sensorConfigController.close();
+    mediaCaptureController.close();
+    stateController.close();
     CamerawesomePlugin.stop();
-    // _captureModeController.close();
-    // _mediaCaptureController.close();
-
-    // _permissionStreamSub?.cancel();
-    // sensorConfigController.value.dispose();
-    // sensorConfigController.close();
   }
 }

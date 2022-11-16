@@ -1,20 +1,20 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
-import '../camera_orchestrator.dart';
+import '../camera_context.dart';
 import 'state_definition.dart';
 import 'video_state.dart';
 
 /// When Camera is in Image mode
 class PictureCameraState extends CameraState {
   PictureCameraState({
-    required CameraOrchestrator orchestrator,
+    required CameraContext cameraContext,
     required this.filePathBuilder,
     // this.imageAnalysisController,
-  }) : super(orchestrator);
+  }) : super(cameraContext);
 
-  factory PictureCameraState.from(CameraOrchestrator orchestrator) =>
+  factory PictureCameraState.from(CameraContext orchestrator) =>
       PictureCameraState(
-        orchestrator: orchestrator,
+        cameraContext: orchestrator,
         filePathBuilder: orchestrator.picturePathBuilder,
       );
 
@@ -68,7 +68,7 @@ class PictureCameraState extends CameraState {
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
-    orchestrator.mediaCaptureController.add(media);
+    cameraContext.mediaCaptureController.add(media);
   }
 
   @override
@@ -76,6 +76,6 @@ class PictureCameraState extends CameraState {
     if (captureMode == CaptureModes.PHOTO) {
       return;
     }
-    orchestrator.changeState(VideoCameraState.from(orchestrator));
+    cameraContext.changeState(VideoCameraState.from(cameraContext));
   }
 }
