@@ -1,13 +1,41 @@
-TODO create header
-
-Beautifull and easy to use camera interface.<br>
-<br>
-Embedding a camera experience within your own app should't be that hard.
+<a href="https://apparence.io">
+  <img src="./docs/img/apparence.png" width="100%" />
+</a>
+<div style="margin-top:16px" >
+    <img src="./docs/img/header.png" width="100%" />
+    <img src="./docs/img/features.png" width="100%" style="margin-top:16px" />
+</div>
 
 <br/>
+
+# CamerAwesome
+📸 Embedding a camera experience within your own app should't be that hard. <br/>
+A flutter plugin to integrate awesome Android / iOS camera experience.<br/>
 <br/>
-This packages provides you a fully customizable camera experience that you can use within your app. 
+This packages provides you a fully customizable camera experience that you can use within your app.<br/>
 Use our awesome built in interface or customize it as you want. 
+
+--------
+
+## Native features
+Here's all native features that cameraAwesome provides to the flutter side.
+
+| System                           | Android | iOS | 
+|----------------------------------|---------|-----|
+| 🔖 Ask permissions               | ✅      | ✅  |
+| 🎥 Record video                  | ✅      | ✅  |
+| 🔈 Enable/disable audio          | ✅      | ✅  |
+| 🎞 Take picture                  | ✅      | ✅  |
+| 🌤 Exposure level                | ✅      | ✅  |
+| 📡 Broadcast live image stream   | ✅      | ✅  |
+| 👁 zoom                          | ✅      | ✅  |
+| 📸 Device flash support          | ✅      | ✅  |
+| ⌛️ Auto focus                    | ✅      | ✅  |
+| 📲 Live switching camera         | ✅      | ✅  |
+| 😵‍💫 Camera rotation stream        | ✅      | ✅  |
+| 🤐 Background auto stop          | ✅      | ✅  |
+
+-----
 
 ## Awesome build-in interface
 
@@ -23,7 +51,7 @@ CameraAwesomeBuilder.awesome(
     },
 ),
 ```
-
+------
 ## Creating a custom interface
 
 Our builder provides a custom factory. <br>
@@ -72,28 +100,12 @@ state.when(
 
 <br/>
 
+-----
 ## Setting sensors settings
 -- todo
 
 
-## Native features
-Here's all native features that cameraAwesome provides to the flutter side.
-
-| System                           | Android | iOS | 
-|----------------------------------|---------|-----|
-| 🔖 Ask permissions               | ✅      | ✅  |
-| 🎥 Record video                  | ✅      | ✅  |
-| 🔈 Enable/disable audio          | ✅      | ✅  |
-| 🎞 Take picture                  | ✅      | ✅  |
-| 🌤 Exposure level                | ✅      | ✅  |
-| 📡 Broadcast live image stream   | ✅      | ✅  |
-| 👁 zoom                          | ✅      | ✅  |
-| 📸 Device flash support          | ✅      | ✅  |
-| ⌛️ Auto focus                    | ✅      | ✅  |
-| 📲 Live switching camera         | ✅      | ✅  |
-| 😵‍💫 Camera rotation stream        | ✅      | ✅  |
-
-
+-------
 ## Roadmap
 
 - [ ] create complete documentation (docs.page)

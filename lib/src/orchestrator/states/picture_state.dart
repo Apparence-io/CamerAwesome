@@ -30,7 +30,7 @@ class PictureCameraState extends CameraState {
 
   @override
   Future<void> stop() async {
-    // TODO: implement stop
+    // nothing to do
   }
 
   @override
