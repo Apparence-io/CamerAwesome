@@ -14,7 +14,7 @@
             "name": "AI analysis example",
             "request": "launch",
             "type": "dart",
-            "program": "examples/camera_app/lib/ai_analysis_ex.dart"
+            "program": "example/lib/ai_analysis_ex.dart"
         },
     ]
 }

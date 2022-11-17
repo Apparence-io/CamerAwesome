@@ -99,29 +99,29 @@ data class CameraXState(
         }
         var imageAnalysis: ImageAnalysis? = null
         if (enableImageStream) {
-            Log.d(CamerawesomePlugin.TAG, "...enabling image analysis stream")
+            val width = 1024
+            val analysisAspectRatio = aspectRatio ?: (16 / 9)
+            val height =  width * (1/analysisAspectRatio)
             imageAnalysis = ImageAnalysis.Builder()
-                // TODO What should the targetResolutionSize be?
-                .setTargetResolution(Size(640, 480))
-                // TODO Should backpressure be a parameter?
+                .setTargetResolution(Size(width, height))
+                // Should backpressure be a parameter?
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build()
             imageAnalysis.setAnalyzer(executor(activity)) { imageProxy ->
-                Log.d(CamerawesomePlugin.TAG, "...image stream image found")
-                if (previewStreamSink != null) { //FIXME this is null
-                    Log.d(CamerawesomePlugin.TAG, "...pushing image")
-                    // TODO Not sure of the benefits of running the conversion in the background
+                if (previewStreamSink != null) {
                     // Copying data between threads might be expensive
                     Dispatchers.IO.run {
                         val jpegImage = ImageUtil.yuvImageToJpegByteArray(
                             imageProxy,
                             Rect(0, 0, imageProxy.width, imageProxy.height),
-                            75
+                            80
                         )
                         previewStreamSink!!.success(jpegImage)
                         imageProxy.close()
                     }
+                } else {
+                    imageProxy.close()
                 }
             }
         }
@@ -213,10 +213,8 @@ data class CameraXState(
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         val previous = previewStreamSink;
-        val next = events;
-
         this.previewStreamSink = events
-        if (previous == null && next != null) {
+        if (previous == null && events != null) {
             onStreamReady(this)
         }
     }

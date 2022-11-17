@@ -87,7 +87,7 @@ class PreparingCameraState extends CameraState {
   Future _startVideoMode() async {
     await Future.delayed(Duration(milliseconds: 500));
     // TODO await creation.setAudioEnabled(enableAudio);
-    await _init(enableImageStream: false);
+    await _init(enableImageStream: cameraContext.analysisController.enabled);
     cameraContext.changeState(VideoCameraState.from(cameraContext));
 
     CamerawesomePlugin.start();
@@ -96,7 +96,7 @@ class PreparingCameraState extends CameraState {
   Future _startPictureMode() async {
     //TODO await CamerawesomePlugin.setExifPreferences(preferences);
     await Future.delayed(Duration(milliseconds: 500));
-    await _init(enableImageStream: false);
+    await _init(enableImageStream: cameraContext.analysisController.enabled);
     cameraContext.changeState(PictureCameraState.from(cameraContext));
 
     cameraContext.analysisController.start();

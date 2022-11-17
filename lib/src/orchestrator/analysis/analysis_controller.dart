@@ -26,7 +26,7 @@ class AnalysisController {
       );
 
   start() {
-    if (onImageListener == null) {
+    if (!enabled) {
       debugPrint("...AnalysisController off");
       return;
     }
@@ -34,12 +34,14 @@ class AnalysisController {
       debugPrint('AnalysisController controller already started');
       return;
     }
-    debugPrint("...AnalysisController start()");
+    debugPrint("...AnalysisController started");
     CamerawesomePlugin.setupAnalysis();
     imageSubscription = images$?.listen((event) {
       onImageListener!(AnalysisImage(image: event));
     });
   }
+
+  get enabled => onImageListener != null;
 
   close() {
     imageSubscription?.cancel();
