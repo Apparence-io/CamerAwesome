@@ -76,6 +76,6 @@ class PictureCameraState extends CameraState {
     if (captureMode == CaptureModes.PHOTO) {
       return;
     }
-    cameraContext.changeState(VideoCameraState.from(cameraContext));
+    cameraContext.changeState(captureMode.toCameraState(cameraContext));
   }
 }

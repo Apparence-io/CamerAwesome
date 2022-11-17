@@ -103,6 +103,19 @@ state.when(
 <br/>
 
 -----
+## 🔬 Analysis mode (WIP 🚧)
+
+This is a first step into this feature as we are currently working on this.
+<br/>
+<br/>
+
+Use this to achieve
+- QR-Code scanning
+- facial recognition
+- AI object detection 
+- realtime video chats
+
+-----
 ## 🐽 Setting sensors settings
 Through state you can access to a ```SensorConfig``` class. 
 This contains 
@@ -118,10 +131,13 @@ All of this configurations are listenable through a stream so your UI can automa
 -------
 ## 🚀 Roadmap
 
-- [ ] create complete documentation (docs.page)
+- [ ] bind exif preferences (flutter)
+- [ ] create complete documentation for all use cases (docs.page)
 - [ ] Tests plugin flutter states (flutter)
 - [ ] Tests E2E (flutter)
 - [ ] Handle rotation (flutter)
 - [ ] Image analysis state (flutter)
+- [ ] Apply Preview filter 
+- [ ] Apply filter on image
 - [ ] Timer before picture (flutter)
 - [ ] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)

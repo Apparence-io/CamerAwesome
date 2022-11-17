@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   camerawesome:
-    path: ../..
+    path: ../
   path_provider: ^2.0.2
   better_open_file: ^3.6.4
 

@@ -1,4 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,7 @@ class AwesomeCameraModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CameraModePager(
+      availableModes: CameraMode.fromState(state.cameraContext),
       onChangeCameraRequest: (mode) {
         state.setState(mode.captureMode);
       },
@@ -25,6 +27,12 @@ class CameraMode {
   final String title;
 
   CameraMode({required this.captureMode, required this.title});
+
+  static List<CameraMode> fromState(CameraContext context) {
+    return context.availableModes
+        .map((el) => CameraMode(captureMode: el, title: el.name))
+        .toList();
+  }
 }
 
 typedef OnChangeCameraRequest = Function(CameraMode mode);
@@ -32,9 +40,12 @@ typedef OnChangeCameraRequest = Function(CameraMode mode);
 class CameraModePager extends StatefulWidget {
   final OnChangeCameraRequest onChangeCameraRequest;
 
+  final List<CameraMode> availableModes;
+
   const CameraModePager({
     super.key,
     required this.onChangeCameraRequest,
+    required this.availableModes,
   });
 
   @override
@@ -46,17 +57,6 @@ class _CameraModePagerState extends State<CameraModePager> {
 
   int _index = 0;
 
-  List<CameraMode> cameraModes = [
-    CameraMode(
-      title: "Photo",
-      captureMode: CaptureModes.PHOTO,
-    ),
-    CameraMode(
-      title: "Video",
-      captureMode: CaptureModes.VIDEO,
-    ),
-  ];
-
   @override
   void dispose() {
     _pageController.dispose();
@@ -65,6 +65,9 @@ class _CameraModePagerState extends State<CameraModePager> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.availableModes.length <= 1) {
+      return Container();
+    }
     return Row(
       children: [
         Expanded(
@@ -74,15 +77,15 @@ class _CameraModePagerState extends State<CameraModePager> {
               scrollDirection: Axis.horizontal,
               controller: _pageController,
               onPageChanged: (index) {
-                final cameraMode = cameraModes[index];
+                final cameraMode = widget.availableModes[index];
                 widget.onChangeCameraRequest(cameraMode);
                 setState(() {
                   _index = index;
                 });
               },
-              itemCount: cameraModes.length,
+              itemCount: widget.availableModes.length,
               itemBuilder: ((context, index) {
-                final cameraMode = cameraModes[index];
+                final cameraMode = widget.availableModes[index];
                 return AnimatedOpacity(
                   duration: Duration(milliseconds: 300),
                   opacity: index == _index ? 1 : 0.2,

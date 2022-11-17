@@ -1,3 +1,4 @@
+import 'package:camerawesome/src/orchestrator/analysis/analysis_controller.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
@@ -41,6 +42,9 @@ class _StartCameraButtonState extends State<StartCameraButton>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.state is AnalysisController) {
+      return Container();
+    }
     _scale = 1 - _animationController.value;
 
     return GestureDetector(

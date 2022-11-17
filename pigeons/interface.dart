@@ -44,4 +44,5 @@ abstract class CameraInterface {
   void setPreviewSize(PreviewSize size);
   void saveGpsLocation(bool saveGPSLocation);
   void setAspectRatio(String aspectRatio);
+  void enableImageAnalysisStream(bool enable);
 }

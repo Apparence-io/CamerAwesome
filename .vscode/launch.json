@@ -1,14 +1,20 @@
 {
-  // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
-  // Pointez pour afficher la description des attributs existants.
-  // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Example",
-      "request": "launch",
-      "type": "dart",
-      "program": "examples/camera_app/lib/main.dart"
-    },
-  ]
+    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+    // Pointez pour afficher la description des attributs existants.
+    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Example",
+            "request": "launch",
+            "type": "dart",
+            "program": "examples/camera_app/lib/main.dart"
+        },
+        {
+            "name": "AI analysis example",
+            "request": "launch",
+            "type": "dart",
+            "program": "examples/camera_app/lib/ai_analysis_ex.dart"
+        },
+    ]
 }

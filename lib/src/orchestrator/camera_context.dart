@@ -8,6 +8,7 @@ import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'analysis/analysis_controller.dart';
 import 'states/picture_state.dart';
 import 'states/preparing_state.dart';
 import 'states/state_definition.dart';
@@ -45,9 +46,17 @@ class CameraContext {
   /// this is where we are going to store any video
   final FilePathBuilder videoPathBuilder;
 
+  /// this is the list of available captures modes
+  final List<CaptureModes> availableModes;
+
+  /// allows to create dynamic analysis using the current preview
+  final AnalysisController analysisController;
+
   CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
+    required this.availableModes,
+    required this.analysisController,
     this.videoPathBuilder,
     this.picturePathBuilder,
     this.onPermissionsResult,
@@ -65,9 +74,11 @@ class CameraContext {
   factory CameraContext.create(
     SensorConfig sensorConfig, {
     required CaptureModes initialCaptureMode,
+    required List<CaptureModes> availableModes,
     OnPermissionsResult? onPermissionsResult,
     FilePathBuilder picturePathBuilder,
     FilePathBuilder videoPathBuilder,
+    OnImageForAnalysis? onImageForAnalysis,
   }) =>
       CameraContext._(
         initialCaptureMode: initialCaptureMode,
@@ -75,6 +86,10 @@ class CameraContext {
         onPermissionsResult: onPermissionsResult,
         picturePathBuilder: picturePathBuilder,
         videoPathBuilder: videoPathBuilder,
+        availableModes: availableModes,
+        analysisController: AnalysisController.fromPlugin(
+          onImageListener: onImageForAnalysis,
+        ),
       );
 
   changeState(CameraState state) {
@@ -99,6 +114,7 @@ class CameraContext {
     sensorConfigController.close();
     mediaCaptureController.close();
     stateController.close();
+    analysisController.close();
     CamerawesomePlugin.stop();
   }
 }

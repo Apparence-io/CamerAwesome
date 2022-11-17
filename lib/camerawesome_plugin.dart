@@ -135,6 +135,12 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
+  static void setupAnalysis() {
+    if (Platform.isAndroid) {
+      CameraInterface().enableImageAnalysisStream(true);
+    }
+  }
+
   static Stream<Uint8List>? listenCameraImages() {
     if (_imagesStream == null) {
       _imagesStream = _imagesChannel.receiveBroadcastStream().transform(

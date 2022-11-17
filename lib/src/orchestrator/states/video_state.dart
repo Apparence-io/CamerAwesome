@@ -5,7 +5,6 @@ import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 import 'package:flutter/material.dart';
 import '../camera_context.dart';
-import 'picture_state.dart';
 import 'state_definition.dart';
 
 /// When Camera is in Video mode
@@ -45,7 +44,7 @@ class VideoCameraState extends CameraState {
     if (captureMode == CaptureModes.VIDEO) {
       return;
     }
-    cameraContext.changeState(PictureCameraState.from(cameraContext));
+    cameraContext.changeState(captureMode.toCameraState(cameraContext));
   }
 
   @override

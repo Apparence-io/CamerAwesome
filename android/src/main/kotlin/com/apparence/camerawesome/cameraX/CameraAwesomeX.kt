@@ -99,6 +99,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         return checkPermissions()
     }
 
+    override fun enableImageAnalysisStream(enable: Boolean) {
+        cameraState.apply {
+            this.enableImageStream = enable
+            updateLifecycle(activity!!)
+        }
+    }
+
     private fun getOrientedSize(width: Int, height: Int): Size {
         val portrait = cameraState.portrait
         return Size(

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../orchestrator/camera_context.dart';
+import '../orchestrator/models/analysis_image.dart';
 import '../orchestrator/sensor_config.dart';
 import '../orchestrator/models/capture_modes.dart';
 import '../orchestrator/models/flashmodes.dart';
@@ -34,6 +35,9 @@ typedef OnMediaTap = Function(MediaCapture mediaState)?;
 
 /// Used to set a permission result callback
 typedef OnPermissionsResult = void Function(bool result);
+
+/// analysis image stream listener
+typedef OnImageForAnalysis = void Function(AnalysisImage image);
 
 /// This is the entry point of the CameraAwesome plugin
 /// You can either
@@ -68,6 +72,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final CameraLayoutBuilder builder;
 
+  final OnImageForAnalysis? onImageForAnalysis;
+
   CameraAwesomeBuilder._({
     required this.initialCaptureMode,
     required this.sensor,
@@ -81,6 +87,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.videoPathBuilder,
     required this.onMediaTap,
     required this.builder,
+    this.onImageForAnalysis,
   });
 
   factory CameraAwesomeBuilder.awesome({
@@ -97,7 +104,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget? progressIndicator,
     Future<String> Function(CaptureModes)? picturePathBuilder,
     Future<String> Function(CaptureModes)? videoPathBuilder,
-    final Function(MediaCapture)? onMediaTap,
+    Function(MediaCapture)? onMediaTap,
+    OnImageForAnalysis? onImageForAnalysis,
   }) {
     /// TODO refactor this (those two args could be merged)
     if (availableModes.contains(CaptureModes.PHOTO) &&
@@ -126,6 +134,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
       picturePathBuilder: picturePathBuilder,
       videoPathBuilder: videoPathBuilder,
       onMediaTap: onMediaTap,
+      onImageForAnalysis: onImageForAnalysis,
     );
   }
 
@@ -145,6 +154,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Future<String> Function(CaptureModes)? picturePathBuilder,
     Future<String> Function(CaptureModes)? videoPathBuilder,
     Function(MediaCapture)? onMediaTap,
+    OnImageForAnalysis? onImageForAnalysis,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensor: sensor,
@@ -158,6 +168,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           picturePathBuilder: picturePathBuilder,
           videoPathBuilder: videoPathBuilder,
           onMediaTap: onMediaTap,
+          onImageForAnalysis: onImageForAnalysis,
         );
 
   @override
@@ -216,6 +227,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       initialCaptureMode: widget.initialCaptureMode,
       picturePathBuilder: widget.picturePathBuilder,
       videoPathBuilder: widget.videoPathBuilder,
+      availableModes: widget.availableModes,
+      onImageForAnalysis: widget.onImageForAnalysis,
     );
 
     cameraContext.state.start();

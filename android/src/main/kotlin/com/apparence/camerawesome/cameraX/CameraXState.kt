@@ -3,6 +3,7 @@ package com.apparence.camerawesome.cameraX
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Rect
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
@@ -15,6 +16,7 @@ import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
@@ -37,7 +39,7 @@ data class CameraXState(
     private var currentCaptureMode: CaptureModes,
     var enableAudioRecording: Boolean = true,
     var recording: Recording? = null,
-    val enableImageStream: Boolean = false,
+    var enableImageStream: Boolean = false,
     var photoSize: Size? = null,
     var previewSize: Size? = null,
     var aspectRatio: Int? = null,
@@ -97,6 +99,7 @@ data class CameraXState(
         }
         var imageAnalysis: ImageAnalysis? = null
         if (enableImageStream) {
+            Log.d(CamerawesomePlugin.TAG, "...enabling image analysis stream")
             imageAnalysis = ImageAnalysis.Builder()
                 // TODO What should the targetResolutionSize be?
                 .setTargetResolution(Size(640, 480))
@@ -105,7 +108,9 @@ data class CameraXState(
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build()
             imageAnalysis.setAnalyzer(executor(activity)) { imageProxy ->
-                if (previewStreamSink != null) {
+                Log.d(CamerawesomePlugin.TAG, "...image stream image found")
+                if (previewStreamSink != null) { //FIXME this is null
+                    Log.d(CamerawesomePlugin.TAG, "...pushing image")
                     // TODO Not sure of the benefits of running the conversion in the background
                     // Copying data between threads might be expensive
                     Dispatchers.IO.run {
@@ -134,7 +139,6 @@ data class CameraXState(
             *useCases.toTypedArray(),
         )
         previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
-
     }
 
     @SuppressLint("RestrictedApi")

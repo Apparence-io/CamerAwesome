@@ -25,7 +25,6 @@ abstract class CameraState {
 
   CameraState(this.cameraContext);
 
-  // TODO remove this
   abstract final CaptureModes? captureMode;
 
   when({
@@ -90,5 +89,6 @@ abstract class CameraState {
   /// Switch to a state between
   /// - [CaptureModes.PHOTO]
   /// - [CaptureModes.VIDEO]
+  /// - [CaptureModes.ANALYSIS]
   void setState(CaptureModes captureMode);
 }
