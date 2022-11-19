@@ -57,6 +57,7 @@ dependencies {
     implementation 'androidx.test:rules:1.4.0'
     // implementation project(path: ':integration_test')
     implementation 'com.google.android.gms:play-services-location:20.0.0'
+
     testImplementation 'junit:junit:4.13.2'
     // Optional -- Mockito framework
     testImplementation "org.mockito:mockito-core:4.8.0"

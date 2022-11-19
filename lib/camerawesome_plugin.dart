@@ -12,6 +12,7 @@ import 'src/orchestrator/models/orientations.dart';
 import 'src/orchestrator/models/sensor_data.dart';
 import 'src/orchestrator/models/sensors.dart';
 
+export 'src/orchestrator/models/analysis_image.dart';
 export 'src/orchestrator/models/capture_modes.dart';
 export 'src/orchestrator/models/exif_preferences_data.dart';
 export 'src/orchestrator/models/flashmodes.dart';
@@ -46,7 +47,7 @@ class CamerawesomePlugin {
 
   static Stream<SensorData>? _luminositySensorDataStream;
 
-  static Stream<Uint8List>? _imagesStream;
+  static Stream<Map<String, dynamic>>? _imagesStream;
 
   static CameraRunningState currentState = CameraRunningState.STOPPED;
 
@@ -141,13 +142,15 @@ class CamerawesomePlugin {
     }
   }
 
-  static Stream<Uint8List>? listenCameraImages() {
+  static Stream<Map<String, dynamic>>? listenCameraImages() {
     if (_imagesStream == null) {
       _imagesStream = _imagesChannel.receiveBroadcastStream().transform(
-          StreamTransformer<dynamic, Uint8List>.fromHandlers(
-              handleData: (data, sink) {
-        sink.add(data);
-      }));
+        StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
+          handleData: (data, sink) {
+            sink.add(Map<String, dynamic>.from(data));
+          },
+        ),
+      );
     }
     return _imagesStream;
   }

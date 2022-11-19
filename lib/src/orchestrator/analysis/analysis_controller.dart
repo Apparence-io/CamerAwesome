@@ -1,21 +1,19 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/orchestrator/models/analysis_image.dart';
 import 'package:flutter/material.dart';
 
 class AnalysisController {
   final OnImageForAnalysis? onImageListener;
 
-  final Stream<Uint8List>? images$;
+  final Stream<Map<String, dynamic>>? _images$;
 
   StreamSubscription? imageSubscription;
 
   AnalysisController({
-    required this.images$,
+    required Stream<Map<String, dynamic>>? images$,
     this.onImageListener,
-  });
+  }) : _images$ = images$;
 
   factory AnalysisController.fromPlugin({
     OnImageForAnalysis? onImageListener,
@@ -36,8 +34,8 @@ class AnalysisController {
     }
     debugPrint("...AnalysisController started");
     CamerawesomePlugin.setupAnalysis();
-    imageSubscription = images$?.listen((event) {
-      onImageListener!(AnalysisImage(image: event));
+    imageSubscription = _images$?.listen((event) {
+      onImageListener!(AnalysisImage.from(event));
     });
   }
 

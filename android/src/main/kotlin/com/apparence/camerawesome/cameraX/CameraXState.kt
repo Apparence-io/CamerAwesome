@@ -2,7 +2,12 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context.CAMERA_SERVICE
 import android.graphics.Rect
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.os.Build
 import android.util.Log
 import android.util.Size
 import android.view.Surface
@@ -16,11 +21,9 @@ import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
-import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.Executor
 
 /// Hold the settings of the camera and use cases in this class and
@@ -100,26 +103,69 @@ data class CameraXState(
         var imageAnalysis: ImageAnalysis? = null
         if (enableImageStream) {
             val width = 1024
-            val analysisAspectRatio = aspectRatio ?: (16 / 9)
+            val analysisAspectRatio = when (aspectRatio) {
+                AspectRatio.RATIO_4_3 -> 4f/3
+                else -> 16f/9
+            }
             val height =  width * (1/analysisAspectRatio)
             imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(width, height))
+                .setTargetResolution(Size(width, height.toInt()))
                 // Should backpressure be a parameter?
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .build()
+            Log.d("CamerawesomePlugin", "image : $width / $height")
             imageAnalysis.setAnalyzer(executor(activity)) { imageProxy ->
                 if (previewStreamSink != null) {
                     // Copying data between threads might be expensive
-                    Dispatchers.IO.run {
-                        val jpegImage = ImageUtil.yuvImageToJpegByteArray(
-                            imageProxy,
-                            Rect(0, 0, imageProxy.width, imageProxy.height),
-                            80
+//                    Dispatchers.IO.run {
+//                        val jpegImage = ImageUtil.yuvImageToJpegByteArray(
+//                            imageProxy,
+//                            Rect(0, 0, imageProxy.width, imageProxy.height),
+//                            80
+//                        )
+//                        previewStreamSink!!.success(jpegImage)
+//                        imageProxy.close()
+//                    }
+//                    previewStreamSink!!.success(imageProxy.)
+
+                    val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
+//                    val image = InputImage.fromMediaImage(imageProxy.image!!, imageProxy.imageInfo.rotationDegrees)
+//                    val options = FaceDetectorOptions.Builder()
+//                        .setContourMode(CONTOUR_MODE_ALL)
+//                        .setClassificationMode(CLASSIFICATION_MODE_ALL)
+//                        .build()
+//                    val detector = FaceDetection.getClient(options)
+//                    detector.process(image)
+//                        .addOnSuccessListener { faces ->
+//                            Log.d("CamerawesomePlugin", "faces detected: ${faces.size}")
+//                        }
+//                        .addOnFailureListener { e ->
+//                            Log.e("CamerawesomePlugin", "failed detect faces", e)
+//                        }
+//                        .addOnCompleteListener {
+//                            imageProxy.close()
+//                        }
+
+                    val planes = imageProxy.image!!.planes.map {
+                        val byteArray = ByteArray(it.buffer.remaining())
+                        it.buffer.get(byteArray, 0, byteArray.size)
+                        mapOf(
+                            "bytes" to byteArray,
+                            "rowStride" to it.rowStride,
+                            "pixelStride" to it.pixelStride
                         )
-                        previewStreamSink!!.success(jpegImage)
-                        imageProxy.close()
                     }
+                    val yuvImageMap = mapOf(
+                        "planes" to planes,
+                        "height" to imageProxy.image!!.height,
+                        "width" to imageProxy.image!!.width,
+                        "format" to imageProxy.image!!.format,
+                        "rotation" to imageProxy.imageInfo.rotationDegrees,
+                        "nv21Image" to nv21Image
+                    )
+                    previewStreamSink!!.success(yuvImageMap)
+                    imageProxy.close()
                 } else {
                     imageProxy.close()
                 }
