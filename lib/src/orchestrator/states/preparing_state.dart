@@ -96,7 +96,7 @@ class PreparingCameraState extends CameraState {
   Future _startPictureMode() async {
     //TODO await CamerawesomePlugin.setExifPreferences(preferences);
     await Future.delayed(Duration(milliseconds: 500));
-    await _init(enableImageStream: true);
+    await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
     cameraContext.changeState(PictureCameraState.from(cameraContext));
 
     cameraContext.analysisController?.start();

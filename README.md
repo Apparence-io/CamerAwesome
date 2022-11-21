@@ -166,6 +166,7 @@ state.when(
 ## 🔬 Analysis mode (WIP 🚧)
 
 This is a first step into this feature as we are currently working on this.
+> ⚠️ Only work on Android for now
 <br/>
 <br/>
 
@@ -174,6 +175,25 @@ Use this to achieve
 - facial recognition
 - AI object detection 
 - realtime video chats
+
+You can check an example using MLKit on Android that detect faces inside the '''example''' directory.
+
+```dart
+CameraAwesomeBuilder.awesome(
+    initialCaptureMode: CaptureModes.PHOTO,
+    picturePathBuilder: (captureMode) => _path(captureMode),
+    videoPathBuilder: (captureMode) => _path(captureMode),
+    onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
+    onImageForAnalysis: analyzeImage,
+    imageAnalysisConfig: AnalysisConfig(
+        outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420_888
+        width: 1024,
+    ),
+),
+```
+
+> MLkit recommands to use nv21 format. <br/>
+> For machine learning you don't need full resolution images (1024 is enough and makes computation easyer)
 
 -----
 ## 🐽 Setting sensors settings
