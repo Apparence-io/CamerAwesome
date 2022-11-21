@@ -5,12 +5,8 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'src/orchestrator/models/capture_modes.dart';
-import 'src/orchestrator/models/exif_preferences_data.dart';
-import 'src/orchestrator/models/flashmodes.dart';
+import 'camerawesome_plugin.dart';
 import 'src/orchestrator/models/orientations.dart';
-import 'src/orchestrator/models/sensor_data.dart';
-import 'src/orchestrator/models/sensors.dart';
 
 export 'src/orchestrator/models/analysis_image.dart';
 export 'src/orchestrator/models/capture_modes.dart';
@@ -136,9 +132,12 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
-  static void setupAnalysis() {
+  static void setupAnalysis({
+    int width = 0,
+    required InputAnalysisImageFormat format,
+  }) {
     if (Platform.isAndroid) {
-      CameraInterface().enableImageAnalysisStream(true);
+      CameraInterface().setupImageAnalysisStream(format.toString(), width);
     }
   }
 

@@ -1,16 +1,13 @@
 package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.graphics.Rect
 import android.util.Size
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.internal.utils.ImageUtil
-import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.EventChannel
-import java.io.Serializable
 import java.util.concurrent.Executor
 
 enum class OutputImageFormat {
@@ -29,21 +26,25 @@ class ImageAnalysisBuilder private constructor(
 
     companion object {
 
-        fun defaultConfig(
+        fun configure(
             aspectRatio: Int,
             format: OutputImageFormat,
             executor: Executor,
             previewStreamSink: EventChannel.EventSink,
+            width: Long?
         ): ImageAnalysisBuilder {
-            val width = 1024
+            var widthOrDefault = 1024
+            if(width != null && width > 0) {
+                widthOrDefault = width.toInt()
+            }
             val analysisAspectRatio = when (aspectRatio) {
                 AspectRatio.RATIO_4_3 -> 4f/3
                 else -> 16f/9
             }
-            val height =  width * (1/analysisAspectRatio)
+            val height =  widthOrDefault * (1/analysisAspectRatio)
             return ImageAnalysisBuilder(
                 format,
-                width,
+                widthOrDefault,
                 height.toInt(),
                 executor,
                 previewStreamSink

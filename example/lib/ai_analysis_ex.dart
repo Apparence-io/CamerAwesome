@@ -1,14 +1,20 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
 
+/// This is an example using machine learning with the camera image
+/// This is still in progress and some changes are about to come
+/// - a provided canvas to draw over the camera
+/// - scale and position points on the canvas easily (without calculating rotation, scale...)
+/// ---------------------------
+/// This use Google ML Kit plugin to process images on firebase
+/// for more informations check
+/// https://github.com/bharat-biradar/Google-Ml-Kit-plugin
 void main() {
   runApp(const CameraAwesomeApp());
 }
@@ -72,6 +78,10 @@ class _CameraPageState extends State<CameraPage>
               onMediaTap: (mediaCapture) =>
                   OpenFile.open(mediaCapture.filePath),
               onImageForAnalysis: analyzeImage,
+              imageAnalysisConfig: AnalysisConfig(
+                outputFormat: InputAnalysisImageFormat.nv21,
+                width: 1024,
+              ),
             ),
           ),
           Positioned(
@@ -108,9 +118,6 @@ class _CameraPageState extends State<CameraPage>
   Size? absoluteImageSize;
   int? rotation;
 
-  /// This use Google ML Kit plugin to process images on firebase
-  /// for more informations check
-  /// https://github.com/bharat-biradar/Google-Ml-Kit-plugin
   Future processImage(AnalysisImage img) async {
     final planeData = img.planes.map(
       (plane) {
@@ -174,25 +181,11 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(
-        Rect.fromLTWH(
-          1,
-          1,
-          size.width - 2,
-          size.height - 2,
-        ),
-        bgPainter);
     if (faces == null) {
       return;
     }
     for (final Face face in faces!) {
-      // debugPrint("face.boundingBox.left: ${face.boundingBox.left}");
-      // debugPrint("wRatio: ${wRatio}");
-      // debugPrint("size.width: ${size.width}");
-      // debugPrint("absoluteImageSize!.width: ${absoluteImageSize!.width}");
-      // debugPrint("faceRect: $faceRect");
       canvas.drawRect(
-        // canvas.translate(face.boundingBox.left, dy)
         Rect.fromLTRB(
           translateX(
               face.boundingBox.left, rotation!, size, absoluteImageSize!),
@@ -202,30 +195,12 @@ class FaceDetectorPainter extends CustomPainter {
           translateY(
               face.boundingBox.bottom, rotation!, size, absoluteImageSize!),
         ),
-        // faceRect,
         painter,
       );
 
       // _paintContour(canvas, size, face, FaceContourType.face);
     }
   }
-
-  // _paintContour(Canvas canvas, Size size, Face face, FaceContourType type) {
-  //       final faceContour = face.contours[type];
-  //       if (faceContour?.points != null) {
-  //         for (final Point point in faceContour!.points) {
-  //           canvas.drawCircle(
-  //               Offset(
-  //                 translateX(
-  //                     point.x.toDouble(), rotation, size, absoluteImageSize),
-  //                 translateY(
-  //                     point.y.toDouble(), rotation, size, absoluteImageSize),
-  //               ),
-  //               1,
-  //               painter);
-  //         }
-  //       }
-  //     }
 
   @override
   bool shouldRepaint(FaceDetectorPainter oldDelegate) {

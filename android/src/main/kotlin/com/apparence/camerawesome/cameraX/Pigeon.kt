@@ -96,7 +96,7 @@ interface CameraInterface {
   fun setPreviewSize(size: PreviewSize)
   fun saveGpsLocation(saveGPSLocation: Boolean)
   fun setAspectRatio(aspectRatio: String)
-  fun enableImageAnalysisStream(enable: Boolean)
+  fun setupImageAnalysisStream(format: String, width: Long)
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -588,14 +588,15 @@ val codec: MessageCodec<Any?> by lazy {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.enableImageAnalysisStream", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
               val args = message as List<Any?>
-              val enableArg = args[0] as Boolean
-              api.enableImageAnalysisStream(enableArg)
+              val formatArg = args[0] as String
+              val widthArg = args[1].let { if (it is Int) it.toLong() else it as Long }
+              api.setupImageAnalysisStream(formatArg, widthArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)

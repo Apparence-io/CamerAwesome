@@ -14,6 +14,16 @@ InputAnalysisImageFormat inputAnalysisImageFormatParser(String value) {
   return InputAnalysisImageFormat.unknown;
 }
 
+class AnalysisConfig {
+  final InputAnalysisImageFormat outputFormat;
+  final int width;
+
+  AnalysisConfig({
+    required this.outputFormat,
+    required this.width,
+  });
+}
+
 class AnalysisParams {
   InputAnalysisImageFormat format;
   int? width;

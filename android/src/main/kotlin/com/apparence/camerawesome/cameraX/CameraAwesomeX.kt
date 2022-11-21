@@ -5,12 +5,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.location.Location
-import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Rational
 import android.util.Size
 import androidx.camera.core.*
-import androidx.camera.core.impl.PreviewConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.VideoRecordEvent
@@ -90,6 +87,20 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         callback(true)
     }
 
+    override fun setupImageAnalysisStream(format: String, width: Long) {
+        cameraState.apply {
+            this.imageAnalysisBuilder = ImageAnalysisBuilder.configure(
+                aspectRatio ?: AspectRatio.RATIO_4_3,
+                OutputImageFormat.valueOf(format),
+                executor(activity!!),
+                previewStreamSink!!,
+                width
+            )
+            updateLifecycle(activity!!)
+        }
+
+    }
+
     override fun checkPermissions(): List<String> {
         return listOf(*cameraPermissions.checkPermissions(activity))
     }
@@ -97,13 +108,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     override fun requestPermissions(): List<String> {
         cameraPermissions.checkAndRequestPermissions(activity)
         return checkPermissions()
-    }
-
-    override fun enableImageAnalysisStream(enable: Boolean) {
-        cameraState.apply {
-            this.enableImageStream = enable
-            updateLifecycle(activity!!)
-        }
     }
 
     private fun getOrientedSize(width: Int, height: Int): Size {
@@ -409,6 +413,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             updateLifecycle(activity!!)
         }
     }
+
 
     //    FLUTTER ATTACHMENTS
     override fun onAttachedToEngine(binding: FlutterPluginBinding) {

@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../orchestrator/analysis/analysis_controller.dart';
 import '../orchestrator/camera_context.dart';
 import '../orchestrator/models/analysis_image.dart';
 import '../orchestrator/sensor_config.dart';
@@ -74,6 +75,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final OnImageForAnalysis? onImageForAnalysis;
 
+  final AnalysisConfig? imageAnalysisConfig;
+
   CameraAwesomeBuilder._({
     required this.initialCaptureMode,
     required this.sensor,
@@ -88,6 +91,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.onMediaTap,
     required this.builder,
     this.onImageForAnalysis,
+    this.imageAnalysisConfig,
   });
 
   factory CameraAwesomeBuilder.awesome({
@@ -106,6 +110,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Future<String> Function(CaptureModes)? videoPathBuilder,
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
+    AnalysisConfig? imageAnalysisConfig,
   }) {
     /// TODO refactor this (those two args could be merged)
     if (availableModes.contains(CaptureModes.PHOTO) &&
@@ -135,6 +140,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
       videoPathBuilder: videoPathBuilder,
       onMediaTap: onMediaTap,
       onImageForAnalysis: onImageForAnalysis,
+      imageAnalysisConfig: imageAnalysisConfig,
     );
   }
 
@@ -155,6 +161,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Future<String> Function(CaptureModes)? videoPathBuilder,
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
+    AnalysisConfig? imageAnalysisConfig,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensor: sensor,
@@ -169,6 +176,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           videoPathBuilder: videoPathBuilder,
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
+          imageAnalysisConfig: imageAnalysisConfig,
         );
 
   @override
@@ -229,6 +237,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       videoPathBuilder: widget.videoPathBuilder,
       availableModes: widget.availableModes,
       onImageForAnalysis: widget.onImageForAnalysis,
+      analysisConfig: widget.imageAnalysisConfig,
     );
 
     cameraContext.state.start();

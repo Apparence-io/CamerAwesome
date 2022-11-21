@@ -50,7 +50,7 @@ class CameraContext {
   final List<CaptureModes> availableModes;
 
   /// allows to create dynamic analysis using the current preview
-  final AnalysisController analysisController;
+  final AnalysisController? analysisController;
 
   CameraContext._({
     required this.initialCaptureMode,
@@ -79,6 +79,7 @@ class CameraContext {
     FilePathBuilder picturePathBuilder,
     FilePathBuilder videoPathBuilder,
     OnImageForAnalysis? onImageForAnalysis,
+    AnalysisConfig? analysisConfig,
   }) =>
       CameraContext._(
         initialCaptureMode: initialCaptureMode,
@@ -87,9 +88,12 @@ class CameraContext {
         picturePathBuilder: picturePathBuilder,
         videoPathBuilder: videoPathBuilder,
         availableModes: availableModes,
-        analysisController: AnalysisController.fromPlugin(
-          onImageListener: onImageForAnalysis,
-        ),
+        analysisController: analysisConfig != null
+            ? AnalysisController.fromPlugin(
+                onImageListener: onImageForAnalysis,
+                conf: analysisConfig,
+              )
+            : null,
       );
 
   changeState(CameraState state) {
@@ -109,12 +113,14 @@ class CameraContext {
     return sensorConfigController.value;
   }
 
+  bool get imageAnalysisEnabled => analysisController != null;
+
   dispose() {
     sensorConfig.dispose();
     sensorConfigController.close();
     mediaCaptureController.close();
     stateController.close();
-    analysisController.close();
+    analysisController?.close();
     CamerawesomePlugin.stop();
   }
 }

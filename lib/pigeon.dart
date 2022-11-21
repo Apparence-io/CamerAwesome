@@ -713,11 +713,11 @@ class CameraInterface {
     }
   }
 
-  Future<void> enableImageAnalysisStream(bool arg_enable) async {
+  Future<void> setupImageAnalysisStream(String arg_format, int arg_width) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.CameraInterface.enableImageAnalysisStream', codec, binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_enable]) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_format, arg_width]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

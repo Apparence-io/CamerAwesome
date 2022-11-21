@@ -2,20 +2,12 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context.CAMERA_SERVICE
-import android.graphics.Rect
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
-import android.os.Build
-import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
-import androidx.camera.core.internal.utils.ImageUtil
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
@@ -35,7 +27,6 @@ data class CameraXState(
     var cameraSelector: CameraSelector,
     private var recorder: Recorder? = null,
     var videoCapture: VideoCapture<Recorder>? = null,
-
     var preview: Preview? = null,
     var previewCamera: Camera? = null,
     private var cameraProvider: ProcessCameraProvider,
@@ -50,6 +41,8 @@ data class CameraXState(
     var previewStreamSink: EventChannel.EventSink? = null,
     val onStreamReady: (state: CameraXState) -> Unit,
 ) : EventChannel.StreamHandler {
+
+    var imageAnalysisBuilder: ImageAnalysisBuilder? = null
 
     val maxZoomRatio: Double
         get() = previewCamera!!.cameraInfo.zoomState.value!!.maxZoomRatio.toDouble()
@@ -71,7 +64,6 @@ data class CameraXState(
                     .setCameraSelector(cameraSelector).build()
         } else {
             preview = Preview.Builder()
-                    //.setTargetResolution(previewSize)
                     .setCameraSelector(cameraSelector).build()
         }
 
@@ -100,15 +92,6 @@ data class CameraXState(
                 .build()
             videoCapture = VideoCapture.withOutput(recorder!!)
         }
-        var imageAnalysis: ImageAnalysis? = null
-        if (enableImageStream && previewStreamSink != null) {
-            imageAnalysis = ImageAnalysisBuilder.defaultConfig(
-                aspectRatio ?: AspectRatio.RATIO_4_3,
-                OutputImageFormat.NV21,
-                executor(activity),
-                previewStreamSink!!
-            ).build()
-        }
 
         val useCases = mutableListOf(
             preview,
@@ -118,8 +101,8 @@ data class CameraXState(
                 videoCapture
             },
         ).apply {
-            if (imageAnalysis != null) {
-                add(imageAnalysis)
+            if (imageAnalysisBuilder != null) {
+                add(imageAnalysisBuilder!!.build())
             }
         }
 

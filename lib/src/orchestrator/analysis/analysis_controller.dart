@@ -8,18 +8,23 @@ class AnalysisController {
 
   final Stream<Map<String, dynamic>>? _images$;
 
+  final AnalysisConfig conf;
+
   StreamSubscription? imageSubscription;
 
   AnalysisController({
     required Stream<Map<String, dynamic>>? images$,
+    required this.conf,
     this.onImageListener,
   }) : _images$ = images$;
 
   factory AnalysisController.fromPlugin({
     OnImageForAnalysis? onImageListener,
+    required AnalysisConfig conf,
   }) =>
       AnalysisController(
         onImageListener: onImageListener,
+        conf: conf,
         images$: CamerawesomePlugin.listenCameraImages(),
       );
 
@@ -32,11 +37,14 @@ class AnalysisController {
       debugPrint('AnalysisController controller already started');
       return;
     }
-    debugPrint("...AnalysisController started");
-    CamerawesomePlugin.setupAnalysis();
+    CamerawesomePlugin.setupAnalysis(
+      format: conf.outputFormat,
+      width: 1024,
+    );
     imageSubscription = _images$?.listen((event) {
       onImageListener!(AnalysisImage.from(event));
     });
+    debugPrint("...AnalysisController started");
   }
 
   get enabled => onImageListener != null;
