@@ -19,12 +19,12 @@ enum class OutputImageFormat {
     NV21,
 }
 
-class ImageAnalysisBuilder  private constructor(
-    val format: OutputImageFormat,
-    val width: Int,
-    val height: Int,
-    val executor: Executor,
-    val previewStreamSink: EventChannel.EventSink,
+class ImageAnalysisBuilder private constructor(
+    private val format: OutputImageFormat,
+    private val width: Int,
+    private val height: Int,
+    private val executor: Executor,
+    private val previewStreamSink: EventChannel.EventSink,
 ){
 
     companion object {
@@ -52,7 +52,7 @@ class ImageAnalysisBuilder  private constructor(
     }
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
-    fun start() {
+    fun build(): ImageAnalysis {
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(width, height))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -86,6 +86,7 @@ class ImageAnalysisBuilder  private constructor(
             }
             imageProxy.close()
         }
+        return imageAnalysis
     }
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
@@ -93,7 +94,7 @@ class ImageAnalysisBuilder  private constructor(
         return mutableMapOf(
             "height" to imageProxy.image!!.height,
             "width" to imageProxy.image!!.width,
-            "format" to imageProxy.image!!.format,
+            "format" to format.name.lowercase(),
             "rotation" to imageProxy.imageInfo.rotationDegrees,
         )
     }

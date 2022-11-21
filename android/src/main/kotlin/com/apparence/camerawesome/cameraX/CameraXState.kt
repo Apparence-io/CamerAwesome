@@ -101,83 +101,28 @@ data class CameraXState(
             videoCapture = VideoCapture.withOutput(recorder!!)
         }
         var imageAnalysis: ImageAnalysis? = null
-        if (enableImageStream) {
-            val width = 1024
-            val analysisAspectRatio = when (aspectRatio) {
-                AspectRatio.RATIO_4_3 -> 4f/3
-                else -> 16f/9
-            }
-            val height =  width * (1/analysisAspectRatio)
-            imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(width, height.toInt()))
-                // Should backpressure be a parameter?
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                .build()
-            Log.d("CamerawesomePlugin", "image : $width / $height")
-            imageAnalysis.setAnalyzer(executor(activity)) { imageProxy ->
-                if (previewStreamSink != null) {
-                    // Copying data between threads might be expensive
-//                    Dispatchers.IO.run {
-//                        val jpegImage = ImageUtil.yuvImageToJpegByteArray(
-//                            imageProxy,
-//                            Rect(0, 0, imageProxy.width, imageProxy.height),
-//                            80
-//                        )
-//                        previewStreamSink!!.success(jpegImage)
-//                        imageProxy.close()
-//                    }
-//                    previewStreamSink!!.success(imageProxy.)
-
-                    val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
-//                    val image = InputImage.fromMediaImage(imageProxy.image!!, imageProxy.imageInfo.rotationDegrees)
-//                    val options = FaceDetectorOptions.Builder()
-//                        .setContourMode(CONTOUR_MODE_ALL)
-//                        .setClassificationMode(CLASSIFICATION_MODE_ALL)
-//                        .build()
-//                    val detector = FaceDetection.getClient(options)
-//                    detector.process(image)
-//                        .addOnSuccessListener { faces ->
-//                            Log.d("CamerawesomePlugin", "faces detected: ${faces.size}")
-//                        }
-//                        .addOnFailureListener { e ->
-//                            Log.e("CamerawesomePlugin", "failed detect faces", e)
-//                        }
-//                        .addOnCompleteListener {
-//                            imageProxy.close()
-//                        }
-
-                    val planes = imageProxy.image!!.planes.map {
-                        val byteArray = ByteArray(it.buffer.remaining())
-                        it.buffer.get(byteArray, 0, byteArray.size)
-                        mapOf(
-                            "bytes" to byteArray,
-                            "rowStride" to it.rowStride,
-                            "pixelStride" to it.pixelStride
-                        )
-                    }
-                    val yuvImageMap = mapOf(
-                        "planes" to planes,
-                        "height" to imageProxy.image!!.height,
-                        "width" to imageProxy.image!!.width,
-                        "format" to imageProxy.image!!.format,
-                        "rotation" to imageProxy.imageInfo.rotationDegrees,
-                        "nv21Image" to nv21Image
-                    )
-                    previewStreamSink!!.success(yuvImageMap)
-                    imageProxy.close()
-                } else {
-                    imageProxy.close()
-                }
-            }
+        if (enableImageStream && previewStreamSink != null) {
+            imageAnalysis = ImageAnalysisBuilder.defaultConfig(
+                aspectRatio ?: AspectRatio.RATIO_4_3,
+                OutputImageFormat.NV21,
+                executor(activity),
+                previewStreamSink!!
+            ).build()
         }
 
         val useCases = mutableListOf(
             preview,
-            if (currentCaptureMode == CaptureModes.PHOTO)
+            if (currentCaptureMode == CaptureModes.PHOTO) {
                 imageCapture
-            else videoCapture,
-        ).apply { if (imageAnalysis != null) add(imageAnalysis) }
+            } else {
+                videoCapture
+            },
+        ).apply {
+            if (imageAnalysis != null) {
+                add(imageAnalysis)
+            }
+        }
+
         cameraProvider.unbindAll()
         previewCamera = cameraProvider.bindToLifecycle(
             activity as LifecycleOwner,

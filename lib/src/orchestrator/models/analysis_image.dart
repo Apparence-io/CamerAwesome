@@ -1,13 +1,15 @@
 import 'dart:typed_data';
 
-enum InputAnalysisImageFormat { yuv_420_888, bgra8888, jpg, unknown }
+enum InputAnalysisImageFormat { yuv_420_888, nv21, jpeg, unknown }
 
-InputAnalysisImageFormat inputAnalysisImageFormatParser(int value) {
+InputAnalysisImageFormat inputAnalysisImageFormatParser(String value) {
   switch (value) {
-    case 35: // android.graphics.ImageFormat.YUV_420_888
+    case 'yuv_420_888': // android.graphics.ImageFormat.YUV_420_888
       return InputAnalysisImageFormat.yuv_420_888;
-    case 256: // android.graphics.ImageFormat.JPEG
-      return InputAnalysisImageFormat.jpg;
+    case 'jpeg': // android.graphics.ImageFormat.JPEG
+      return InputAnalysisImageFormat.jpeg;
+    case 'nv21':
+      return InputAnalysisImageFormat.nv21;
   }
   return InputAnalysisImageFormat.unknown;
 }
@@ -48,7 +50,7 @@ class AnalysisImage {
       planes: (map["planes"] as List<dynamic>)
           .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
           .toList(),
-      format: inputAnalysisImageFormatParser(map["format"] as int),
+      format: inputAnalysisImageFormatParser(map["format"]),
       rotation: map["rotation"],
       nv21Image: map.containsKey("nv21Image") ? map["nv21Image"] : null,
     );
