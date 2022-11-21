@@ -2,6 +2,7 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
@@ -13,6 +14,7 @@ import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
@@ -38,7 +40,6 @@ data class CameraXState(
     var previewSize: Size? = null,
     var aspectRatio: Int? = null,
     var flashMode: FlashMode = FlashMode.NONE,
-    var previewStreamSink: EventChannel.EventSink? = null,
     val onStreamReady: (state: CameraXState) -> Unit,
 ) : EventChannel.StreamHandler {
 
@@ -186,15 +187,15 @@ data class CameraXState(
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        val previous = previewStreamSink;
-        this.previewStreamSink = events
+        val previous = imageAnalysisBuilder?.previewStreamSink;
+        imageAnalysisBuilder?.previewStreamSink = events
         if (previous == null && events != null) {
             onStreamReady(this)
         }
     }
 
     override fun onCancel(arguments: Any?) {
-        this.previewStreamSink?.endOfStream()
-        this.previewStreamSink = null
+        this.imageAnalysisBuilder?.previewStreamSink?.endOfStream()
+        this.imageAnalysisBuilder?.previewStreamSink = null
     }
 }

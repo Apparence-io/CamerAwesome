@@ -89,14 +89,17 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun setupImageAnalysisStream(format: String, width: Long) {
         cameraState.apply {
-            this.imageAnalysisBuilder = ImageAnalysisBuilder.configure(
-                aspectRatio ?: AspectRatio.RATIO_4_3,
-                OutputImageFormat.valueOf(format),
-                executor(activity!!),
-                previewStreamSink!!,
-                width
-            )
-            updateLifecycle(activity!!)
+            try {
+                this.imageAnalysisBuilder = ImageAnalysisBuilder.configure(
+                    aspectRatio ?: AspectRatio.RATIO_4_3,
+                    OutputImageFormat.valueOf(format.uppercase()),
+                    executor(activity!!),
+                    width
+                )
+                updateLifecycle(activity!!)
+            } catch (e: Exception) {
+                Log.e(CamerawesomePlugin.TAG, "error while enable image analysis", e)
+            }
         }
 
     }

@@ -132,12 +132,15 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
-  static void setupAnalysis({
+  static Future<void> setupAnalysis({
     int width = 0,
     required InputAnalysisImageFormat format,
-  }) {
+  }) async {
     if (Platform.isAndroid) {
-      CameraInterface().setupImageAnalysisStream(format.toString(), width);
+      return CameraInterface().setupImageAnalysisStream(
+        format.name,
+        width,
+      );
     }
   }
 

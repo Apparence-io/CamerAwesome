@@ -28,7 +28,7 @@ class AnalysisController {
         images$: CamerawesomePlugin.listenCameraImages(),
       );
 
-  start() {
+  Future<void> start() async {
     if (!enabled) {
       debugPrint("...AnalysisController off");
       return;
@@ -37,7 +37,7 @@ class AnalysisController {
       debugPrint('AnalysisController controller already started');
       return;
     }
-    CamerawesomePlugin.setupAnalysis(
+    await CamerawesomePlugin.setupAnalysis(
       format: conf.outputFormat,
       width: 1024,
     );

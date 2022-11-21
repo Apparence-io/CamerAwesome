@@ -21,7 +21,7 @@ class ImageAnalysisBuilder private constructor(
     private val width: Int,
     private val height: Int,
     private val executor: Executor,
-    private val previewStreamSink: EventChannel.EventSink,
+    var previewStreamSink: EventChannel.EventSink? = null,
 ){
 
     companion object {
@@ -30,7 +30,6 @@ class ImageAnalysisBuilder private constructor(
             aspectRatio: Int,
             format: OutputImageFormat,
             executor: Executor,
-            previewStreamSink: EventChannel.EventSink,
             width: Long?
         ): ImageAnalysisBuilder {
             var widthOrDefault = 1024
@@ -47,19 +46,21 @@ class ImageAnalysisBuilder private constructor(
                 widthOrDefault,
                 height.toInt(),
                 executor,
-                previewStreamSink
             )
         }
     }
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
-    fun build(): ImageAnalysis {
+    fun build(): ImageAnalysis? {
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(width, height))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
             .build()
         imageAnalysis.setAnalyzer(executor) { imageProxy ->
+            if(previewStreamSink == null) {
+                return@setAnalyzer
+            }
             when (format) {
                 OutputImageFormat.JPEG -> {
                     val jpegImage = ImageUtil.yuvImageToJpegByteArray(
@@ -68,13 +69,13 @@ class ImageAnalysisBuilder private constructor(
              80)
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage
-                    previewStreamSink.success(imageMap)
+                    previewStreamSink!!.success(imageMap)
                 }
                 OutputImageFormat.YUV_420_888 -> {
                     val planes = imagePlanesAdapter(imageProxy)
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["planes"] = planes
-                    previewStreamSink.success(imageMap)
+                    previewStreamSink!!.success(imageMap)
                 }
                 OutputImageFormat.NV21 -> {
                     val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
@@ -82,7 +83,7 @@ class ImageAnalysisBuilder private constructor(
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["nv21Image"] = nv21Image
                     imageMap["planes"] = planes
-                    previewStreamSink.success(imageMap)
+                    previewStreamSink!!.success(imageMap)
                 }
             }
             imageProxy.close()
