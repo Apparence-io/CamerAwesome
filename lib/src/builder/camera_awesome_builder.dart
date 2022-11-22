@@ -262,7 +262,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
             Positioned.fill(
               child: PinchToZoom(
                 sensorConfig: cameraContext.sensorConfig,
-                child: CameraPreviewWidget(
+                child: CameraPreviewCovered(
                   key: UniqueKey(),
                 ),
               ),
