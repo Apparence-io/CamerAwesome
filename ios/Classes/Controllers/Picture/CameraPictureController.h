@@ -12,6 +12,7 @@
 #import <CoreLocation/CoreLocation.h>
 
 #import "CameraSensor.h"
+#import "AspectRatio.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,6 +23,7 @@ typedef void(^OnPictureTaken)(void);
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) CameraSensor sensor;
+@property(readonly, nonatomic) float aspectRatio;
 @property NSInteger orientation;
 @property (nonatomic, copy) OnPictureTaken completionBlock;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
@@ -31,6 +33,7 @@ typedef void(^OnPictureTaken)(void);
                  orientation:(NSInteger)orientation
                       sensor:(CameraSensor)sensor
              saveGPSLocation:(bool)saveGPSLocation
+                 aspectRatio:(AspectRatio)aspectRatio
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback;
 @end

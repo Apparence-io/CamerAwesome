@@ -17,6 +17,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _result = result;
   _isRecording = NO;
   _isAudioEnabled = YES;
+  _isPaused = NO;
   
   return self;
 }
@@ -59,6 +60,14 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   }
 }
 
+- (void)pauseVideoRecording {
+  _isPaused = YES;
+}
+
+- (void)resumeVideoRecording {
+  _isPaused = NO;
+}
+
 # pragma mark - Audio & Video writers
 
 /// Setup video channel & write file on path
@@ -81,6 +90,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     _videoRecordingEventSink([NSString stringWithFormat:@"impossible to create video writer : %@", error.description]);
     return NO;
   }
+
   NSDictionary *videoSettings = [NSDictionary
                                  dictionaryWithObjectsAndKeys:AVVideoCodecH264, AVVideoCodecKey,
                                  [NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
@@ -155,6 +165,11 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 # pragma mark - Camera Delegates
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection captureVideoOutput:(AVCaptureVideoDataOutput *)captureVideoOutput {
+  
+  if (self.isPaused) {
+    return;
+  }
+  
   if (_videoWriter.status == AVAssetWriterStatusFailed) {
     _videoRecordingEventSink([NSString stringWithFormat:@"impossible to write video : %@", _videoWriter.error]);
     return;

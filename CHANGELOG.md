@@ -1,3 +1,8 @@
+## 0.4.0
+- Migrate to CameraX instead of Camera2 on Android.
+- Add GPS location in Exif photo on Android.
+- Add Video recording for Android.
+
 ## 0.3.6
 - Add GPS location in Exif photo on iOS.
 - Fix some issues

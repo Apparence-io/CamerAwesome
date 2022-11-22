@@ -1,50 +1,64 @@
-<p align="center">
-	<a href="https://apparence.io/">
-		<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/logo.png" width="456" alt="camerawesome_logo">
-	</a>
-</p>
-
-<a href="https://github.com/Solido/awesome-flutter">
-   <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
+<a href="https://apparence.io">
+    <img src="./docs/img/apparence.png" width="100%" />
 </a>
-<a href="https://github.com/Apparence-io/camera_awesome">
-  <img src="https://img.shields.io/github/stars/Apparence-io/camera_awesome.svg?style=flat-square&logo=github&colorB=green&label=Stars" alt="Star on Github">
-</a>
-<a href="https://pub.dev/packages/camerawesome">
-  <img src="https://img.shields.io/pub/v/camerawesome.svg?style=flat-square&label=Pub" alt="Star on Github">
-</a>
+<div style="margin-top:40px" >
+    <img src="./docs/img/header.png" width="100%" />
+    <img src="./docs/img/features.png" width="100%" style="margin-top:32px" />
+</div>
 
-## 🚀&nbsp; Overview
+<br/>
 
-Flutter plugin to add Camera support inside your project.
+# CamerAwesome
 
-CamerAwesome include a lot of useful features like:
+<div>
+    <a href="https://github.com/Solido/awesome-flutter">
+        <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
+    </a>
+    <a href="https://github.com/Apparence-io/camera_awesome">
+        <img src="https://img.shields.io/github/stars/Apparence-io/camera_awesome.svg?style=flat-square&logo=github&colorB=green&label=Stars" alt="Star on Github">
+    </a>
+    <a href="https://pub.dev/packages/camerawesome">
+        <img src="https://img.shields.io/pub/v/camerawesome.svg?style=flat-square&label=Pub" alt="Star on Github">
+    </a>
+</div>
 
-- 📲 Live camera **flip** ( switch between **rear** & **front** camera without rebuild ).
-- ⚡️ No init needed, just add CameraAwesome widget !
-- ⌛️ Instant **focus**.
-- 📸 Device **flash** support.
-- 🎚 **Zoom**.
-- 🖼 **Fullscreen** or **SizedBox** preview support.
-- 🎮 Complete example.
-- 🎞 Taking a **picture** ( of course 😃 ).
-- 🎥 Video recording (iOS only for now).
-- 🛰 **GPS Location** saved in image (iOS only for now).
+📸 Embedding a camera experience within your own app should't be that hard. <br/>
+A flutter plugin to integrate awesome Android / iOS camera experience.<br/>
+<br/>
+This packages provides you a fully customizable camera experience that you can use within your app.<br/>
+Use our awesome built in interface or customize it as you want. 
 
-## 🧐&nbsp; Live example
+--------
 
-<table>
-  <tr>
-    <td>Taking photo 📸 & record video 🎥</td>
-    <td>Resolution changing 🌇</td>
-  </tr>
-  <tr>
-    <td><center><img src="medias/examples/example1.gif?raw=true" width="200" alt="camerawesome_example1"></center></td>
-    <td><center><img src="medias/examples/example2.gif?raw=true" width="200" alt="camerawesome_example2"></center></td>
-  </tr>
-</table>
+## Native features
+Here's all native features that cameraAwesome provides to the flutter side.
+
+| System                           | Android | iOS | 
+|----------------------------------|---------|-----|
+| 🔖 Ask permissions               | ✅      | ✅  |
+| 🎥 Record video                  | ✅      | ✅  |
+| 🔈 Enable/disable audio          | ✅      | ✅  |
+| 🎞 Take picture                  | ✅      | ✅  |
+| 🌤 Exposure level                | ✅      | ✅  |
+| 📡 Broadcast live image stream   | ✅      | ✅  |
+| 👁 zoom                          | ✅      | ✅  |
+| 📸 Device flash support          | ✅      | ✅  |
+| ⌛️ Auto focus                    | ✅      | ✅  |
+| 📲 Live switching camera         | ✅      | ✅  |
+| 😵‍💫 Camera rotation stream        | ✅      | ✅  |
+| 🤐 Background auto stop          | ✅      | ✅  |
+
+-----
 
 ## 📖&nbsp; Installation and usage
+
+### Add the package in your pubspec.yaml 
+
+```yaml
+dependencies:
+    camerawesome: ^1.0.0 
+    ...
+```
 
 ### Set permissions
    - **iOS** add these on ```ios/Runner/Info.plist``` file
@@ -76,183 +90,134 @@ CamerAwesome include a lot of useful features like:
     minSdkVersion 21
     ```
 
-### Import the package
+### Import the package in your Flutter app
 ```dart
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
-### Define notifiers (if needed) & controller
-ValueNotifier is a useful change notifier from Flutter framework. It fires an event on all listener when value changes.
-[Take a look here for ValueNotifier doc](https://api.flutter.dev/flutter/foundation/ValueNotifier-class.html)
+-----
 
+## 👌 Awesome build-in interface
+
+Just use our builder. <br>
+That's all you need to create a complete camera experience within you app.
 ```dart
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  // [...]
-  // Notifiers
-  ValueNotifier<CameraFlashes> _switchFlash = ValueNotifier(CameraFlashes.NONE);
-  ValueNotifier<Sensors> _sensor = ValueNotifier(Sensors.BACK);
-  ValueNotifier<CaptureModes> _captureMode = ValueNotifier(CaptureModes.PHOTO);
-  ValueNotifier<Size> _photoSize = ValueNotifier(null);
-
-  // Controllers
-  PictureController _pictureController = new PictureController();
-  VideoController _videoController = new VideoController();
-  // [...]
-}
-```
-
-
-If you want to change a config, all you need is setting the value. CameraAwesome will handle the rest.
-
-Examples:
-```dart
-_switchFlash.value = CameraFlashes.AUTO;
-_captureMode.value = CaptureModes.VIDEO;
-```
-
-
-### Create your camera
-
-```dart
-// [...]
-@override
-  Widget build(BuildContext context) {
-    return CameraAwesome(
-      testMode: false,
-      onPermissionsResult: (bool result) { },
-      selectDefaultSize: (List<Size> availableSizes) => Size(1920, 1080),
-      onCameraStarted: () { },
-      onOrientationChanged: (CameraOrientations newOrientation) { },
-      zoom: 0.64,
-      sensor: _sensor,
-      photoSize: _photoSize,
-      switchFlashMode: _switchFlash,
-      captureMode: _captureMode,
-      fitted: true,
-    );
-  };
-// [...]
-```
-
-
-<details>
-<summary>Reveal parameters list</summary>
-<p>
-
-| Param                | Type                                   | Description                                                                                 | Required |
-|----------------------|----------------------------------------|---------------------------------------------------------------------------------------------|----------|
-| testMode             | ```boolean```                          | true to wrap texture                                                                        |          |
-| onPermissionsResult  | ```OnPermissionsResult```              | implement this to have a callback after CameraAwesome asked for permissions                 |          |
-| selectDefaultSize    | ```OnAvailableSizes```                 | implement this to select a default size from device available size list                     | ✅        |
-| onCameraStarted      | ```OnCameraStarted```                  | notify client that camera started                                                           |          |
-| onOrientationChanged | ```OnOrientationChanged```             | notify client that orientation changed                                                      |          |
-| switchFlashMode      | ```ValueNotifier<CameraFlashes>```     | change flash mode                                                                           |          |
-| enablePinchToZoom    | ```ValueNotifier<bool>```              | enable/Disable pinch to zoom                                                                |          |
-| zoom                 | ```ValueNotifier<double>```            | Zoom from native side. Must be between **0** and **1**                                      |          |
-| sensor               | ```ValueNotifier<Sensors>```           | sensor to initiate **BACK** or **FRONT**                                                    | ✅        |
-| photoSize            | ```ValueNotifier<Size>```              | choose your photo size from the [selectDefaultSize] method                                  |          |
-| captureMode          | ```ValueNotifier<CaptureModes>```      | choose capture mode between **PHOTO** or **VIDEO**                                          |          |
-| fitted               | ```bool```                             | whether camera preview must be as big as it needs or cropped to fill with. false by default |          |
-| imagesStreamBuilder  | ```Function```                         | returns an imageStream when camera has started preview                                      |          |
-| exifPreferences        | ```ExifPreferences```                    | set exif data when a picture was taken, GPS location can be saved to image file for ex.     |          |
-
-</p>
-</details>
-
-### Photo 🎞
-#### Take a photo 📸
-
-```dart
-await _pictureController.takePicture('THE_IMAGE_PATH/myimage.jpg');
-```
-
-### Video 🎥
-#### Record a video 📽
-
-```dart
-await _videoController.recordVideo('THE_IMAGE_PATH/myvideo.mp4');
-```
-
-#### Stop recording video 📁
-
-```dart
-await _videoController.stopRecordingVideo();
-```
-
-## 📡&nbsp; Live image stream
-
-The property imagesStreamBuilder allows you to get an imageStream once the camera is ready.
-Don't try to show all these images on Flutter UI as you won't have time to refresh UI fast enough.
-(there is too much images/sec).
-
-```dart
-CameraAwesome(
-    ...
-    imagesStreamBuilder: (imageStream) {
-        /// listen for images preview stream
-        /// you can use it to process AI recognition or anything else...
-        print('-- init CamerAwesome images stream');
+CameraAwesomeBuilder.awesome(
+    initialCaptureMode: CaptureModes.PHOTO,
+    picturePathBuilder: (captureMode) => _path(captureMode),
+    videoPathBuilder: (captureMode) => _path(captureMode),
+    onMediaTap: (mediaCapture) {
+        OpenFile.open(mediaCapture.filePath);
     },
-)
+),
+```
+------
+## 🎨 Creating a custom interface
+
+Our builder provides a custom factory. <br>
+Now you have access to the builder property and can create your own camera experience. <br>
+The camera preview will be visible behind what you will provide to our builder.
+
+> Note <br/>
+> Only the camera preview is not customizable yet
+
+```dart
+CameraAwesomeBuilder.custom(
+    initialCaptureMode: CaptureModes.PHOTO,
+    picturePathBuilder: (captureMode) => _path(captureMode),
+    videoPathBuilder: (captureMode) => _path(captureMode),
+    builder: (state) {
+        // create your interface here 
+    },
+),
 ```
 
-## 📱&nbsp; Tested devices
+### Working with the custom builder
 
-CamerAwesome was developed to support **most devices** on the market but some feature can't be **fully** functional. You can check if your device support all feature by clicking bellow.
+Here is the definition of our builder method. 
+```dart
+typedef CameraLayoutBuilder = Widget Function(CameraState cameraState);
+```
+<br/>
+The only thing you have access is the cameraState.<br/>
+Depending on which state is our camera experience you will have access to some different method. <br/>
+<br/>
 
-Feel free to **contribute** to improve this **compatibility list**.
+#### How camerAwesome states works ? 
+Using the state you can do anything you need without having to think about the camera flow<br/><br/>
+- On app start we are in [PreparingCameraState]<br/>
+- Then depending on the initialCaptureMode you set you will be [PictureCameraState] or [VideoCameraState]<br/>
+- Starting a video will push a [VideoRecordingCameraState]<br/>
+- Stopping the video will push back the [VideoCameraState]<br/>
+<br/>
+Also if you want to use some specific function you can use the when method so you can write like this.<br/>
 
-<details>
-<summary>Reveal grid</summary>
-<p>
+```dart
+state.when(
+    onPictureMode: (pictureState) => pictureState.start(),
+    onVideoMode: (videoState) => videoState.start(),
+    onVideoRecordingMode: (videoState) => videoState.pause(),
+);
+```
 
-| Devices              | Flash | Focus | Zoom | Flip |
-|----------------------|-------|-------|------|------|
-| iPhone 5s            | ✅     | ✅     | ✅    | ✅    |
-| iPhone X             | ✅     | ✅     | ✅    | ✅    |
-| iPhone 7             | ✅     | ✅     | ✅    | ✅    |
-| iPhone 12 Pro        | ✅     | ✅     | ✅    | ✅    |
-| iPhone SE (2nd gen)  | ✅     | ✅     | ✅    | ✅    |
-| One Plus 6T          | ✅     | ✅     | ✅    | ✅    |
-| Xiaomi redmi         | ✅     | ✅     | ✅    | ✅    |
-| Honor 7              | ✅     | ✅     | ✅    | ✅    |
-| Sony Xperia XZ F8331 | ✅     | ✅     | ✅    | ✅    |
-| Pixel 4              | ✅     | ✅     | ✅    | ✅    |
-| Galaxy S7            | ✅     | ✅     | ✅    | ✅    |
-| LG k50s              | ✅     | ✅     | ✅    | ✅    |
+<br/>
 
-</p>
-</details>
+-----
+## 🔬 Analysis mode (WIP 🚧)
 
-## 🎯&nbsp; Our goals
+This is a first step into this feature as we are currently working on this.
+> ⚠️ Only work on Android for now
+<br/>
 
-Feel free to help by submitting PR !
+Use this to achieve
+- QR-Code scanning
+- facial recognition
+- AI object detection 
+- realtime video chats
 
-- [ ] 🎥 Record video (partially, iOS only)
-- [ ] 🌠 Focus on specific point
-- [x] ~~📡 Broadcast live image stream~~
-- [x] ~~🌤 Exposure level~~
-- [x] ~~✅ Add e2e tests~~
-- [x] ~~🖼 Fullscreen/SizedBox support~~
-- [x] ~~🎮 Complete example~~
-- [x] ~~🎞 Take a picture~~
-- [x] ~~🎚 Zoom level~~
-- [x] ~~📲 Live switching camera~~
-- [x] ~~📸 Device flash support~~
-- [x] ~~⌛️ Auto focus~~
+You can check an example using MLKit on Android that detect faces inside the '''example''' directory.
 
-## 📣&nbsp; Sponsor
-<img src="https://github.com/Apparence-io/camera_awesome/raw/master/.github/img/apparence_logo.png" />
-<br />
+```dart
+CameraAwesomeBuilder.awesome(
+    initialCaptureMode: CaptureModes.PHOTO,
+    picturePathBuilder: (captureMode) => _path(captureMode),
+    videoPathBuilder: (captureMode) => _path(captureMode),
+    onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
+    onImageForAnalysis: analyzeImage,
+    imageAnalysisConfig: AnalysisConfig(
+        outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420_888
+        width: 1024,
+    ),
+),
+```
 
-[Initiated and sponsored by Apparence.io.](https://apparence.io)
+> MLkit recommands to use nv21 format. <br/>
+> For machine learning you don't need full resolution images (1024 is enough and makes computation easyer)
 
-## 👥&nbsp; Contribution
+-----
+## 🐽 Setting sensors settings
+Through state you can access to a ```SensorConfig``` class. 
+This contains 
+| Function   | Comment |
+|------------------------------------|---------|
+| setZoom    | changing zoom |
+| setFlashMode    | changing flash between NONE,ON,AUTO,ALWAYS |
+| setBrightness    | change brightness level manually (better to let this auto) |
 
-Contributions are welcome.
-Contribute by creating a PR or create an issue 🎉.
+All of this configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
+
+
+-------
+## 🚀 Roadmap
+
+- [ ] bind exif preferences (flutter)
+- [ ] create complete documentation for all use cases (docs.page)
+- [ ] Tests plugin flutter states (flutter)
+- [ ] Tests E2E (flutter)
+- [ ] Handle rotation (flutter)
+- [ ] Image analysis state (flutter)
+- [ ] Apply Preview filter 
+- [ ] Apply filter on image
+- [ ] Timer before picture (flutter)
+- [ ] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)
+- [ ] Multiple camera photo mode

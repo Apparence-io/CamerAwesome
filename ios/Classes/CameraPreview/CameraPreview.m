@@ -35,6 +35,7 @@
   [_captureSession addOutputWithNoConnections:_captureVideoOutput];
   
   _cameraSensor = sensor;
+  _aspectRatio = Ratio4_3;
   
   [self initCameraPreview:sensor];
   
@@ -57,7 +58,27 @@
   
   [_motionController startMotionDetection];
   
+  [self setBestPreviewQuality];
+  
   return self;
+}
+
+- (void)setAspectRatio:(AspectRatio)ratio {
+  _aspectRatio = ratio;
+}
+
+/// Assign the default preview qualities
+- (void)setBestPreviewQuality {
+  NSArray *qualities = [self getSizes];
+  NSDictionary *firstSizeDict;
+  if ([qualities count] > 0) {
+    firstSizeDict = qualities.lastObject;
+  } else {
+    firstSizeDict = kCameraQualities.firstObject;
+  }
+  
+  CGSize firstSize = CGSizeMake([firstSizeDict[@"width"] floatValue], [firstSizeDict[@"height"] floatValue]);
+  [self setCameraPresset:firstSize];
 }
 
 /// Save exif preferences when taking picture
@@ -87,6 +108,8 @@
   _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
                                                               output:_captureVideoOutput];
   
+  
+  
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
   [_captureSession addConnection:_captureConnection];
@@ -100,8 +123,19 @@
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
   [_captureConnection setVideoMirrored:(_cameraSensor == Front)];
   [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-  
-  [self setCameraPresset:CGSizeMake(0, 0)];
+}
+
+- (NSArray *)getSizes {
+  NSMutableArray *qualities = [[NSMutableArray alloc] init];
+  NSArray<AVCaptureDeviceFormat *>* formats = [_captureDevice formats];
+  for(int i = 0; i < formats.count; i++) {
+    AVCaptureDeviceFormat *format = formats[i];
+    [qualities addObject:@{
+      @"width": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width],
+      @"height": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height],
+    }];
+  }
+  return qualities;
 }
 
 - (void)dealloc {
@@ -202,6 +236,8 @@
   
   // Init the camera preview with the selected sensor
   [self initCameraPreview:sensor];
+  
+  [self setBestPreviewQuality];
   
   [_captureSession commitConfiguration];
 }
@@ -339,6 +375,7 @@
                                                                              orientation:_motionController.deviceOrientation
                                                                                   sensor:_cameraSensor
                                                                          saveGPSLocation:_saveGPSLocation
+                                                                             aspectRatio:_aspectRatio
                                                                                   result:_result
                                                                                 callback:^{
     // If flash mode is always on, restore it back after photo is taken
@@ -352,6 +389,7 @@
   // Create settings instance
   AVCapturePhotoSettings *settings = [AVCapturePhotoSettings photoSettings];
   [settings setFlashMode:_flashMode];
+  [settings setHighResolutionPhotoEnabled:YES];
   
   [_capturePhotoOutput capturePhotoWithSettings:settings
                                        delegate:cameraPicture];
@@ -376,6 +414,16 @@
   } else {
     _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }
+}
+
+/// Pause video recording
+- (void)pauseVideoRecording {
+  [_videoController pauseVideoRecording];
+}
+
+/// Resume video recording after being paused
+- (void)resumeVideoRecording {
+  [_videoController resumeVideoRecording];
 }
 
 /// Stop recording video

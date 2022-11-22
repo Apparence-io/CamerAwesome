@@ -17,6 +17,7 @@
                  orientation:(NSInteger)orientation
                       sensor:(CameraSensor)sensor
              saveGPSLocation:(bool)saveGPSLocation
+                 aspectRatio:(AspectRatio)aspectRatio
                       result:(FlutterResult)result
                     callback:(OnPictureTaken)callback {
   self = [super init];
@@ -27,6 +28,15 @@
   _completionBlock = callback;
   _sensor = sensor;
   _saveGPSLocation = saveGPSLocation;
+  
+  if (aspectRatio == Ratio4_3) {
+    _aspectRatio = 4.0/3.0;
+  } else if(aspectRatio == Ratio16_9) {
+    _aspectRatio = 16.0/9.0;
+  } else {
+    _aspectRatio = 1;
+  }
+  
   selfReference = self;
   return self;
 }
@@ -64,7 +74,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
                 error:(NSError *)error {
   selfReference = nil;
   if (error) {
-    _result([FlutterError errorWithCode:@"" message:@"" details:@""]);
+    _result([FlutterError errorWithCode:@"CAPTURE ERROR" message:error.description details:@""]);
     return;
   }
   
@@ -85,6 +95,35 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   UIImage *image = [UIImage imageWithCGImage:[UIImage imageWithData:data].CGImage
                                        scale:1.0
                                  orientation:[self getJpegOrientation]];
+  float originalWidth = image.size.width;
+  float originalHeight = image.size.height;
+  
+  float originalImageAspectRatio = originalWidth / originalHeight;
+  
+  if (originalImageAspectRatio != _aspectRatio) {
+    float outputWidth = originalWidth;
+    float outputHeight = originalHeight;
+    if (originalImageAspectRatio > _aspectRatio) {
+      outputWidth = originalHeight * _aspectRatio;
+    } else if (originalImageAspectRatio < _aspectRatio) {
+      outputHeight = originalWidth / _aspectRatio;
+    }
+    
+    double refWidth = CGImageGetWidth(image.CGImage);
+    double refHeight = CGImageGetHeight(image.CGImage);
+    
+    double x = (refWidth - outputWidth) / 2.0;
+    double y = (refHeight - outputHeight) / 2.0;
+
+    CGRect cropRect = CGRectMake(x, y, outputHeight, outputWidth);
+    CGImageRef imageRef = CGImageCreateWithImageInRect([image CGImage], cropRect);
+
+    image = [UIImage imageWithCGImage:imageRef scale:0.0 orientation:[self getJpegOrientation]];
+    CGImageRelease(imageRef);
+  }
+  
+  
+  // TODO: crop image to aspect ratio
   
   NSData *imageWithExif = [UIImageJPEGRepresentation(image, 1.0) addExif:container];
   

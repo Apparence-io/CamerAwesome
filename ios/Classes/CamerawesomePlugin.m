@@ -131,6 +131,10 @@ FlutterEventSink imageStreamEventSink;
     [self _handleTakePhoto:call result:result];
   } else if ([@"recordVideo" isEqualToString:call.method]) {
     [self _handleRecordVideo:call result:result];
+  } else if ([@"pauseVideoRecording" isEqualToString:call.method]) {
+    [self _handlePauseVideoRecording:call result:result];
+  } else if ([@"resumeVideoRecording" isEqualToString:call.method]) {
+    [self _handleResumeVideoRecording:call result:result];
   } else if ([@"stopRecordingVideo" isEqualToString:call.method]) {
     [self _handleStopRecordingVideo:call result:result];
   } else if ([@"setRecordingAudioMode" isEqualToString:call.method]) {
@@ -139,6 +143,8 @@ FlutterEventSink imageStreamEventSink;
     [self _handleAutoFocus:call result:result];
   } else if ([@"setFlashMode" isEqualToString:call.method]) {
     [self _handleFlashMode:call result:result];
+  } else if ([@"setAspectRatio" isEqualToString:call.method]) {
+    [self _handleSetAspectRatio:call result:result];
   } else if ([@"setSensor" isEqualToString:call.method]) {
     [self _handleSetSensor:call result:result];
   } else if ([@"setCaptureMode" isEqualToString:call.method]) {
@@ -155,6 +161,35 @@ FlutterEventSink imageStreamEventSink;
     result(FlutterMethodNotImplemented);
     return;
   };
+}
+
+- (void)_handleSetAspectRatio:(FlutterMethodCall*)call result:(FlutterResult)result {
+  NSString *ratioArg = call.arguments[@"ratio"];
+  
+  if (ratioArg == nil || ratioArg.length <= 0) {
+    result([FlutterError errorWithCode:@"RATIO_NOT_SET" message:@"a ratio must be set" details:nil]);
+    return;
+  }
+  
+  AspectRatio aspectRatio;
+  if ([ratioArg isEqualToString:@"RATIO_4_3"]) {
+    aspectRatio = Ratio4_3;
+  } else if ([ratioArg isEqualToString:@"RATIO_16_9"]) {
+    aspectRatio = Ratio16_9;
+  } else {
+    aspectRatio = Ratio1_1;
+  }
+  
+  [self.camera setAspectRatio:aspectRatio];
+  result(nil);
+}
+
+- (void)_handlePauseVideoRecording:(FlutterMethodCall*)call result:(FlutterResult)result {
+  [self.camera pauseVideoRecording];
+}
+
+- (void)_handleResumeVideoRecording:(FlutterMethodCall*)call result:(FlutterResult)result {
+  [self.camera resumeVideoRecording];
 }
 
 - (void)_handleRecordingAudioMode:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -217,12 +252,17 @@ FlutterEventSink imageStreamEventSink;
   CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
   
   [_camera setSensor:sensor];
+  
+  result(nil);
 }
 
 - (void)_handleSetCaptureMode:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSString *captureModeName = call.arguments[@"captureMode"];
+  
   CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
   [_camera setCaptureMode:captureMode];
+  
+  result(nil);
 }
 
 - (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -234,7 +274,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleSizes:(FlutterMethodCall*)call result:(FlutterResult)result {
-  result(kCameraQualities);
+  result([_camera getSizes]);
 }
 
 - (void)_handlePreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -270,7 +310,7 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
-  // TODO: Set size inside camera
+  [self.camera setCameraPresset:CGSizeMake(width, height)];
   
   result(nil);
 }
@@ -343,6 +383,7 @@ FlutterEventSink imageStreamEventSink;
   
   // Assign texture id
   _textureId = [_registry registerTexture:self.camera];
+  
   result(@(YES));
 }
 
