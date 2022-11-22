@@ -29,43 +29,50 @@ class AwesomeAspectRatioButton extends StatelessWidget {
 
 class _AspectRatioButton extends StatelessWidget {
   final VoidCallback onTap;
-  final IconData icon;
+  final AssetImage icon;
+  final double width;
 
-  const _AspectRatioButton(
-      {super.key, required this.onTap, required this.icon});
+  const _AspectRatioButton({
+    super.key,
+    required this.onTap,
+    required this.icon,
+    required this.width,
+  });
 
   factory _AspectRatioButton.from({
     Key? key,
     required CameraAspectRatios aspectRatio,
     required VoidCallback onTap,
   }) {
-    final IconData icon;
+    final AssetImage icon;
+    double width;
     switch (aspectRatio) {
       case CameraAspectRatios.RATIO_16_9:
-        icon = Icons.crop_16_9_rounded;
+        width = 32;
+        icon = AssetImage("packages/camerawesome/assets/icons/16_9.png");
         break;
       case CameraAspectRatios.RATIO_4_3:
-        icon = Icons.crop_7_5_rounded;
+        width = 24;
+        icon = AssetImage("packages/camerawesome/assets/icons/4_3.png");
         break;
       case CameraAspectRatios.RATIO_1_1:
-        icon = Icons.crop_din_rounded;
+        width = 24;
+        icon = AssetImage("packages/camerawesome/assets/icons/1_1.png");
         break;
     }
     return _AspectRatioButton(
       key: key,
       onTap: onTap,
       icon: icon,
+      width: width,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        color: Colors.white,
-      ),
+    return InkWell(
+      onTap: onTap,
+      child: Image(image: icon, width: width),
     );
   }
 }

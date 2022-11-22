@@ -168,7 +168,6 @@ state.when(
 This is a first step into this feature as we are currently working on this.
 > ⚠️ Only work on Android for now
 <br/>
-<br/>
 
 Use this to achieve
 - QR-Code scanning

@@ -8,25 +8,22 @@ class CameraSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black12,
-            shape: BoxShape.circle,
-          ),
-          child: ClipOval(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => state.switchCameraSensor(),
-                child: Icon(
-                  Icons.cameraswitch,
-                  size: 32,
-                  color: Colors.white,
-                ),
-              ),
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: Colors.black12,
+        shape: BoxShape.circle,
+      ),
+      child: ClipOval(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => state.switchCameraSensor(),
+            child: Icon(
+              Icons.cameraswitch,
+              size: 32,
+              color: Colors.white,
             ),
           ),
         ),

@@ -70,7 +70,10 @@ class MediaPreview extends StatelessWidget {
       case MediaCaptureStatus.failure:
         return Icon(Icons.error);
       case null:
-        return SizedBox.expand();
+        return Container(
+          width: 32,
+          height: 32,
+        );
     }
   }
 }

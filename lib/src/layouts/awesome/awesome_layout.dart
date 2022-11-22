@@ -28,10 +28,14 @@ class AwesomeCameraLayout extends StatelessWidget {
         const SizedBox(height: 16),
         AwesomeTopActions(state: state),
         Spacer(),
-        AwesomeCameraModeSelector(state: state),
         const SizedBox(height: 12),
-        AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
-        const SizedBox(height: 32),
+        AwesomeBackground(
+          child: Column(children: [
+            AwesomeCameraModeSelector(state: state),
+            AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
+            const SizedBox(height: 32),
+          ]),
+        ),
       ],
     );
   }
@@ -71,34 +75,54 @@ class AwesomeBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(width: 24),
-        Flexible(
-          child: CameraSwitcher(state: state),
-        ),
-        Spacer(),
-        StartCameraButton(
-          state: state,
-        ),
-        Spacer(),
-        Flexible(
-          child: StreamBuilder<MediaCapture?>(
-            stream: state.captureState$,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Container(width: 32);
-              }
-              return MediaPreview(
-                mediaCapture: snapshot.requireData,
-                onMediaTap: onMediaTap,
-              );
-            },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Flexible(
+            flex: 0,
+            child: CameraSwitcher(state: state),
           ),
-        ),
-        const SizedBox(width: 24),
-      ],
+          // Spacer(),
+          StartCameraButton(
+            state: state,
+          ),
+          // Spacer(),
+          Flexible(
+            flex: 0,
+            child: StreamBuilder<MediaCapture?>(
+              stream: state.captureState$,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Container(width: 72, height: 72);
+                }
+                return SizedBox(
+                  width: 72,
+                  child: MediaPreview(
+                    mediaCapture: snapshot.requireData,
+                    onMediaTap: onMediaTap,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AwesomeBackground extends StatelessWidget {
+  final Widget child;
+
+  const AwesomeBackground({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black54,
+      child: child,
     );
   }
 }

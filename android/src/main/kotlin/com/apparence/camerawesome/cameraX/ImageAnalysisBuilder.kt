@@ -25,7 +25,6 @@ class ImageAnalysisBuilder private constructor(
 ){
 
     companion object {
-
         fun configure(
             aspectRatio: Int,
             format: OutputImageFormat,
