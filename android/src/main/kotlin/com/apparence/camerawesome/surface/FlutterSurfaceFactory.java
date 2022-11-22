@@ -9,7 +9,6 @@ import androidx.annotation.RequiresApi;
 
 import io.flutter.view.TextureRegistry;
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class FlutterSurfaceFactory implements SurfaceFactory {
 
     private TextureRegistry registry;

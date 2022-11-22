@@ -1,4 +1,4 @@
-package com.apparence.camerawesome
+package com.apparence.camerawesome.cameraX
 
 import android.Manifest
 import android.app.Activity

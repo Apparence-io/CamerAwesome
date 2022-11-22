@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import com.apparence.camerawesome.*
 import com.apparence.camerawesome.models.FlashMode
+import com.apparence.camerawesome.sensors.CameraSensor
 import com.apparence.camerawesome.sensors.SensorOrientationListener
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
