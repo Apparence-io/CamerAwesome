@@ -14,7 +14,26 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
-### Properties
+### 👍 Use Path_provider package
+
+We highly suggest you to install path_provider. <br/>
+This will help you to provide a valid Path. 
+```dart
+import 'package:path_provider/path_provider.dart';
+
+Future<String> _path(CaptureModes captureMode) async {
+    final Directory extDir = await getTemporaryDirectory();
+    final testDir =
+        await Directory('${extDir.path}/test').create(recursive: true);
+    final String fileExtension =
+        captureMode == CaptureModes.PHOTO ? 'jpg' : 'mp4';
+    final String filePath =
+        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
+    return filePath;
+  }
+```
+
+### 🔬 Properties
 
 | Method                           | Comment | 
 |----------------------------------|---------|
