@@ -1,0 +1,17 @@
+## 👌 Awesome build-in interface
+
+*showcase img*
+<br><br>
+
+Just use our builder. <br>
+That's all you need to create a complete camera experience within you app.
+```dart
+CameraAwesomeBuilder.awesome(
+    initialCaptureMode: CaptureModes.PHOTO,
+    picturePathBuilder: (captureMode) => _path(captureMode),
+    videoPathBuilder: (captureMode) => _path(captureMode),
+    onMediaTap: (mediaCapture) {
+        OpenFile.open(mediaCapture.filePath);
+    },
+),
+```

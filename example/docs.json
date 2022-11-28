@@ -1,0 +1,65 @@
+{
+    "name": "CameraAwesome | documentation",
+    "theme": "#36B9B9",
+    "sidebar": [
+        [
+            "Overview",
+            "/index"
+        ],
+        [
+            "Getting Started",
+            [
+                [
+                    "Installing",
+                    "/installing"
+                ],
+                [
+                    "Using built-in interface ",
+                    "/awesome-ui"
+                ],
+                [
+                    "Creating my own camera ui",
+                    "/custom-ui"
+                ]
+            ]
+        ],
+        [
+            "API",
+            [
+                [
+                    "Sensors",
+                    "/sensors"
+                ],
+                [
+                    "AI mode",
+                    "/ai-mode"
+                ],
+                [
+                    "Photo mode",
+                    "/photo-mode"
+                ],
+                [
+                    "Video mode",
+                    "/video-mode"
+                ]
+            ]
+        ],
+        [
+            "Appendix",
+            [
+                [
+                    "Changelog",
+                    "/changelog"
+                ],
+                [
+                    "License",
+                    "/license"
+                ],
+                [
+                    "Roadmap",
+                    "/roadmap"
+                ]
+            ]
+        ]
+    ]
+}

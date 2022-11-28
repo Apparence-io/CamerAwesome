@@ -1,0 +1,49 @@
+## 📖 Installation and usage
+
+### Add the package in your pubspec.yaml 
+
+```yaml
+dependencies:
+    camerawesome: ^1.0.0 
+    ...
+```
+
+**Please check the last version on [pub.dev](https://pub.dev/packages/camerawesome)**
+
+### ✔️ Set permissions
+   - **iOS** add these on ```ios/Runner/Info.plist``` file
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Your own description</string>
+
+<key>NSMicrophoneUsageDescription</key>
+<string>To enable microphone access when recording video</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>To enable GPS location access for Exif data</string>
+```
+
+  - **Android**
+    - Set permissions before ```<application>```
+    <br />
+
+    ```xml
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    ```
+
+    - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
+    <br />
+
+    ```
+    minSdkVersion 21
+    ```
+
+
+### Import the package in your Flutter app
+```dart
+import 'package:camerawesome/camerawesome_plugin.dart';
+```
+
+You are now ready to use camerAwesome 👌
