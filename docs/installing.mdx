@@ -11,7 +11,8 @@ dependencies:
 **Please check the last version on [pub.dev](https://pub.dev/packages/camerawesome)**
 
 ### ✔️ Set permissions
-   - **iOS** add these on ```ios/Runner/Info.plist``` file
+
+**iOS** add these on ```ios/Runner/Info.plist``` file
 
 ```xml
 <key>NSCameraUsageDescription</key>
@@ -24,15 +25,15 @@ dependencies:
 <string>To enable GPS location access for Exif data</string>
 ```
 
-  - **Android**
-    - Set permissions before ```<application>```
+**Android**
+Set permissions before ```<application>```
 
     ```xml
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     ```
 
-    - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
+Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
 
     ```
     minSdkVersion 21
