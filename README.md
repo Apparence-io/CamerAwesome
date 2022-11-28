@@ -212,9 +212,8 @@ All of this configurations are listenable through a stream so your UI can automa
 
 - [ ] bind exif preferences (flutter)
 - [ ] create complete documentation for all use cases (docs.page)
-- [ ] Tests plugin flutter states (flutter)
 - [ ] Tests E2E (flutter)
-- [ ] Handle rotation (flutter)
+- [ ] Handle rotation in awesome UI (flutter)
 - [ ] Image analysis state (flutter)
 - [ ] Apply Preview filter 
 - [ ] Apply filter on image

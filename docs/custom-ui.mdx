@@ -1,7 +1,7 @@
 ## 🎨 Creating a custom interface
 
 Our builder provides a custom factory. 
-Now you have access to the builder property and can create your own camera experience. 
+Now you have access to the builder property and can create your own camera experience without worrying about the camera flow. (ex: clicking on take picture while camera is not ready...)
 The camera preview will be visible behind what you will provide to our builder.
 
 > Note 
@@ -17,3 +17,92 @@ CameraAwesomeBuilder.custom(
     },
 ),
 ```
+
+### Properties
+
+| Method                           | Comment | 
+|----------------------------------|---------|
+| **initialCaptureMode**           | The initial capture mode (Photo or Camera)  |
+| **availableModes**           | A list of all available modes. (Photo / Camera) |
+| **sensor**           | The initial camera sensor (Back or Front) |
+| **flashMode**           | The initial flash mode |
+| **exifPreferences**           | Activate or deactivate location in photo exif |
+| **enableAudio**           | Activate audio by default (only for video mode) |
+| **picturePathBuilder**           | Method to provide a valid Path when you save a picture |
+| **videoPathBuilder**           | Method to provide a valid Path when you save a video |
+| **onMediaTap**           | Choose what you want to do when user tap on a photo |
+| **onImageForAnalysis**           | Callback that will provide an image stream for AI analysis |
+| **imageAnalysisConfig** | Choose between image format (provide this to enable imageAnalysis) |
+| **builder** | Create your own interface using the builder method. |
+
+
+### Builder method
+
+The builder method is the principal method here. 
+
+```dart
+typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
+```
+
+CamerAwesome now works using a state pattern to make sure you can only call methods depending on the camera current state. 
+The magic is that you don't have to do anything appart calling some methods using the state. 
+
+```dart
+state.when(
+    onPictureMode: (pictureState) => pictureState.start(),
+    onVideoMode: (videoState) => videoState.start(),
+    onVideoRecordingMode: (videoState) => videoState.pause(),
+    onPreparingCamera: (preparingState) => Loader(),
+);
+```
+
+#### Camera awesome has 4 different states 
+- **PictureMode** : This is when the camera is ready to take a picture
+- **VideoMode** :This is when the camera is ready to take a video
+- **VideoRecordingMode** : This is when the camera is taking a video
+- **PreparingCamera** : This is when the camera is starting (then the initial mode will comes)
+
+#### you don't have to worry about state management here
+The state is fully reactive and will call the ```CameraLayoutBuilder``` each time you switch between states. <br/>
+
+### Creating my own widget 
+
+You can get inspiration on how we built every widgets. 
+
+The idea is to create every widgets simply from the current state or camerAwesome. 
+States gives you access also to configuration that contains flash, sensor, orientation... 
+Using only this you should be able to create everything you need without worry about the camera flow. 
+
+**Exemple** 
+```dart
+class AwesomeFlashButton extends StatelessWidget {
+  final CameraState state;
+
+  const AwesomeFlashButton({
+    super.key,
+    required this.state,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<CameraFlashes>(
+      stream: state.config.flashMode$, // here we just listen the current selected flash mode
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container();
+        }
+        return _FlashButton.from(
+          flashMode: snapshot.requireData,
+          onTap: () => state.config.switchCameraFlash(),
+        );
+      },
+    );
+  }
+}
+```
+
+> 👌 Every getter terminated with the $ are streams in camerAwesome. 
+
+### Using provided widgets
+
+Either you can use some of the widgets we have provided directly into the repository.

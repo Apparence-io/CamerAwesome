@@ -1,5 +1,6 @@
 {
-    "name": "CameraAwesome | documentation",
+    "name": "CameraAwesome",
+    "socialPreview": "/img/preview.png",
     "theme": "#36B9B9",
     "sidebar": [
         [
@@ -12,6 +13,10 @@
                 [
                     "Installing",
                     "/installing"
+                ],
+                [
+                    "Features",
+                    "/features"
                 ],
                 [
                     "Using built-in UI ",
@@ -47,10 +52,6 @@
         [
             "Appendix",
             [
-                [
-                    "Changelog",
-                    "/changelog"
-                ],
                 [
                     "License",
                     "/license"

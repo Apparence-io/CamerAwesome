@@ -1,8 +1,5 @@
 ## 👌 Awesome build-in interface
 
-*showcase img*
-
-
 Just use our builder. 
 That's all you need to create a complete camera experience within you app.
 
@@ -16,3 +13,24 @@ CameraAwesomeBuilder.awesome(
     },
 ),
 ```
+
+### Properties
+
+| Method                           | Comment | 
+|----------------------------------|---------|
+| **initialCaptureMode**           | The initial capture mode (Photo or Camera)  |
+| **availableModes**           | A list of all available modes. (Photo / Camera) |
+| **sensor**           | The initial camera sensor (Back or Front) |
+| **flashMode**           | The initial flash mode |
+| **exifPreferences**           | Activate or deactivate location in photo exif |
+| **enableAudio**           | Activate audio by default (only for video mode) |
+| **picturePathBuilder**           | Method to provide a valid Path when you save a picture |
+| **videoPathBuilder**           | Method to provide a valid Path when you save a video |
+| **onMediaTap**           | Choose what you want to do when user tap on a photo |
+| **onImageForAnalysis**           | Callback that will provide an image stream for AI analysis |
+| **imageAnalysisConfig** | Choose between image format (provide this to enable imageAnalysis) |
+
+> 🚧 You can expect some small changes <br/>
+> Some small refactoring on the configuration are waiting. 
+
+
