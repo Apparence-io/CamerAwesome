@@ -29,11 +29,11 @@ public class SensorOrientationListener implements EventChannel.StreamHandler, Se
             case 90:
                 events.success("LANDSCAPE_LEFT");
                 break;
+            case 180:
+                events.success("PORTRAIT_DOWN");
+                break;
             case 270:
                 events.success("LANDSCAPE_RIGHT");
-                break;
-            case 360:
-                events.success("PORTRAIT_DOWN");
                 break;
         }
     }

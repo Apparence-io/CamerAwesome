@@ -2,6 +2,8 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
+import 'awesome_oriented_widget.dart';
+
 class AwesomeAspectRatioButton extends StatelessWidget {
   final CameraState state;
 
@@ -70,9 +72,19 @@ class _AspectRatioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Image(image: icon, width: width),
+    return AwesomeOrientedWidget(
+      child: Material(
+        color: Colors.transparent,
+        child: IconButton(
+          onPressed: onTap,
+          icon: Center(
+            child: Image(
+              image: icon,
+              width: width,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

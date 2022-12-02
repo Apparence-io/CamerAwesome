@@ -2,6 +2,8 @@ import 'package:camerawesome/src/orchestrator/models/flashmodes.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
+import 'awesome_oriented_widget.dart';
+
 class AwesomeFlashButton extends StatelessWidget {
   final CameraState state;
 
@@ -62,11 +64,16 @@ class _FlashButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        color: Colors.white,
+    return AwesomeOrientedWidget(
+      child: Material(
+        color: Colors.transparent,
+        child: IconButton(
+          onPressed: onTap,
+          icon: Icon(
+            icon,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
