@@ -5,6 +5,8 @@ import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'awesome_oriented_widget.dart';
+
 class MediaPreview extends StatelessWidget {
   final MediaCapture? mediaCapture;
   final OnMediaTap onMediaTap;
@@ -17,25 +19,27 @@ class MediaPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white10,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white38,
-            width: 2,
+    return AwesomeOrientedWidget(
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white38,
+              width: 2,
+            ),
           ),
-        ),
-        child: ClipOval(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: mediaCapture != null && onMediaTap != null
-                  ? () => onMediaTap!(mediaCapture!)
-                  : null,
-              child: _buildMedia(mediaCapture),
+          child: ClipOval(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: mediaCapture != null && onMediaTap != null
+                    ? () => onMediaTap!(mediaCapture!)
+                    : null,
+                child: _buildMedia(mediaCapture),
+              ),
             ),
           ),
         ),
