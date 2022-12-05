@@ -50,7 +50,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private lateinit var cameraState: CameraXState
     private val cameraPermissions = CameraPermissions()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val exifPreferences: ExifPreferences = ExifPreferences()
+    private lateinit var exifPreferences: ExifPreferences
     private var cancellationTokenSource = CancellationTokenSource()
 
 
@@ -59,8 +59,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         sensor: String,
         captureMode: String,
         enableImageStream: Boolean,
-        callback: (Boolean) -> Unit
+        exifPreferences: ExifPreferences,
+        callback: (Boolean) -> Unit,
     ) {
+        this.exifPreferences = ExifPreferences(saveGPSLocation = exifPreferences.saveGPSLocation)
         val future = ProcessCameraProvider.getInstance(
             activity!!
         )
@@ -105,6 +107,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     }
 
+    override fun setExifPreferences(exifPreferences: ExifPreferences) {
+        this.exifPreferences = exifPreferences
+    }
+
     override fun checkPermissions(): List<String> {
         return listOf(*cameraPermissions.checkPermissions(activity))
     }
@@ -131,7 +137,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
      * [fusedLocationClient.lastLocation] instead to go faster
      */
     private fun retrieveLocation(callback: (Location?) -> Unit) {
-        if (exifPreferences.saveGpsLocation &&
+        if (exifPreferences.saveGPSLocation &&
             ActivityCompat.checkSelfPermission(
                 activity!!,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -188,8 +194,9 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         CamerawesomePlugin.TAG,
                         "Success capturing picture ${outputFileResults.savedUri}"
                     )
-                    if (exifPreferences.saveGpsLocation) {
+                    if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
+                            Log.d("Location retrieved", "${it?.latitude}x${it?.longitude}")
                             outputFileOptions.metadata.location = it
                         }
                     }
@@ -395,10 +402,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             previewSize = getOrientedSize(size.width.toInt(), size.height.toInt())
             updateLifecycle(activity!!)
         }
-    }
-
-    override fun saveGpsLocation(saveGPSLocation: Boolean) {
-        exifPreferences.saveGpsLocation = saveGPSLocation
     }
 
     override fun setAspectRatio(value: String) {

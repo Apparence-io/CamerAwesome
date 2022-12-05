@@ -1,26 +1,44 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
+import 'package:rxdart/rxdart.dart';
+
 import '../camera_context.dart';
 import 'state_definition.dart';
-import 'video_state.dart';
 
 /// When Camera is in Image mode
 class PictureCameraState extends CameraState {
   PictureCameraState({
     required CameraContext cameraContext,
     required this.filePathBuilder,
-    // this.imageAnalysisController,
-  }) : super(cameraContext);
+    required this.exifPreferences,
+  }) : super(cameraContext) {
+    _saveGpsLocationController =
+        BehaviorSubject.seeded(exifPreferences.saveGPSLocation);
+    saveGpsLocation$ = _saveGpsLocationController.stream;
+  }
 
   factory PictureCameraState.from(CameraContext orchestrator) =>
       PictureCameraState(
         cameraContext: orchestrator,
         filePathBuilder: orchestrator.picturePathBuilder,
+        exifPreferences: orchestrator.exifPreferences,
       );
 
-  // ImageAnalysisController? imageAnalysisController;
-
   final FilePathBuilder filePathBuilder;
+
+  final ExifPreferences exifPreferences;
+
+  late final BehaviorSubject<bool> _saveGpsLocationController;
+  late final Stream<bool> saveGpsLocation$;
+
+  bool get saveGpsLocation => _saveGpsLocationController.value;
+
+  set saveGpsLocation(value) {
+    exifPreferences.saveGPSLocation = value;
+    updateExifPreferences(exifPreferences);
+    _saveGpsLocationController.sink.add(value);
+  }
 
   @override
   Future<void> start() async {
@@ -29,9 +47,7 @@ class PictureCameraState extends CameraState {
   }
 
   @override
-  Future<void> stop() async {
-    // nothing to do
-  }
+  Future<void> stop() async {}
 
   @override
   CaptureModes get captureMode => CaptureModes.PHOTO;
@@ -77,5 +93,10 @@ class PictureCameraState extends CameraState {
       return;
     }
     cameraContext.changeState(captureMode.toCameraState(cameraContext));
+  }
+
+  @override
+  void dispose() {
+    _saveGpsLocationController.close();
   }
 }

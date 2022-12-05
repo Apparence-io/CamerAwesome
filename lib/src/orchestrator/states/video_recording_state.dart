@@ -1,9 +1,7 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-
-// import '../../camerawesome_plugin.dart';
+import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
-import 'package:flutter/material.dart';
 
 import '../camera_context.dart';
 import 'state_definition.dart';
@@ -40,7 +38,7 @@ class VideoRecordingCameraState extends CameraState {
 
   @override
   void setState(CaptureModes captureMode) {
-    debugPrint(''' 
+    printLog(''' 
       warning: You must stop recoring before changing state.  
     ''');
   }
@@ -76,7 +74,7 @@ class VideoRecordingCameraState extends CameraState {
 
   /// Wether the video recording should [enableAudio].
   Future<void> enableAudio(bool enableAudio) async {
-    debugPrint(''' 
+    printLog(''' 
       warning: EnableAudio has no effect when recording 
     ''');
   }
@@ -85,5 +83,10 @@ class VideoRecordingCameraState extends CameraState {
 
   set _mediaCapture(MediaCapture media) {
     cameraContext.mediaCaptureController.add(media);
+  }
+
+  @override
+  void dispose() {
+    // Nothing to do
   }
 }

@@ -1,10 +1,11 @@
-import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/layouts/awesome/widgets/start_button.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
 import '../../orchestrator/states/state_definition.dart';
 import 'widgets/aspect_ratio.dart';
+import 'widgets/awesome_location_button.dart';
 import 'widgets/camera_mode_selector.dart';
 import 'widgets/flash_button.dart';
 import 'widgets/media_preview.dart';
@@ -52,12 +53,11 @@ class AwesomeTopActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        const SizedBox(width: 32),
-        Flexible(child: AwesomeFlashButton(state: state)),
-        const SizedBox(width: 32),
-        Flexible(child: AwesomeAspectRatioButton(state: state)),
+        AwesomeFlashButton(state: state),
+        AwesomeAspectRatioButton(state: state),
+        AwesomeLocationButton(state: state),
       ],
     );
   }

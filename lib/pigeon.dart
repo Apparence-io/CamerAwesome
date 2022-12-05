@@ -32,16 +32,41 @@ class PreviewSize {
   }
 }
 
+class ExifPreferences {
+  ExifPreferences({
+    required this.saveGPSLocation,
+  });
+
+  bool saveGPSLocation;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['saveGPSLocation'] = saveGPSLocation;
+    return pigeonMap;
+  }
+
+  static ExifPreferences decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return ExifPreferences(
+      saveGPSLocation: pigeonMap['saveGPSLocation']! as bool,
+    );
+  }
+}
+
 class _CameraInterfaceCodec extends StandardMessageCodec {
   const _CameraInterfaceCodec();
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
-    if (value is PreviewSize) {
+    if (value is ExifPreferences) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
     } else 
     if (value is PreviewSize) {
       buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is PreviewSize) {
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -52,9 +77,12 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 128:       
-        return PreviewSize.decode(readValue(buffer)!);
+        return ExifPreferences.decode(readValue(buffer)!);
       
       case 129:       
+        return PreviewSize.decode(readValue(buffer)!);
+      
+      case 130:       
         return PreviewSize.decode(readValue(buffer)!);
       
       default:      
@@ -74,11 +102,11 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<bool> setupCamera(String arg_sensor, String arg_captureMode, bool arg_enableImageStream) async {
+  Future<bool> setupCamera(String arg_sensor, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_sensor, arg_captureMode, arg_enableImageStream]) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_sensor, arg_captureMode, arg_enableImageStream, arg_exifPreferences]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -669,28 +697,6 @@ class CameraInterface {
     }
   }
 
-  Future<void> saveGpsLocation(bool arg_saveGPSLocation) async {
-    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.CameraInterface.saveGpsLocation', codec, binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_saveGPSLocation]) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
-      throw PlatformException(
-        code: (error['code'] as String?)!,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      return;
-    }
-  }
-
   Future<void> setAspectRatio(String arg_aspectRatio) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setAspectRatio', codec, binaryMessenger: _binaryMessenger);
@@ -718,6 +724,28 @@ class CameraInterface {
         'dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object?>[arg_format, arg_width]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setExifPreferences(ExifPreferences arg_exifPreferences) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.setExifPreferences', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object?>[arg_exifPreferences]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

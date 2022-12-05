@@ -35,16 +35,40 @@ data class PreviewSize(
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class ExifPreferences(
+  val saveGPSLocation: Boolean
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromMap(map: Map<String, Any?>): ExifPreferences {
+      val saveGPSLocation = map["saveGPSLocation"] as Boolean
+
+      return ExifPreferences(saveGPSLocation)
+    }
+  }
+  fun toMap(): Map<String, Any?> {
+    val map = mutableMapOf<String, Any?>()
+    map["saveGPSLocation"] = saveGPSLocation
+    return map
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 private object CameraInterfaceCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       128.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          PreviewSize.fromMap(it)
+          ExifPreferences.fromMap(it)
         }
       }
       129.toByte() -> {
+        return (readValue(buffer) as? Map<String, Any?>)?.let {
+          PreviewSize.fromMap(it)
+        }
+      }
+      130.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
           PreviewSize.fromMap(it)
         }
@@ -54,12 +78,16 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is PreviewSize -> {
+      is ExifPreferences -> {
         stream.write(128)
         writeValue(stream, value.toMap())
       }
       is PreviewSize -> {
         stream.write(129)
+        writeValue(stream, value.toMap())
+      }
+      is PreviewSize -> {
+        stream.write(130)
         writeValue(stream, value.toMap())
       }
       else -> super.writeValue(stream, value)
@@ -69,7 +97,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensor: String, captureMode: String, enableImageStream: Boolean, callback: (Boolean) -> Unit)
+  fun setupCamera(sensor: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
   fun checkPermissions(): List<String>
   fun requestPermissions(): List<String>
   fun getPreviewTextureId(): Double
@@ -94,9 +122,9 @@ interface CameraInterface {
   fun getEffectivPreviewSize(): PreviewSize?
   fun setPhotoSize(size: PreviewSize)
   fun setPreviewSize(size: PreviewSize)
-  fun saveGpsLocation(saveGPSLocation: Boolean)
   fun setAspectRatio(aspectRatio: String)
   fun setupImageAnalysisStream(format: String, width: Long)
+  fun setExifPreferences(exifPreferences: ExifPreferences)
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -116,7 +144,8 @@ val codec: MessageCodec<Any?> by lazy {
               val sensorArg = args[0] as String
               val captureModeArg = args[1] as String
               val enableImageStreamArg = args[2] as Boolean
-              api.setupCamera(sensorArg, captureModeArg, enableImageStreamArg) {
+              val exifPreferencesArg = args[3] as ExifPreferences
+              api.setupCamera(sensorArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) {
                 reply.reply(wrapResult(it))
               }
             } catch (exception: Error) {
@@ -550,25 +579,6 @@ val codec: MessageCodec<Any?> by lazy {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.saveGpsLocation", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val wrapped = hashMapOf<String, Any?>()
-            try {
-              val args = message as List<Any?>
-              val saveGPSLocationArg = args[0] as Boolean
-              api.saveGpsLocation(saveGPSLocationArg)
-              wrapped["result"] = null
-            } catch (exception: Error) {
-              wrapped["error"] = wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setAspectRatio", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
@@ -597,6 +607,25 @@ val codec: MessageCodec<Any?> by lazy {
               val formatArg = args[0] as String
               val widthArg = args[1].let { if (it is Int) it.toLong() else it as Long }
               api.setupImageAnalysisStream(formatArg, widthArg)
+              wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setExifPreferences", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val exifPreferencesArg = args[0] as ExifPreferences
+              api.setExifPreferences(exifPreferencesArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
