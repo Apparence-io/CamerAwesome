@@ -1,5 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 
@@ -10,17 +11,14 @@ import 'state_definition.dart';
 class VideoRecordingCameraState extends CameraState {
   VideoRecordingCameraState({
     required CameraContext cameraContext,
-    // this.imageAnalysisController,
     required this.filePathBuilder,
   }) : super(cameraContext);
 
   factory VideoRecordingCameraState.from(CameraContext orchestrator) =>
       VideoRecordingCameraState(
         cameraContext: orchestrator,
-        filePathBuilder: orchestrator.videoPathBuilder,
+        filePathBuilder: orchestrator.awesomeFileSaver.videoPathBuilder!,
       );
-
-  // final ImageAnalysisController? imageAnalysisController;
 
   final FilePathBuilder filePathBuilder;
 
@@ -39,7 +37,7 @@ class VideoRecordingCameraState extends CameraState {
   @override
   void setState(CaptureModes captureMode) {
     printLog(''' 
-      warning: You must stop recoring before changing state.  
+      warning: You must stop recording before changing state.  
     ''');
   }
 

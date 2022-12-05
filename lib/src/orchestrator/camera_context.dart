@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
@@ -42,13 +43,7 @@ class CameraContext {
   final CaptureModes initialCaptureMode;
 
   /// this is where we are going to store any picture
-  final FilePathBuilder picturePathBuilder;
-
-  /// this is where we are going to store any video
-  final FilePathBuilder videoPathBuilder;
-
-  /// this is the list of available captures modes
-  final List<CaptureModes> availableModes;
+  final AwesomeFileSaver awesomeFileSaver;
 
   /// allows to create dynamic analysis using the current preview
   final AnalysisController? analysisController;
@@ -59,10 +54,8 @@ class CameraContext {
   CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
-    required this.availableModes,
     required this.analysisController,
-    this.videoPathBuilder,
-    this.picturePathBuilder,
+    required this.awesomeFileSaver,
     this.onPermissionsResult,
     required this.exifPreferences,
   }) : sensorConfigStream = sensorConfigController.stream {
@@ -76,32 +69,27 @@ class CameraContext {
     captureState$ = mediaCaptureController.stream;
   }
 
-  factory CameraContext.create(
+  CameraContext.create(
     SensorConfig sensorConfig, {
     required CaptureModes initialCaptureMode,
-    required List<CaptureModes> availableModes,
     OnPermissionsResult? onPermissionsResult,
-    FilePathBuilder picturePathBuilder,
-    FilePathBuilder videoPathBuilder,
+    required AwesomeFileSaver awesomeFileSaver,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,
-  }) =>
-      CameraContext._(
-        initialCaptureMode: initialCaptureMode,
-        sensorConfigController: BehaviorSubject.seeded(sensorConfig),
-        onPermissionsResult: onPermissionsResult,
-        picturePathBuilder: picturePathBuilder,
-        videoPathBuilder: videoPathBuilder,
-        availableModes: availableModes,
-        analysisController: analysisConfig != null
-            ? AnalysisController.fromPlugin(
-                onImageListener: onImageForAnalysis,
-                conf: analysisConfig,
-              )
-            : null,
-        exifPreferences: exifPreferences,
-      );
+  }) : this._(
+          initialCaptureMode: initialCaptureMode,
+          sensorConfigController: BehaviorSubject.seeded(sensorConfig),
+          onPermissionsResult: onPermissionsResult,
+          awesomeFileSaver: awesomeFileSaver,
+          analysisController: analysisConfig != null
+              ? AnalysisController.fromPlugin(
+                  onImageListener: onImageForAnalysis,
+                  conf: analysisConfig,
+                )
+              : null,
+          exifPreferences: exifPreferences,
+        );
 
   changeState(CameraState newState) {
     state.dispose();

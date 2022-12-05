@@ -1,5 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
 
@@ -10,17 +11,15 @@ import 'state_definition.dart';
 class VideoCameraState extends CameraState {
   VideoCameraState({
     required CameraContext cameraContext,
-    // this.imageAnalysisController,
     required this.filePathBuilder,
   }) : super(cameraContext);
 
   factory VideoCameraState.from(CameraContext cameraContext) =>
       VideoCameraState(
         cameraContext: cameraContext,
-        filePathBuilder: cameraContext.videoPathBuilder,
+        filePathBuilder: cameraContext.awesomeFileSaver.videoPathBuilder!,
       );
 
-  // final ImageAnalysisController? imageAnalysisController;
 
   final FilePathBuilder filePathBuilder;
 
@@ -54,7 +53,7 @@ class VideoCameraState extends CameraState {
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
   Future<String> startRecording() async {
-    String filePath = await filePathBuilder!(CaptureModes.VIDEO);
+    String filePath = await filePathBuilder();
     if (!filePath.endsWith(".mp4")) {
       throw ("You can only capture .mp4 files with CamerAwesome");
     }

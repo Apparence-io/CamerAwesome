@@ -4,9 +4,10 @@ import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import '../camera_context.dart';
 import '../states/state_definition.dart';
 
-enum CaptureModes { PHOTO, VIDEO }
+enum CaptureModes {
+  PHOTO,
+  VIDEO;
 
-extension ToCameraState on CaptureModes {
   CameraState toCameraState(CameraContext cameraContext) {
     if (this == CaptureModes.PHOTO) {
       return PictureCameraState.from(cameraContext);

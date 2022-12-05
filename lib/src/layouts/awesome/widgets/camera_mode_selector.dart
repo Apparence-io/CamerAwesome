@@ -29,7 +29,7 @@ class CameraMode {
   CameraMode({required this.captureMode, required this.title});
 
   static List<CameraMode> fromState(CameraContext context) {
-    return context.availableModes
+    return context.awesomeFileSaver.captureModes
         .map((el) => CameraMode(captureMode: el, title: el.name))
         .toList();
   }

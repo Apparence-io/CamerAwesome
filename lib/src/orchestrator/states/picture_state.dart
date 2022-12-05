@@ -1,5 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -21,7 +22,7 @@ class PictureCameraState extends CameraState {
   factory PictureCameraState.from(CameraContext orchestrator) =>
       PictureCameraState(
         cameraContext: orchestrator,
-        filePathBuilder: orchestrator.picturePathBuilder,
+        filePathBuilder: orchestrator.awesomeFileSaver.imagePathBuilder!,
         exifPreferences: orchestrator.exifPreferences,
       );
 
@@ -57,7 +58,7 @@ class PictureCameraState extends CameraState {
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
   Future<String> takePhoto() async {
-    String path = await filePathBuilder!(CaptureModes.PHOTO);
+    String path = await filePathBuilder();
     if (!path.endsWith(".jpg")) {
       throw ("You can only capture .jpg files with CamerAwesome");
     }

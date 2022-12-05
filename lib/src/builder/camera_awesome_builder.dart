@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_layout.dart';
+import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,9 +27,6 @@ import '../orchestrator/states/state_definition.dart';
 /// ----
 /// If you need to call specific function for a state use the 'when' function.
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
-
-/// configure the path where we save videos or pictures
-typedef FilePathBuilder = Future<String> Function(CaptureModes)?;
 
 /// Callback when a video or picture has been saved and user click on thumbnail
 typedef OnMediaTap = Function(MediaCapture mediaState)?;
@@ -55,15 +53,11 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final double zoom;
 
-  final List<CaptureModes> availableModes;
-
   final ExifPreferences? exifPreferences;
 
   final bool enableAudio;
 
-  final FilePathBuilder picturePathBuilder;
-
-  final FilePathBuilder videoPathBuilder;
+  final AwesomeFileSaver awesomeFileSaver;
 
   final OnMediaTap onMediaTap;
 
@@ -81,67 +75,45 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.sensor,
     required this.flashMode,
     required this.zoom,
-    required this.availableModes,
     required this.exifPreferences,
     required this.enableAudio,
     required this.progressIndicator,
-    required this.picturePathBuilder,
-    required this.videoPathBuilder,
+    required this.awesomeFileSaver,
     required this.onMediaTap,
     required this.builder,
     this.onImageForAnalysis,
     this.imageAnalysisConfig,
   });
 
-  factory CameraAwesomeBuilder.awesome({
+  CameraAwesomeBuilder.awesome({
     CaptureModes initialCaptureMode = CaptureModes.PHOTO,
     Sensors sensor = Sensors.BACK,
     CameraFlashes flashMode = CameraFlashes.NONE,
     double zoom = 0.0,
-    List<CaptureModes> availableModes = const [
-      CaptureModes.PHOTO,
-      CaptureModes.VIDEO
-    ],
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
     Widget? progressIndicator,
-    Future<String> Function(CaptureModes)? picturePathBuilder,
-    Future<String> Function(CaptureModes)? videoPathBuilder,
+    required AwesomeFileSaver awesomeFileSaver,
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
-  }) {
-    /// TODO refactor this (those two args could be merged)
-    if (availableModes.contains(CaptureModes.PHOTO) &&
-        picturePathBuilder == null) {
-      throw ("You have to provide a path through [picturePathBuilder] to save your picture");
-    }
-
-    /// TODO refactor this (those two args could be merged)
-    if (availableModes.contains(CaptureModes.VIDEO) &&
-        videoPathBuilder == null) {
-      throw ("You have to provide a path through [videoPathBuilder] to save your picture");
-    }
-    return CameraAwesomeBuilder._(
-      initialCaptureMode: initialCaptureMode,
-      sensor: sensor,
-      flashMode: flashMode,
-      zoom: zoom,
-      availableModes: availableModes,
-      exifPreferences: exifPreferences,
-      enableAudio: enableAudio,
-      progressIndicator: progressIndicator,
-      builder: (cameraModeState) => AwesomeCameraLayout(
-        state: cameraModeState,
-        onMediaTap: onMediaTap,
-      ),
-      picturePathBuilder: picturePathBuilder,
-      videoPathBuilder: videoPathBuilder,
-      onMediaTap: onMediaTap,
-      onImageForAnalysis: onImageForAnalysis,
-      imageAnalysisConfig: imageAnalysisConfig,
-    );
-  }
+  }) : this._(
+          initialCaptureMode: initialCaptureMode,
+          sensor: sensor,
+          flashMode: flashMode,
+          zoom: zoom,
+          exifPreferences: exifPreferences,
+          enableAudio: enableAudio,
+          progressIndicator: progressIndicator,
+          builder: (cameraModeState) => AwesomeCameraLayout(
+            state: cameraModeState,
+            onMediaTap: onMediaTap,
+          ),
+          awesomeFileSaver: awesomeFileSaver,
+          onMediaTap: onMediaTap,
+          onImageForAnalysis: onImageForAnalysis,
+          imageAnalysisConfig: imageAnalysisConfig,
+        );
 
   CameraAwesomeBuilder.custom({
     CaptureModes initialCaptureMode = CaptureModes.PHOTO,
@@ -156,8 +128,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     bool enableAudio = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
-    Future<String> Function(CaptureModes)? picturePathBuilder,
-    Future<String> Function(CaptureModes)? videoPathBuilder,
+    required AwesomeFileSaver awesomeFileSaver,
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
@@ -166,13 +137,11 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
-          availableModes: availableModes,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
           builder: builder,
-          picturePathBuilder: picturePathBuilder,
-          videoPathBuilder: videoPathBuilder,
+          awesomeFileSaver: awesomeFileSaver,
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
@@ -232,9 +201,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         currentZoom: widget.zoom,
       ),
       initialCaptureMode: widget.initialCaptureMode,
-      picturePathBuilder: widget.picturePathBuilder,
-      videoPathBuilder: widget.videoPathBuilder,
-      availableModes: widget.availableModes,
+      awesomeFileSaver: widget.awesomeFileSaver,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
       exifPreferences:
