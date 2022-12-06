@@ -5,8 +5,6 @@ import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'awesome_oriented_widget.dart';
-
 class MediaPreview extends StatelessWidget {
   final MediaCapture? mediaCapture;
   final OnMediaTap onMediaTap;

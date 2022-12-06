@@ -114,11 +114,15 @@ class PreparingCameraState extends CameraState {
       enableImageStream: enableImageStream,
     );
     await CamerawesomePlugin.init(
-      cameraContext.sensorConfig.sensor,
-      enableImageStream,
-      captureMode: nextCaptureMode,
-    );
+        cameraContext.sensorConfig.sensor, enableImageStream,
+        captureMode: nextCaptureMode,
+        exifPreferences: cameraContext.exifPreferences);
     _isReady = true;
     return true;
+  }
+
+  @override
+  void dispose() {
+    _permissionStreamSub?.cancel();
   }
 }

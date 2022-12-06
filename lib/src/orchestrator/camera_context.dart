@@ -3,8 +3,9 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/orchestrator/sensor_config.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -52,6 +53,9 @@ class CameraContext {
   /// allows to create dynamic analysis using the current preview
   final AnalysisController? analysisController;
 
+  /// Preferences concerning Exif (pictures metadata)
+  final ExifPreferences exifPreferences;
+
   CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
@@ -60,6 +64,7 @@ class CameraContext {
     this.videoPathBuilder,
     this.picturePathBuilder,
     this.onPermissionsResult,
+    required this.exifPreferences,
   }) : sensorConfigStream = sensorConfigController.stream {
     var preparingState = PreparingCameraState(
       this,
@@ -80,6 +85,7 @@ class CameraContext {
     FilePathBuilder videoPathBuilder,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
+    required ExifPreferences exifPreferences,
   }) =>
       CameraContext._(
         initialCaptureMode: initialCaptureMode,
@@ -94,10 +100,12 @@ class CameraContext {
                 conf: analysisConfig,
               )
             : null,
+        exifPreferences: exifPreferences,
       );
 
-  changeState(CameraState state) {
-    stateController.add(state);
+  changeState(CameraState newState) {
+    state.dispose();
+    stateController.add(newState);
   }
 
   Future<void> switchSensor(SensorConfig newConfig) async {
@@ -121,6 +129,7 @@ class CameraContext {
     mediaCaptureController.close();
     stateController.close();
     analysisController?.close();
+    state.dispose();
     CamerawesomePlugin.stop();
   }
 }

@@ -63,6 +63,9 @@ abstract class CameraState {
   /// - [VideoRecordingCameraState]
   Future<void> stop();
 
+  /// Closes streams depending on the current state
+  void dispose();
+
   /// Use this stream to listen for capture state
   /// - while recording a video
   /// - while saving an image

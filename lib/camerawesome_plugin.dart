@@ -2,24 +2,24 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'camerawesome_plugin.dart';
 import 'src/orchestrator/models/orientations.dart';
 
-export 'src/orchestrator/models/analysis_image.dart';
-export 'src/orchestrator/models/capture_modes.dart';
-export 'src/orchestrator/models/exif_preferences_data.dart';
-export 'src/orchestrator/models/flashmodes.dart';
-export 'src/orchestrator/models/sensor_data.dart';
-export 'src/orchestrator/models/sensors.dart';
+export 'src/builder/camera_awesome_builder.dart';
+export 'src/layouts/awesome/widgets/awesome_oriented_widget.dart';
 
 // built in widgets
 export 'src/layouts/awesome/widgets/camera_preview.dart';
-export 'src/builder/camera_awesome_builder.dart';
 export 'src/layouts/awesome/widgets/pinch_to_zoom.dart';
-export 'src/layouts/awesome/widgets/awesome_oriented_widget.dart';
+export 'src/orchestrator/models/analysis_image.dart';
+export 'src/orchestrator/models/capture_modes.dart';
+export 'src/orchestrator/models/flashmodes.dart';
+export 'src/orchestrator/models/sensor_data.dart';
+export 'src/orchestrator/models/sensors.dart';
 
 enum CameraRunningState { STARTING, STARTED, STOPPING, STOPPED }
 
@@ -47,6 +47,8 @@ class CamerawesomePlugin {
   static Stream<Map<String, dynamic>>? _imagesStream;
 
   static CameraRunningState currentState = CameraRunningState.STOPPED;
+
+  static bool printLogs = false;
 
   static Future<List<String?>> checkAndroidPermissions() =>
       CameraInterface().checkPermissions();
@@ -159,10 +161,16 @@ class CamerawesomePlugin {
   }
 
   static Future<bool?> init(Sensors sensor, bool enableImageStream,
-      {CaptureModes captureMode = CaptureModes.PHOTO}) async {
+      {CaptureModes captureMode = CaptureModes.PHOTO,
+      required ExifPreferences exifPreferences}) async {
     if (Platform.isAndroid) {
       return CameraInterface()
-          .setupCamera(sensor.name, captureMode.name, enableImageStream)
+          .setupCamera(
+            sensor.name,
+            captureMode.name,
+            enableImageStream,
+            exifPreferences,
+          )
           .then((value) => true);
     } else {
       return _channel.invokeMethod("init", <String, dynamic>{
@@ -373,11 +381,11 @@ class CamerawesomePlugin {
   ///
   /// The GPS value can be null on Android if:
   /// - Location is disabled on the phone
-  /// - ExifPreferences.saveGPSLocation is false
+  /// - ExifPreferences.saveGPSLocat0ion is false
   /// - Permission ACCESS_FINE_LOCATION has not been granted
   static Future<void> setExifPreferences(ExifPreferences savedExifData) {
     if (Platform.isAndroid) {
-      return CameraInterface().saveGpsLocation(savedExifData.saveGPSLocation);
+      return CameraInterface().setExifPreferences(savedExifData);
     } else {
       return _channel.invokeMethod('setExifPreferences', <String, dynamic>{
         'saveGPSLocation': savedExifData.saveGPSLocation,
@@ -454,7 +462,7 @@ class CamerawesomePlugin {
             .then((value) => value ?? false);
       }
     } catch (err, stacktrace) {
-      debugPrint("failed to check permissions here...");
+      printLog("failed to check permissions here...");
       debugPrintStack(stackTrace: stacktrace);
     }
     return Future.value(false);

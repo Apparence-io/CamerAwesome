@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:flutter/material.dart';
+import 'package:camerawesome/src/logger.dart';
 
 class AnalysisController {
   final OnImageForAnalysis? onImageListener;
@@ -30,11 +30,11 @@ class AnalysisController {
 
   Future<void> start() async {
     if (!enabled) {
-      debugPrint("...AnalysisController off");
+      printLog("...AnalysisController off");
       return;
     }
     if (imageSubscription != null) {
-      debugPrint('AnalysisController controller already started');
+      printLog('AnalysisController controller already started');
       return;
     }
     await CamerawesomePlugin.setupAnalysis(
@@ -44,7 +44,7 @@ class AnalysisController {
     imageSubscription = _images$?.listen((event) {
       onImageListener!(AnalysisImage.from(event));
     });
-    debugPrint("...AnalysisController started");
+    printLog("...AnalysisController started");
   }
 
   get enabled => onImageListener != null;

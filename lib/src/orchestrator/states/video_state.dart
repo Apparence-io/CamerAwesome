@@ -1,9 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-
-// import '../../camerawesome_plugin.dart';
+import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/states/video_recording_state.dart';
-import 'package:flutter/material.dart';
+
 import '../camera_context.dart';
 import 'state_definition.dart';
 
@@ -34,7 +33,7 @@ class VideoCameraState extends CameraState {
 
   @override
   Future<void> stop() async {
-    debugPrint(''' 
+    printLog(''' 
       warning: stop has no effect when not recording 
     ''');
   }
@@ -88,5 +87,10 @@ class VideoCameraState extends CameraState {
 
   set _mediaCapture(MediaCapture media) {
     cameraContext.mediaCaptureController.add(media);
+  }
+
+  @override
+  void dispose() {
+    // Nothing to do
   }
 }

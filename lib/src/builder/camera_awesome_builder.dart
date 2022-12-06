@@ -1,22 +1,21 @@
 import 'dart:io';
 
-import 'package:camerawesome/src/orchestrator/models/exif_preferences_data.dart';
-import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_layout.dart';
+import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../orchestrator/analysis/analysis_controller.dart';
+import '../layouts/awesome/widgets/camera_preview.dart';
+import '../layouts/awesome/widgets/pinch_to_zoom.dart';
 import '../orchestrator/camera_context.dart';
 import '../orchestrator/models/analysis_image.dart';
-import '../orchestrator/sensor_config.dart';
 import '../orchestrator/models/capture_modes.dart';
 import '../orchestrator/models/flashmodes.dart';
 import '../orchestrator/models/sensors.dart';
+import '../orchestrator/sensor_config.dart';
 import '../orchestrator/states/state_definition.dart';
-import '../layouts/awesome/widgets/camera_preview.dart';
-import '../layouts/awesome/widgets/pinch_to_zoom.dart';
 
 /// this is the builder for your camera interface
 /// Using the state you can do anything you need without having to think about the camera flow
@@ -238,6 +237,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       availableModes: widget.availableModes,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
+      exifPreferences:
+          widget.exifPreferences ?? ExifPreferences(saveGPSLocation: false),
     );
 
     cameraContext.state.start();
@@ -267,8 +268,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                 ),
               ),
             ),
-            SafeArea(
-              child: Positioned.fill(
+            Positioned.fill(
+              child: SafeArea(
                 child: widget.builder(snapshot.requireData),
               ),
             ),

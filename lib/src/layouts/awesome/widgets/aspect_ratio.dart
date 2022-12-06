@@ -2,8 +2,6 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
 import 'package:flutter/material.dart';
 
-import 'awesome_oriented_widget.dart';
-
 class AwesomeAspectRatioButton extends StatelessWidget {
   final CameraState state;
 
