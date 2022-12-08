@@ -14,9 +14,26 @@ class CameraAwesomeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'CamerAwesome App',
-      home: CameraPage(),
+      home: Builder(
+        builder: (ctx) => Scaffold(
+          body: SafeArea(
+            child: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(ctx)
+                        .push(MaterialPageRoute(builder: (_) => CameraPage()))
+                        .then((_) => print("Popped at ${DateTime.now()}"));
+                  },
+                  child: Text("Open camera"),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
