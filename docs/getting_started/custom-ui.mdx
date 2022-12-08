@@ -1,0 +1,217 @@
+## 🎨 Creating a custom UI
+
+Our builder provides a custom factory. 
+Now you have access to the builder property and can create your own camera experience without worrying about the camera flow (ex: clicking on take picture while camera is not ready...).
+
+The camera preview will be visible behind what you will provide to our builder.
+
+> Note 
+> The camera preview is not customizable yet
+
+```dart
+CameraAwesomeBuilder.custom(
+  awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+    imagePathBuilder: () async {
+      return "some/path.jpg";
+    },
+    videoPathBuilder: () async {
+      return "some/path.mp4";
+    },
+  ),
+  builder: (cameraState) {
+    // Return your UI (a Widget)
+    return cameraState.when(
+      onPreparingCamera: (state) => const Center(child: CircularProgressIndicator()),
+      onPictureMode: (state) => TakePictureUI(state),
+      onVideoMode: (state) => RecordVideoUI(state, recording: false),
+      onVideoRecordingMode: (state) => RecordVideoUI(state, recording: true),
+    );
+  },
+)
+```
+
+### Properties
+
+| Method                           | Comment | 
+|----------------------------------|---------|
+| **awesomeFileSaver**           | Define if you want to take pictures, videos or both and where to save them  |
+| **builder** | Create your own interface using the builder method. |
+| **sensor**           | The initial camera sensor (Back or Front) |
+| **flashMode**           | The initial flash mode |
+| **exifPreferences**           | Activate or deactivate location in photo exif |
+| **enableAudio**           | Activate audio by default (only for video mode) |
+| **onImageForAnalysis**           | Callback that will provide an image stream for AI analysis |
+| **imageAnalysisConfig** | Choose between image format (provide this to enable imageAnalysis) |
+
+
+### Builder method
+
+The builder method is the principal method here. 
+
+```dart
+typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
+```
+
+CamerAwesome now works using a state pattern to make sure you can only call methods available on the camera current state.
+The magic is that you don't have to do anything apart calling some methods using the camera state.
+
+```dart
+state.when(
+    onPictureMode: (pictureCameraState) => pictureCameraState.takePhoto(),
+    onVideoMode: (videoCameraState) => videoCameraState.startRecording(),
+    onVideoRecordingMode: (videoRecordingCameraState) => videoRecordingCameraState.stopRecording(),
+    onPreparingCamera: (preparingState) => Loader(),
+);
+```
+
+#### CamerAwesome has 4 different states
+- **PreparingState** : camera is starting
+- **PictureCameraState** : camera is ready to take a picture
+- **VideoCameraState** : camera is ready to take a video
+- **VideoRecordingCameraState** : camera is taking a video
+
+Here is a schema showing the interactions between states:
+![Camera states interactions](/img/camera_states_interactions.png)
+
+As you can see, after the initial `PreparingState`, the new state is either `PictureCameraState` or `VideoCameraState`.
+A `VideoRecordingCameraState` replaces the `VideoCameraState` when a recording starts. You can't start two recording at the same time thanks to this.
+When the recording stops, a `VideoCameraState` replaces it again.
+
+
+#### You don't have to worry about state management here
+
+`CameraAwesomeBuilder` calls the `builder` method each time you switch between camera states.
+This way, you can react to these changes easily in your `builder` 👌
+
+
+### Creating my own widget
+
+`CameraState` lets you build a reactive UI by providing you streams and setters to the various properties around the camera.
+Using only this you should be able to create everything you need in a reactive way without worrying about the camera flow.
+
+You can get inspiration on how we built every widgets.
+
+**Example**
+```dart
+class AwesomeFlashButton extends StatelessWidget {
+  final CameraState state;
+
+  const AwesomeFlashButton({
+    super.key,
+    required this.state,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<CameraFlashes>(
+      stream: state.sensorConfig.flashMode$, // Listen to the currently selected flash mode
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Container();
+        }
+        return _FlashButton.from(
+          // Build your button differently based on the current Flash mode, with different icons for instance
+          flashMode: snapshot.requireData,
+          onTap: () => state.sensorConfig.switchCameraFlash(),
+        );
+      },
+    );
+  }
+}
+```
+In the snippet above, `CameraState.sensorConfig` gives access to `flashMode$`, which is a `Stream` of the current flash mode.
+
+> 👌 Every getter terminated with the $ are streams in CamerAwesome.
+> The equivalent without $ is the current value.
+
+
+### Using provided widgets
+
+You can find some common widgets that you may want to use in the **Widgets** section.
+
+For instance, if you want to rotate your buttons automatically when the phone rotates, you can use [AwesomeOrientedWidget](/widgets/awesome_oriented_widget).
+
+
+### Setting and reading camera properties
+
+If you need more customization, you can find details on how to access and update the properties of the camera below.
+
+Note that we recommend to access properties via their `Stream` whenever possible.
+If you need it to build your UI, just use it with a `StreamBuilder`.
+
+#### Camera sensor properties and methods
+
+**Flash**
+|Use case|Code|
+|-|-|
+|**Switch** between different flash modes|`state.sensorConfig.switchCameraFlash()`|
+|**Set** a specific flash mode|`state.sensorConfig.setFlashMode()`|
+|**Get** current flash mode|`state.sensorConfig.flashMode`|
+|**Stream** of the current flash mode|`state.sensorConfig.flashMode$`|
+
+
+**Aspect ratio**
+|Use case|Code|
+|-|-|
+|**Switch** between different aspect ratio|`state.sensorConfig.switchCameraRatio()`|
+|**Set** a specific aspect ratio|`state.sensorConfig.setAspectRatio()`|
+|**Get** current aspect ratio|`state.sensorConfig.aspectRatio`|
+|**Stream** of the current aspect ratio|`state.sensorConfig.aspectRatio$`|
+
+
+**Zoom**
+|Use case|Code|Comment|
+|-|-|-|
+|**Set** a specific zoom value|`state.sensorConfig.setZoom()`|Zoom value must be between 0.0 (no zoom) and 1.0 (max zoom)|
+|**Get** current zoom value|`state.sensorConfig.zoom`||
+|**Stream** of the current zoom value|`state.sensorConfig.zoom$`||
+
+
+**Brightness**
+|Use case|Code|
+|-|-|
+|**Set** a specific brightness|`state.sensorConfig.setZoom()`|
+|**Get** current brightness value|`state.sensorConfig.zoom`|
+|**Stream** of the current brightness value|`state.sensorConfig.zoom$`|
+
+
+#### Available to any CameraState
+
+|Use case|Code|Comment|
+|-|-|-|
+|**Switch** between FRONT and BACK camera|`state.switchCameraSensor()`||
+|**Get** current Sensor configuration|`state.sensorConfig`||
+|**Stream** of current Sensor configuration|`state.sensorConfig$`||
+|**Get** original AwesomeFileSaver|`state.awesomeFileSaver`||
+
+
+#### PictureCameraState properties and methods
+
+**Take a picture**
+|Use case|Code|
+|-|-|
+|Take a picture|`state.takePhoto()`|
+
+**Toggle to save (or not) the location when taking pictures**
+|Use case|Code|
+|-|-|
+|**Set** saveGpsLocation|`state.saveGpsLocation = true`|
+|**Get** saveGpsLocation|`state.saveGpsLocation`|
+|**Stream** of saveGpsLocation|`state.saveGpsLocation$`|
+
+
+#### VideoCameraState properties and methods
+
+|Use case|Code|Comment|
+|-|-|-|
+|Start recording a video|`state.startRecording()`|This will push a `VideoRecordingCameraState`|
+|Enable/Disable audio recording|`state.enableAudio()`|Must be set before starting a recording. Once started, it can't be changed for the current recording.|
+
+
+#### VideoRecordingCameraState properties and methods
+
+|Use case|Code|Comment|
+|-|-|-|
+|Pause a recording|`state.pauseRecording()`|A paused recording must not be paused again|
+|Resume a recording|`state.resumeRecording()`|A recording not paused should not call `resumeRecording()`|
+|Stop a recording|`state.stopRecording()`|This will push a `VideoCameraState`|

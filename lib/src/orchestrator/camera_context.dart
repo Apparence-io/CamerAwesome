@@ -4,16 +4,11 @@ import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:camerawesome/src/orchestrator/sensor_config.dart';
-import 'package:camerawesome/src/orchestrator/states/video_state.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'analysis/analysis_controller.dart';
-import 'states/picture_state.dart';
-import 'states/preparing_state.dart';
-import 'states/state_definition.dart';
 
 /// This class handle the current state of the camera
 /// - [PictureCameraState]
@@ -33,7 +28,7 @@ class CameraContext {
 
   /// The config associated with a [Sensors].
   /// [BACK] sensor frequently has flash while [FRONT] does not for instance.
-  Stream<SensorConfig> sensorConfigStream;
+  Stream<SensorConfig> sensorConfig$;
 
   BehaviorSubject<SensorConfig> sensorConfigController;
 
@@ -58,7 +53,7 @@ class CameraContext {
     required this.awesomeFileSaver,
     this.onPermissionsResult,
     required this.exifPreferences,
-  }) : sensorConfigStream = sensorConfigController.stream {
+  }) : sensorConfig$ = sensorConfigController.stream {
     var preparingState = PreparingCameraState(
       this,
       initialCaptureMode,
@@ -91,8 +86,9 @@ class CameraContext {
           exifPreferences: exifPreferences,
         );
 
-  changeState(CameraState newState) {
+  changeState(CameraState newState) async {
     state.dispose();
+    CamerawesomePlugin.setCaptureMode(newState.captureMode!);
     stateController.add(newState);
   }
 

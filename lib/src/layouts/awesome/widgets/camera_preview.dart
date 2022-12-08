@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// This is a fullscreen camera preview
-/// some part of the preview are croped so we have a full sized camera preview
+/// some part of the preview are cropped so we have a full sized camera preview
 class CameraPreviewCovered extends StatelessWidget {
   final Widget? loadingWidget;
 
@@ -41,7 +41,7 @@ class CameraPreviewCovered extends StatelessWidget {
               return Container(
                 height: constraints.maxHeight,
                 width: constraints.maxWidth,
-                color: Colors.red,
+                color: Colors.black,
                 child: Center(
                   child: Transform.scale(
                     scale: scale,

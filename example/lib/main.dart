@@ -15,7 +15,7 @@ class CameraAwesomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'CameraAwesome App',
+      title: 'CamerAwesome App',
       home: CameraPage(),
     );
   }
@@ -28,9 +28,11 @@ class CameraPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.awesome(
-        initialCaptureMode: CaptureModes.PHOTO,
-        picturePathBuilder: (captureMode) => _path(captureMode),
-        videoPathBuilder: (captureMode) => _path(captureMode),
+        awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+          imagePathBuilder: () => _path(CaptureModes.PHOTO),
+          videoPathBuilder: () => _path(CaptureModes.VIDEO),
+          initialCaptureMode: CaptureModes.PHOTO,
+        ),
         onMediaTap: (mediaCapture) {
           OpenFile.open(mediaCapture.filePath);
         },

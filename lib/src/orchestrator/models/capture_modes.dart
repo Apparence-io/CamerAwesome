@@ -1,8 +1,8 @@
-import 'package:camerawesome/src/orchestrator/states/picture_state.dart';
-import 'package:camerawesome/src/orchestrator/states/video_state.dart';
+import 'package:camerawesome/src/orchestrator/states/picture_camera_state.dart';
+import 'package:camerawesome/src/orchestrator/states/video_camera_state.dart';
 
 import '../camera_context.dart';
-import '../states/state_definition.dart';
+import '../states/camera_state.dart';
 
 enum CaptureModes {
   PHOTO,

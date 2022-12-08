@@ -1,4 +1,4 @@
-import 'package:camerawesome/src/orchestrator/states/state_definition.dart';
+import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
 
 import 'awesome_oriented_widget.dart';

@@ -228,7 +228,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                             recording?.close()
                             recording = null
                         }
-                        Log.d(
+                        Log.e(
                             CamerawesomePlugin.TAG,
                             "Video capture ends with error: ${event.error}"
                         )

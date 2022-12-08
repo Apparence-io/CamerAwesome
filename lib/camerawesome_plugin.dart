@@ -7,19 +7,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'camerawesome_plugin.dart';
-import 'src/orchestrator/models/orientations.dart';
+import 'src/orchestrator/models/camera_orientations.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
-export 'src/layouts/awesome/widgets/awesome_oriented_widget.dart';
 
 // built in widgets
+export 'src/layouts/awesome/widgets/awesome_oriented_widget.dart';
+export 'src/layouts/awesome/widgets/awesome_pinch_to_zoom.dart';
 export 'src/layouts/awesome/widgets/camera_preview.dart';
-export 'src/layouts/awesome/widgets/pinch_to_zoom.dart';
+export 'src/orchestrator/awesome_file_saver.dart';
 export 'src/orchestrator/models/analysis_image.dart';
 export 'src/orchestrator/models/capture_modes.dart';
-export 'src/orchestrator/models/flashmodes.dart';
+export 'src/orchestrator/models/camera_flashes.dart';
 export 'src/orchestrator/models/sensor_data.dart';
 export 'src/orchestrator/models/sensors.dart';
+export 'src/orchestrator/states/states.dart';
 
 enum CameraRunningState { STARTING, STARTED, STOPPING, STOPPED }
 
@@ -48,7 +50,7 @@ class CamerawesomePlugin {
 
   static CameraRunningState currentState = CameraRunningState.STOPPED;
 
-  static bool printLogs = false;
+  static bool printLogs = true;
 
   static Future<List<String?>> checkAndroidPermissions() =>
       CameraInterface().checkPermissions();

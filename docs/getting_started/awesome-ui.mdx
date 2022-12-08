@@ -1,0 +1,104 @@
+## 👌 Awesome built-in UI
+
+Just use our builder. 
+That's all you need to create a complete camera experience within your app.
+
+Here is a concrete example using **path_provider** to get valid paths and **better_open_file** to display the last media captured:
+
+```dart
+CameraAwesomeBuilder.awesome(
+  awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+    imagePathBuilder: () async {
+      final Directory extDir = await getTemporaryDirectory();
+      final testDir =
+          await Directory('${extDir.path}/test').create(recursive: true);
+      return '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+    },
+    videoPathBuilder: () async {
+      final Directory extDir = await getTemporaryDirectory();
+      final testDir =
+          await Directory('${extDir.path}/test').create(recursive: true);
+      return '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
+    },
+    onMediaTap: (mediaCapture) {
+      OpenFile.open(mediaCapture.filePath);
+    },
+  ),
+)
+```
+
+### 📝 Complete example
+
+Here is an example showing the complete list of parameters you can set to customize your camera experience:
+
+``` dart
+CameraAwesomeBuilder.awesome(
+  // Define if you want to take pictures, videos or both and where to save them
+  awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+    initialCaptureMode: CaptureModes.PHOTO,
+    imagePathBuilder: () async {
+      // Return a valid file path (must be a jpg file)
+      return 'some/image/file/path.jpg';
+    },
+    videoPathBuilder: () async {
+      // Return a valid file path (must be a mp4 file)
+      return 'some/video/file/path.mp4';
+    },
+  ),
+  onMediaTap: (mediaCapture) {
+    // Hande tap on the preview of the last media captured
+    print('Tap on ${mediaCapture.filePath}');
+  },
+  // Use FRONT camera
+  sensor: Sensors.BACK,
+  flashMode: CameraFlashes.NONE,
+  // No zoom
+  zoom: 0.0,
+  exifPreferences: ExifPreferences(
+    // For pictures only
+    saveGPSLocation: false,
+  ),
+  // For video recording
+  enableAudio: true,
+  progressIndicator: const SizedBox(
+    width: 100,
+    height: 100,
+    child: CircularProgressIndicator(),
+  ),
+  imageAnalysisConfig: AnalysisConfig(
+    outputFormat: InputAnalysisImageFormat.nv21,
+    width: 1024,
+  ),
+  onImageForAnalysis: (analysisImage) {
+    // Do some stuff with the image (see example)
+    processImage(analysisImage);
+  },
+)
+```
+
+### 🔬 Properties
+
+| Method                           | Comment | 
+|----------------------------------|---------|
+| **awesomeFileSaver**           | Define if you want to take pictures, videos or both and where to save them  |
+| **onMediaTap**           | Choose what you want to do when user tap on the last media captured |
+| **sensor**           | The initial camera sensor (Back or Front) |
+| **flashMode**           | The initial flash mode |
+| **zoom**           | A value between 0.0 (no zoom) and 1.0 (max zoom) |
+| **exifPreferences**           | Activate or deactivate location in photo exif |
+| **enableAudio**           | Activate audio by default (only for video mode) |
+| **progressIndicator**           | Widget to show when loading |
+| **onImageForAnalysis**           | Callback that will provide an image stream for AI analysis |
+| **imageAnalysisConfig** | Choose between image format (provide this to enable imageAnalysis) |
+
+
+### 🔨 Need more customization ?
+
+Provide your own UI using `CameraAwesomeBuilder.custom()` builder.
+
+[See docs](/custom-ui).
+
+> 🚧 You can expect small changes <br/>
+> Some small refactoring on the configuration are waiting. 
+
+

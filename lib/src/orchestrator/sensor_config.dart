@@ -14,8 +14,8 @@ class SensorConfig {
 
   late Stream<CameraAspectRatios> aspectRatio$;
 
-  /// Zoom from native side. Must be between 0 and 1
-  late Stream<double> zoom;
+  /// Zoom from native side. Must be between 0.0 and 1.0
+  late Stream<double> zoom$;
 
   /// [BACK] or [FRONT] camera
   final Sensors sensor;
@@ -24,31 +24,33 @@ class SensorConfig {
   // late Stream<Size?> previewSize;
 
   /// set brightness correction manually range [0,1] (optionnal)
-  late Stream<double>? brightness;
+  late Stream<double>? brightness$;
 
   late BehaviorSubject<double> _zoomController;
 
   /// Use this stream to debounce brightness events
-  final StreamController<double> _brightnessController =
-      StreamController<double>();
+  final BehaviorSubject<double> _brightnessController =
+      BehaviorSubject<double>();
+  StreamSubscription? _brightnessSubscription;
 
   SensorConfig({
     required this.sensor,
     CameraFlashes flash = CameraFlashes.NONE,
     CameraAspectRatios aspectRatio = CameraAspectRatios.RATIO_4_3,
+
+    /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)
     double currentZoom = 0.0,
   }) {
     _flashModeController = BehaviorSubject<CameraFlashes>.seeded(flash);
     flashMode$ = _flashModeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
-    zoom = _zoomController.stream;
+    zoom$ = _zoomController.stream;
 
     _aspectRatioController = BehaviorSubject.seeded(aspectRatio);
     aspectRatio$ = _aspectRatioController.stream;
 
-    // FIXME dispose this
-    _brightnessController.stream
+    _brightnessSubscription = _brightnessController.stream
         .debounceTime(Duration(milliseconds: 500))
         .listen((value) => CamerawesomePlugin.setBrightness(value));
   }
@@ -60,6 +62,9 @@ class SensorConfig {
     await CamerawesomePlugin.setZoom(zoom);
     _zoomController.sink.add(zoom);
   }
+
+  /// Returns the current zoom without stream
+  double get zoom => _zoomController.value;
 
   /// Set manually the CameraFlashes between
   /// [CameraFlashes.NONE] no flash
@@ -117,7 +122,7 @@ class SensorConfig {
     _aspectRatioController.add(ratio);
   }
 
-  /// Returns the current camera aspect ratio
+  /// Returns the current camera aspect ratio without stream
   CameraAspectRatios get aspectRatio => _aspectRatioController.value;
 
   /// set brightness correction manually range [0,1] (optionnal)
@@ -129,11 +134,15 @@ class SensorConfig {
     _brightnessController.sink.add(brightness);
   }
 
+  /// Returns the current brightness without stream
+  double get brightness => _brightnessController.value;
+
   /// Only available on Android
   Stream<SensorData>? get luminosityLevelStream =>
       CamerawesomePlugin.listenLuminosityLevel();
 
   void dispose() {
+    _brightnessSubscription?.cancel();
     _brightnessController.close();
     _zoomController.close();
     _flashModeController.close();
