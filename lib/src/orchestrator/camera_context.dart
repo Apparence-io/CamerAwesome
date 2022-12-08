@@ -88,7 +88,11 @@ class CameraContext {
 
   changeState(CameraState newState) async {
     state.dispose();
-    CamerawesomePlugin.setCaptureMode(newState.captureMode!);
+    if(state.captureMode != newState.captureMode){
+      // This should not be done multiple times for the same CaptureMode or it
+      // generates problems (especially when recording a video)
+      await CamerawesomePlugin.setCaptureMode(newState.captureMode!);
+    }
     stateController.add(newState);
   }
 

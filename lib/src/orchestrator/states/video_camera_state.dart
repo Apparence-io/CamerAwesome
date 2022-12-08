@@ -1,5 +1,4 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 
 import '../camera_context.dart';
@@ -44,10 +43,8 @@ class VideoCameraState extends CameraState {
     try {
       await CamerawesomePlugin.recordVideo(filePath);
     } on Exception catch (e) {
-      printLog("CAWSOME Got error $e");
       _mediaCapture = MediaCapture.failure(filePath: filePath, exception: e);
     }
-    printLog("CAWSOME start recording: ${filePath}");
     cameraContext.changeState(VideoRecordingCameraState.from(cameraContext));
     return filePath;
   }

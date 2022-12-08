@@ -67,7 +67,6 @@ class VideoRecordingCameraState extends CameraState {
     }
     await CamerawesomePlugin.stopRecordingVideo();
     _mediaCapture = MediaCapture.success(filePath: currentCapture.filePath);
-    printLog("CAWSOME stopped recording: ${currentCapture.filePath}");
     await CamerawesomePlugin.setCaptureMode(CaptureModes.VIDEO);
     cameraContext.changeState(VideoCameraState.from(cameraContext));
   }
