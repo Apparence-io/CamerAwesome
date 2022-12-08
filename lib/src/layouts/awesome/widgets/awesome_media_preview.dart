@@ -60,8 +60,11 @@ class AwesomeMediaPreview extends StatelessWidget {
         if (mediaCapture!.isPicture) {
           return Ink.image(
             fit: BoxFit.cover,
-            image: FileImage(
-              File(mediaCapture.filePath),
+            image: ResizeImage(
+              FileImage(
+                File(mediaCapture.filePath),
+              ),
+              width: 300,
             ),
           );
         } else {
