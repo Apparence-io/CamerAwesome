@@ -2,14 +2,14 @@ import 'dart:io';
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_camera_gesture_detector.dart';
 import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../layouts/awesome/widgets/awesome_pinch_to_zoom.dart';
-import '../layouts/awesome/widgets/camera_preview.dart';
+import '../layouts/awesome/widgets/awesome_camera_preview.dart';
 import '../orchestrator/camera_context.dart';
 import '../orchestrator/models/analysis_image.dart';
 import '../orchestrator/models/capture_modes.dart';
@@ -173,6 +173,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
 class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     with WidgetsBindingObserver {
   late CameraContext _cameraContext;
+  final _cameraPreviewKey = GlobalKey<CameraPreviewState>();
 
   @override
   void dispose() {
@@ -247,11 +248,42 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
           fit: StackFit.expand,
           children: <Widget>[
             Positioned.fill(
-              child: AwesomePinchToZoom(
-                sensorConfig: _cameraContext.sensorConfig,
-                child: CameraPreviewCovered(
-                  key: UniqueKey(),
+              child: CameraPreview(
+                key: _cameraPreviewKey,
+                state: snapshot.requireData,
+                onCameraTap: OnCameraTap(
+                  onTap: (position) {
+                    final pixelPreviewSize =
+                        _cameraPreviewKey.currentState?.pixelPreviewSize;
+                    final flutterPreviewSize =
+                        _cameraPreviewKey.currentState?.flutterPreviewSize;
+                    if (pixelPreviewSize != null &&
+                        flutterPreviewSize != null) {
+                      snapshot.requireData.when(
+                        onPictureMode: (pictureState) =>
+                            pictureState.focusOnPoint(
+                          flutterPosition: position,
+                          pixelPreviewSize: pixelPreviewSize,
+                          flutterPreviewSize: flutterPreviewSize,
+                        ),
+                        onVideoMode: (videoState) => videoState.focusOnPoint(
+                          flutterPosition: position,
+                          pixelPreviewSize: pixelPreviewSize,
+                          flutterPreviewSize: flutterPreviewSize,
+                        ),
+                        onVideoRecordingMode: (videoRecState) =>
+                            videoRecState.focusOnPoint(
+                          flutterPosition: position,
+                          pixelPreviewSize: pixelPreviewSize,
+                          flutterPreviewSize: flutterPreviewSize,
+                        ),
+                      );
+                    }
+                  },
                 ),
+                onScale: (scale) {
+                  snapshot.requireData.sensorConfig.setZoom(scale);
+                },
               ),
             ),
             Positioned.fill(

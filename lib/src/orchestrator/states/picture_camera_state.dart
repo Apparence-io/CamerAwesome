@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
@@ -88,5 +90,21 @@ class PictureCameraState extends CameraState {
   @override
   void dispose() {
     _saveGpsLocationController.close();
+  }
+
+  focus() {
+    cameraContext.focus();
+  }
+
+  Future<void> focusOnPoint({
+    required Offset flutterPosition,
+    required PreviewSize pixelPreviewSize,
+    required PreviewSize flutterPreviewSize,
+  }) {
+    return cameraContext.focusOnPoint(
+      flutterPosition: flutterPosition,
+      pixelPreviewSize: pixelPreviewSize,
+      flutterPreviewSize: flutterPreviewSize,
+    );
   }
 }

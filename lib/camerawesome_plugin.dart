@@ -14,7 +14,7 @@ export 'src/builder/camera_awesome_builder.dart';
 // built in widgets
 export 'src/layouts/awesome/widgets/awesome_oriented_widget.dart';
 export 'src/layouts/awesome/widgets/awesome_pinch_to_zoom.dart';
-export 'src/layouts/awesome/widgets/camera_preview.dart';
+export 'src/layouts/awesome/widgets/awesome_camera_preview.dart';
 export 'src/orchestrator/awesome_file_saver.dart';
 export 'src/orchestrator/models/analysis_image.dart';
 export 'src/orchestrator/models/capture_modes.dart';
@@ -243,14 +243,14 @@ class CamerawesomePlugin {
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
-  static Future<Size> getEffectivPreviewSize() async {
+  static Future<PreviewSize> getEffectivPreviewSize() async {
     if (Platform.isAndroid) {
       final ps = await CameraInterface().getEffectivPreviewSize();
       if (ps != null) {
-        return Size(ps.width, ps.height);
+        return PreviewSize(width: ps.width, height: ps.height);
       } else {
         // TODO Should not be null?
-        return Size(0, 0);
+        return PreviewSize(width: 0, height: 0);
       }
     } else {
       final sizeMap = await _channel
@@ -258,7 +258,7 @@ class CamerawesomePlugin {
 
       final int width = sizeMap?["width"] ?? 0;
       final int height = sizeMap?["height"] ?? 0;
-      return Size(width.toDouble(), height.toDouble());
+      return PreviewSize(width: width.toDouble(), height: height.toDouble());
     }
   }
 
@@ -337,6 +337,16 @@ class CamerawesomePlugin {
       return CameraInterface().handleAutoFocus();
     } else {
       _channel.invokeMethod("handleAutoFocus");
+    }
+  }
+
+  static Future<void> focusOnPoint(
+      {required PreviewSize previewSize, required Offset position}) {
+    if (Platform.isAndroid) {
+      return CameraInterface()
+          .focusOnPoint(previewSize, position.dx, position.dy);
+    } else {
+      return _channel.invokeMethod("handleAutoFocus");
     }
   }
 

@@ -327,17 +327,16 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    // TODO Use this in CamerAwesome lib
-    fun focusOnPoint(size: PreviewSize, x: Double, y: Double) {
+    override fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double) {
         val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
-            size.width.toFloat(), size.height.toFloat(),
+            previewSize.width.toFloat(), previewSize.height.toFloat(),
         )
         val autoFocusPoint = factory.createPoint(x.toFloat(), y.toFloat())
         try {
             cameraState.previewCamera!!.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(
                     autoFocusPoint,
-                    FocusMeteringAction.FLAG_AF
+                    FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE
                 ).apply {
                     //focus only when the user tap the preview
                     disableAutoCancel()
@@ -381,8 +380,23 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     @SuppressLint("RestrictedApi")
     override fun getEffectivPreviewSize(): PreviewSize {
         val res = cameraState.preview!!.resolutionInfo?.resolution
+
+        Log.d(
+            "Tototot", "Res: ${res} vs ${cameraState.preview!!.attachedSurfaceResolution}, rota: ${
+                cameraState.preview!!.resolutionInfo?.rotationDegrees
+            }"
+        )
         return if (res != null) {
-            PreviewSize(res.width.toDouble(), res.height.toDouble())
+            val rota90 = 90
+            val rota270 = 270
+            when (cameraState.preview!!.resolutionInfo?.rotationDegrees) {
+                rota90, rota270 -> {
+                    PreviewSize(res.height.toDouble(), res.width.toDouble())
+                }
+                else -> {
+                    PreviewSize(res.width.toDouble(), res.height.toDouble())
+                }
+            }
         } else {
             PreviewSize(0.0, 0.0)
         }
@@ -404,19 +418,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    override fun setAspectRatio(value: String) {
+    override fun setAspectRatio(aspectRatio: String) {
         cameraState.apply {
-            aspectRatio = when (value) {
-                AspectRatio.RATIO_16_9.toString() -> {
-                    AspectRatio.RATIO_16_9
-                }
-                AspectRatio.RATIO_4_3.toString() -> {
-                    AspectRatio.RATIO_4_3
-                }
-                else -> {
-                    null
-                }
-            }
+            // In CameraX, aspect ratio is an Int. RATIO_4_3 = 0 (default), RATIO_16_9 = 1
+            this.aspectRatio = if (aspectRatio == "RATIO_16_9") 1 else 0
             updateLifecycle(activity!!)
         }
     }

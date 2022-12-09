@@ -1,6 +1,7 @@
 // ignore_for_file: close_sinks
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
@@ -88,7 +89,7 @@ class CameraContext {
 
   changeState(CameraState newState) async {
     state.dispose();
-    if(state.captureMode != newState.captureMode){
+    if (state.captureMode != newState.captureMode) {
       // This should not be done multiple times for the same CaptureMode or it
       // generates problems (especially when recording a video)
       await CamerawesomePlugin.setCaptureMode(newState.captureMode!);
@@ -119,5 +120,31 @@ class CameraContext {
     analysisController?.close();
     state.dispose();
     CamerawesomePlugin.stop();
+  }
+
+  /// Global focus
+  void focus() {
+    CamerawesomePlugin.startAutoFocus();
+  }
+
+  Future<void> focusOnPoint({
+    required Offset flutterPosition,
+    required PreviewSize pixelPreviewSize,
+    required PreviewSize flutterPreviewSize,
+  }) async {
+    final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
+    // Transform flutter position to pixel position
+    Offset pixelPosition = flutterPosition.scale(ratio, ratio);
+    return CamerawesomePlugin.focusOnPoint(
+        position: pixelPosition, previewSize: pixelPreviewSize);
+  }
+
+  Future<PreviewSize> previewSize() {
+    return CamerawesomePlugin.getEffectivPreviewSize();
+  }
+
+  Future<int?> textureId() {
+    return CamerawesomePlugin.getPreviewTexture()
+        .then(((value) => value?.toInt()));
   }
 }
