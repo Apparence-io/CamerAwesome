@@ -2,11 +2,9 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../camera_context.dart';
-import '../models/awesome_file_saver.dart';
 
 /// When Camera is in Image mode
 class PictureCameraState extends CameraState {

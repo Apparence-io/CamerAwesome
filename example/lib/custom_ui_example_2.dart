@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -40,7 +41,7 @@ class CustomUiExample2 extends StatelessWidget {
                         return AwesomeMediaPreview(
                           mediaCapture: snapshot.data!,
                           onMediaTap: (MediaCapture mediaCapture) {
-                            print("Tap on ${mediaCapture}");
+                            print("Tap on $mediaCapture");
                           },
                         );
                       },
@@ -60,7 +61,7 @@ class CustomUiExample2 extends StatelessWidget {
           },
         ),
         onPreviewTapBuilder: (state) => OnPreviewTap(
-          onTap: (Offset position) {
+          onTap: (Offset position, PreviewSize flutterPreviewSize, PreviewSize pixelPreviewSize) {
             state.when(onPictureMode: (picState) => picState.takePhoto());
           },
           onTapPainter: (tapPosition) => TweenAnimationBuilder(

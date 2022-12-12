@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
-import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 
 import '../camera_context.dart';
 

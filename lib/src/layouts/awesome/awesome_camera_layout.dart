@@ -1,4 +1,3 @@
-import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';

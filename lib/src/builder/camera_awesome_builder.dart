@@ -3,18 +3,13 @@ import 'dart:io';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
 import 'package:camerawesome/src/layouts/awesome/widgets/awesome_camera_gesture_detector.dart';
-import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../layouts/awesome/widgets/awesome_camera_preview.dart';
 import '../orchestrator/camera_context.dart';
-import '../orchestrator/models/analysis_image.dart';
-import '../orchestrator/models/camera_flashes.dart';
-import '../orchestrator/models/capture_modes.dart';
 import '../orchestrator/models/models.dart';
-import '../orchestrator/models/sensors.dart';
 import '../orchestrator/sensor_config.dart';
 import '../orchestrator/states/camera_state.dart';
 
@@ -267,34 +262,27 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                 onPreviewTap: widget.onPreviewTapBuilder
                         ?.call(snapshot.requireData) ??
                     OnPreviewTap(
-                      onTap: (position) {
-                        final pixelPreviewSize =
-                            _cameraPreviewKey.currentState?.pixelPreviewSize;
-                        final flutterPreviewSize =
-                            _cameraPreviewKey.currentState?.flutterPreviewSize;
-                        if (pixelPreviewSize != null &&
-                            flutterPreviewSize != null) {
-                          snapshot.requireData.when(
-                            onPictureMode: (pictureState) =>
-                                pictureState.focusOnPoint(
-                              flutterPosition: position,
-                              pixelPreviewSize: pixelPreviewSize,
-                              flutterPreviewSize: flutterPreviewSize,
-                            ),
-                            onVideoMode: (videoState) =>
-                                videoState.focusOnPoint(
-                              flutterPosition: position,
-                              pixelPreviewSize: pixelPreviewSize,
-                              flutterPreviewSize: flutterPreviewSize,
-                            ),
-                            onVideoRecordingMode: (videoRecState) =>
-                                videoRecState.focusOnPoint(
-                              flutterPosition: position,
-                              pixelPreviewSize: pixelPreviewSize,
-                              flutterPreviewSize: flutterPreviewSize,
-                            ),
-                          );
-                        }
+                      onTap: (position, flutterPreviewSize, pixelPreviewSize) {
+                        snapshot.requireData.when(
+                          onPictureMode: (pictureState) =>
+                              pictureState.focusOnPoint(
+                            flutterPosition: position,
+                            pixelPreviewSize: pixelPreviewSize,
+                            flutterPreviewSize: flutterPreviewSize,
+                          ),
+                          onVideoMode: (videoState) =>
+                              videoState.focusOnPoint(
+                            flutterPosition: position,
+                            pixelPreviewSize: pixelPreviewSize,
+                            flutterPreviewSize: flutterPreviewSize,
+                          ),
+                          onVideoRecordingMode: (videoRecState) =>
+                              videoRecState.focusOnPoint(
+                            flutterPosition: position,
+                            pixelPreviewSize: pixelPreviewSize,
+                            flutterPreviewSize: flutterPreviewSize,
+                          ),
+                        );
                       },
                     ),
                 onPreviewScale:

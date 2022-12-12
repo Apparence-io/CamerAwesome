@@ -122,7 +122,16 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                     height: _flutterPreviewSize?.height,
                     child: AwesomeCameraGestureDetector(
                       child: Texture(textureId: _textureId!),
-                      onCameraTap: widget.onPreviewTap,
+                      onPreviewTapBuilder: widget.onPreviewTap != null &&
+                              _previewSize != null &&
+                              _flutterPreviewSize != null
+                          ? OnPreviewTapBuilder(
+                              pixelPreviewSizeGetter: () => _previewSize!,
+                              flutterPreviewSizeGetter: () =>
+                                  _flutterPreviewSize!,
+                              onPreviewTap: widget.onPreviewTap!,
+                            )
+                          : null,
                       onPreviewScale: widget.onPreviewScale,
                     ),
                   ),

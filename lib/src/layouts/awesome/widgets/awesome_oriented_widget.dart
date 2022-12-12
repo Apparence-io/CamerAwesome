@@ -1,5 +1,4 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/orchestrator/models/camera_orientations.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeOrientedWidget extends StatefulWidget {

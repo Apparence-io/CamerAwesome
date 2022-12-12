@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +10,22 @@ Widget _awesomeFocusBuilder(Offset tapPosition) {
   return AwesomeFocusIndicator(position: tapPosition);
 }
 
+class OnPreviewTapBuilder {
+  // Use getters instead of storing the direct value to retrieve the data onTap
+  final PreviewSize Function() pixelPreviewSizeGetter;
+  final PreviewSize Function() flutterPreviewSizeGetter;
+  final OnPreviewTap onPreviewTap;
+
+  const OnPreviewTapBuilder({
+    required this.pixelPreviewSizeGetter,
+    required this.flutterPreviewSizeGetter,
+    required this.onPreviewTap,
+  });
+}
+
 class OnPreviewTap {
-  final Function(Offset position) onTap;
+  final Function(Offset position, PreviewSize flutterPreviewSize,
+      PreviewSize pixelPreviewSize) onTap;
   final Widget Function(Offset tapPosition)? onTapPainter;
   final Duration? tapPainterDuration;
 
@@ -31,14 +46,14 @@ class OnPreviewScale {
 
 class AwesomeCameraGestureDetector extends StatefulWidget {
   final Widget child;
-  final OnPreviewTap? onCameraTap;
+  final OnPreviewTapBuilder? onPreviewTapBuilder;
   final OnPreviewScale? onPreviewScale;
 
   const AwesomeCameraGestureDetector({
     super.key,
     required this.child,
     required this.onPreviewScale,
-    this.onCameraTap,
+    this.onPreviewTapBuilder,
   });
 
   @override
@@ -59,10 +74,9 @@ class _AwesomeCameraGestureDetector
     return RawGestureDetector(
       child: Stack(children: [
         Positioned.fill(child: widget.child),
-        if (_tapPosition != null && widget.onCameraTap?.onTapPainter != null)
-          Positioned.fill(
-            child: widget.onCameraTap!.onTapPainter!(_tapPosition!),
-          ),
+        if (_tapPosition != null &&
+            widget.onPreviewTapBuilder?.onPreviewTap.onTapPainter != null)
+          widget.onPreviewTapBuilder!.onPreviewTap.onTapPainter!(_tapPosition!),
       ]),
       gestures: <Type, GestureRecognizerFactory>{
         if (widget.onPreviewScale != null)
@@ -81,14 +95,18 @@ class _AwesomeCameraGestureDetector
               },
             (instance) {},
           ),
-        if (widget.onCameraTap != null)
+        if (widget.onPreviewTapBuilder != null)
           TapGestureRecognizer:
               GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
             () => TapGestureRecognizer()
               ..onTapUp = (details) {
-                if (widget.onCameraTap!.tapPainterDuration != null) {
+                if (widget
+                        .onPreviewTapBuilder!.onPreviewTap.tapPainterDuration !=
+                    null) {
                   _timer?.cancel();
-                  _timer = Timer(widget.onCameraTap!.tapPainterDuration!, () {
+                  _timer = Timer(
+                      widget.onPreviewTapBuilder!.onPreviewTap
+                          .tapPainterDuration!, () {
                     setState(() {
                       _tapPosition = null;
                     });
@@ -97,7 +115,11 @@ class _AwesomeCameraGestureDetector
                 setState(() {
                   _tapPosition = details.localPosition;
                 });
-                widget.onCameraTap!.onTap(_tapPosition!);
+                widget.onPreviewTapBuilder!.onPreviewTap.onTap(
+                  _tapPosition!,
+                  widget.onPreviewTapBuilder!.flutterPreviewSizeGetter(),
+                  widget.onPreviewTapBuilder!.pixelPreviewSizeGetter(),
+                );
               },
             (instance) {},
           ),

@@ -73,6 +73,37 @@ CameraAwesomeBuilder.awesome(
     // Do some stuff with the image (see example)
     processImage(analysisImage);
   },
+  onPreviewTapBuilder: (state) => OnPreviewTap(
+    onTap: (position, flutterPreviewSize, pixelPreviewSize) {
+      // Handle tap to focus (default) or take a picture for instance
+      // ...
+    },
+    onTapPainter: (position) {
+      // Tap feedback
+      return Positioned(
+        left: position.dx - 25,
+        top: position.dy - 25,
+        child: IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            width: 50,
+            height: 50,
+          ),
+        ),
+      );
+    },
+    // Duration during which the feedback should be shown
+    tapPainterDuration: const Duration(seconds: 2),
+  ),
+  onPreviewScaleBuilder: (state) => OnPreviewScale(
+    onScale: (scale) {
+      // Do something with the scale value, set zoom for instance
+      state.sensorConfig.setZoom(scale);
+    },
+  ),
 )
 ```
 
@@ -90,6 +121,8 @@ CameraAwesomeBuilder.awesome(
 | **progressIndicator**           | Widget to show when loading |
 | **onImageForAnalysis**           | Callback that will provide an image stream for AI analysis |
 | **imageAnalysisConfig** | Choose between image format (provide this to enable imageAnalysis) |
+| **onPreviewTapBuilder** | Customize the behavior when the camera preview is tapped (tap to focus by default) |
+| **onPreviewScaleBuilder** | Customize what to do when the user makes a pinch (pinch to zoom by default) |
 
 
 ### 🔨 Need more customization ?
