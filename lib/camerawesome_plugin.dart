@@ -42,7 +42,7 @@ class CamerawesomePlugin {
 
   static CameraRunningState currentState = CameraRunningState.STOPPED;
 
-  static bool printLogs = true;
+  static bool printLogs = false;
 
   static Future<List<String?>> checkAndroidPermissions() =>
       CameraInterface().checkPermissions();

@@ -196,7 +196,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     )
                     if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
-                            Log.d("Location retrieved", "${it?.latitude}x${it?.longitude}")
                             outputFileOptions.metadata.location = it
                         }
                     }
@@ -380,12 +379,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     @SuppressLint("RestrictedApi")
     override fun getEffectivPreviewSize(): PreviewSize {
         val res = cameraState.preview!!.resolutionInfo?.resolution
-
-        Log.d(
-            "Tototot", "Res: ${res} vs ${cameraState.preview!!.attachedSurfaceResolution}, rota: ${
-                cameraState.preview!!.resolutionInfo?.rotationDegrees
-            }"
-        )
         return if (res != null) {
             val rota90 = 90
             val rota270 = 270

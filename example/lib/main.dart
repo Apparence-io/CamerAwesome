@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/custom_ui_example_2.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,7 +16,7 @@ class CameraAwesomeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'CamerAwesome App',
-      home: CustomUiExample2(),
+      home: CameraPage(),
     );
   }
 }
