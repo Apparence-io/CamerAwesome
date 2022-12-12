@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
 import 'package:camerawesome/src/layouts/awesome/widgets/awesome_camera_gesture_detector.dart';
-import 'package:camerawesome/src/orchestrator/awesome_file_saver.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +11,9 @@ import 'package:flutter/services.dart';
 import '../layouts/awesome/widgets/awesome_camera_preview.dart';
 import '../orchestrator/camera_context.dart';
 import '../orchestrator/models/analysis_image.dart';
-import '../orchestrator/models/capture_modes.dart';
 import '../orchestrator/models/camera_flashes.dart';
+import '../orchestrator/models/capture_modes.dart';
+import '../orchestrator/models/models.dart';
 import '../orchestrator/models/sensors.dart';
 import '../orchestrator/sensor_config.dart';
 import '../orchestrator/states/camera_state.dart';
@@ -29,7 +29,7 @@ import '../orchestrator/states/camera_state.dart';
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
 
 /// Callback when a video or picture has been saved and user click on thumbnail
-typedef OnMediaTap = Function(MediaCapture mediaState)?;
+typedef OnMediaTap = Function(MediaCapture mediaCapture)?;
 
 /// Used to set a permission result callback
 typedef OnPermissionsResult = void Function(bool result);
@@ -73,6 +73,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final AnalysisConfig? imageAnalysisConfig;
 
+  final OnPreviewTap Function(CameraState)? onPreviewTapBuilder;
+  final OnPreviewScale Function(CameraState)? onPreviewScaleBuilder;
+
   CameraAwesomeBuilder._({
     required this.sensor,
     required this.flashMode,
@@ -85,6 +88,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.builder,
     this.onImageForAnalysis,
     this.imageAnalysisConfig,
+    this.onPreviewTapBuilder,
+    this.onPreviewScaleBuilder,
   });
 
   /// Use the camera with the built-in interface.
@@ -118,6 +123,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
+    OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
+    OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -133,6 +140,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
+          onPreviewTapBuilder: onPreviewTapBuilder,
+          onPreviewScaleBuilder: onPreviewScaleBuilder,
         );
 
   /// 🚧 Experimental
@@ -150,6 +159,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required AwesomeFileSaver awesomeFileSaver,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
+    OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
+    OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -162,6 +173,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
           onMediaTap: null,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
+          onPreviewTapBuilder: onPreviewTapBuilder,
+          onPreviewScaleBuilder: onPreviewScaleBuilder,
         );
 
   @override
@@ -173,7 +186,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
 class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     with WidgetsBindingObserver {
   late CameraContext _cameraContext;
-  final _cameraPreviewKey = GlobalKey<CameraPreviewState>();
+  final _cameraPreviewKey = GlobalKey<AwesomeCameraPreviewState>();
 
   @override
   void dispose() {
@@ -248,42 +261,49 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
           fit: StackFit.expand,
           children: <Widget>[
             Positioned.fill(
-              child: CameraPreview(
+              child: AwesomeCameraPreview(
                 key: _cameraPreviewKey,
                 state: snapshot.requireData,
-                onCameraTap: OnCameraTap(
-                  onTap: (position) {
-                    final pixelPreviewSize =
-                        _cameraPreviewKey.currentState?.pixelPreviewSize;
-                    final flutterPreviewSize =
-                        _cameraPreviewKey.currentState?.flutterPreviewSize;
-                    if (pixelPreviewSize != null &&
-                        flutterPreviewSize != null) {
-                      snapshot.requireData.when(
-                        onPictureMode: (pictureState) =>
-                            pictureState.focusOnPoint(
-                          flutterPosition: position,
-                          pixelPreviewSize: pixelPreviewSize,
-                          flutterPreviewSize: flutterPreviewSize,
+                onPreviewTap: widget.onPreviewTapBuilder
+                        ?.call(snapshot.requireData) ??
+                    OnPreviewTap(
+                      onTap: (position) {
+                        final pixelPreviewSize =
+                            _cameraPreviewKey.currentState?.pixelPreviewSize;
+                        final flutterPreviewSize =
+                            _cameraPreviewKey.currentState?.flutterPreviewSize;
+                        if (pixelPreviewSize != null &&
+                            flutterPreviewSize != null) {
+                          snapshot.requireData.when(
+                            onPictureMode: (pictureState) =>
+                                pictureState.focusOnPoint(
+                              flutterPosition: position,
+                              pixelPreviewSize: pixelPreviewSize,
+                              flutterPreviewSize: flutterPreviewSize,
+                            ),
+                            onVideoMode: (videoState) =>
+                                videoState.focusOnPoint(
+                              flutterPosition: position,
+                              pixelPreviewSize: pixelPreviewSize,
+                              flutterPreviewSize: flutterPreviewSize,
+                            ),
+                            onVideoRecordingMode: (videoRecState) =>
+                                videoRecState.focusOnPoint(
+                              flutterPosition: position,
+                              pixelPreviewSize: pixelPreviewSize,
+                              flutterPreviewSize: flutterPreviewSize,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                onPreviewScale:
+                    widget.onPreviewScaleBuilder?.call(snapshot.requireData) ??
+                        OnPreviewScale(
+                          onScale: (scale) {
+                            snapshot.requireData.sensorConfig.setZoom(scale);
+                          },
                         ),
-                        onVideoMode: (videoState) => videoState.focusOnPoint(
-                          flutterPosition: position,
-                          pixelPreviewSize: pixelPreviewSize,
-                          flutterPreviewSize: flutterPreviewSize,
-                        ),
-                        onVideoRecordingMode: (videoRecState) =>
-                            videoRecState.focusOnPoint(
-                          flutterPosition: position,
-                          pixelPreviewSize: pixelPreviewSize,
-                          flutterPreviewSize: flutterPreviewSize,
-                        ),
-                      );
-                    }
-                  },
-                ),
-                onScale: (scale) {
-                  snapshot.requireData.sensorConfig.setZoom(scale);
-                },
               ),
             ),
             Positioned.fill(

@@ -5,6 +5,7 @@ import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:flutter/foundation.dart';
 
 import '../camera_context.dart';
+import '../models/awesome_file_saver.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 

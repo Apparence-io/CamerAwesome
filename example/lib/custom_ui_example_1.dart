@@ -1,31 +1,11 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
-class CustomUiExample extends StatelessWidget {
-  const CustomUiExample({super.key});
+class CustomUiExample1 extends StatelessWidget {
+  const CustomUiExample1({super.key});
 
   @override
   Widget build(BuildContext context) {
-CameraAwesomeBuilder.custom(
-  awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
-    imagePathBuilder: () async {
-      return "some/path.jpg";
-    },
-    videoPathBuilder: () async {
-      return "some/path.mp4";
-    },
-  ),
-  builder: (cameraState) {
-    // Return your UI (a Widget)
-    return cameraState.when(
-      onPreparingCamera: (state) => const Center(child: CircularProgressIndicator()),
-      onPictureMode: (state) => TakePictureUI(state),
-      onVideoMode: (state) => RecordVideoUI(state, recording: false),
-      onVideoRecordingMode: (state) => RecordVideoUI(state, recording: true),
-    );
-  },
-);
-
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
         builder: (cameraState) {

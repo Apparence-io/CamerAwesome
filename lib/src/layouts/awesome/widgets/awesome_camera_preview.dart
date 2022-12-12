@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/layouts/awesome/widgets/awesome_camera_gesture_detector.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -16,29 +15,29 @@ enum CameraPreviewFit {
 
 /// This is a fullscreen camera preview
 /// some part of the preview are cropped so we have a full sized camera preview
-class CameraPreview extends StatefulWidget {
+class AwesomeCameraPreview extends StatefulWidget {
   final CameraPreviewFit previewFit;
   final Widget? loadingWidget;
   final CameraState state;
-  final OnCameraTap? onCameraTap;
-  final Function(double)? onScale;
+  final OnPreviewTap? onPreviewTap;
+  final OnPreviewScale? onPreviewScale;
 
-  const CameraPreview({
+  const AwesomeCameraPreview({
     super.key,
     this.loadingWidget,
     required this.state,
-    this.onCameraTap,
-    this.onScale,
+    this.onPreviewTap,
+    this.onPreviewScale,
     this.previewFit = CameraPreviewFit.cover,
   });
 
   @override
   State<StatefulWidget> createState() {
-    return CameraPreviewState();
+    return AwesomeCameraPreviewState();
   }
 }
 
-class CameraPreviewState extends State<CameraPreview> {
+class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _previewSize;
   PreviewSize? _flutterPreviewSize;
   int? _textureId;
@@ -123,8 +122,8 @@ class CameraPreviewState extends State<CameraPreview> {
                     height: _flutterPreviewSize?.height,
                     child: AwesomeCameraGestureDetector(
                       child: Texture(textureId: _textureId!),
-                      onCameraTap: widget.onCameraTap,
-                      onScale: widget.onScale,
+                      onCameraTap: widget.onPreviewTap,
+                      onPreviewScale: widget.onPreviewScale,
                     ),
                   ),
                 ),

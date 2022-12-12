@@ -1,4 +1,4 @@
-import 'models/capture_modes.dart';
+import 'capture_modes.dart';
 
 typedef FilePathBuilder = Future<String> Function();
 

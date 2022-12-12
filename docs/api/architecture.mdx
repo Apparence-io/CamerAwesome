@@ -4,7 +4,7 @@ CameraAwesome is built around the concept of `CameraState`.
 
 ![Camera states interactions](/img/camera_states_interactions.png)
 
-CameraAwesome is initiated in `PreparingState`. The native side is initiated and permissions are requested.
+CameraAwesome is initiated in `PreparingCameraState`. The native side is initiated and permissions are requested.
 
 Once it's ready, a new state is pushed.
 If client wants to take pictures it will be a `PictureState` and if they want to record videos it will be a `VideoState`.

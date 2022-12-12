@@ -1,14 +1,7 @@
-import 'package:camerawesome/src/layouts/awesome/widgets/awesome_capture_button.dart';
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
-import 'widgets/awesome_aspect_ratio_button.dart';
-import 'widgets/awesome_camera_mode_selector.dart';
-import 'widgets/awesome_camera_switch_button.dart';
-import 'widgets/awesome_flash_button.dart';
-import 'widgets/awesome_location_button.dart';
-import 'widgets/awesome_media_preview.dart';
 
 /// This widget doesnt handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {

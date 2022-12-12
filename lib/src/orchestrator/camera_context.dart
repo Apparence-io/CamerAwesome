@@ -10,6 +10,7 @@ import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'analysis/analysis_controller.dart';
+import 'models/awesome_file_saver.dart';
 
 /// This class handle the current state of the camera
 /// - [PictureCameraState]

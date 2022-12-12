@@ -9,27 +9,35 @@ Widget _awesomeFocusBuilder(Offset tapPosition) {
   return AwesomeFocusIndicator(position: tapPosition);
 }
 
-class OnCameraTap {
-  final Function(Offset) onTap;
+class OnPreviewTap {
+  final Function(Offset position) onTap;
   final Widget Function(Offset tapPosition)? onTapPainter;
   final Duration? tapPainterDuration;
 
-  OnCameraTap({
+  const OnPreviewTap({
     required this.onTap,
     this.onTapPainter = _awesomeFocusBuilder,
     this.tapPainterDuration = const Duration(milliseconds: 2000),
   });
 }
 
+class OnPreviewScale {
+  final Function(double scale) onScale;
+
+  const OnPreviewScale({
+    required this.onScale,
+  });
+}
+
 class AwesomeCameraGestureDetector extends StatefulWidget {
   final Widget child;
-  final OnCameraTap? onCameraTap;
-  final Function(double)? onScale;
+  final OnPreviewTap? onCameraTap;
+  final OnPreviewScale? onPreviewScale;
 
   const AwesomeCameraGestureDetector({
     super.key,
     required this.child,
-    required this.onScale,
+    required this.onPreviewScale,
     this.onCameraTap,
   });
 
@@ -57,7 +65,7 @@ class _AwesomeCameraGestureDetector
           ),
       ]),
       gestures: <Type, GestureRecognizerFactory>{
-        if (widget.onScale != null)
+        if (widget.onPreviewScale != null)
           ScaleGestureRecognizer:
               GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
             () => ScaleGestureRecognizer()
@@ -68,7 +76,7 @@ class _AwesomeCameraGestureDetector
                 double result = _previousZoomScale * details.scale - 1;
                 if (result < 1 && result > 0) {
                   _zoomScale = result;
-                  widget.onScale!(_zoomScale);
+                  widget.onPreviewScale!.onScale(_zoomScale);
                 }
               },
             (instance) {},
