@@ -57,13 +57,13 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
         // Preview
-        if(aspectRatio != null) {
-            preview = Preview.Builder()
-                    .setTargetAspectRatio(aspectRatio!!)
-                    .setCameraSelector(cameraSelector).build()
+        preview = if(aspectRatio != null) {
+            Preview.Builder()
+                .setTargetAspectRatio(aspectRatio!!)
+                .setCameraSelector(cameraSelector).build()
         } else {
-            preview = Preview.Builder()
-                    .setCameraSelector(cameraSelector).build()
+            Preview.Builder()
+                .setCameraSelector(cameraSelector).build()
         }
 
         preview!!.setSurfaceProvider(
@@ -75,7 +75,7 @@ data class CameraXState(
                 .setCameraSelector(cameraSelector)
                 .setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
                 .apply {
-                    photoSize?.let { setTargetResolution(it) }
+                    //photoSize?.let { setTargetResolution(it) }
                     setFlashMode(
                         when (flashMode) {
                             FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON

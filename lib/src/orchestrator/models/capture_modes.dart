@@ -1,16 +1,17 @@
-import 'package:camerawesome/src/orchestrator/states/picture_state.dart';
-import 'package:camerawesome/src/orchestrator/states/video_state.dart';
+import 'package:camerawesome/src/orchestrator/states/photo_camera_state.dart';
+import 'package:camerawesome/src/orchestrator/states/video_camera_state.dart';
 
 import '../camera_context.dart';
-import '../states/state_definition.dart';
+import '../states/camera_state.dart';
 
-enum CaptureModes { PHOTO, VIDEO }
+enum CaptureMode {
+  photo,
+  video;
 
-extension ToCameraState on CaptureModes {
   CameraState toCameraState(CameraContext cameraContext) {
-    if (this == CaptureModes.PHOTO) {
-      return PictureCameraState.from(cameraContext);
-    } else if (this == CaptureModes.VIDEO) {
+    if (this == CaptureMode.photo) {
+      return PhotoCameraState.from(cameraContext);
+    } else if (this == CaptureMode.video) {
       return VideoCameraState.from(cameraContext);
     }
     throw "State not recognized";

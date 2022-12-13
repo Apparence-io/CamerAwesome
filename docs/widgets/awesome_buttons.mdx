@@ -1,0 +1,102 @@
+## Built-in Buttons
+
+You may want different icons, additional features or just arrange the screen differently.
+In this case, you will use `CameraAwesomeBuilder.custom()` instead of `CameraAwesomeBuiilder.awesome()`.
+
+Yet, if some of our buttons suit your needs, feel free to use them!
+
+
+### AwesomeMediaPreview
+
+Shows a clickable preview of a media captured using CamerAwesome.
+
+Note: video preview is not implemented yet.
+
+_This widget rotates when the camera rotates._
+
+Below example shows how to show the last captured media using `AwesomeMediaPreview`.
+
+``` dart
+StreamBuilder<MediaCapture?>(
+  stream: state.captureState$,
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) {
+      return Container(width: 72, height: 72);
+    }
+    return SizedBox(
+      width: 72,
+      child: AwesomeMediaPreview(
+        mediaCapture: snapshot.requireData,
+        onMediaTap: onMediaTap,
+      ),
+    );
+  },
+)
+```
+
+### AwesomeFlashButton
+
+![Switch between flash modes](/img/flash.gif)
+
+Choose the Flash mode of the camera.
+
+Supported flash modes are:
+-   CameraFlashes.NONE
+-   CameraFlashes.ON
+-   CameraFlashes.AUTO
+-   CameraFlashes.ALWAYS
+
+_This button rotates when the camera rotates._
+
+``` dart
+AwesomeFlashButton(state: state)
+```
+
+### AwesomeCameraSwitchButton
+
+Switch between Front and Back camera.
+
+_This button rotates when the camera rotates._
+
+``` dart
+AwesomeCameraSwitchButton(state: state)
+```
+
+### AwesomeCaptureButton
+
+![Capture button](/img/capture_button.gif)
+
+Take a photo when in Photo mode or start/stop recording when in Video mode.
+
+``` dart
+AwesomeCaptureButton(state: state)
+```
+
+### AwesomeAspectRatioButton
+
+Change the aspect ratio of the camera using this widget.
+
+Supported ratios are:
+- 4:3
+- 16:9
+- 1:1 (TODO)
+
+_This button rotates when the camera rotates._
+
+``` dart
+AwesomeAspectRatioButton(state: state)
+```
+
+### AwesomeLocationButton
+
+When taking a photo, enable or disable the save of the current location in the exif metadata.
+
+_This button rotates when the camera rotates._
+
+``` dart
+AwesomeLocationButton(state: state)
+```
+
+
+
+

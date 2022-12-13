@@ -7,21 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'camerawesome_plugin.dart';
-import 'src/orchestrator/models/orientations.dart';
-
-export 'src/builder/camera_awesome_builder.dart';
-export 'src/layouts/awesome/widgets/awesome_oriented_widget.dart';
 
 // built in widgets
-export 'src/layouts/awesome/widgets/camera_preview.dart';
-export 'src/layouts/awesome/widgets/pinch_to_zoom.dart';
-export 'src/orchestrator/models/analysis_image.dart';
-export 'src/orchestrator/models/capture_modes.dart';
-export 'src/orchestrator/models/flashmodes.dart';
-export 'src/orchestrator/models/sensor_data.dart';
-export 'src/orchestrator/models/sensors.dart';
+export 'src/layouts/awesome/widgets/widgets.dart';
+export 'src/builder/camera_awesome_builder.dart';
 
-enum CameraRunningState { STARTING, STARTED, STOPPING, STOPPED }
+export 'src/orchestrator/models/models.dart';
+export 'src/orchestrator/states/states.dart';
+
+enum CameraRunningState { starting, started, stopping, stopped }
 
 class CamerawesomePlugin {
   static const MethodChannel _channel = MethodChannel('camerawesome');
@@ -46,7 +40,7 @@ class CamerawesomePlugin {
 
   static Stream<Map<String, dynamic>>? _imagesStream;
 
-  static CameraRunningState currentState = CameraRunningState.STOPPED;
+  static CameraRunningState currentState = CameraRunningState.stopped;
 
   static bool printLogs = false;
 
@@ -61,35 +55,40 @@ class CamerawesomePlugin {
       CameraInterface().requestPermissions();
 
   static Future<bool> start() async {
-    if (currentState == CameraRunningState.STARTED ||
-        currentState == CameraRunningState.STARTING) {
+    if (currentState == CameraRunningState.started ||
+        currentState == CameraRunningState.starting) {
       return true;
     }
-    currentState = CameraRunningState.STARTING;
+    currentState = CameraRunningState.starting;
     bool res;
     if (Platform.isAndroid) {
       res = await CameraInterface().start();
     } else {
       res = await _channel.invokeMethod("start");
     }
-    if (res) currentState = CameraRunningState.STARTED;
+    if (res) currentState = CameraRunningState.started;
     return res;
   }
 
   static Future<bool> stop() async {
-    if (currentState == CameraRunningState.STOPPED ||
-        currentState == CameraRunningState.STOPPING) {
+    if (currentState == CameraRunningState.stopped ||
+        currentState == CameraRunningState.stopping) {
       return true;
     }
     _orientationStream = null;
-    currentState = CameraRunningState.STOPPING;
+    currentState = CameraRunningState.stopping;
+    bool res;
     try {
-      await _channel.invokeMethod("stop");
+      if (Platform.isAndroid) {
+        res = await CameraInterface().stop();
+      } else {
+        res = await _channel.invokeMethod("stop");
+      }
     } catch (e) {
       return false;
     }
-    currentState = CameraRunningState.STOPPED;
-    return true;
+    currentState = CameraRunningState.stopped;
+    return res;
   }
 
   static Future<bool?> focus() => _channel.invokeMethod("focus");
@@ -104,16 +103,16 @@ class CamerawesomePlugin {
         CameraOrientations? newOrientation;
         switch (data) {
           case 'LANDSCAPE_LEFT':
-            newOrientation = CameraOrientations.LANDSCAPE_LEFT;
+            newOrientation = CameraOrientations.landscape_left;
             break;
           case 'LANDSCAPE_RIGHT':
-            newOrientation = CameraOrientations.LANDSCAPE_RIGHT;
+            newOrientation = CameraOrientations.landscape_right;
             break;
           case 'PORTRAIT_UP':
-            newOrientation = CameraOrientations.PORTRAIT_UP;
+            newOrientation = CameraOrientations.portrait_up;
             break;
           case 'PORTRAIT_DOWN':
-            newOrientation = CameraOrientations.PORTRAIT_DOWN;
+            newOrientation = CameraOrientations.portrait_down;
             break;
           default:
         }
@@ -161,21 +160,21 @@ class CamerawesomePlugin {
   }
 
   static Future<bool?> init(Sensors sensor, bool enableImageStream,
-      {CaptureModes captureMode = CaptureModes.PHOTO,
+      {CaptureMode captureMode = CaptureMode.photo,
       required ExifPreferences exifPreferences}) async {
     if (Platform.isAndroid) {
       return CameraInterface()
           .setupCamera(
-            sensor.name,
-            captureMode.name,
+            sensor.name.toUpperCase(),
+            captureMode.name.toUpperCase(),
             enableImageStream,
             exifPreferences,
           )
           .then((value) => true);
     } else {
       return _channel.invokeMethod("init", <String, dynamic>{
-        'sensor': sensor.toString().split(".")[1],
-        'captureMode': captureMode.toString().split(".")[1],
+        'sensor': sensor.toString().toUpperCase().split(".")[1],
+        'captureMode': captureMode.toString().toUpperCase().split(".")[1],
         'streamImages': enableImageStream,
       });
     }
@@ -236,14 +235,14 @@ class CamerawesomePlugin {
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
-  static Future<Size> getEffectivPreviewSize() async {
+  static Future<PreviewSize> getEffectivPreviewSize() async {
     if (Platform.isAndroid) {
       final ps = await CameraInterface().getEffectivPreviewSize();
       if (ps != null) {
-        return Size(ps.width, ps.height);
+        return PreviewSize(width: ps.width, height: ps.height);
       } else {
         // TODO Should not be null?
-        return Size(0, 0);
+        return PreviewSize(width: 0, height: 0);
       }
     } else {
       final sizeMap = await _channel
@@ -251,12 +250,12 @@ class CamerawesomePlugin {
 
       final int width = sizeMap?["width"] ?? 0;
       final int height = sizeMap?["height"] ?? 0;
-      return Size(width.toDouble(), height.toDouble());
+      return PreviewSize(width: width.toDouble(), height: height.toDouble());
     }
   }
 
   /// you can set a different size for preview and for photo
-  /// for iOS, when taking a picture, best quality is automatically used
+  /// for iOS, when taking a photo, best quality is automatically used
   static Future<void> setPhotoSize(int width, int height) {
     if (Platform.isAndroid) {
       return CameraInterface().setPhotoSize(
@@ -314,12 +313,12 @@ class CamerawesomePlugin {
   }
 
   /// Switch flash mode from Android / iOS
-  static Future<void> setFlashMode(CameraFlashes flashMode) {
+  static Future<void> setFlashMode(FlashMode flashMode) {
     if (Platform.isAndroid) {
-      return CameraInterface().setFlashMode(flashMode.name);
+      return CameraInterface().setFlashMode(flashMode.name.toUpperCase());
     } else {
       return _channel.invokeMethod('setFlashMode', <String, dynamic>{
-        'mode': flashMode.toString().split(".")[1],
+        'mode': flashMode.toString().toUpperCase().split(".")[1],
       });
     }
   }
@@ -330,6 +329,16 @@ class CamerawesomePlugin {
       return CameraInterface().handleAutoFocus();
     } else {
       _channel.invokeMethod("handleAutoFocus");
+    }
+  }
+
+  static Future<void> focusOnPoint(
+      {required PreviewSize previewSize, required Offset position}) {
+    if (Platform.isAndroid) {
+      return CameraInterface()
+          .focusOnPoint(previewSize, position.dx, position.dy);
+    } else {
+      return _channel.invokeMethod("handleAutoFocus");
     }
   }
 
@@ -344,24 +353,24 @@ class CamerawesomePlugin {
     }
   }
 
-  /// switch camera sensor between [Sensors.BACK] and [Sensors.FRONT]
+  /// switch camera sensor between [Sensors.back] and [Sensors.front]
   static Future<void> setSensor(Sensors sensor) {
     if (Platform.isAndroid) {
-      return CameraInterface().setSensor(sensor.name);
+      return CameraInterface().setSensor(sensor.name.toUpperCase());
     } else {
       return _channel.invokeMethod('setSensor', <String, dynamic>{
-        'sensor': sensor.toString().split(".")[1],
+        'sensor': sensor.toString().toUpperCase().split(".")[1],
       });
     }
   }
 
-  /// change capture mode between [CaptureModes.PHOTO] and [CaptureModes.VIDEO]
-  static Future<void> setCaptureMode(CaptureModes captureMode) {
+  /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]
+  static Future<void> setCaptureMode(CaptureMode captureMode) {
     if (Platform.isAndroid) {
-      return CameraInterface().setCaptureMode(captureMode.name);
+      return CameraInterface().setCaptureMode(captureMode.name.toUpperCase());
     } else {
       return _channel.invokeMethod('setCaptureMode', <String, dynamic>{
-        'captureMode': captureMode.toString().split(".")[1],
+        'captureMode': captureMode.toString().toUpperCase().split(".")[1],
       });
     }
   }
@@ -435,13 +444,13 @@ class CamerawesomePlugin {
     }
   }
 
-  /// Change aspect ratio when a picture is taken
+  /// Change aspect ratio when a photo is taken
   static Future<void> setAspectRatio(String ratio) {
     if (Platform.isAndroid) {
-      return CameraInterface().setAspectRatio(ratio);
+      return CameraInterface().setAspectRatio(ratio.toUpperCase());
     } else {
       return _channel.invokeMethod('setAspectRatio', <String, dynamic>{
-        'ratio': ratio,
+        'ratio': ratio.toUpperCase(),
       });
     }
   }

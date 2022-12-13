@@ -6,11 +6,11 @@ class CameraNotReadyException implements Exception {
   @override
   String toString() {
     return ''' 
-      CameraAwesome is not ready yet. 
+      CamerAwesome is not ready yet. 
       ==============================================================
       You must call start when current state is PreparingCameraState
       --------------------------------------------------------------
-      additionnal informations: $message
+      additional informations: $message
     ''';
   }
 }

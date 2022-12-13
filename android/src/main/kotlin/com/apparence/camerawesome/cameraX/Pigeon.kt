@@ -110,6 +110,7 @@ interface CameraInterface {
   fun stop(): Boolean
   fun setFlashMode(mode: String)
   fun handleAutoFocus()
+  fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double)
   fun setZoom(zoom: Double)
   fun setSensor(sensor: String)
   fun setCorrection(brightness: Double)
@@ -353,6 +354,27 @@ val codec: MessageCodec<Any?> by lazy {
             val wrapped = hashMapOf<String, Any?>()
             try {
               api.handleAutoFocus()
+              wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.focusOnPoint", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val previewSizeArg = args[0] as PreviewSize
+              val xArg = args[1] as Double
+              val yArg = args[2] as Double
+              api.focusOnPoint(previewSizeArg, xArg, yArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)

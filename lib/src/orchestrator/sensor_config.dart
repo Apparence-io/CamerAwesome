@@ -6,49 +6,51 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SensorConfig {
-  late BehaviorSubject<CameraFlashes> _flashModeController;
+  late BehaviorSubject<FlashMode> _flashModeController;
 
-  late Stream<CameraFlashes> flashMode$;
+  late Stream<FlashMode> flashMode$;
 
   late BehaviorSubject<CameraAspectRatios> _aspectRatioController;
 
   late Stream<CameraAspectRatios> aspectRatio$;
 
-  /// Zoom from native side. Must be between 0 and 1
-  late Stream<double> zoom;
+  /// Zoom from native side. Must be between 0.0 and 1.0
+  late Stream<double> zoom$;
 
-  /// [BACK] or [FRONT] camera
+  /// [back] or [front] camera
   final Sensors sensor;
 
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
 
   /// set brightness correction manually range [0,1] (optionnal)
-  late Stream<double>? brightness;
+  late Stream<double>? brightness$;
 
   late BehaviorSubject<double> _zoomController;
 
   /// Use this stream to debounce brightness events
-  final StreamController<double> _brightnessController =
-      StreamController<double>();
+  final BehaviorSubject<double> _brightnessController =
+      BehaviorSubject<double>();
+  StreamSubscription? _brightnessSubscription;
 
   SensorConfig({
     required this.sensor,
-    CameraFlashes flash = CameraFlashes.NONE,
-    CameraAspectRatios aspectRatio = CameraAspectRatios.RATIO_4_3,
+    FlashMode flash = FlashMode.none,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+
+    /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)
     double currentZoom = 0.0,
   }) {
-    _flashModeController = BehaviorSubject<CameraFlashes>.seeded(flash);
+    _flashModeController = BehaviorSubject<FlashMode>.seeded(flash);
     flashMode$ = _flashModeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
-    zoom = _zoomController.stream;
+    zoom$ = _zoomController.stream;
 
     _aspectRatioController = BehaviorSubject.seeded(aspectRatio);
     aspectRatio$ = _aspectRatioController.stream;
 
-    // FIXME dispose this
-    _brightnessController.stream
+    _brightnessSubscription = _brightnessController.stream
         .debounceTime(Duration(milliseconds: 500))
         .listen((value) => CamerawesomePlugin.setBrightness(value));
   }
@@ -61,63 +63,66 @@ class SensorConfig {
     _zoomController.sink.add(zoom);
   }
 
+  /// Returns the current zoom without stream
+  double get zoom => _zoomController.value;
+
   /// Set manually the CameraFlashes between
-  /// [CameraFlashes.NONE] no flash
-  /// [CameraFlashes.ON] always flashing when taking photo
-  /// [CameraFlashes.AUTO] let the decide wether or not using the flash
-  /// [CameraFlashes.ALWAYS] flash light stays open
-  Future<void> setFlashMode(CameraFlashes flashMode) async {
+  /// [FlashMode.none] no flash
+  /// [FlashMode.on] always flashing when taking photo
+  /// [FlashMode.auto] let the decide wether or not using the flash
+  /// [FlashMode.always] flash light stays open
+  Future<void> setFlashMode(FlashMode flashMode) async {
     await CamerawesomePlugin.setFlashMode(flashMode);
     _flashModeController.sink.add(flashMode);
   }
 
   /// Returns the current flash mode without stream
-  CameraFlashes get flashMode => _flashModeController.value;
+  FlashMode get flashMode => _flashModeController.value;
 
   /// Switch the flash according to the previous state
   void switchCameraFlash() {
-    final CameraFlashes newFlashMode;
+    final FlashMode newFlashMode;
     switch (flashMode) {
-      case CameraFlashes.NONE:
-        newFlashMode = CameraFlashes.AUTO;
+      case FlashMode.none:
+        newFlashMode = FlashMode.auto;
         break;
-      case CameraFlashes.ON:
-        newFlashMode = CameraFlashes.ALWAYS;
+      case FlashMode.on:
+        newFlashMode = FlashMode.always;
         break;
-      case CameraFlashes.AUTO:
-        newFlashMode = CameraFlashes.ON;
+      case FlashMode.auto:
+        newFlashMode = FlashMode.on;
         break;
-      case CameraFlashes.ALWAYS:
-        newFlashMode = CameraFlashes.NONE;
+      case FlashMode.always:
+        newFlashMode = FlashMode.none;
         break;
     }
     setFlashMode(newFlashMode);
   }
 
   /// switch the camera preview / photo / video aspect ratio
-  /// [CameraAspectRatios.RATIO_16_9]
-  /// [CameraAspectRatios.RATIO_4_3]
-  /// [CameraAspectRatios.RATIO_1_1]
+  /// [CameraAspectRatios.ratio_16_9]
+  /// [CameraAspectRatios.ratio_4_3]
+  /// [CameraAspectRatios.ratio_1_1]
   Future<void> switchCameraRatio() async {
-    if (aspectRatio == CameraAspectRatios.RATIO_16_9) {
-      setAspectRatio(CameraAspectRatios.RATIO_4_3);
-    } else if (aspectRatio == CameraAspectRatios.RATIO_4_3) {
-      setAspectRatio(CameraAspectRatios.RATIO_1_1);
+    if (aspectRatio == CameraAspectRatios.ratio_16_9) {
+      setAspectRatio(CameraAspectRatios.ratio_4_3);
+    } else if (aspectRatio == CameraAspectRatios.ratio_4_3) {
+      setAspectRatio(CameraAspectRatios.ratio_1_1);
     } else {
-      setAspectRatio(CameraAspectRatios.RATIO_16_9);
+      setAspectRatio(CameraAspectRatios.ratio_16_9);
     }
   }
 
   /// Change the current [CameraAspectRatios] one of
-  /// [CameraAspectRatios.RATIO_16_9]
-  /// [CameraAspectRatios.RATIO_4_3]
-  /// [CameraAspectRatios.RATIO_1_1]
+  /// [CameraAspectRatios.ratio_16_9]
+  /// [CameraAspectRatios.ratio_4_3]
+  /// [CameraAspectRatios.ratio_1_1]
   Future<void> setAspectRatio(CameraAspectRatios ratio) async {
     await CamerawesomePlugin.setAspectRatio(ratio.name);
     _aspectRatioController.add(ratio);
   }
 
-  /// Returns the current camera aspect ratio
+  /// Returns the current camera aspect ratio without stream
   CameraAspectRatios get aspectRatio => _aspectRatioController.value;
 
   /// set brightness correction manually range [0,1] (optionnal)
@@ -129,11 +134,15 @@ class SensorConfig {
     _brightnessController.sink.add(brightness);
   }
 
+  /// Returns the current brightness without stream
+  double get brightness => _brightnessController.value;
+
   /// Only available on Android
   Stream<SensorData>? get luminosityLevelStream =>
       CamerawesomePlugin.listenLuminosityLevel();
 
   void dispose() {
+    _brightnessSubscription?.cancel();
     _brightnessController.close();
     _zoomController.close();
     _flashModeController.close();

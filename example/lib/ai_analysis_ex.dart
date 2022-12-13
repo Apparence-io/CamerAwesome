@@ -25,7 +25,7 @@ class CameraAwesomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'CameraAwesome App',
+      title: 'CamerAwesome App',
       home: CameraPage(),
     );
   }
@@ -72,9 +72,11 @@ class _CameraPageState extends State<CameraPage>
         children: <Widget>[
           Positioned.fill(
             child: CameraAwesomeBuilder.awesome(
-              initialCaptureMode: CaptureModes.PHOTO,
-              picturePathBuilder: (captureMode) => _path(captureMode),
-              videoPathBuilder: (captureMode) => _path(captureMode),
+              saveConfig: SaveConfig.photoAndVideo(
+                imagePathBuilder: () => _path(CaptureMode.photo),
+                videoPathBuilder: () => _path(CaptureMode.video),
+                initialCaptureMode: CaptureMode.photo,
+              ),
               onMediaTap: (mediaCapture) =>
                   OpenFile.open(mediaCapture.filePath),
               onImageForAnalysis: analyzeImage,
@@ -148,12 +150,12 @@ class _CameraPageState extends State<CameraPage>
     }
   }
 
-  Future<String> _path(CaptureModes captureMode) async {
+  Future<String> _path(CaptureMode captureMode) async {
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
         await Directory('${extDir.path}/test').create(recursive: true);
     final String fileExtension =
-        captureMode == CaptureModes.PHOTO ? 'jpg' : 'mp4';
+        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
     final String filePath =
         '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
     return filePath;

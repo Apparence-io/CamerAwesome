@@ -54,6 +54,8 @@ abstract class CameraInterface {
 
   void handleAutoFocus();
 
+  void focusOnPoint(PreviewSize previewSize, double x, double y);
+
   void setZoom(double zoom);
 
   void setSensor(String sensor);

@@ -1,66 +1,59 @@
 {
-    "name": "CameraAwesome",
-    "socialPreview": "/img/preview.png",
-    "theme": "#36B9B9",
-    "sidebar": [
+  "name": "CamerAwesome",
+  "socialPreview": "/img/preview.png",
+  "theme": "#36B9B9",
+  "sidebar": [
+    [
+      "Overview",
+      "/index"
+    ],
+    [
+      "Getting Started",
+      [
         [
-            "Overview",
-            "/index"
+          "Installing",
+          "/getting_started/installing"
         ],
         [
-            "Getting Started",
-            [
-                [
-                    "Installing",
-                    "/installing"
-                ],
-                [
-                    "Features",
-                    "/features"
-                ],
-                [
-                    "Using built-in UI ",
-                    "/awesome-ui"
-                ],
-                [
-                    "Creating my own UI",
-                    "/custom-ui"
-                ]
-            ]
+          "Using built-in UI ",
+          "/getting_started/awesome-ui"
         ],
         [
-            "API",
-            [
-                [
-                    "Sensors",
-                    "/sensors"
-                ],
-                [
-                    "AI mode",
-                    "/ai-mode"
-                ],
-                [
-                    "Photo mode",
-                    "/photo-mode"
-                ],
-                [
-                    "Video mode",
-                    "/video-mode"
-                ]
-            ]
-        ],
-        [
-            "Appendix",
-            [
-                [
-                    "License",
-                    "/license"
-                ],
-                [
-                    "Roadmap",
-                    "/roadmap"
-                ]
-            ]
+          "Creating my own UI",
+          "/getting_started/custom-ui"
         ]
+      ]
+    ],
+    [
+      "Widgets",
+      [
+
+        [
+          "AwesomeOrientedWidget",
+          "/widgets/awesome_oriented_widget"
+        ],
+        [
+          "Buttons",
+          "/widgets/awesome_buttons"
+        ],
+        [
+          "AwesomeCameraModeSelector",
+          "/widgets/awesome_camera_mode_selector"
+        ]
+      ]
+    ],
+    [
+      "Appendix",
+      [
+        [
+          "License",
+          "/appendix/license"
+        ],
+        [
+          "Roadmap",
+          "/appendix/roadmap"
+        ]
+      ]
     ]
+  ]
 }

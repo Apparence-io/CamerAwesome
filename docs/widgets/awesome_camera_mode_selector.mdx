@@ -1,0 +1,34 @@
+## AwesomeCameraModeSelector
+
+![Swap between photo and video](/img/swap_photo_video.gif)
+
+Switch between PHOTO and VIDEO mode easily with this widget.
+
+If you are using `CameraAwesomeBuilder.awesome()` builder, you are already using it behind the scene.
+
+However, if you made your own custom UI using `CameraAwesomeBuilder.custom()`, this is how you might want to use it:
+
+``` dart
+CameraAwesomeBuilder.custom(
+  saveConfig: ...,
+  builder: (state) {
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        YourCameraPreview(),
+        Positioned.fill(
+          child: SafeArea(
+            child: Column(children: [
+              // Rest of your UI, e.g.: Flash button
+              AwesomeCameraModeSelector(state: state),
+              // Rest of your UI, e.g.: Button to take photos
+            ]),
+          ),
+        ),
+      ],
+    );
+  },
+  // other parameters
+);
+```
+
