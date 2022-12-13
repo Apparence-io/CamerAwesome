@@ -72,7 +72,7 @@ class _CameraPageState extends State<CameraPage>
         children: <Widget>[
           Positioned.fill(
             child: CameraAwesomeBuilder.awesome(
-              pathBuilders: PathBuilders.photoAndVideo(
+              saveConfig: SaveConfig.photoAndVideo(
                 imagePathBuilder: () => _path(CaptureModes.PHOTO),
                 videoPathBuilder: () => _path(CaptureModes.VIDEO),
                 initialCaptureMode: CaptureModes.PHOTO,

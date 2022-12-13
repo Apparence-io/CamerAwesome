@@ -38,7 +38,7 @@ class CameraContext {
   final CaptureModes initialCaptureMode;
 
   /// this is where we are going to store any photo
-  final PathBuilders pathBuilders;
+  final SaveConfig saveConfig;
 
   /// allows to create dynamic analysis using the current preview
   final AnalysisController? analysisController;
@@ -50,7 +50,7 @@ class CameraContext {
     required this.initialCaptureMode,
     required this.sensorConfigController,
     required this.analysisController,
-    required this.pathBuilders,
+    required this.saveConfig,
     this.onPermissionsResult,
     required this.exifPreferences,
   }) : sensorConfig$ = sensorConfigController.stream {
@@ -68,7 +68,7 @@ class CameraContext {
     SensorConfig sensorConfig, {
     required CaptureModes initialCaptureMode,
     OnPermissionsResult? onPermissionsResult,
-    required PathBuilders pathBuilders,
+    required SaveConfig saveConfig,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,
@@ -76,7 +76,7 @@ class CameraContext {
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
           onPermissionsResult: onPermissionsResult,
-          pathBuilders: pathBuilders,
+          saveConfig: saveConfig,
           analysisController: analysisConfig != null
               ? AnalysisController.fromPlugin(
                   onImageListener: onImageForAnalysis,

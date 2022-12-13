@@ -18,7 +18,7 @@ class CustomUiExample1 extends StatelessWidget {
                 RecordVideoUI(state, recording: true),
           );
         },
-        pathBuilders: PathBuilders.photoAndVideo(
+        saveConfig: SaveConfig.photoAndVideo(
           imagePathBuilder: () async {
             return "some/path.jpg";
           },

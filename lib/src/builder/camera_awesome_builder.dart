@@ -53,7 +53,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   final bool enableAudio;
 
   /// Path builders when taking photos or recording videos
-  final PathBuilders pathBuilders;
+  final SaveConfig saveConfig;
 
   /// Called when the preview of the last captured media is tapped
   final OnMediaTap onMediaTap;
@@ -78,7 +78,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.exifPreferences,
     required this.enableAudio,
     required this.progressIndicator,
-    required this.pathBuilders,
+    required this.saveConfig,
     required this.onMediaTap,
     required this.builder,
     this.onImageForAnalysis,
@@ -89,7 +89,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   /// Use the camera with the built-in interface.
   ///
-  /// You need to provide an [PathBuilders] to define if you want to take
+  /// You need to provide an [SaveConfig] to define if you want to take
   /// photos, videos or both and where to save them.
   ///
   /// You can initiate the camera with a few parameters:
@@ -114,7 +114,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
     Widget? progressIndicator,
-    required PathBuilders pathBuilders,
+    required SaveConfig saveConfig,
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
@@ -131,7 +131,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
             state: cameraModeState,
             onMediaTap: onMediaTap,
           ),
-          pathBuilders: pathBuilders,
+          saveConfig: saveConfig,
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
@@ -151,7 +151,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     bool enableAudio = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
-    required PathBuilders pathBuilders,
+    required SaveConfig saveConfig,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
@@ -164,7 +164,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
           builder: builder,
-          pathBuilders: pathBuilders,
+          saveConfig: saveConfig,
           onMediaTap: null,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
@@ -227,8 +227,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         flash: widget.flashMode,
         currentZoom: widget.zoom,
       ),
-      initialCaptureMode: widget.pathBuilders.initialCaptureMode,
-      pathBuilders: widget.pathBuilders,
+      initialCaptureMode: widget.saveConfig.initialCaptureMode,
+      saveConfig: widget.saveConfig,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
       exifPreferences:

@@ -10,7 +10,7 @@ The camera preview will be visible behind what you will provide to our builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-  pathBuilders: PathBuilders.imageAndVideo(
+  saveConfig: SaveConfig.imageAndVideo(
     imagePathBuilder: () async {
       return "some/path.jpg";
     },
@@ -34,7 +34,7 @@ CameraAwesomeBuilder.custom(
 
 | Method                           | Comment | 
 |----------------------------------|---------|
-| **pathBuilders**           | Define if you want to take photos, videos or both and where to save them  |
+| **saveConfig**           | Define if you want to take photos, videos or both and where to save them  |
 | **builder** | Create your own interface using the builder method. |
 | **sensor**           | The initial camera sensor (Back or Front) |
 | **flashMode**           | The initial flash mode |
@@ -196,7 +196,7 @@ First of all, they all give you the following features:
 |**Switch** between FRONT and BACK camera|`state.switchCameraSensor()`|
 |**Get** current Sensor configuration|`state.sensorConfig`|
 |**Stream** of current Sensor configuration|`state.sensorConfig$`|
-|**Get** original PathBuilders|`state.pathBuilders`|
+|**Get** original SaveConfig|`state.saveConfig`|
 
 More features are available depending on which `CameraState` is in use.
 

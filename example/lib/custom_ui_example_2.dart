@@ -52,7 +52,7 @@ class CustomUiExample2 extends StatelessWidget {
             ],
           );
         },
-        pathBuilders: PathBuilders.photo(
+        saveConfig: SaveConfig.photo(
           pathBuilder: () async {
             final Directory extDir = await getTemporaryDirectory();
             final testDir =

@@ -76,7 +76,7 @@ abstract class CameraState {
   /// - [CaptureModes.ANALYSIS]
   void setState(CaptureModes captureMode);
 
-  PathBuilders get pathBuilders => cameraContext.pathBuilders;
+  SaveConfig get saveConfig => cameraContext.saveConfig;
 
   Future<PreviewSize> previewSize() {
     return cameraContext.previewSize();

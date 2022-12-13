@@ -12,7 +12,7 @@ class AwesomeCameraModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CameraModePager(
-      availableModes: CameraMode.fromState(state.pathBuilders),
+      availableModes: CameraMode.fromState(state.saveConfig),
       onChangeCameraRequest: (mode) {
         state.setState(mode.captureMode);
       },
@@ -26,8 +26,8 @@ class CameraMode {
 
   CameraMode({required this.captureMode, required this.title});
 
-  static List<CameraMode> fromState(PathBuilders pathBuilders) {
-    return pathBuilders.captureModes
+  static List<CameraMode> fromState(SaveConfig saveConfig) {
+    return saveConfig.captureModes
         .map((el) => CameraMode(captureMode: el, title: el.name))
         .toList();
   }

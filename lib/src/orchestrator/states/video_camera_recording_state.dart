@@ -16,7 +16,7 @@ class VideoRecordingCameraState extends CameraState {
   factory VideoRecordingCameraState.from(CameraContext orchestrator) =>
       VideoRecordingCameraState(
         cameraContext: orchestrator,
-        filePathBuilder: orchestrator.pathBuilders.videoPathBuilder!,
+        filePathBuilder: orchestrator.saveConfig.videoPathBuilder!,
       );
 
   final FilePathBuilder filePathBuilder;

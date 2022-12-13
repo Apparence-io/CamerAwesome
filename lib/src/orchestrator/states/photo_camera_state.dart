@@ -21,7 +21,7 @@ class PhotoCameraState extends CameraState {
   factory PhotoCameraState.from(CameraContext orchestrator) =>
       PhotoCameraState(
         cameraContext: orchestrator,
-        filePathBuilder: orchestrator.pathBuilders.photoPathBuilder!,
+        filePathBuilder: orchestrator.saveConfig.photoPathBuilder!,
         exifPreferences: orchestrator.exifPreferences,
       );
 

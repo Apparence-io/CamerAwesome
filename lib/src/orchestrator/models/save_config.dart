@@ -2,13 +2,13 @@ import 'capture_modes.dart';
 
 typedef FilePathBuilder = Future<String> Function();
 
-class PathBuilders {
+class SaveConfig {
   final FilePathBuilder? photoPathBuilder;
   final FilePathBuilder? videoPathBuilder;
   final List<CaptureModes> captureModes;
   final CaptureModes initialCaptureMode;
 
-  PathBuilders._({
+  SaveConfig._({
     this.photoPathBuilder,
     this.videoPathBuilder,
     required this.captureModes,
@@ -16,7 +16,7 @@ class PathBuilders {
   });
 
   /// You only want to take photos
-  PathBuilders.photo({required FilePathBuilder pathBuilder})
+  SaveConfig.photo({required FilePathBuilder pathBuilder})
       : this._(
           photoPathBuilder: pathBuilder,
           captureModes: [CaptureModes.PHOTO],
@@ -24,7 +24,7 @@ class PathBuilders {
         );
 
   /// You only want to take videos
-  PathBuilders.video({required FilePathBuilder pathBuilder})
+  SaveConfig.video({required FilePathBuilder pathBuilder})
       : this._(
           videoPathBuilder: pathBuilder,
           captureModes: [CaptureModes.VIDEO],
@@ -32,7 +32,7 @@ class PathBuilders {
         );
 
   /// You want to be able to take both photos and videos
-  PathBuilders.photoAndVideo({
+  SaveConfig.photoAndVideo({
     required FilePathBuilder imagePathBuilder,
     required FilePathBuilder videoPathBuilder,
     CaptureModes initialCaptureMode = CaptureModes.PHOTO,
@@ -45,7 +45,7 @@ class PathBuilders {
 
   /// If you only want to show Camera preview and/or use image analysis
   /// TODO: Not yet supported
-// PathBuilders.noCaptures()
+// SaveConfig.noCaptures()
 //     : this._(
 //         captureModes: [],
 //         initialCaptureMode: CaptureModes.PHOTO,

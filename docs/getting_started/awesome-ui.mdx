@@ -7,7 +7,7 @@ Here is a concrete example using **path_provider** to get valid paths and **bett
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  pathBuilders: PathBuilders.imageAndVideo(
+  saveConfig: SaveConfig.imageAndVideo(
     imagePathBuilder: () async {
       final Directory extDir = await getTemporaryDirectory();
       final testDir =
@@ -34,7 +34,7 @@ Here is an example showing the complete list of parameters you can set to custom
 ``` dart
 CameraAwesomeBuilder.awesome(
   // Define if you want to take photos, videos or both and where to save them
-  pathBuilders: PathBuilders.imageAndVideo(
+  saveConfig: SaveConfig.imageAndVideo(
     initialCaptureMode: CaptureModes.PHOTO,
     imagePathBuilder: () async {
       // Return a valid file path (must be a jpg file)
@@ -111,7 +111,7 @@ CameraAwesomeBuilder.awesome(
 
 | Method                           | Comment | 
 |----------------------------------|---------|
-| **pathBuilders**           | Define if you want to take photos, videos or both and where to save them  |
+| **saveConfig**           | Define if you want to take photos, videos or both and where to save them  |
 | **onMediaTap**           | Choose what you want to do when user tap on the last media captured |
 | **sensor**           | The initial camera sensor (Back or Front) |
 | **flashMode**           | The initial flash mode |
