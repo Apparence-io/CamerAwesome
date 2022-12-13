@@ -43,27 +43,6 @@
       ]
     ],
     [
-      "API",
-      [
-        [
-          "Sensors",
-          "/api/sensors"
-        ],
-        [
-          "Photo mode",
-          "/api/photo-mode"
-        ],
-        [
-          "Video mode",
-          "/api/video-mode"
-        ],
-        [
-          "AI mode",
-          "/api/ai-mode"
-        ]
-      ]
-    ],
-    [
       "Appendix",
       [
         [
