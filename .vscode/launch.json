@@ -11,10 +11,16 @@
             "program": "example/lib/main.dart"
         },
         {
-            "name": "AI analysis example",
+            "name": "AI analysis - face detection",
             "request": "launch",
             "type": "dart",
-            "program": "example/lib/ai_analysis_ex.dart"
+            "program": "example/lib/ai_analysis_faces.dart"
+        },
+        {
+            "name": "AI analysis - text/barcode detection",
+            "request": "launch",
+            "type": "dart",
+            "program": "example/lib/ai_analysis_barcode.dart"
         },
     ]
 }
