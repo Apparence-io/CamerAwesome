@@ -7,7 +7,7 @@ import '../camera_context.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
-typedef OnPictureMode = Function(PictureCameraState);
+typedef OnPhotoMode = Function(PhotoCameraState);
 
 typedef OnPreparingCamera = Function(PreparingCameraState);
 
@@ -24,15 +24,15 @@ abstract class CameraState {
 
   when({
     OnVideoMode? onVideoMode,
-    OnPictureMode? onPictureMode,
+    OnPhotoMode? onPhotoMode,
     OnPreparingCamera? onPreparingCamera,
     OnVideoRecordingMode? onVideoRecordingMode,
   }) {
     if (this is VideoCameraState && onVideoMode != null) {
       return onVideoMode(this as VideoCameraState);
     }
-    if (this is PictureCameraState && onPictureMode != null) {
-      return onPictureMode(this as PictureCameraState);
+    if (this is PhotoCameraState && onPhotoMode != null) {
+      return onPhotoMode(this as PhotoCameraState);
     }
     if (this is PreparingCameraState && onPreparingCamera != null) {
       return onPreparingCamera(this as PreparingCameraState);
@@ -76,7 +76,7 @@ abstract class CameraState {
   /// - [CaptureModes.ANALYSIS]
   void setState(CaptureModes captureMode);
 
-  AwesomeFileSaver get awesomeFileSaver => cameraContext.awesomeFileSaver;
+  PathBuilders get pathBuilders => cameraContext.pathBuilders;
 
   Future<PreviewSize> previewSize() {
     return cameraContext.previewSize();

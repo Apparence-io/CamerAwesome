@@ -7,7 +7,7 @@ Here is a concrete example using **path_provider** to get valid paths and **bett
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+  pathBuilders: PathBuilders.imageAndVideo(
     imagePathBuilder: () async {
       final Directory extDir = await getTemporaryDirectory();
       final testDir =
@@ -33,8 +33,8 @@ Here is an example showing the complete list of parameters you can set to custom
 
 ``` dart
 CameraAwesomeBuilder.awesome(
-  // Define if you want to take pictures, videos or both and where to save them
-  awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+  // Define if you want to take photos, videos or both and where to save them
+  pathBuilders: PathBuilders.imageAndVideo(
     initialCaptureMode: CaptureModes.PHOTO,
     imagePathBuilder: () async {
       // Return a valid file path (must be a jpg file)
@@ -55,7 +55,7 @@ CameraAwesomeBuilder.awesome(
   // No zoom
   zoom: 0.0,
   exifPreferences: ExifPreferences(
-    // For pictures only
+    // For photos only
     saveGPSLocation: false,
   ),
   // For video recording
@@ -75,7 +75,7 @@ CameraAwesomeBuilder.awesome(
   },
   onPreviewTapBuilder: (state) => OnPreviewTap(
     onTap: (position, flutterPreviewSize, pixelPreviewSize) {
-      // Handle tap to focus (default) or take a picture for instance
+      // Handle tap to focus (default) or take a photo for instance
       // ...
     },
     onTapPainter: (position) {
@@ -111,7 +111,7 @@ CameraAwesomeBuilder.awesome(
 
 | Method                           | Comment | 
 |----------------------------------|---------|
-| **awesomeFileSaver**           | Define if you want to take pictures, videos or both and where to save them  |
+| **pathBuilders**           | Define if you want to take photos, videos or both and where to save them  |
 | **onMediaTap**           | Choose what you want to do when user tap on the last media captured |
 | **sensor**           | The initial camera sensor (Back or Front) |
 | **flashMode**           | The initial flash mode |

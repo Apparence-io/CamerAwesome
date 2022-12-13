@@ -11,7 +11,7 @@ import 'package:rxdart/rxdart.dart';
 import 'analysis/analysis_controller.dart';
 
 /// This class handle the current state of the camera
-/// - [PictureCameraState]
+/// - [PhotoCameraState]
 /// - [VideoCameraState]
 class CameraContext {
   /// Listen current state from child widgets
@@ -37,20 +37,20 @@ class CameraContext {
 
   final CaptureModes initialCaptureMode;
 
-  /// this is where we are going to store any picture
-  final AwesomeFileSaver awesomeFileSaver;
+  /// this is where we are going to store any photo
+  final PathBuilders pathBuilders;
 
   /// allows to create dynamic analysis using the current preview
   final AnalysisController? analysisController;
 
-  /// Preferences concerning Exif (pictures metadata)
+  /// Preferences concerning Exif (photos metadata)
   final ExifPreferences exifPreferences;
 
   CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
     required this.analysisController,
-    required this.awesomeFileSaver,
+    required this.pathBuilders,
     this.onPermissionsResult,
     required this.exifPreferences,
   }) : sensorConfig$ = sensorConfigController.stream {
@@ -68,7 +68,7 @@ class CameraContext {
     SensorConfig sensorConfig, {
     required CaptureModes initialCaptureMode,
     OnPermissionsResult? onPermissionsResult,
-    required AwesomeFileSaver awesomeFileSaver,
+    required PathBuilders pathBuilders,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,
@@ -76,7 +76,7 @@ class CameraContext {
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
           onPermissionsResult: onPermissionsResult,
-          awesomeFileSaver: awesomeFileSaver,
+          pathBuilders: pathBuilders,
           analysisController: analysisConfig != null
               ? AnalysisController.fromPlugin(
                   onImageListener: onImageForAnalysis,

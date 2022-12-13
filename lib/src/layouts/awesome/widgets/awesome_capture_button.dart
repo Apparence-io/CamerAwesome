@@ -59,7 +59,7 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
           scale: _scale,
           child: CustomPaint(
             painter: widget.state.when(
-              onPictureMode: (_) => CameraButtonPainter(),
+              onPhotoMode: (_) => CameraButtonPainter(),
               onPreparingCamera: (_) => CameraButtonPainter(),
               onVideoMode: (_) => VideoButtonPainter(),
               onVideoRecordingMode: (_) =>
@@ -89,7 +89,7 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
 
   get onTap => () {
         widget.state.when(
-          onPictureMode: (pictureState) => pictureState.takePhoto(),
+          onPhotoMode: (photoState) => photoState.takePhoto(),
           onVideoMode: (videoState) => videoState.startRecording(),
           onVideoRecordingMode: (videoState) => videoState.stopRecording(),
         );

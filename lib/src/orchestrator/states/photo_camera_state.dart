@@ -7,8 +7,8 @@ import 'package:rxdart/rxdart.dart';
 import '../camera_context.dart';
 
 /// When Camera is in Image mode
-class PictureCameraState extends CameraState {
-  PictureCameraState({
+class PhotoCameraState extends CameraState {
+  PhotoCameraState({
     required CameraContext cameraContext,
     required this.filePathBuilder,
     required this.exifPreferences,
@@ -18,10 +18,10 @@ class PictureCameraState extends CameraState {
     saveGpsLocation$ = _saveGpsLocationController.stream;
   }
 
-  factory PictureCameraState.from(CameraContext orchestrator) =>
-      PictureCameraState(
+  factory PhotoCameraState.from(CameraContext orchestrator) =>
+      PhotoCameraState(
         cameraContext: orchestrator,
-        filePathBuilder: orchestrator.awesomeFileSaver.imagePathBuilder!,
+        filePathBuilder: orchestrator.pathBuilders.photoPathBuilder!,
         exifPreferences: orchestrator.exifPreferences,
       );
 
@@ -66,7 +66,7 @@ class PictureCameraState extends CameraState {
     return path;
   }
 
-  /// Use this to determine if you want to save the GPS location with the picture
+  /// Use this to determine if you want to save the GPS location with the photo
   /// as Exif data or not
   Future<void> updateExifPreferences(ExifPreferences preferences) async {
     await CamerawesomePlugin.setExifPreferences(preferences);

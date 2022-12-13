@@ -16,14 +16,14 @@ import '../orchestrator/states/camera_state.dart';
 /// This is the builder for your camera interface
 /// Using the state you can do anything you need without having to think about the camera flow
 /// On app start we are in [PreparingCameraState]
-/// Then depending on the initialCaptureMode you set you will be [PictureCameraState] or [VideoCameraState]
+/// Then depending on the initialCaptureMode you set you will be [PhotoCameraState] or [VideoCameraState]
 /// Starting a video will push a [VideoRecordingCameraState]
 /// Stopping the video will push back the [VideoCameraState]
 /// ----
 /// If you need to call specific function for a state use the 'when' function.
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
 
-/// Callback when a video or picture has been saved and user click on thumbnail
+/// Callback when a video or photo has been saved and user click on thumbnail
 typedef OnMediaTap = Function(MediaCapture mediaCapture)?;
 
 /// Used to set a permission result callback
@@ -52,8 +52,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Enable audio while video recording
   final bool enableAudio;
 
-  /// Path builders when taking pictures or recording videos
-  final AwesomeFileSaver awesomeFileSaver;
+  /// Path builders when taking photos or recording videos
+  final PathBuilders pathBuilders;
 
   /// Called when the preview of the last captured media is tapped
   final OnMediaTap onMediaTap;
@@ -78,7 +78,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.exifPreferences,
     required this.enableAudio,
     required this.progressIndicator,
-    required this.awesomeFileSaver,
+    required this.pathBuilders,
     required this.onMediaTap,
     required this.builder,
     this.onImageForAnalysis,
@@ -89,8 +89,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   /// Use the camera with the built-in interface.
   ///
-  /// You need to provide an [AwesomeFileSaver] to define if you want to take
-  /// pictures, videos or both and where to save them.
+  /// You need to provide an [PathBuilders] to define if you want to take
+  /// photos, videos or both and where to save them.
   ///
   /// You can initiate the camera with a few parameters:
   /// - which [sensor] to use ([FRONT] or [BACK])
@@ -98,7 +98,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// - how much zoom you want (0.0 = no zoom, 1.0 = max zoom)
   /// - [enableAudio] when recording a video or not
   /// - [exifPreferences] to indicate if you want to save GPS location when
-  /// taking pictures
+  /// taking photos
   ///
   /// You can customize the UI with a [progressIndicator] and you can define
   /// what to do when the preview of the last media taken is tapped thanks to
@@ -114,7 +114,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
     Widget? progressIndicator,
-    required AwesomeFileSaver awesomeFileSaver,
+    required PathBuilders pathBuilders,
     Function(MediaCapture)? onMediaTap,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
@@ -131,7 +131,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
             state: cameraModeState,
             onMediaTap: onMediaTap,
           ),
-          awesomeFileSaver: awesomeFileSaver,
+          pathBuilders: pathBuilders,
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
@@ -151,7 +151,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     bool enableAudio = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
-    required AwesomeFileSaver awesomeFileSaver,
+    required PathBuilders pathBuilders,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
@@ -164,7 +164,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
           builder: builder,
-          awesomeFileSaver: awesomeFileSaver,
+          pathBuilders: pathBuilders,
           onMediaTap: null,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
@@ -227,8 +227,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         flash: widget.flashMode,
         currentZoom: widget.zoom,
       ),
-      initialCaptureMode: widget.awesomeFileSaver.initialCaptureMode,
-      awesomeFileSaver: widget.awesomeFileSaver,
+      initialCaptureMode: widget.pathBuilders.initialCaptureMode,
+      pathBuilders: widget.pathBuilders,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
       exifPreferences:
@@ -264,8 +264,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                     OnPreviewTap(
                       onTap: (position, flutterPreviewSize, pixelPreviewSize) {
                         snapshot.requireData.when(
-                          onPictureMode: (pictureState) =>
-                              pictureState.focusOnPoint(
+                          onPhotoMode: (photoState) =>
+                              photoState.focusOnPoint(
                             flutterPosition: position,
                             pixelPreviewSize: pixelPreviewSize,
                             flutterPreviewSize: flutterPreviewSize,

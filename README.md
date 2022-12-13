@@ -38,7 +38,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 🔖 Ask permissions               | ✅      | ✅  |
 | 🎥 Record video                  | ✅      | ✅  |
 | 🔈 Enable/disable audio          | ✅      | ✅  |
-| 🎞 Take picture                  | ✅      | ✅  |
+| 🎞 Take photos                  | ✅      | ✅  |
 | 🌤 Exposure level                | ✅      | ✅  |
 | 📡 Broadcast live image stream   | ✅      | ✅  |
 | 👁 zoom                          | ✅      | ✅  |
@@ -104,7 +104,7 @@ That's all you need to create a complete camera experience within you app.
 ```dart
 CameraAwesomeBuilder.awesome(
     initialCaptureMode: CaptureModes.PHOTO,
-    picturePathBuilder: (captureMode) => _path(captureMode),
+    photoPathBuilder: (captureMode) => _path(captureMode),
     videoPathBuilder: (captureMode) => _path(captureMode),
     onMediaTap: (mediaCapture) {
         OpenFile.open(mediaCapture.filePath);
@@ -124,7 +124,7 @@ The camera preview will be visible behind what you will provide to our builder.
 ```dart
 CameraAwesomeBuilder.custom(
     initialCaptureMode: CaptureModes.PHOTO,
-    picturePathBuilder: (captureMode) => _path(captureMode),
+    photoPathBuilder: (captureMode) => _path(captureMode),
     videoPathBuilder: (captureMode) => _path(captureMode),
     builder: (state) {
         // create your interface here 
@@ -146,7 +146,7 @@ Depending on which state is our camera experience you will have access to some d
 #### How camerAwesome states works ? 
 Using the state you can do anything you need without having to think about the camera flow<br/><br/>
 - On app start we are in [PreparingCameraState]<br/>
-- Then depending on the initialCaptureMode you set you will be [PictureCameraState] or [VideoCameraState]<br/>
+- Then depending on the initialCaptureMode you set you will be [PhotoCameraState] or [VideoCameraState]<br/>
 - Starting a video will push a [VideoRecordingCameraState]<br/>
 - Stopping the video will push back the [VideoCameraState]<br/>
 <br/>
@@ -154,7 +154,7 @@ Also if you want to use some specific function you can use the when method so yo
 
 ```dart
 state.when(
-    onPictureMode: (pictureState) => pictureState.start(),
+    onPhotoMode: (photoState) => photoState.start(),
     onVideoMode: (videoState) => videoState.start(),
     onVideoRecordingMode: (videoState) => videoState.pause(),
 );
@@ -180,7 +180,7 @@ You can check an example using MLKit on Android that detect faces inside the '''
 ```dart
 CameraAwesomeBuilder.awesome(
     initialCaptureMode: CaptureModes.PHOTO,
-    picturePathBuilder: (captureMode) => _path(captureMode),
+    photoPathBuilder: (captureMode) => _path(captureMode),
     videoPathBuilder: (captureMode) => _path(captureMode),
     onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
     onImageForAnalysis: analyzeImage,
@@ -217,6 +217,6 @@ All of this configurations are listenable through a stream so your UI can automa
 - [ ] Image analysis state (flutter)
 - [ ] Apply Preview filter 
 - [ ] Apply filter on image
-- [ ] Timer before picture (flutter)
+- [ ] Timer before taking a photo (flutter)
 - [ ] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)
 - [ ] Multiple camera photo mode

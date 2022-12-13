@@ -5,4 +5,4 @@ export 'capture_modes.dart';
 export 'media_capture.dart';
 export 'sensor_data.dart';
 export 'sensors.dart';
-export 'awesome_file_saver.dart';
+export 'path_builders.dart';

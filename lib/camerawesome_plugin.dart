@@ -255,7 +255,7 @@ class CamerawesomePlugin {
   }
 
   /// you can set a different size for preview and for photo
-  /// for iOS, when taking a picture, best quality is automatically used
+  /// for iOS, when taking a photo, best quality is automatically used
   static Future<void> setPhotoSize(int width, int height) {
     if (Platform.isAndroid) {
       return CameraInterface().setPhotoSize(
@@ -444,7 +444,7 @@ class CamerawesomePlugin {
     }
   }
 
-  /// Change aspect ratio when a picture is taken
+  /// Change aspect ratio when a photo is taken
   static Future<void> setAspectRatio(String ratio) {
     if (Platform.isAndroid) {
       return CameraInterface().setAspectRatio(ratio);

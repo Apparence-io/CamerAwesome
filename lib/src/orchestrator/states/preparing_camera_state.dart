@@ -27,7 +27,7 @@ class PreparingCameraState extends CameraState {
   Future<void> start() async {
     switch (nextCaptureMode) {
       case CaptureModes.PHOTO:
-        _startPictureMode();
+        _startPhotoMode();
         break;
       case CaptureModes.VIDEO:
         _startVideoMode();
@@ -84,11 +84,11 @@ class PreparingCameraState extends CameraState {
     CamerawesomePlugin.start();
   }
 
-  Future _startPictureMode() async {
+  Future _startPhotoMode() async {
     //TODO await CamerawesomePlugin.setExifPreferences(preferences);
     await Future.delayed(Duration(milliseconds: 500));
     await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
-    cameraContext.changeState(PictureCameraState.from(cameraContext));
+    cameraContext.changeState(PhotoCameraState.from(cameraContext));
 
     cameraContext.analysisController?.start();
     CamerawesomePlugin.start();

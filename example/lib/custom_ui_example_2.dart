@@ -6,7 +6,7 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Tap to take a picture example, with almost no UI
+/// Tap to take a photo example, with almost no UI
 class CustomUiExample2 extends StatelessWidget {
   const CustomUiExample2({super.key});
 
@@ -23,7 +23,7 @@ class CustomUiExample2 extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.only(bottom: 100),
                     child: Text(
-                      "Tap to take a picture",
+                      "Tap to take a photo",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -52,7 +52,7 @@ class CustomUiExample2 extends StatelessWidget {
             ],
           );
         },
-        awesomeFileSaver: AwesomeFileSaver.image(
+        pathBuilders: PathBuilders.photo(
           pathBuilder: () async {
             final Directory extDir = await getTemporaryDirectory();
             final testDir =
@@ -62,7 +62,7 @@ class CustomUiExample2 extends StatelessWidget {
         ),
         onPreviewTapBuilder: (state) => OnPreviewTap(
           onTap: (Offset position, PreviewSize flutterPreviewSize, PreviewSize pixelPreviewSize) {
-            state.when(onPictureMode: (picState) => picState.takePhoto());
+            state.when(onPhotoMode: (picState) => picState.takePhoto());
           },
           onTapPainter: (tapPosition) => TweenAnimationBuilder(
             key: ValueKey(tapPosition),

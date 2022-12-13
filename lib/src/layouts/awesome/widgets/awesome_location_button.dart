@@ -13,7 +13,7 @@ class AwesomeLocationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return state.when(onPictureMode: (pm) {
+    return state.when(onPhotoMode: (pm) {
       return StreamBuilder<bool>(
         stream: pm.saveGpsLocation$,
         builder: (context, snapshot) {
@@ -31,7 +31,7 @@ class AwesomeLocationButton extends StatelessWidget {
                       : Icons.location_off_outlined,
                   color: Colors.white,
                 ),
-                onPressed: () => state.when(onPictureMode: (pm) {
+                onPressed: () => state.when(onPhotoMode: (pm) {
                   pm.saveGpsLocation = !(saveGpsLocation ?? false);
                 }),
               ),

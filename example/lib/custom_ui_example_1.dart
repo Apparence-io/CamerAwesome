@@ -12,13 +12,13 @@ class CustomUiExample1 extends StatelessWidget {
           return cameraState.when(
             onPreparingCamera: (state) =>
                 const Center(child: CircularProgressIndicator()),
-            onPictureMode: (state) => TakePictureUI(state),
+            onPhotoMode: (state) => TakePhotoUI(state),
             onVideoMode: (state) => RecordVideoUI(state, recording: false),
             onVideoRecordingMode: (state) =>
                 RecordVideoUI(state, recording: true),
           );
         },
-        awesomeFileSaver: AwesomeFileSaver.imageAndVideo(
+        pathBuilders: PathBuilders.photoAndVideo(
           imagePathBuilder: () async {
             return "some/path.jpg";
           },
@@ -31,10 +31,10 @@ class CustomUiExample1 extends StatelessWidget {
   }
 }
 
-class TakePictureUI extends StatelessWidget {
-  final PictureCameraState state;
+class TakePhotoUI extends StatelessWidget {
+  final PhotoCameraState state;
 
-  const TakePictureUI(this.state, {super.key});
+  const TakePhotoUI(this.state, {super.key});
 
   @override
   Widget build(BuildContext context) {

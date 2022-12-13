@@ -10,7 +10,7 @@ However, if you made your own custom UI using `CameraAwesomeBuilder.custom()`, t
 
 ``` dart
 CameraAwesomeBuilder.custom(
-  awesomeFileSaver: ...,
+  pathBuilders: ...,
   builder: (state) {
     return Stack(
       fit: StackFit.expand,
@@ -21,7 +21,7 @@ CameraAwesomeBuilder.custom(
             child: Column(children: [
               // Rest of your UI, e.g.: Flash button
               AwesomeCameraModeSelector(state: state),
-              // Rest of your UI, e.g.: Button to take pictures
+              // Rest of your UI, e.g.: Button to take photos
             ]),
           ),
         ),
