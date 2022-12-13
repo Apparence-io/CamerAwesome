@@ -43,14 +43,18 @@ class AwesomeTopActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        AwesomeFlashButton(state: state),
-        AwesomeAspectRatioButton(state: state),
-        AwesomeLocationButton(state: state),
-      ],
-    );
+    if (state is VideoRecordingCameraState) {
+      return SizedBox();
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          AwesomeFlashButton(state: state),
+          AwesomeAspectRatioButton(state: state),
+          AwesomeLocationButton(state: state),
+        ],
+      );
+    }
   }
 }
 
@@ -73,7 +77,10 @@ class AwesomeBottomActions extends StatelessWidget {
         children: [
           Flexible(
             flex: 0,
-            child: AwesomeCameraSwitchButton(state: state),
+            child: state is VideoRecordingCameraState
+                ? AwesomePauseResumeButton(
+                    state: state as VideoRecordingCameraState)
+                : AwesomeCameraSwitchButton(state: state),
           ),
           // Spacer(),
           AwesomeCaptureButton(
@@ -82,21 +89,23 @@ class AwesomeBottomActions extends StatelessWidget {
           // Spacer(),
           Flexible(
             flex: 0,
-            child: StreamBuilder<MediaCapture?>(
-              stream: state.captureState$,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Container(width: 72, height: 72);
-                }
-                return SizedBox(
-                  width: 72,
-                  child: AwesomeMediaPreview(
-                    mediaCapture: snapshot.requireData,
-                    onMediaTap: onMediaTap,
+            child: state is VideoRecordingCameraState
+                ? SizedBox()
+                : StreamBuilder<MediaCapture?>(
+                    stream: state.captureState$,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container(width: 72, height: 72);
+                      }
+                      return SizedBox(
+                        width: 72,
+                        child: AwesomeMediaPreview(
+                          mediaCapture: snapshot.requireData,
+                          onMediaTap: onMediaTap,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
