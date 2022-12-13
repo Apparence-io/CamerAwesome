@@ -41,7 +41,7 @@ class PhotoCameraState extends CameraState {
   }
 
   @override
-  CaptureModes get captureMode => CaptureModes.PHOTO;
+  CaptureMode get captureMode => CaptureMode.photo;
 
   /// Photos taken are in JPEG format. [filePath] must end with .jpg
   ///
@@ -79,8 +79,8 @@ class PhotoCameraState extends CameraState {
   }
 
   @override
-  void setState(CaptureModes captureMode) {
-    if (captureMode == CaptureModes.PHOTO) {
+  void setState(CaptureMode captureMode) {
+    if (captureMode == CaptureMode.photo) {
       return;
     }
     cameraContext.changeState(captureMode.toCameraState(cameraContext));

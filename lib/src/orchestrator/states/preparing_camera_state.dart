@@ -10,7 +10,7 @@ import '../exceptions/camera_states_exceptions.dart';
 /// When is not ready
 class PreparingCameraState extends CameraState {
   /// this is the next state we are preparing to
-  final CaptureModes nextCaptureMode;
+  final CaptureMode nextCaptureMode;
 
   /// plugin user can execute some code once the permission has been granted
   final OnPermissionsResult? onPermissionsResult;
@@ -22,14 +22,14 @@ class PreparingCameraState extends CameraState {
   }) : super(cameraContext);
 
   @override
-  CaptureModes? get captureMode => null;
+  CaptureMode? get captureMode => null;
 
   Future<void> start() async {
     switch (nextCaptureMode) {
-      case CaptureModes.PHOTO:
+      case CaptureMode.photo:
         _startPhotoMode();
         break;
-      case CaptureModes.VIDEO:
+      case CaptureMode.video:
         _startVideoMode();
         break;
     }
@@ -64,7 +64,7 @@ class PreparingCameraState extends CameraState {
   }
 
   @override
-  void setState(CaptureModes captureMode) {
+  void setState(CaptureMode captureMode) {
     throw CameraNotReadyException(
       message:
           '''You can't change current state while camera is in PreparingCameraState''',

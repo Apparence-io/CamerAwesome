@@ -29,9 +29,9 @@ class CameraPage extends StatelessWidget {
     return Scaffold(
       body: CameraAwesomeBuilder.awesome(
         saveConfig: SaveConfig.photoAndVideo(
-          imagePathBuilder: () => _path(CaptureModes.PHOTO),
-          videoPathBuilder: () => _path(CaptureModes.VIDEO),
-          initialCaptureMode: CaptureModes.PHOTO,
+          imagePathBuilder: () => _path(CaptureMode.photo),
+          videoPathBuilder: () => _path(CaptureMode.video),
+          initialCaptureMode: CaptureMode.photo,
         ),
         onMediaTap: (mediaCapture) {
           OpenFile.open(mediaCapture.filePath);
@@ -40,12 +40,12 @@ class CameraPage extends StatelessWidget {
     );
   }
 
-  Future<String> _path(CaptureModes captureMode) async {
+  Future<String> _path(CaptureMode captureMode) async {
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
         await Directory('${extDir.path}/test').create(recursive: true);
     final String fileExtension =
-        captureMode == CaptureModes.PHOTO ? 'jpg' : 'mp4';
+        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
     final String filePath =
         '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
     return filePath;

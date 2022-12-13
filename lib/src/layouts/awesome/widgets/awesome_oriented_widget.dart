@@ -16,7 +16,7 @@ class AwesomeOrientedWidget extends StatefulWidget {
 }
 
 class AwesomeOrientedWidgetState extends State<AwesomeOrientedWidget> {
-  CameraOrientations previousOrientation = CameraOrientations.PORTRAIT_UP;
+  CameraOrientations previousOrientation = CameraOrientations.portrait_up;
   double turns = 0;
 
   @override
@@ -45,13 +45,13 @@ class AwesomeOrientedWidgetState extends State<AwesomeOrientedWidget> {
 
   double getTurns(CameraOrientations orientation) {
     switch (orientation) {
-      case CameraOrientations.LANDSCAPE_LEFT:
+      case CameraOrientations.landscape_left:
         return 0.75;
-      case CameraOrientations.LANDSCAPE_RIGHT:
+      case CameraOrientations.landscape_right:
         return 0.25;
-      case CameraOrientations.PORTRAIT_UP:
+      case CameraOrientations.portrait_up:
         return 0;
-      case CameraOrientations.PORTRAIT_DOWN:
+      case CameraOrientations.portrait_down:
         return 0.5;
     }
   }

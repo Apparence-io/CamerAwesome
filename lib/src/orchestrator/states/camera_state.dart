@@ -20,7 +20,7 @@ abstract class CameraState {
 
   CameraState(this.cameraContext);
 
-  abstract final CaptureModes? captureMode;
+  abstract final CaptureMode? captureMode;
 
   when({
     OnVideoMode? onVideoMode,
@@ -51,18 +51,18 @@ abstract class CameraState {
   /// Accessible from all states
   Stream<MediaCapture?> get captureState$ => cameraContext.captureState$;
 
-  /// Switch camera from [Sensors.BACK] [Sensors.FRONT]
+  /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
   void switchCameraSensor() {
     final previous = cameraContext.sensorConfig;
     final next = SensorConfig(
-      sensor: previous.sensor == Sensors.BACK ? Sensors.FRONT : Sensors.BACK,
+      sensor: previous.sensor == Sensors.back ? Sensors.front : Sensors.back,
     );
     cameraContext.switchSensor(next);
   }
 
   /// The sensor config allows you to
-  /// - set the [CameraFlashes]
+  /// - set the [FlashMode]
   /// - set the zoom level
   /// - handle luminosity or get it
   /// - adjust brightness
@@ -71,10 +71,10 @@ abstract class CameraState {
   Stream<SensorConfig> get sensorConfig$ => cameraContext.sensorConfig$;
 
   /// Switch to a state between
-  /// - [CaptureModes.PHOTO]
-  /// - [CaptureModes.VIDEO]
-  /// - [CaptureModes.ANALYSIS]
-  void setState(CaptureModes captureMode);
+  /// - [CaptureMode.photo]
+  /// - [CaptureMode.video]
+  /// - [CaptureMode.ANALYSIS]
+  void setState(CaptureMode captureMode);
 
   SaveConfig get saveConfig => cameraContext.saveConfig;
 

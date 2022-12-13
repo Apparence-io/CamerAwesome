@@ -5,8 +5,8 @@ typedef FilePathBuilder = Future<String> Function();
 class SaveConfig {
   final FilePathBuilder? photoPathBuilder;
   final FilePathBuilder? videoPathBuilder;
-  final List<CaptureModes> captureModes;
-  final CaptureModes initialCaptureMode;
+  final List<CaptureMode> captureModes;
+  final CaptureMode initialCaptureMode;
 
   SaveConfig._({
     this.photoPathBuilder,
@@ -19,27 +19,27 @@ class SaveConfig {
   SaveConfig.photo({required FilePathBuilder pathBuilder})
       : this._(
           photoPathBuilder: pathBuilder,
-          captureModes: [CaptureModes.PHOTO],
-          initialCaptureMode: CaptureModes.PHOTO,
+          captureModes: [CaptureMode.photo],
+          initialCaptureMode: CaptureMode.photo,
         );
 
   /// You only want to take videos
   SaveConfig.video({required FilePathBuilder pathBuilder})
       : this._(
           videoPathBuilder: pathBuilder,
-          captureModes: [CaptureModes.VIDEO],
-          initialCaptureMode: CaptureModes.VIDEO,
+          captureModes: [CaptureMode.video],
+          initialCaptureMode: CaptureMode.video,
         );
 
   /// You want to be able to take both photos and videos
   SaveConfig.photoAndVideo({
     required FilePathBuilder imagePathBuilder,
     required FilePathBuilder videoPathBuilder,
-    CaptureModes initialCaptureMode = CaptureModes.PHOTO,
+    CaptureMode initialCaptureMode = CaptureMode.photo,
   }) : this._(
           photoPathBuilder: imagePathBuilder,
           videoPathBuilder: videoPathBuilder,
-          captureModes: [CaptureModes.PHOTO, CaptureModes.VIDEO],
+          captureModes: [CaptureMode.photo, CaptureMode.video],
           initialCaptureMode: initialCaptureMode,
         );
 

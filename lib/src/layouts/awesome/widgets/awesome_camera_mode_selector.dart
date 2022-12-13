@@ -21,7 +21,7 @@ class AwesomeCameraModeSelector extends StatelessWidget {
 }
 
 class CameraMode {
-  final CaptureModes captureMode;
+  final CaptureMode captureMode;
   final String title;
 
   CameraMode({required this.captureMode, required this.title});

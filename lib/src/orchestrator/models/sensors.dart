@@ -1,14 +1,12 @@
 enum Sensors {
-  BACK,
-  FRONT,
+  back,
+  front,
 }
 
 enum CameraAspectRatios {
-  RATIO_16_9,
-  RATIO_4_3,
-  RATIO_1_1, // only for iOS
-}
+  ratio_16_9,
+  ratio_4_3,
+  ratio_1_1; // only for iOS
 
-extension on CameraAspectRatios {
-  CameraAspectRatios get defaultRatio => CameraAspectRatios.RATIO_4_3;
+  CameraAspectRatios get defaultRatio => CameraAspectRatios.ratio_4_3;
 }

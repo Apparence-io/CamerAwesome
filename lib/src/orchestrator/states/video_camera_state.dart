@@ -21,15 +21,15 @@ class VideoCameraState extends CameraState {
   final FilePathBuilder filePathBuilder;
 
   @override
-  void setState(CaptureModes captureMode) {
-    if (captureMode == CaptureModes.VIDEO) {
+  void setState(CaptureMode captureMode) {
+    if (captureMode == CaptureMode.video) {
       return;
     }
     cameraContext.changeState(captureMode.toCameraState(cameraContext));
   }
 
   @override
-  CaptureModes get captureMode => CaptureModes.VIDEO;
+  CaptureMode get captureMode => CaptureMode.video;
 
   /// Recording is not in MP4 format. [filePath] must end with .mp4.
   ///

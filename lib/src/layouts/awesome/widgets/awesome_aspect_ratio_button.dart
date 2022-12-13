@@ -1,4 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeAspectRatioButton extends StatelessWidget {
@@ -11,15 +12,24 @@ class AwesomeAspectRatioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CameraAspectRatios>(
-      stream: state.sensorConfig.aspectRatio$,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container();
+    return StreamBuilder<SensorConfig>(
+      stream: state.sensorConfig$,
+      builder: (_, sensorConfigSnapshot) {
+        if (!sensorConfigSnapshot.hasData) {
+          return SizedBox();
         }
-        return _AspectRatioButton.from(
-          aspectRatio: snapshot.requireData,
-          onTap: () => state.sensorConfig.switchCameraRatio(),
+        final sensorConfig = sensorConfigSnapshot.requireData;
+        return StreamBuilder<CameraAspectRatios>(
+          stream: sensorConfig.aspectRatio$,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Container();
+            }
+            return _AspectRatioButton.from(
+              aspectRatio: snapshot.requireData,
+              onTap: () => sensorConfig.switchCameraRatio(),
+            );
+          },
         );
       },
     );
@@ -46,15 +56,15 @@ class _AspectRatioButton extends StatelessWidget {
     final AssetImage icon;
     double width;
     switch (aspectRatio) {
-      case CameraAspectRatios.RATIO_16_9:
+      case CameraAspectRatios.ratio_16_9:
         width = 32;
         icon = AssetImage("packages/camerawesome/assets/icons/16_9.png");
         break;
-      case CameraAspectRatios.RATIO_4_3:
+      case CameraAspectRatios.ratio_4_3:
         width = 24;
         icon = AssetImage("packages/camerawesome/assets/icons/4_3.png");
         break;
-      case CameraAspectRatios.RATIO_1_1:
+      case CameraAspectRatios.ratio_1_1:
         width = 24;
         icon = AssetImage("packages/camerawesome/assets/icons/1_1.png");
         break;

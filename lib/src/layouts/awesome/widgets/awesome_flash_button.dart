@@ -1,4 +1,5 @@
 import 'package:camerawesome/src/orchestrator/models/camera_flashes.dart';
+import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
 
@@ -14,15 +15,24 @@ class AwesomeFlashButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CameraFlashes>(
-      stream: state.sensorConfig.flashMode$,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container();
+    return StreamBuilder<SensorConfig>(
+      stream: state.sensorConfig$,
+      builder: (_, sensorConfigSnapshot) {
+        if (!sensorConfigSnapshot.hasData) {
+          return SizedBox();
         }
-        return _FlashButton.from(
-          flashMode: snapshot.requireData,
-          onTap: () => state.sensorConfig.switchCameraFlash(),
+        final sensorConfig = sensorConfigSnapshot.requireData;
+        return StreamBuilder<FlashMode>(
+          stream: sensorConfig.flashMode$,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Container();
+            }
+            return _FlashButton.from(
+              flashMode: snapshot.requireData,
+              onTap: () => sensorConfig.switchCameraFlash(),
+            );
+          },
         );
       },
     );
@@ -37,21 +47,21 @@ class _FlashButton extends StatelessWidget {
 
   factory _FlashButton.from({
     Key? key,
-    required CameraFlashes flashMode,
+    required FlashMode flashMode,
     required VoidCallback onTap,
   }) {
     final IconData icon;
     switch (flashMode) {
-      case CameraFlashes.NONE:
+      case FlashMode.none:
         icon = Icons.flash_off;
         break;
-      case CameraFlashes.ON:
+      case FlashMode.on:
         icon = Icons.flash_on;
         break;
-      case CameraFlashes.AUTO:
+      case FlashMode.auto:
         icon = Icons.flash_auto;
         break;
-      case CameraFlashes.ALWAYS:
+      case FlashMode.always:
         icon = Icons.flashlight_on;
         break;
     }

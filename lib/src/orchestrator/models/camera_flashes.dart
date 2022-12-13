@@ -1,6 +1,6 @@
-enum CameraFlashes {
-  NONE,
-  ON,
-  AUTO,
-  ALWAYS,
+enum FlashMode {
+  none,
+  on,
+  auto,
+  always,
 }

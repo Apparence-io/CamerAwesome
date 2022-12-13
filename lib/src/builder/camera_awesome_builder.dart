@@ -39,10 +39,10 @@ typedef OnImageForAnalysis = void Function(AnalysisImage image);
 /// - use our built in interface
 /// with the awesome factory
 class CameraAwesomeBuilder extends StatefulWidget {
-  /// [FRONT] or [BACK] camera
+  /// [front] or [back] camera
   final Sensors sensor;
 
-  final CameraFlashes flashMode;
+  final FlashMode flashMode;
 
   /// Must be a value between 0.0 (no zoom) and 1.0 (max zoom)
   final double zoom;
@@ -93,7 +93,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// photos, videos or both and where to save them.
   ///
   /// You can initiate the camera with a few parameters:
-  /// - which [sensor] to use ([FRONT] or [BACK])
+  /// - which [sensor] to use ([front] or [back])
   /// - which [flashMode] to use
   /// - how much zoom you want (0.0 = no zoom, 1.0 = max zoom)
   /// - [enableAudio] when recording a video or not
@@ -108,8 +108,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// [imageAnaysisConfig] and listen to the stream of images with
   /// [onImageForAnalysis].
   CameraAwesomeBuilder.awesome({
-    Sensors sensor = Sensors.BACK,
-    CameraFlashes flashMode = CameraFlashes.NONE,
+    Sensors sensor = Sensors.back,
+    FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
@@ -143,9 +143,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   ///
   /// Documentation on its way, API might change
   CameraAwesomeBuilder.custom({
-    CaptureModes initialCaptureMode = CaptureModes.PHOTO,
-    Sensors sensor = Sensors.BACK,
-    CameraFlashes flashMode = CameraFlashes.NONE,
+    CaptureMode initialCaptureMode = CaptureMode.photo,
+    Sensors sensor = Sensors.back,
+    FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,

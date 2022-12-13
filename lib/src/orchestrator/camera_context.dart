@@ -27,7 +27,7 @@ class CameraContext {
   late final Stream<MediaCapture?> captureState$;
 
   /// The config associated with a [Sensors].
-  /// [BACK] sensor frequently has flash while [FRONT] does not for instance.
+  /// [back] sensor frequently has flash while [front] does not for instance.
   Stream<SensorConfig> sensorConfig$;
 
   BehaviorSubject<SensorConfig> sensorConfigController;
@@ -35,7 +35,7 @@ class CameraContext {
   /// implement this to have a callback after CameraAwesome asked for permissions
   final OnPermissionsResult? onPermissionsResult;
 
-  final CaptureModes initialCaptureMode;
+  final CaptureMode initialCaptureMode;
 
   /// this is where we are going to store any photo
   final SaveConfig saveConfig;
@@ -66,7 +66,7 @@ class CameraContext {
 
   CameraContext.create(
     SensorConfig sensorConfig, {
-    required CaptureModes initialCaptureMode,
+    required CaptureMode initialCaptureMode,
     OnPermissionsResult? onPermissionsResult,
     required SaveConfig saveConfig,
     OnImageForAnalysis? onImageForAnalysis,

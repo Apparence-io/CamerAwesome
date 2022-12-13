@@ -22,14 +22,14 @@ class VideoRecordingCameraState extends CameraState {
   final FilePathBuilder filePathBuilder;
 
   @override
-  void setState(CaptureModes captureMode) {
+  void setState(CaptureMode captureMode) {
     printLog(''' 
       warning: You must stop recording before changing state.  
     ''');
   }
 
   @override
-  CaptureModes get captureMode => CaptureModes.VIDEO;
+  CaptureMode get captureMode => CaptureMode.video;
 
   /// Pauses a video recording.
   /// [startRecording] must have been called before.
@@ -69,7 +69,7 @@ class VideoRecordingCameraState extends CameraState {
     }
     await CamerawesomePlugin.stopRecordingVideo();
     _mediaCapture = MediaCapture.success(filePath: currentCapture.filePath);
-    await CamerawesomePlugin.setCaptureMode(CaptureModes.VIDEO);
+    await CamerawesomePlugin.setCaptureMode(CaptureMode.video);
     cameraContext.changeState(VideoCameraState.from(cameraContext));
   }
 
