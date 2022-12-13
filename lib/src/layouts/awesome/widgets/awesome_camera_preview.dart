@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 enum CameraPreviewFit {
   fitWidth,
   fitHeight,
+  contain,
   cover,
 }
 
@@ -101,6 +102,22 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               maxSize = Size(size.width * ratioH, constraints.maxHeight);
               break;
             case CameraPreviewFit.cover:
+              final previewRatio = _previewSize!.width / _previewSize!.height;
+              final containerRatio =
+                  constraints.maxWidth / constraints.maxHeight;
+              if (containerRatio > previewRatio) {
+                maxSize = Size(
+                  constraints.maxWidth,
+                  constraints.maxWidth / previewRatio,
+                );
+              } else {
+                maxSize = Size(
+                  constraints.maxHeight * previewRatio,
+                  constraints.maxHeight,
+                );
+              }
+              break;
+            case CameraPreviewFit.contain:
               final ratio = min(ratioW, ratioH);
               maxSize = Size(size.width * ratio, size.height * ratio);
               break;
