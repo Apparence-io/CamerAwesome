@@ -1,3 +1,7 @@
+## 1.0.0
+- Too much new things
+- Take a look on the new documentation 
+
 ## 0.4.0
 - Migrate to CameraX instead of Camera2 on Android.
 - Add GPS location in Exif photo on Android.

@@ -29,6 +29,11 @@ This packages provides you a fully customizable camera experience that you can u
 Use our awesome built in interface or customize it as you want. 
 
 --------
+<div style="margin-top:16px;margin-bottom:16px">
+    <a href="https://docs.page/Apparence-io/camera_awesome" style="">
+        <img src="./docs/img/doc.png" width="100%" />
+    </a>
+</div>
 
 ## Native features
 Here's all native features that cameraAwesome provides to the flutter side.
