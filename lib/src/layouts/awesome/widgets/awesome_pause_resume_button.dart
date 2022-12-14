@@ -30,35 +30,37 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<MediaCapture?>(
-      stream: widget.state.captureState$,
-      builder: (_, snapshot) {
-        if (snapshot.data?.isRecordingVideo != true) {
-          return SizedBox();
-        }
+    return AwesomeOrientedWidget(
+      child: StreamBuilder<MediaCapture?>(
+        stream: widget.state.captureState$,
+        builder: (_, snapshot) {
+          if (snapshot.data?.isRecordingVideo != true) {
+            return SizedBox();
+          }
 
-        bool recordingPaused = snapshot.data!.videoState == VideoState.paused;
+          bool recordingPaused = snapshot.data!.videoState == VideoState.paused;
 
-        return Material(
-          color: Colors.transparent,
-          child: IconButton(
-            onPressed: () {
-              if (recordingPaused) {
-                _controller.reverse();
-                widget.state.resumeRecording(snapshot.data!);
-              } else {
-                _controller.forward();
-                widget.state.pauseRecording(snapshot.data!);
-              }
-            },
-            icon: AnimatedIcon(
-              icon: AnimatedIcons.pause_play,
-              progress: _animation,
-              color: Colors.white,
+          return Material(
+            color: Colors.transparent,
+            child: IconButton(
+              onPressed: () {
+                if (recordingPaused) {
+                  _controller.reverse();
+                  widget.state.resumeRecording(snapshot.data!);
+                } else {
+                  _controller.forward();
+                  widget.state.pauseRecording(snapshot.data!);
+                }
+              },
+              icon: AnimatedIcon(
+                icon: AnimatedIcons.pause_play,
+                progress: _animation,
+                color: Colors.white,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
