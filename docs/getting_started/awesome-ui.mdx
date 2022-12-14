@@ -65,6 +65,7 @@ CameraAwesomeBuilder.awesome(
     height: 100,
     child: CircularProgressIndicator(),
   ),
+  previewFit: CameraPreviewFit.cover, // default value
   imageAnalysisConfig: AnalysisConfig(
     outputFormat: InputAnalysisImageFormat.nv21,
     width: 1024,
@@ -123,6 +124,7 @@ CameraAwesomeBuilder.awesome(
 | **imageAnalysisConfig** | Choose between image format (provide this to enable imageAnalysis) |
 | **onPreviewTapBuilder** | Customize the behavior when the camera preview is tapped (tap to focus by default) |
 | **onPreviewScaleBuilder** | Customize what to do when the user makes a pinch (pinch to zoom by default) |
+| **previewFit** | One of fitWidth, fitHeight, contain, cover |
 
 
 ### 🔨 Need more customization ?

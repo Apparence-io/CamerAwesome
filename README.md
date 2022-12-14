@@ -211,17 +211,3 @@ This contains
 
 All of this configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
 
-
--------
-## 🚀 Roadmap
-
-- [ ] bind exif preferences (flutter)
-- [ ] create complete documentation for all use cases (docs.page)
-- [ ] Tests E2E (flutter)
-- [ ] Handle rotation in awesome UI (flutter)
-- [ ] Image analysis state (flutter)
-- [ ] Apply Preview filter 
-- [ ] Apply filter on image
-- [ ] Timer before taking a photo (flutter)
-- [ ] include cameraX extensions (https://github.com/android/camera-samples/tree/main/CameraXExtensions)
-- [ ] Multiple camera photo mode

@@ -47,7 +47,13 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Must be a value between 0.0 (no zoom) and 1.0 (max zoom)
   final double zoom;
 
+  /// choose if you want to persist user location in image metadata or not
   final ExifPreferences? exifPreferences;
+
+  /// check this for more details
+  /// https://api.flutter.dev/flutter/painting/BoxFit.html
+  // one of fitWidth, fitHeight, contain, cover
+  final CameraPreviewFit previewFit;
 
   /// Enable audio while video recording
   final bool enableAudio;
@@ -81,6 +87,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.saveConfig,
     required this.onMediaTap,
     required this.builder,
+    required this.previewFit,
     this.onImageForAnalysis,
     this.imageAnalysisConfig,
     this.onPreviewTapBuilder,
@@ -120,6 +127,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
     OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
+    CameraPreviewFit? previewFit,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -137,6 +145,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
+          previewFit: previewFit ?? CameraPreviewFit.cover,
         );
 
   /// 🚧 Experimental
@@ -156,6 +165,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
     OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
+    CameraPreviewFit? previewFit,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -170,6 +180,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
+          previewFit: previewFit ?? CameraPreviewFit.cover,
         );
 
   @override
@@ -258,20 +269,19 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
             Positioned.fill(
               child: AwesomeCameraPreview(
                 key: _cameraPreviewKey,
+                previewFit: widget.previewFit,
                 state: snapshot.requireData,
                 onPreviewTap: widget.onPreviewTapBuilder
                         ?.call(snapshot.requireData) ??
                     OnPreviewTap(
                       onTap: (position, flutterPreviewSize, pixelPreviewSize) {
                         snapshot.requireData.when(
-                          onPhotoMode: (photoState) =>
-                              photoState.focusOnPoint(
+                          onPhotoMode: (photoState) => photoState.focusOnPoint(
                             flutterPosition: position,
                             pixelPreviewSize: pixelPreviewSize,
                             flutterPreviewSize: flutterPreviewSize,
                           ),
-                          onVideoMode: (videoState) =>
-                              videoState.focusOnPoint(
+                          onVideoMode: (videoState) => videoState.focusOnPoint(
                             flutterPosition: position,
                             pixelPreviewSize: pixelPreviewSize,
                             flutterPreviewSize: flutterPreviewSize,
