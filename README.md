@@ -123,7 +123,6 @@ CameraAwesomeBuilder.custom(
     saveConfig: SaveConfig.image(
         pathBuilder: _path(),
     ),
-    videoPathBuilder: (captureMode) => _path(captureMode),
     builder: (state) {
         // create your interface here 
     },
