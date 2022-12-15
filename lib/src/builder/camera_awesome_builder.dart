@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
 import 'package:camerawesome/src/layouts/awesome/widgets/awesome_camera_gesture_detector.dart';
@@ -255,7 +256,9 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     return StreamBuilder<CameraState>(
       stream: _cameraContext.state$,
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.captureMode == null) {
+        if (!snapshot.hasData ||
+            snapshot.data!.captureMode == null ||
+            snapshot.requireData is PreparingCameraState) {
           return widget.progressIndicator ??
               Center(
                 child: Platform.isIOS
