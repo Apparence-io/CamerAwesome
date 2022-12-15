@@ -80,20 +80,12 @@ dependencies:
 ```
 
   - **Android**
-    - Set permissions before ```<application>```
-    <br />
+Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
+<br>
 
-    ```xml
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    ```
-
-    - Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
-    <br />
-
-    ```
-    minSdkVersion 21
-    ```
+```
+minSdkVersion 21
+```
 
 ### Import the package in your Flutter app
 ```dart
@@ -108,9 +100,9 @@ Just use our builder. <br>
 That's all you need to create a complete camera experience within you app.
 ```dart
 CameraAwesomeBuilder.awesome(
-    initialCaptureMode: CaptureModes.PHOTO,
-    photoPathBuilder: (captureMode) => _path(captureMode),
-    videoPathBuilder: (captureMode) => _path(captureMode),
+    saveConfig: SaveConfig.image(
+        pathBuilder: _path(),
+    ),
     onMediaTap: (mediaCapture) {
         OpenFile.open(mediaCapture.filePath);
     },
@@ -128,14 +120,17 @@ The camera preview will be visible behind what you will provide to our builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-    initialCaptureMode: CaptureModes.PHOTO,
-    photoPathBuilder: (captureMode) => _path(captureMode),
+    saveConfig: SaveConfig.image(
+        pathBuilder: _path(),
+    ),
     videoPathBuilder: (captureMode) => _path(captureMode),
     builder: (state) {
         // create your interface here 
     },
 ),
 ```
+
+> See more in documentation
 
 ### Working with the custom builder
 
@@ -165,6 +160,8 @@ state.when(
 );
 ```
 
+> See more in documentation
+
 <br>
 
 -----
@@ -184,10 +181,9 @@ You can check an example using MLKit on Android that detect faces inside the '''
 
 ```dart
 CameraAwesomeBuilder.awesome(
-    initialCaptureMode: CaptureModes.PHOTO,
-    photoPathBuilder: (captureMode) => _path(captureMode),
-    videoPathBuilder: (captureMode) => _path(captureMode),
-    onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
+    saveConfig: SaveConfig.image(
+        pathBuilder: _path(),
+    ),
     onImageForAnalysis: analyzeImage,
     imageAnalysisConfig: AnalysisConfig(
         outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420_888
@@ -198,6 +194,8 @@ CameraAwesomeBuilder.awesome(
 
 > MLkit recommands to use nv21 format. <br>
 > For machine learning you don't need full resolution images (1024 is enough and makes computation easyer)
+
+> See more in documentation
 
 -----
 ## 🐽 Setting sensors settings
