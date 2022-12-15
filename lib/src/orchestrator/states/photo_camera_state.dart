@@ -18,8 +18,7 @@ class PhotoCameraState extends CameraState {
     saveGpsLocation$ = _saveGpsLocationController.stream;
   }
 
-  factory PhotoCameraState.from(CameraContext orchestrator) =>
-      PhotoCameraState(
+  factory PhotoCameraState.from(CameraContext orchestrator) => PhotoCameraState(
         cameraContext: orchestrator,
         filePathBuilder: orchestrator.saveConfig.photoPathBuilder!,
         exifPreferences: orchestrator.exifPreferences,

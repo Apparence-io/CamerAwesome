@@ -268,13 +268,15 @@ class CamerawesomePlugin {
     }
   }
 
-  static takePhoto(String path) {
+  static Future<bool> takePhoto(String path) async {
     if (Platform.isAndroid) {
       return CameraInterface().takePhoto(path);
     } else {
-      return _channel.invokeMethod<void>('takePhoto', <String, dynamic>{
+      // iOS side doesn't return a boolean
+      await _channel.invokeMethod<void>('takePhoto', <String, dynamic>{
         'path': path,
       });
+      return true;
     }
   }
 
