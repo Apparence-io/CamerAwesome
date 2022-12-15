@@ -1,4 +1,4 @@
-## 1.0.0
+## 1.0.0-rc1
 - Too much new things
 - Take a look on the new documentation 
 
