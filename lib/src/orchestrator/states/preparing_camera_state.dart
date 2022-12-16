@@ -27,12 +27,13 @@ class PreparingCameraState extends CameraState {
   Future<void> start() async {
     switch (nextCaptureMode) {
       case CaptureMode.photo:
-        _startPhotoMode();
+        await _startPhotoMode();
         break;
       case CaptureMode.video:
-        _startVideoMode();
+        await _startVideoMode();
         break;
     }
+    await cameraContext.analysisController?.start();
   }
 
   /// subscription for permissions
@@ -80,7 +81,7 @@ class PreparingCameraState extends CameraState {
     await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
     cameraContext.changeState(VideoCameraState.from(cameraContext));
 
-    CamerawesomePlugin.start();
+    return CamerawesomePlugin.start();
   }
 
   Future _startPhotoMode() async {
@@ -88,7 +89,7 @@ class PreparingCameraState extends CameraState {
     await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
     cameraContext.changeState(PhotoCameraState.from(cameraContext));
 
-    CamerawesomePlugin.start();
+    return CamerawesomePlugin.start();
   }
 
   bool _isReady = false;
