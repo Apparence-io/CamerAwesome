@@ -1,6 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:flutter/foundation.dart';
 
 import '../camera_context.dart';

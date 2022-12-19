@@ -299,6 +299,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 CameraSelector.DEFAULT_FRONT_CAMERA
         cameraState.apply {
             this.cameraSelector = cameraSelector
+            // Also reset flash mode and aspect ratio
+            this.flashMode = FlashMode.NONE
+            this.aspectRatio = null
+            // Zoom should be reset automatically
+
             updateLifecycle(activity!!)
         }
     }
