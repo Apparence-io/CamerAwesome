@@ -35,7 +35,7 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
         stream: widget.state.captureState$,
         builder: (_, snapshot) {
           if (snapshot.data?.isRecordingVideo != true) {
-            return SizedBox();
+            return const SizedBox(width: 48);
           }
 
           bool recordingPaused = snapshot.data!.videoState == VideoState.paused;

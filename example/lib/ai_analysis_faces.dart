@@ -91,15 +91,17 @@ class _CameraPageState extends State<CameraPage>
             bottom: 132,
             left: 0,
             right: 0,
-            child: AnimatedBuilder(
-                animation: animation,
-                builder: (context, widget) {
-                  return CustomPaint(
-                    painter: FaceDetectorPainter(
-                        faces, absoluteImageSize, rotation, animation),
-                  );
-                }),
-          )
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, widget) {
+                    return CustomPaint(
+                      painter: FaceDetectorPainter(
+                          faces, absoluteImageSize, rotation, animation),
+                    );
+                  }),
+            ),
+          ),
         ],
       ),
     );

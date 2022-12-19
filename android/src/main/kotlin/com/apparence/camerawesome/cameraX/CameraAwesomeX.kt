@@ -192,14 +192,22 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     Log.d(
                         CamerawesomePlugin.TAG,
-                        "Success capturing picture ${outputFileResults.savedUri}"
+                        "Success capturing picture ${outputFileResults.savedUri}, with location: ${exifPreferences.saveGPSLocation}"
                     )
                     if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
                             outputFileOptions.metadata.location = it
+                            // We need to actually save the exif data to the file system, not just
+                            // the property to an object like above line
+                            val exif: androidx.exifinterface.media.ExifInterface =
+                                androidx.exifinterface.media.ExifInterface(outputFileResults.savedUri!!.path!!)
+                            exif.setGpsInfo(it)
+                            exif.saveAttributes()
+                            callback(true)
                         }
+                    } else {
+                        callback(true)
                     }
-                    callback(true)
                 }
 
                 override fun onError(exception: ImageCaptureException) {

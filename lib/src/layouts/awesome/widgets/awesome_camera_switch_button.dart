@@ -11,18 +11,13 @@ class AwesomeCameraSwitchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AwesomeOrientedWidget(
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
+      child: ClipOval(
+        child: Material(
           color: Colors.black12,
-          shape: BoxShape.circle,
-        ),
-        child: ClipOval(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => state.switchCameraSensor(),
+          child: InkWell(
+            onTap: state.switchCameraSensor,
+            child: Padding(
+              padding: EdgeInsets.all(20),
               child: Icon(
                 Icons.cameraswitch,
                 size: 32,
