@@ -90,7 +90,7 @@ class AwesomeBottomActions extends StatelessWidget {
           Flexible(
             flex: 0,
             child: state is VideoRecordingCameraState
-                ? SizedBox()
+                ? SizedBox(width: 48)
                 : StreamBuilder<MediaCapture?>(
                     stream: state.captureState$,
                     builder: (context, snapshot) {

@@ -123,17 +123,6 @@ void main() {
       },
     );
   });
-
-
-// group('Back camera flash', () {
-//   // Back camera should have a flash and be able to switch between all flash modes
-// });
-//
-// group('Location should be saved only when setting set', () {
-//   testWidgets(
-//       'Do not save location if not specified', (widgetTester) async {});
-//   testWidgets('Save location if specified', (widgetTester) async {});
-// });
 }
 
 

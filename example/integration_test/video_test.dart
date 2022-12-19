@@ -28,7 +28,8 @@ void main() {
         );
         await allowPermissionsIfNeeded($);
 
-        final filePath = await tempPath('record_video_single_${sensor.name}.mp4');
+        final filePath =
+            await tempPath('record_video_single_${sensor.name}.mp4');
         await $(AwesomeCaptureButton).tap(andSettle: false);
         await Future.delayed(const Duration(seconds: 5));
         await $(AwesomeCaptureButton).tap();
@@ -68,39 +69,41 @@ void main() {
         }
       });
 
-      // TODO Make below test work once PR accepted
-      // patrolTest('Pause and resume a video',
-      //     config: patrolConfig,
-      //     nativeAutomatorConfig: nativeAutomatorConfig,
-      //     nativeAutomation: true, ($) async {
-      //   await $.pumpWidgetAndSettle(
-      //     DrivableCamera(
-      //       sensor: sensor,
-      //       saveConfig: SaveConfig.video(
-      //           pathBuilder: () => tempPath('pause_resume_video_$sensor.mp4')),
-      //     ),
-      //   );
-      //
-      //   await allowPermissionsIfNeeded($);
-      //
-      //   final filePath = await tempPath('pause_resume_video_$sensor.mp4');
-      //
-      //   await $(AwesomeCaptureButton).tap(andSettle: false);
-      //   await Future.delayed(const Duration(seconds: 2));
-      //   await $.tester.pumpAndSettle();
-      //   final pauseResumeButton = find.byType(AwesomePauseResumeButton);
-      //   await $.tester.tap(pauseResumeButton);
-      //   await Future.delayed(const Duration(seconds: 3));
-      //   await $.tester.tap(pauseResumeButton);
-      //   await Future.delayed(const Duration(seconds: 1));
-      //
-      //   await $(AwesomeCaptureButton).tap();
-      //
-      //   expect(File(filePath).existsSync(), true);
-      //   // File size should be quite high (at least more than 100)
-      //   expect(File(filePath).lengthSync(), greaterThan(100));
-      //   // TODO test that the video last 3 seconds (2+1) and not 6 (2+3+1)
-      // });
+      patrolTest('Pause and resume a video',
+          config: patrolConfig,
+          nativeAutomatorConfig: nativeAutomatorConfig,
+          nativeAutomation: true, ($) async {
+        await $.pumpWidgetAndSettle(
+          DrivableCamera(
+            sensor: sensor,
+            saveConfig: SaveConfig.video(
+                pathBuilder: () => tempPath('pause_resume_video_$sensor.mp4')),
+          ),
+        );
+
+        await allowPermissionsIfNeeded($);
+
+        final filePath = await tempPath('pause_resume_video_$sensor.mp4');
+
+        await $(AwesomeCaptureButton).tap(andSettle: false);
+        await Future.delayed(const Duration(seconds: 2));
+        await $.tester.pumpAndSettle();
+        final pauseResumeButton = find.byType(AwesomePauseResumeButton);
+        await $.tester.tap(pauseResumeButton, warnIfMissed: false);
+        await Future.delayed(const Duration(seconds: 3));
+        await $.tester.tap(pauseResumeButton, warnIfMissed: false);
+        await Future.delayed(const Duration(seconds: 1));
+
+        await $(AwesomeCaptureButton).tap();
+
+        final file = File(filePath);
+        expect(file.existsSync(), true);
+        // File size should be quite high (at least more than 100)
+        expect(file.lengthSync(), greaterThan(100));
+        // We might test that the video lasts 3 seconds (2+1) and not 6 (2+3+1)
+        // Didn't work using video_player (error in native side) neither using
+        // video_compress (metadata null)
+      });
     }
 
     patrolTest(
