@@ -11,39 +11,33 @@ class AwesomeCameraModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CameraModePager(
-      availableModes: CameraMode.fromState(state.saveConfig),
-      onChangeCameraRequest: (mode) {
-        state.setState(mode.captureMode);
-      },
-    );
+    if (state is VideoRecordingCameraState) {
+      return SizedBox();
+    } else {
+      return CameraModePager(
+        initialMode: state.captureMode,
+        availableModes: state.saveConfig.captureModes,
+        onChangeCameraRequest: (mode) {
+          state.setState(mode);
+        },
+      );
+    }
   }
 }
 
-class CameraMode {
-  final CaptureMode captureMode;
-  final String title;
-
-  CameraMode({required this.captureMode, required this.title});
-
-  static List<CameraMode> fromState(SaveConfig saveConfig) {
-    return saveConfig.captureModes
-        .map((el) => CameraMode(captureMode: el, title: el.name))
-        .toList();
-  }
-}
-
-typedef OnChangeCameraRequest = Function(CameraMode mode);
+typedef OnChangeCameraRequest = Function(CaptureMode mode);
 
 class CameraModePager extends StatefulWidget {
   final OnChangeCameraRequest onChangeCameraRequest;
 
-  final List<CameraMode> availableModes;
+  final List<CaptureMode> availableModes;
+  final CaptureMode? initialMode;
 
   const CameraModePager({
     super.key,
     required this.onChangeCameraRequest,
     required this.availableModes,
+    required this.initialMode,
   });
 
   @override
@@ -51,9 +45,16 @@ class CameraModePager extends StatefulWidget {
 }
 
 class _CameraModePagerState extends State<CameraModePager> {
-  final PageController _pageController = PageController(viewportFraction: 0.25);
+  late PageController _pageController;
 
   int _index = 0;
+
+  @override
+  void initState() {
+    _index = widget.initialMode !=null ? widget.availableModes.indexOf(widget.initialMode!) : 0;
+    _pageController = PageController(viewportFraction: 0.25, initialPage: _index);
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -90,7 +91,7 @@ class _CameraModePagerState extends State<CameraModePager> {
                   child: InkWell(
                     child: Center(
                       child: Text(
-                        cameraMode.title.toUpperCase(),
+                        cameraMode.name.toUpperCase(),
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
