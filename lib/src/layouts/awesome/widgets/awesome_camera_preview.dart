@@ -144,6 +144,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             )
                           : null,
                       onPreviewScale: widget.onPreviewScale,
+                      initialZoom: widget.state.sensorConfig.zoom,
                     ),
                   ),
                 ),

@@ -102,11 +102,11 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<bool> setupCamera(String arg_sensor, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
+  Future<bool> setupCamera(String arg_sensor, String arg_aspectRatio, double arg_zoom, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_sensor, arg_captureMode, arg_enableImageStream, arg_exifPreferences]) as Map<Object?, Object?>?;
+        await channel.send(<Object?>[arg_sensor, arg_aspectRatio, arg_zoom, arg_flashMode, arg_captureMode, arg_enableImageStream, arg_exifPreferences]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',

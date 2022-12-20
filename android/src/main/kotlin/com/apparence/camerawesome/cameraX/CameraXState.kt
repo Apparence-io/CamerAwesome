@@ -74,6 +74,7 @@ data class CameraXState(
             imageCapture = ImageCapture.Builder()
                 .setCameraSelector(cameraSelector)
                 .setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
+//                .setJpegQuality(100)
                 .apply {
                     //photoSize?.let { setTargetResolution(it) }
                     setFlashMode(

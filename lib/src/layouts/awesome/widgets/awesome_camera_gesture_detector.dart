@@ -48,12 +48,14 @@ class AwesomeCameraGestureDetector extends StatefulWidget {
   final Widget child;
   final OnPreviewTapBuilder? onPreviewTapBuilder;
   final OnPreviewScale? onPreviewScale;
+  final double initialZoom;
 
   const AwesomeCameraGestureDetector({
     super.key,
     required this.child,
     required this.onPreviewScale,
     this.onPreviewTapBuilder,
+    this.initialZoom = 0,
   });
 
   @override
@@ -68,6 +70,14 @@ class _AwesomeCameraGestureDetector
   double _zoomScale = 0;
   Offset? _tapPosition;
   Timer? _timer;
+
+  @override
+  void initState() {
+    _previousZoomScale = widget.initialZoom;
+    _zoomScale = widget.initialZoom;
+    print("zoom.init ${_previousZoomScale} and ${_zoomScale}");
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

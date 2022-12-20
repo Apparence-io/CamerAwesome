@@ -97,7 +97,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensor: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
+  fun setupCamera(sensor: String, aspectRatio: String, zoom: Double, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
   fun checkPermissions(): List<String>
   fun requestPermissions(): List<String>
   fun getPreviewTextureId(): Double
@@ -143,10 +143,13 @@ val codec: MessageCodec<Any?> by lazy {
             try {
               val args = message as List<Any?>
               val sensorArg = args[0] as String
-              val captureModeArg = args[1] as String
-              val enableImageStreamArg = args[2] as Boolean
-              val exifPreferencesArg = args[3] as ExifPreferences
-              api.setupCamera(sensorArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) {
+              val aspectRatioArg = args[1] as String
+              val zoomArg = args[2] as Double
+              val flashModeArg = args[3] as String
+              val captureModeArg = args[4] as String
+              val enableImageStreamArg = args[5] as Boolean
+              val exifPreferencesArg = args[6] as ExifPreferences
+              api.setupCamera(sensorArg, aspectRatioArg, zoomArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) {
                 reply.reply(wrapResult(it))
               }
             } catch (exception: Error) {

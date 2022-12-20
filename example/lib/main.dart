@@ -33,6 +33,9 @@ class CameraPage extends StatelessWidget {
           videoPathBuilder: () => _path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
+        flashMode: FlashMode.auto,
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+        zoom: 1.0,
         onMediaTap: (mediaCapture) {
           OpenFile.open(mediaCapture.filePath);
         },

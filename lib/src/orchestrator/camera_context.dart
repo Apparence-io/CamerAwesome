@@ -96,12 +96,12 @@ class CameraContext {
   }
 
   Future<void> switchSensor(SensorConfig newConfig) async {
+    sensorConfigController.sink.add(newConfig);
     if (sensorConfigController.hasValue &&
         !identical(newConfig, sensorConfigController.value)) {
       sensorConfigController.value.dispose();
     }
     await CamerawesomePlugin.setSensor(newConfig.sensor);
-    sensorConfigController.sink.add(newConfig);
   }
 
   SensorConfig get sensorConfig {

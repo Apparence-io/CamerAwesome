@@ -44,6 +44,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Must be a value between 0.0 (no zoom) and 1.0 (max zoom)
   final double zoom;
 
+  /// Ratio 1:1 is not supported yet on Android
+  final CameraAspectRatios aspectRatio;
+
   /// choose if you want to persist user location in image metadata or not
   final ExifPreferences? exifPreferences;
 
@@ -78,6 +81,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.sensor,
     required this.flashMode,
     required this.zoom,
+    required this.aspectRatio,
     required this.exifPreferences,
     required this.enableAudio,
     required this.progressIndicator,
@@ -115,6 +119,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
     Widget? progressIndicator,
@@ -129,6 +134,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
+          aspectRatio: aspectRatio,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
@@ -153,6 +159,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
     Widget? progressIndicator,
@@ -167,6 +174,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
+          aspectRatio: aspectRatio,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
@@ -234,6 +242,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         sensor: widget.sensor,
         flash: widget.flashMode,
         currentZoom: widget.zoom,
+        aspectRatio: widget.aspectRatio,
       ),
       initialCaptureMode: widget.saveConfig.initialCaptureMode,
       saveConfig: widget.saveConfig,
