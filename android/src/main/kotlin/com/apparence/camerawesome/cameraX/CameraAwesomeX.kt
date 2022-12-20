@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.util.Log
 import android.util.Size
-import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
@@ -185,22 +184,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             .setMetadata(ImageCapture.Metadata())
             .build()
 
-        val orientation = orientationStreamListener!!.currentOrientation
-        cameraState.imageCapture!!.targetRotation = when (orientation) {
-            in 225 until 315 -> {
-                Surface.ROTATION_90
-            }
-            in 135 until 225 -> {
-                Surface.ROTATION_180
-            }
-            in 45 until 135 -> {
-                Surface.ROTATION_270
-            }
-            else -> {
-                Surface.ROTATION_0
-            }
-        }
-
+        cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.imageCapture!!.takePicture(
             outputFileOptions,
             ContextCompat.getMainExecutor(activity!!),
@@ -234,6 +218,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             })
     }
 
+    @SuppressLint("RestrictedApi")
     override fun recordVideo(path: String) {
         val recordingListener = Consumer<VideoRecordEvent> { event ->
             when (event) {
@@ -261,6 +246,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 }
             }
         }
+        cameraState.videoCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(
             activity!!,
             FileOutputOptions.Builder(File(path)).build()
