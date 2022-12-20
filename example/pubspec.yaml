@@ -26,7 +26,7 @@ dev_dependencies:
       flutter
   integration_test:
     sdk: flutter
-  patrol: ^0.10.2
+  patrol: ^0.10.4
 
 flutter:
   uses-material-design: true

@@ -305,7 +305,7 @@ packages:
       name: patrol
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.10.2"
+    version: "0.10.4"
   platform:
     dependency: transitive
     description:
