@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 
 import '../camera_context.dart';
 import '../exceptions/camera_states_exceptions.dart';

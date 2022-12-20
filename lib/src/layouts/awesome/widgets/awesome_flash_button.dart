@@ -1,9 +1,6 @@
-import 'package:camerawesome/src/orchestrator/models/camera_flashes.dart';
-import 'package:camerawesome/src/orchestrator/sensor_config.dart';
-import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
-import 'awesome_oriented_widget.dart';
 
 class AwesomeFlashButton extends StatelessWidget {
   final CameraState state;

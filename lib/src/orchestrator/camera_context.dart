@@ -5,7 +5,6 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/sensor_config.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'analysis/analysis_controller.dart';

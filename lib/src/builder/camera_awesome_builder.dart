@@ -8,11 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../layouts/awesome/widgets/awesome_camera_preview.dart';
 import '../orchestrator/camera_context.dart';
-import '../orchestrator/models/models.dart';
-import '../orchestrator/sensor_config.dart';
-import '../orchestrator/states/camera_state.dart';
 
 /// This is the builder for your camera interface
 /// Using the state you can do anything you need without having to think about the camera flow

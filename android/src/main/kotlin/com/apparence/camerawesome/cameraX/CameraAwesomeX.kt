@@ -184,6 +184,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             .setMetadata(ImageCapture.Metadata())
             .build()
 
+        cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.imageCapture!!.takePicture(
             outputFileOptions,
             ContextCompat.getMainExecutor(activity!!),
@@ -217,6 +218,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             })
     }
 
+    @SuppressLint("RestrictedApi")
     override fun recordVideo(path: String) {
         val recordingListener = Consumer<VideoRecordEvent> { event ->
             when (event) {
@@ -244,6 +246,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 }
             }
         }
+        cameraState.videoCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(
             activity!!,
             FileOutputOptions.Builder(File(path)).build()
@@ -299,6 +302,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 CameraSelector.DEFAULT_FRONT_CAMERA
         cameraState.apply {
             this.cameraSelector = cameraSelector
+            // Also reset flash mode and aspect ratio
+            this.flashMode = FlashMode.NONE
+            this.aspectRatio = null
+            // Zoom should be reset automatically
+
             updateLifecycle(activity!!)
         }
     }
