@@ -35,7 +35,6 @@ class CameraPage extends StatelessWidget {
         ),
         flashMode: FlashMode.auto,
         aspectRatio: CameraAspectRatios.ratio_16_9,
-        zoom: 1.0,
         onMediaTap: (mediaCapture) {
           OpenFile.open(mediaCapture.filePath);
         },
