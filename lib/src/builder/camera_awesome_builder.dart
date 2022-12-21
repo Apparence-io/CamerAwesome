@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
-import 'package:camerawesome/src/layouts/awesome/widgets/awesome_camera_gesture_detector.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

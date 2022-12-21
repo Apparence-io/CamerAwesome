@@ -25,7 +25,7 @@ void main() {
           DrivableCamera(
             sensor: Sensors.back,
             saveConfig: SaveConfig.photoAndVideo(
-              imagePathBuilder: () => tempPath('single_photo_back.jpg'),
+              photoPathBuilder: () => tempPath('single_photo_back.jpg'),
               videoPathBuilder: () => tempPath('single_video_back.mp4'),
             ),
           ),
@@ -103,7 +103,7 @@ void main() {
           DrivableCamera(
             sensor: Sensors.back,
             saveConfig: SaveConfig.photoAndVideo(
-              imagePathBuilder: () => tempPath('single_photo_back.jpg'),
+              photoPathBuilder: () => tempPath('single_photo_back.jpg'),
               videoPathBuilder: () => tempPath('single_video_back.mp4'),
               initialCaptureMode: CaptureMode.video,
             ),

@@ -75,7 +75,6 @@ class _AwesomeCameraGestureDetector
   void initState() {
     _previousZoomScale = widget.initialZoom;
     _zoomScale = widget.initialZoom;
-    print("zoom.init ${_previousZoomScale} and ${_zoomScale}");
     super.initState();
   }
 

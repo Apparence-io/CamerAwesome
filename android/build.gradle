@@ -25,7 +25,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
 
     defaultConfig {
         minSdkVersion 21
@@ -65,7 +65,7 @@ dependencies {
     // Optional -- mockito-kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
 
-    def camerax_version = "1.1.0"
+    def camerax_version = "1.2.0"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"

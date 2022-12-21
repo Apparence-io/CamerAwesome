@@ -4,15 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Matrix
 import android.hardware.display.DisplayManager
-import android.util.DisplayMetrics
-import android.util.Rational
 import android.util.Size
 import android.view.Display
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import androidx.camera.core.Preview
-import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.impl.PreviewConfig
 import java.lang.ref.WeakReference
 import java.util.*
@@ -27,23 +24,30 @@ import kotlin.math.roundToInt
  * https://gist.github.com/yevhenRoman/90681822adef43350844464be95d23f1
  */
 @SuppressLint("RestrictedApi")
-class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
-                                                viewFinderRef: WeakReference<TextureView>) {
+class AutoFitPreviewBuilder private constructor(
+    config: PreviewConfig,
+    viewFinderRef: WeakReference<TextureView>
+) {
     /** Public instance of preview use-case which can be used by consumers of this adapter */
     val useCase: Preview
 
     /** Internal variable used to keep track of the use-case's output rotation */
     private var bufferRotation: Int = 0
+
     /** Internal variable used to keep track of the view's rotation */
     private var viewFinderRotation: Int? = null
+
     /** Internal variable used to keep track of the use-case's output dimension */
     private var bufferDimens: Size = Size(0, 0)
+
     /** Internal variable used to keep track of the view's dimension */
     private var viewFinderDimens: Size = Size(0, 0)
+
     /** Internal variable used to keep track of the view's display */
     private var viewFinderDisplay: Int = -1
 
     private lateinit var displayManager: DisplayManager
+
     /** We need a display listener for 180 degree device orientation changes */
     private val displayListener = object : DisplayManager.DisplayListener {
         override fun onDisplayAdded(displayId: Int) = Unit
@@ -61,7 +65,8 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
     init {
         // Make sure that the view finder reference is valid
         val viewFinder = viewFinderRef.get() ?: throw IllegalArgumentException(
-                "Invalid reference to view finder used")
+            "Invalid reference to view finder used"
+        )
 
         // Initialize the display and rotation from texture view information
         viewFinderDisplay = viewFinder.display.displayId
@@ -69,8 +74,8 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
 
         // Initialize public use-case with the given config
         useCase = Preview.Builder
-                .fromConfig(config)
-                .build();
+            .fromConfig(config)
+            .build();
 
         // Every time the view finder is updated, recompute layout
 //        useCase.onPreviewOutputUpdateListener = Preview.OnPreviewOutputUpdateListener {
@@ -98,7 +103,7 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
 
         // Every time the orientation of device changes, recompute layout
         displayManager = viewFinder.context
-                .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+            .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         displayManager.registerDisplayListener(displayListener, null)
 
         // Remove the display listeners when the view is detached to avoid
@@ -106,23 +111,25 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
         // NOTE: Even though using a weak reference should take care of this,
         // we still try to avoid unnecessary calls to the listener this way.
         viewFinder.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(view: View?) = Unit
-            override fun onViewDetachedFromWindow(view: View?) {
+            override fun onViewAttachedToWindow(view: View) {}
+            override fun onViewDetachedFromWindow(view: View) {
                 displayManager.unregisterDisplayListener(displayListener)
             }
-
         })
     }
 
     /** Helper function that fits a camera preview into the given [TextureView] */
-    private fun updateTransform(textureView: TextureView?, rotation: Int?, newBufferDimens: Size,
-                                newViewFinderDimens: Size) {
+    private fun updateTransform(
+        textureView: TextureView?, rotation: Int?, newBufferDimens: Size,
+        newViewFinderDimens: Size
+    ) {
         // This should happen anyway, but now the linter knows
         val textureView = textureView ?: return
 
         if (rotation == viewFinderRotation &&
-                Objects.equals(newBufferDimens, bufferDimens) &&
-                Objects.equals(newViewFinderDimens, viewFinderDimens)) {
+            Objects.equals(newBufferDimens, bufferDimens) &&
+            Objects.equals(newViewFinderDimens, viewFinderDimens)
+        ) {
             // Nothing has changed, no need to transform output again
             return
         }
@@ -187,7 +194,7 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
 
     companion object {
         /** Helper function that gets the rotation of a [Display] in degrees */
-        fun getDisplaySurfaceRotation(display: Display?) = when(display?.rotation) {
+        fun getDisplaySurfaceRotation(display: Display?) = when (display?.rotation) {
             Surface.ROTATION_0 -> 0
             Surface.ROTATION_90 -> 90
             Surface.ROTATION_180 -> 180
@@ -201,6 +208,6 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
          * config changes.
          */
         fun build(config: PreviewConfig, viewFinder: TextureView) =
-                AutoFitPreviewBuilder(config, WeakReference(viewFinder)).useCase
+            AutoFitPreviewBuilder(config, WeakReference(viewFinder)).useCase
     }
 }

@@ -8,6 +8,7 @@ import android.location.Location
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.Rational
 import android.util.Size
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -96,7 +97,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
         cameraState.updateLifecycle(activity!!)
         // Zoom should be set after updateLifeCycle
-        if(zoom > 0) {
+        if (zoom > 0) {
             // TODO Find a better way to set initial zoom than using a postDelayed
             Handler(Looper.getMainLooper()).postDelayed({
                 cameraState.previewCamera!!.cameraControl.setLinearZoom(zoom.toFloat())
@@ -321,6 +322,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             // Also reset flash mode and aspect ratio
             this.flashMode = FlashMode.NONE
             this.aspectRatio = null
+            this.rational = Rational(3, 4)
             // Zoom should be reset automatically
 
             updateLifecycle(activity!!)
@@ -447,6 +449,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         cameraState.apply {
             // In CameraX, aspect ratio is an Int. RATIO_4_3 = 0 (default), RATIO_16_9 = 1
             this.aspectRatio = if (aspectRatio == "RATIO_16_9") 1 else 0
+            this.rational = when (aspectRatio) {
+                "RATIO_16_9" -> Rational(9, 16)
+                "RATIO_1_1" -> Rational(1, 1)
+                else -> Rational(3, 4)
+            }
             updateLifecycle(activity!!)
         }
     }

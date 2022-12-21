@@ -19,7 +19,7 @@ class CustomUiExample1 extends StatelessWidget {
           );
         },
         saveConfig: SaveConfig.photoAndVideo(
-          imagePathBuilder: () async {
+          photoPathBuilder: () async {
             return "some/path.jpg";
           },
           videoPathBuilder: () async {

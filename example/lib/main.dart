@@ -29,7 +29,7 @@ class CameraPage extends StatelessWidget {
     return Scaffold(
       body: CameraAwesomeBuilder.awesome(
         saveConfig: SaveConfig.photoAndVideo(
-          imagePathBuilder: () => _path(CaptureMode.photo),
+          photoPathBuilder: () => _path(CaptureMode.photo),
           videoPathBuilder: () => _path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
