@@ -192,7 +192,7 @@ CameraAwesomeBuilder.awesome(
 ```
 
 > MLkit recommands to use nv21 format. <br>
-> For machine learning you don't need full resolution images (1024 is enough and makes computation easyer)
+> For machine learning you don't need full resolution images (1024 is enough and makes computation easier)
 
 > See more in documentation
 
