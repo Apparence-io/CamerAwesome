@@ -105,7 +105,7 @@ interface CameraInterface {
   fun recordVideo(path: String)
   fun pauseVideoRecording()
   fun resumeVideoRecording()
-  fun stopRecordingVideo()
+  fun stopRecordingVideo(callback: (Boolean) -> Unit)
   fun start(): Boolean
   fun stop(): Boolean
   fun setFlashMode(mode: String)
@@ -288,12 +288,13 @@ val codec: MessageCodec<Any?> by lazy {
           channel.setMessageHandler { _, reply ->
             val wrapped = hashMapOf<String, Any?>()
             try {
-              api.stopRecordingVideo()
-              wrapped["result"] = null
+              api.stopRecordingVideo() {
+                reply.reply(wrapResult(it))
+              }
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
+              reply.reply(wrapped)
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
