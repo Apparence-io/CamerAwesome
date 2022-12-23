@@ -10,8 +10,6 @@ Yet, if some of our buttons suit your needs, feel free to use them!
 
 Shows a clickable preview of a media captured using CamerAwesome.
 
-Note: video preview is not implemented yet.
-
 _This widget rotates when the camera rotates._
 
 Below example shows how to show the last captured media using `AwesomeMediaPreview`.
@@ -33,6 +31,16 @@ StreamBuilder<MediaCapture?>(
   },
 )
 ```
+
+Note: video preview is not implemented in this widget since it would imply a dependency to other packages.
+
+
+You can find an alternative widget that auto plays the last video recorded in the `example` project at `widgets/custom_media_preview.dart`.
+
+It uses the `video_player` package under the hood.
+
+See its usage in `custom_ui_example_3.dart`.
+
 
 ### AwesomeFlashButton
 

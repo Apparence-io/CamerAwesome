@@ -47,7 +47,8 @@ abstract class CameraInterface {
 
   void resumeVideoRecording();
 
-  void stopRecordingVideo();
+  @async
+  bool stopRecordingVideo();
 
   bool start();
 
