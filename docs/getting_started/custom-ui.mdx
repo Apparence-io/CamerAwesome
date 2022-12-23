@@ -10,8 +10,8 @@ The camera preview will be visible behind what you will provide to our builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-  saveConfig: SaveConfig.imageAndVideo(
-    imagePathBuilder: () async {
+  saveConfig: SaveConfig.photoAndVideo(
+    photoPathBuilder: () async {
       return "some/path.jpg";
     },
     videoPathBuilder: () async {
@@ -37,6 +37,7 @@ CameraAwesomeBuilder.custom(
 | **saveConfig**           | Define if you want to take photos, videos or both and where to save them  |
 | **builder** | Create your own interface using the builder method. |
 | **sensor**           | The initial camera sensor (Back or Front) |
+| **aspectRatio**           | Initial aspect ratio of photos and videos taken |
 | **flashMode**           | The initial flash mode |
 | **exifPreferences**           | Activate or deactivate location in photo exif |
 | **enableAudio**           | Activate audio by default (only for video mode) |
@@ -120,11 +121,52 @@ class AwesomeFlashButton extends StatelessWidget {
     );
   }
 }
+class AwesomeFlashButton extends StatelessWidget {
+  final CameraState state;
+
+  const AwesomeFlashButton({
+    super.key,
+    required this.state,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<SensorConfig>(
+      // Listen to the current SensorConfig. It might change when switching between front and back cameras.
+      stream: state.sensorConfig$,
+      builder: (_, sensorConfigSnapshot) {
+        if (!sensorConfigSnapshot.hasData) {
+          return SizedBox();
+        }
+        final sensorConfig = sensorConfigSnapshot.requireData;
+        return StreamBuilder<FlashMode>(
+          // Listen to the currently selected flash mode
+          stream: sensorConfig.flashMode$,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Container();
+            }
+            return _FlashButton.from(
+              // Build your button differently based on the current Flash mode, with different icons for instance
+              flashMode: snapshot.requireData,
+              onTap: () => sensorConfig.switchCameraFlash(),
+            );
+          },
+        );
+      },
+    );
+  }
+}
 ```
-In the snippet above, `CameraState.sensorConfig` gives access to `flashMode$`, which is a `Stream` of the current flash mode.
+In the snippet above, the widget first listens to `CameraState.sensorConfig$` to get the most up-to-date `SensorConfig`. It might change when switching between back and front camera for instance.
+
+Once you have your `SensorConfig`, you can listen to their properties like the flash mode.
+
+Since we want to listen to its changes, we use `flashMode$`, which is a `Stream` of the current flash mode.
 
 > 👌 Every getter terminated with the $ are streams in CamerAwesome.
-> The equivalent without $ is the current value.
+>
+> The equivalent without $ is the current value. You should not store these in variables since they may change over time.
 
 
 ### Using provided widgets

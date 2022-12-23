@@ -47,6 +47,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   PreviewSize? get flutterPreviewSize => _flutterPreviewSize;
   StreamSubscription? _aspectRatioSubscription;
+  CameraAspectRatios? _aspectRatio;
 
   @override
   void initState() {
@@ -60,10 +61,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         });
     });
 
-    widget.state.sensorConfig.aspectRatio$.listen((event) async {
+    _aspectRatioSubscription =
+        widget.state.sensorConfig.aspectRatio$.listen((event) async {
       final previewSize = await widget.state.previewSize();
-      if (_previewSize != previewSize && mounted) {
+      if ((_previewSize != previewSize || _aspectRatio != event) && mounted) {
         setState(() {
+          _aspectRatio = event;
           _previewSize = previewSize;
         });
       }
@@ -78,7 +81,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   @override
   Widget build(BuildContext context) {
-    if (_textureId == null || _previewSize == null) {
+    if (_textureId == null || _previewSize == null || _aspectRatio == null) {
       return widget.loadingWidget ??
           Center(
             child: Platform.isIOS
@@ -87,71 +90,128 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
           );
     }
 
-    return OrientationBuilder(builder: (context, orientation) {
-      return LayoutBuilder(
-        builder: (_, constraints) {
-          final size = Size(_previewSize!.width, _previewSize!.height);
-          Size maxSize;
-          final ratioW = constraints.maxWidth / size.width;
-          final ratioH = constraints.maxHeight / size.height;
-          switch (widget.previewFit) {
-            case CameraPreviewFit.fitWidth:
-              maxSize = Size(constraints.maxWidth, size.height * ratioW);
-              break;
-            case CameraPreviewFit.fitHeight:
-              maxSize = Size(size.width * ratioH, constraints.maxHeight);
-              break;
-            case CameraPreviewFit.cover:
-              final previewRatio = _previewSize!.width / _previewSize!.height;
-              maxSize = Size(
-                previewRatio > 1
-                    ? constraints.maxHeight / previewRatio
-                    : constraints.maxHeight * previewRatio,
-                constraints.maxHeight,
-              );
+    return Container(
+      color: Colors.black,
+      child: OrientationBuilder(builder: (context, orientation) {
+        return LayoutBuilder(
+          builder: (_, constraints) {
+            final size = Size(_previewSize!.width, _previewSize!.height);
+            Size maxSize;
+            final ratioW = constraints.maxWidth / size.width;
+            final ratioH = constraints.maxHeight / size.height;
+            switch (widget.previewFit) {
+              case CameraPreviewFit.fitWidth:
+                maxSize = Size(constraints.maxWidth, size.height * ratioW);
+                break;
+              case CameraPreviewFit.fitHeight:
+                maxSize = Size(size.width * ratioH, constraints.maxHeight);
+                break;
+              case CameraPreviewFit.cover:
+                final previewRatio = _previewSize!.width / _previewSize!.height;
+                maxSize = Size(
+                  previewRatio > 1
+                      ? constraints.maxHeight / previewRatio
+                      : constraints.maxHeight * previewRatio,
+                  constraints.maxHeight,
+                );
 
-              break;
-            case CameraPreviewFit.contain:
-              final ratio = min(ratioW, ratioH);
-              maxSize = Size(size.width * ratio, size.height * ratio);
-              break;
-          }
+                break;
+              case CameraPreviewFit.contain:
+                final ratio = min(ratioW, ratioH);
+                maxSize = Size(size.width * ratio, size.height * ratio);
+                break;
+            }
 
-          _flutterPreviewSize =
-              PreviewSize(width: maxSize.width, height: maxSize.height);
-          return Container(
-            width: constraints.maxWidth,
-            height: constraints.maxHeight,
-            color: Colors.black,
-            child: ClipRect(
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child: Center(
-                  child: SizedBox(
-                    width: _flutterPreviewSize?.width,
-                    height: _flutterPreviewSize?.height,
-                    child: AwesomeCameraGestureDetector(
-                      child: Texture(textureId: _textureId!),
-                      onPreviewTapBuilder: widget.onPreviewTap != null &&
-                              _previewSize != null &&
-                              _flutterPreviewSize != null
-                          ? OnPreviewTapBuilder(
-                              pixelPreviewSizeGetter: () => _previewSize!,
-                              flutterPreviewSizeGetter: () =>
-                                  _flutterPreviewSize!,
-                              onPreviewTap: widget.onPreviewTap!,
-                            )
-                          : null,
-                      onPreviewScale: widget.onPreviewScale,
+            _flutterPreviewSize =
+                PreviewSize(width: maxSize.width, height: maxSize.height);
+            final preview = SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              child: ClipRect(
+                child: OverflowBox(
+                  maxWidth: double.infinity,
+                  maxHeight: double.infinity,
+                  child: Center(
+                    child: SizedBox(
+                      width: _flutterPreviewSize?.width,
+                      height: _flutterPreviewSize?.height,
+                      child: AwesomeCameraGestureDetector(
+                        child: Texture(textureId: _textureId!),
+                        onPreviewTapBuilder: widget.onPreviewTap != null &&
+                                _previewSize != null &&
+                                _flutterPreviewSize != null
+                            ? OnPreviewTapBuilder(
+                                pixelPreviewSizeGetter: () => _previewSize!,
+                                flutterPreviewSizeGetter: () =>
+                                    _flutterPreviewSize!,
+                                onPreviewTap: widget.onPreviewTap!,
+                              )
+                            : null,
+                        onPreviewScale: widget.onPreviewScale,
+                        initialZoom: widget.state.sensorConfig.zoom,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      );
-    });
+            );
+
+            if (_aspectRatio == CameraAspectRatios.ratio_1_1 &&
+                [
+                  CameraPreviewFit.fitHeight,
+                  CameraPreviewFit.fitWidth,
+                  CameraPreviewFit.contain
+                ].contains(widget.previewFit)) {
+              return Container(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: ClipPath(
+                  clipper: CenterCropClipper(
+                    isWidthLarger: constraints.maxWidth > constraints.maxHeight,
+                  ),
+                  child: preview,
+                ),
+              );
+            } else {
+              return preview;
+            }
+          },
+        );
+      }),
+    );
+  }
+}
+
+class CenterCropClipper extends CustomClipper<Path> {
+  final bool isWidthLarger;
+
+  const CenterCropClipper({required this.isWidthLarger});
+
+  @override
+  Path getClip(Size size) {
+    final center = size.center(Offset.zero);
+    final side = min(size.width, size.height);
+    if (isWidthLarger) {
+      return Path()
+        ..moveTo(center.dx, 0)
+        ..lineTo(center.dx - side / 2.0, 0)
+        ..lineTo(center.dx - side / 2.0, side)
+        ..lineTo(center.dx + side / 2.0, side)
+        ..lineTo(center.dx + side / 2.0, 0)
+        ..lineTo(center.dx, 0);
+    } else {
+      return Path()
+        ..moveTo(0, center.dy)
+        ..lineTo(0, center.dy - side / 2.0)
+        ..lineTo(side, center.dy - side / 2.0)
+        ..lineTo(side, center.dy + side / 2.0)
+        ..lineTo(0, center.dy + side / 2.0)
+        ..lineTo(0, center.dy);
+    }
+  }
+
+  @override
+  bool shouldReclip(covariant CenterCropClipper oldClipper) {
+    return isWidthLarger != oldClipper.isWidthLarger;
   }
 }

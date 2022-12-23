@@ -101,7 +101,7 @@ class PreparingCameraState extends CameraState {
       sensorConfig,
       enableImageStream: enableImageStream,
     );
-    await CamerawesomePlugin.init(sensorConfig.sensor, enableImageStream,
+    await CamerawesomePlugin.init(sensorConfig, enableImageStream,
         captureMode: nextCaptureMode,
         exifPreferences: cameraContext.exifPreferences);
     _isReady = true;

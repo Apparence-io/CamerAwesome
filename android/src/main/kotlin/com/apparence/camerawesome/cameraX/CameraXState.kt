@@ -2,6 +2,7 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Rational
 import android.util.Size
 import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
@@ -37,6 +38,8 @@ data class CameraXState(
     var photoSize: Size? = null,
     var previewSize: Size? = null,
     var aspectRatio: Int? = null,
+    // Rational is used only in ratio 1:1
+    var rational: Rational = Rational(3, 4),
     var flashMode: FlashMode = FlashMode.NONE,
     val onStreamReady: (state: CameraXState) -> Unit,
 ) : EventChannel.StreamHandler {
@@ -57,7 +60,7 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
         // Preview
-        preview = if(aspectRatio != null) {
+        preview = if (aspectRatio != null) {
             Preview.Builder()
                 .setTargetAspectRatio(aspectRatio!!)
                 .setCameraSelector(cameraSelector).build()
@@ -69,13 +72,15 @@ data class CameraXState(
         preview!!.setSurfaceProvider(
             surfaceProvider(executor(activity))
         )
-
         if (currentCaptureMode == CaptureModes.PHOTO) {
             imageCapture = ImageCapture.Builder()
                 .setCameraSelector(cameraSelector)
-                .setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
+//                .setJpegQuality(100)
                 .apply {
                     //photoSize?.let { setTargetResolution(it) }
+                    if (rational.denominator != rational.numerator) {
+                        setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
+                    }
                     setFlashMode(
                         when (flashMode) {
                             FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
@@ -106,25 +111,31 @@ data class CameraXState(
         }
 
         cameraProvider.unbindAll()
-        previewCamera = cameraProvider.bindToLifecycle(
-            activity as LifecycleOwner,
-            cameraSelector,
-            *useCases.toTypedArray(),
-        )
+        previewCamera = if (rational.denominator == rational.numerator)
+            cameraProvider.bindToLifecycle(
+                activity as LifecycleOwner,
+                cameraSelector,
+                UseCaseGroup.Builder()
+                    .apply {
+                        for (uc in useCases.filterNotNull())
+                            addUseCase(uc)
+                    }
+                    // We don't care about the rotation since rational is only used on 1:1 ratio
+                    .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build())
+                    .build()
+            )
+        else
+            cameraProvider.bindToLifecycle(
+                activity as LifecycleOwner,
+                cameraSelector,
+                *useCases.toTypedArray()
+            )
+
         previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
     }
 
     @SuppressLint("RestrictedApi")
     private fun surfaceProvider(executor: Executor): Preview.SurfaceProvider {
-        //val metrics = DisplayMetrics().also { viewFinder.display.getRealMetrics(it) }
-        //val screenSize = Size(metrics.widthPixels, metrics.heightPixels)
-        //val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
-        //val preview = Preview.Builder()
-        //        .setTargetResolution(Size(640, 480))
-        //        .setTargetAspectRatio(screenAspectRatio)
-        //        .build()
-        //val previewFit = AutoFitPreviewBuilder.build(preview., viewFinder)
-
         return Preview.SurfaceProvider { request: SurfaceRequest ->
             val resolution = request.resolution
             val texture = textureEntry.surfaceTexture()
@@ -169,13 +180,27 @@ data class CameraXState(
         val supportedQualities = QualitySelector.getSupportedQualities(previewCamera!!.cameraInfo)
         return supportedQualities.map {
             when (it) {
-                Quality.UHD -> { "UHD" }
-                Quality.HIGHEST -> { "HIGHEST" }
-                Quality.FHD -> { "FHD" }
-                Quality.HD -> { "HD" }
-                Quality.LOWEST -> { "LOWEST" }
-                Quality.SD -> { "SD" }
-                else -> { "unknown" }
+                Quality.UHD -> {
+                    "UHD"
+                }
+                Quality.HIGHEST -> {
+                    "HIGHEST"
+                }
+                Quality.FHD -> {
+                    "FHD"
+                }
+                Quality.HD -> {
+                    "HD"
+                }
+                Quality.LOWEST -> {
+                    "LOWEST"
+                }
+                Quality.SD -> {
+                    "SD"
+                }
+                else -> {
+                    "unknown"
+                }
             }
         }
     }

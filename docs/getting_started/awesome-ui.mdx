@@ -7,8 +7,8 @@ Here is a concrete example using **path_provider** to get valid paths and **bett
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.imageAndVideo(
-    imagePathBuilder: () async {
+  saveConfig: SaveConfig.photoAndVideo(
+    photoPathBuilder: () async {
       final Directory extDir = await getTemporaryDirectory();
       final testDir =
           await Directory('${extDir.path}/test').create(recursive: true);
@@ -34,9 +34,9 @@ Here is an example showing the complete list of parameters you can set to custom
 ``` dart
 CameraAwesomeBuilder.awesome(
   // Define if you want to take photos, videos or both and where to save them
-  saveConfig: SaveConfig.imageAndVideo(
+  saveConfig: SaveConfig.photoAndVideo(
     initialCaptureMode: CaptureModes.PHOTO,
-    imagePathBuilder: () async {
+    photoPathBuilder: () async {
       // Return a valid file path (must be a jpg file)
       return 'some/image/file/path.jpg';
     },
@@ -51,6 +51,7 @@ CameraAwesomeBuilder.awesome(
   },
   // Use FRONT camera
   sensor: Sensors.BACK,
+  aspectRatio: CameraAspectRatios.ratio_4_3, // 4:3 default
   flashMode: CameraFlashes.NONE,
   // No zoom
   zoom: 0.0,
@@ -115,6 +116,7 @@ CameraAwesomeBuilder.awesome(
 | **saveConfig**           | Define if you want to take photos, videos or both and where to save them  |
 | **onMediaTap**           | Choose what you want to do when user tap on the last media captured |
 | **sensor**           | The initial camera sensor (Back or Front) |
+| **aspectRatio**           | Initial aspect ratio of photos and videos taken |
 | **flashMode**           | The initial flash mode |
 | **zoom**           | A value between 0.0 (no zoom) and 1.0 (max zoom) |
 | **exifPreferences**           | Activate or deactivate location in photo exif |

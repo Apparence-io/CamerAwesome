@@ -38,20 +38,20 @@ Use our awesome built in interface or customize it as you want.
 ## Native features
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                           | Android | iOS | 
-|----------------------------------|---------|-----|
-| 🔖 Ask permissions               | ✅      | ✅  |
-| 🎥 Record video                  | ✅      | ✅  |
-| 🔈 Enable/disable audio          | ✅      | ✅  |
-| 🎞 Take photos                  | ✅      | ✅  |
-| 🌤 Exposure level                | ✅      | ✅  |
-| 📡 Broadcast live image stream   | ✅      | ✅  |
-| 👁 zoom                          | ✅      | ✅  |
-| 📸 Device flash support          | ✅      | ✅  |
-| ⌛️ Auto focus                    | ✅      | ✅  |
-| 📲 Live switching camera         | ✅      | ✅  |
-| 😵‍💫 Camera rotation stream        | ✅      | ✅  |
-| 🤐 Background auto stop          | ✅      | ✅  |
+| System                         | Android | iOS | 
+|:-------------------------------|:-------:|:---:|
+| 🔖 Ask permissions             |    ✅    |  ✅  |
+| 🎥 Record video                |    ✅    |  ✅  |
+| 🔈 Enable/disable audio        |    ✅    |  ✅  |
+| 🎞 Take photos                 |    ✅    |  ✅  |
+| 🌤 Exposure level              |    ✅    |  ✅  |
+| 📡 Broadcast live image stream |    ✅    |  ✅  |
+| 👁 zoom                        |    ✅    |  ✅  |
+| 📸 Device flash support        |    ✅    |  ✅  |
+| ⌛️ Auto focus                  |    ✅    |  ✅  |
+| 📲 Live switching camera       |    ✅    |  ✅  |
+| 😵‍💫 Camera rotation stream   |    ✅    |  ✅  |
+| 🤐 Background auto stop        |    ✅    |  ✅  |
 
 -----
 
@@ -192,7 +192,7 @@ CameraAwesomeBuilder.awesome(
 ```
 
 > MLkit recommands to use nv21 format. <br>
-> For machine learning you don't need full resolution images (1024 is enough and makes computation easyer)
+> For machine learning you don't need full resolution images (1024 is enough and makes computation easier)
 
 > See more in documentation
 

@@ -23,6 +23,9 @@ abstract class CameraInterface {
   @async
   bool setupCamera(
     String sensor,
+    String aspectRatio,
+    double zoom,
+    String flashMode,
     String captureMode,
     bool enableImageStream,
     ExifPreferences exifPreferences,

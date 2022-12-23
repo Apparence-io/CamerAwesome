@@ -8,10 +8,10 @@ import 'package:flutter/services.dart';
 
 import 'camerawesome_plugin.dart';
 
-// built in widgets
-export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/builder/camera_awesome_builder.dart';
 
+// built in widgets
+export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
 
@@ -159,13 +159,16 @@ class CamerawesomePlugin {
     return _imagesStream;
   }
 
-  static Future<bool?> init(Sensors sensor, bool enableImageStream,
+  static Future<bool?> init(SensorConfig sensorConfig, bool enableImageStream,
       {CaptureMode captureMode = CaptureMode.photo,
       required ExifPreferences exifPreferences}) async {
     if (Platform.isAndroid) {
       return CameraInterface()
           .setupCamera(
-            sensor.name.toUpperCase(),
+            sensorConfig.sensor.name.toUpperCase(),
+            sensorConfig.aspectRatio.name.toUpperCase(),
+            sensorConfig.zoom,
+            sensorConfig.flashMode.name.toUpperCase(),
             captureMode.name.toUpperCase(),
             enableImageStream,
             exifPreferences,
@@ -173,7 +176,7 @@ class CamerawesomePlugin {
           .then((value) => true);
     } else {
       return _channel.invokeMethod("init", <String, dynamic>{
-        'sensor': sensor.toString().toUpperCase().split(".")[1],
+        'sensor': sensorConfig.sensor.toString().toUpperCase().split(".")[1],
         'captureMode': captureMode.toString().toUpperCase().split(".")[1],
         'streamImages': enableImageStream,
       });

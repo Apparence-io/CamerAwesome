@@ -33,11 +33,11 @@ class SaveConfig {
 
   /// You want to be able to take both photos and videos
   SaveConfig.photoAndVideo({
-    required FilePathBuilder imagePathBuilder,
+    required FilePathBuilder photoPathBuilder,
     required FilePathBuilder videoPathBuilder,
     CaptureMode initialCaptureMode = CaptureMode.photo,
   }) : this._(
-          photoPathBuilder: imagePathBuilder,
+          photoPathBuilder: photoPathBuilder,
           videoPathBuilder: videoPathBuilder,
           captureModes: [CaptureMode.photo, CaptureMode.video],
           initialCaptureMode: initialCaptureMode,
