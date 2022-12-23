@@ -89,4 +89,10 @@ abstract class CameraInterface {
   void setupImageAnalysisStream(String format, int width);
 
   void setExifPreferences(ExifPreferences exifPreferences);
+
+  bool isExtensionAvailable(String mode);
+
+  bool setExtensionMode(String mode);
+
+  Map<String, bool> availableExtensions();
 }

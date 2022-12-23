@@ -9,6 +9,8 @@ import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
+import androidx.camera.extensions.ExtensionMode
+import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
@@ -42,6 +44,7 @@ data class CameraXState(
     var rational: Rational = Rational(3, 4),
     var flashMode: FlashMode = FlashMode.NONE,
     val onStreamReady: (state: CameraXState) -> Unit,
+    var extensionMode: Int? = null,
 ) : EventChannel.StreamHandler {
 
     var imageAnalysisBuilder: ImageAnalysisBuilder? = null
@@ -59,14 +62,24 @@ data class CameraXState(
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
+        val selector = if (extensionMode != null && extensionMode != ExtensionMode.NONE) {
+            val extensionsManager =
+                ExtensionsManager.getInstanceAsync(activity, cameraProvider).get()
+            extensionsManager.getExtensionEnabledCameraSelector(
+                cameraSelector,
+                extensionMode!!
+            )
+        } else cameraSelector
+
+
         // Preview
         preview = if (aspectRatio != null) {
             Preview.Builder()
                 .setTargetAspectRatio(aspectRatio!!)
-                .setCameraSelector(cameraSelector).build()
+                .setCameraSelector(selector).build()
         } else {
             Preview.Builder()
-                .setCameraSelector(cameraSelector).build()
+                .setCameraSelector(selector).build()
         }
 
         preview!!.setSurfaceProvider(
@@ -74,7 +87,7 @@ data class CameraXState(
         )
         if (currentCaptureMode == CaptureModes.PHOTO) {
             imageCapture = ImageCapture.Builder()
-                .setCameraSelector(cameraSelector)
+                .setCameraSelector(selector)
 //                .setJpegQuality(100)
                 .apply {
                     //photoSize?.let { setTargetResolution(it) }
@@ -114,7 +127,7 @@ data class CameraXState(
         previewCamera = if (rational.denominator == rational.numerator)
             cameraProvider.bindToLifecycle(
                 activity as LifecycleOwner,
-                cameraSelector,
+                selector,
                 UseCaseGroup.Builder()
                     .apply {
                         for (uc in useCases.filterNotNull())
@@ -127,7 +140,7 @@ data class CameraXState(
         else
             cameraProvider.bindToLifecycle(
                 activity as LifecycleOwner,
-                cameraSelector,
+                selector,
                 *useCases.toTypedArray()
             )
 
@@ -204,6 +217,52 @@ data class CameraXState(
             }
         }
     }
+
+
+    fun isExtensionAvailable(extensionMode: Int, activity: Activity): Boolean {
+        val extensionsManager = ExtensionsManager.getInstanceAsync(activity, cameraProvider).get()
+        val result = extensionsManager.isExtensionAvailable(cameraSelector, extensionMode)
+        return result
+    }
+
+    fun availableExtensions(activity: Activity): Map<Int, Boolean> {
+        // Obtain an instance of the extensions manager
+        // The extensions manager enables a camera to use extension capabilities available on
+        // the device.
+        val extensionsManager =
+            ExtensionsManager.getInstanceAsync(activity, cameraProvider).get()
+
+        //val availableCameraLens =
+        //    listOf(
+        //        CameraSelector.LENS_FACING_BACK,
+        //        CameraSelector.LENS_FACING_FRONT
+        //    ).filter { lensFacing ->
+        //        cameraProvider.hasCamera(
+        //            when (lensFacing) {
+        //                CameraSelector.LENS_FACING_FRONT -> CameraSelector.DEFAULT_FRONT_CAMERA
+        //                CameraSelector.LENS_FACING_BACK -> CameraSelector.DEFAULT_BACK_CAMERA
+        //                else -> throw IllegalArgumentException("Invalid lens facing type: $lensFacing")
+        //            }
+        //        )
+        //    }
+
+        // get the supported extensions for the selected camera lens by filtering the full list
+        // of extensions and checking each one if it's available
+        return listOf(
+            ExtensionMode.NONE,
+            ExtensionMode.AUTO,
+            ExtensionMode.BOKEH,
+            ExtensionMode.HDR,
+            ExtensionMode.NIGHT,
+            ExtensionMode.FACE_RETOUCH
+        ).associateWith { extensionMode ->
+            extensionsManager.isExtensionAvailable(
+                cameraSelector,
+                extensionMode
+            )
+        }
+    }
+
 
     fun stop() {
         cameraProvider.unbindAll()

@@ -126,17 +126,25 @@ interface CameraInterface {
   fun setAspectRatio(aspectRatio: String)
   fun setupImageAnalysisStream(format: String, width: Long)
   fun setExifPreferences(exifPreferences: ExifPreferences)
+  fun isExtensionAvailable(mode: String): Boolean
+  fun setExtensionMode(mode: String): Boolean
+  fun availableExtensions(): Map<String, Boolean>
 
   companion object {
     /** The codec used by CameraInterface. */
-val codec: MessageCodec<Any?> by lazy {
+    val codec: MessageCodec<Any?> by lazy {
       CameraInterfaceCodec
     }
+
     /** Sets up an instance of `CameraInterface` to handle messages through the `binaryMessenger`. */
     @Suppress("UNCHECKED_CAST")
     fun setUp(binaryMessenger: BinaryMessenger, api: CameraInterface?) {
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupCamera", codec)
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.setupCamera",
+          codec
+        )
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val wrapped = hashMapOf<String, Any?>()
@@ -644,7 +652,11 @@ val codec: MessageCodec<Any?> by lazy {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setExifPreferences", codec)
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.setExifPreferences",
+          codec
+        )
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val wrapped = hashMapOf<String, Any?>()
@@ -653,6 +665,70 @@ val codec: MessageCodec<Any?> by lazy {
               val exifPreferencesArg = args[0] as ExifPreferences
               api.setExifPreferences(exifPreferencesArg)
               wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.isExtensionAvailable",
+          codec
+        )
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val modeArg = args[0] as String
+              wrapped["result"] = api.isExtensionAvailable(modeArg)
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.setExtensionMode",
+          codec
+        )
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              val args = message as List<Any?>
+              val modeArg = args[0] as String
+              wrapped["result"] = api.setExtensionMode(modeArg)
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.availableExtensions",
+          codec
+        )
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              wrapped["result"] = api.availableExtensions()
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
             }

@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'camerawesome_plugin.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
-
 // built in widgets
 export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
@@ -502,5 +501,34 @@ class CamerawesomePlugin {
       print(e);
     }
     return Future.value(false);
+  }
+
+  static Future<bool> isExtensionAvailable(CameraExtension extension) {
+    if (Platform.isAndroid) {
+      return CameraInterface().isExtensionAvailable(extension.name);
+    } else {
+      throw "Not implemented on iOS yet";
+    }
+  }
+
+  static Future<bool> setExtensionMode(CameraExtension extension) {
+    if (Platform.isAndroid) {
+      return CameraInterface().setExtensionMode(extension.name);
+    } else {
+      throw "Not implemented on iOS yet";
+    }
+  }
+
+  static Future<Map<CameraExtension, bool>> availableExtensions() {
+    if (Platform.isAndroid) {
+      return CameraInterface().availableExtensions().then((map) => map.map(
+            (key, value) => MapEntry(
+              CameraExtension.values.byName(key!),
+              value!,
+            ),
+          ));
+    } else {
+      throw "Not implemented on iOS yet";
+    }
   }
 }

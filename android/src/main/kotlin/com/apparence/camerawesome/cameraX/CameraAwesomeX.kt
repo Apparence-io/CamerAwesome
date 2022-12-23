@@ -12,6 +12,7 @@ import android.util.Log
 import android.util.Rational
 import android.util.Size
 import androidx.camera.core.*
+import androidx.camera.extensions.ExtensionMode
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.VideoRecordEvent
@@ -463,6 +464,49 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 else -> Rational(3, 4)
             }
             updateLifecycle(activity!!)
+        }
+    }
+
+    override fun setExtensionMode(mode: String): Boolean {
+        val success = cameraState.isExtensionAvailable(stringToExtensionMode(mode), activity!!)
+        if (success) {
+            cameraState.apply {
+                extensionMode = stringToExtensionMode(mode)
+                updateLifecycle(activity!!)
+            }
+        }
+        return success
+    }
+
+    override fun isExtensionAvailable(mode: String): Boolean {
+        return cameraState.isExtensionAvailable(stringToExtensionMode(mode), activity!!)
+    }
+
+    override fun availableExtensions(): Map<String, Boolean> {
+        return cameraState.availableExtensions(activity!!).mapKeys { extensionModeToString(it.key) }
+    }
+
+    private fun extensionModeToString(mode: Int): String {
+        return when (mode) {
+            ExtensionMode.NONE -> "none"
+            ExtensionMode.AUTO -> "auto"
+            ExtensionMode.BOKEH -> "bokeh"
+            ExtensionMode.HDR -> "hdr"
+            ExtensionMode.NIGHT -> "night"
+            ExtensionMode.FACE_RETOUCH -> "face_retouch"
+            else -> "unsupported"
+        }
+    }
+
+    private fun stringToExtensionMode(mode: String): Int {
+        return when (mode) {
+            "none" -> ExtensionMode.NONE
+            "auto" -> ExtensionMode.AUTO
+            "bokeh" -> ExtensionMode.BOKEH
+            "hdr" -> ExtensionMode.HDR
+            "night" -> ExtensionMode.NIGHT
+            "face_retouch" -> ExtensionMode.FACE_RETOUCH
+            else -> -1
         }
     }
 

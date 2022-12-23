@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:better_open_file/better_open_file.dart';
+import 'package:camera_app/camerax_extensions_example.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -16,7 +17,7 @@ class CameraAwesomeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'CamerAwesome App',
-      home: CameraPage(),
+      home: CameraXExtensionsExample(),
     );
   }
 }
@@ -33,9 +34,20 @@ class CameraPage extends StatelessWidget {
           videoPathBuilder: () => _path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
-        flashMode: FlashMode.auto,
-        aspectRatio: CameraAspectRatios.ratio_16_9,
-        onMediaTap: (mediaCapture) {
+        // flashMode: FlashMode.auto,
+        // aspectRatio: CameraAspectRatios.ratio_16_9,
+        onMediaTap: (mediaCapture) async {
+          final extensions = await CamerawesomePlugin.availableExtensions();
+          print("______${extensions.length} extensions");
+          for (var e in extensions.entries) {
+            print(
+                "${e.key.name} is ${e.value ? "supported" : "not supported"}");
+            final isAvailable =
+                await CamerawesomePlugin.isExtensionAvailable(e.key);
+
+            print(
+                "${e.key.name} is ${isAvailable ? "supported" : "not supported"}");
+          }
           OpenFile.open(mediaCapture.filePath);
         },
       ),
