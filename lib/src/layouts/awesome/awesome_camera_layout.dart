@@ -22,11 +22,14 @@ class AwesomeCameraLayout extends StatelessWidget {
         Spacer(),
         const SizedBox(height: 12),
         AwesomeBackground(
-          child: Column(children: [
-            AwesomeCameraModeSelector(state: state),
-            AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
-            const SizedBox(height: 32),
-          ]),
+          child: SafeArea(
+            top: false,
+            child: Column(children: [
+              AwesomeCameraModeSelector(state: state),
+              AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
+              const SizedBox(height: 32),
+            ]),
+          ),
         ),
       ],
     );
