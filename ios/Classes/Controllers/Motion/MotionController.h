@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithEventSink:(FlutterEventSink)orientationEventSink;
 - (void)startMotionDetection;
 - (void)stopMotionDetection;
+- (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
 
 @end
 

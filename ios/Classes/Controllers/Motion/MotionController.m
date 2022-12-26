@@ -17,6 +17,10 @@
   return self;
 }
 
+- (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink {
+  _orientationEventSink = orientationEventSink;
+}
+
 /// Start live motion detection
 - (void)startMotionDetection {
   [_motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]

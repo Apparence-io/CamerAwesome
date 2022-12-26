@@ -16,18 +16,6 @@ FlutterEventSink imageStreamEventSink;
 
 @end
 
-@implementation OrientationStreamHandler
-- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
-  orientationEventSink = eventSink;
-  return nil;
-}
-
-- (FlutterError*)onCancelWithArguments:(id)arguments {
-  orientationEventSink = nil;
-  return nil;
-}
-@end
-
 @implementation ImageStreamHandler
 - (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
   imageStreamEventSink = eventSink;
@@ -68,11 +56,11 @@ FlutterEventSink imageStreamEventSink;
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   CamerawesomePlugin *instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
   
-  OrientationStreamHandler *orientationStreamHandler =
-  [[OrientationStreamHandler alloc] init];
+//  OrientationStreamHandler *orientationStreamHandler =
+//  [[OrientationStreamHandler alloc] init];
   FlutterEventChannel *orientationChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
                                                                       binaryMessenger:[registrar messenger]];
-  [orientationChannel setStreamHandler:orientationStreamHandler];
+  [orientationChannel setStreamHandler:instance];
   
   VideoRecordingStreamHandler *videoRecordingStreamHandler =
   [[VideoRecordingStreamHandler alloc] init];
@@ -89,6 +77,25 @@ FlutterEventSink imageStreamEventSink;
   // TODO: Change to "camerawesome/methods"
   FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"camerawesome" binaryMessenger:[registrar messenger]];
   [registrar addMethodCallDelegate:instance channel:methodChannel];
+}
+
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+  orientationEventSink = eventSink;
+  
+  if (self.camera != nil && self.camera.motionController != nil) {
+    [self.camera.motionController setOrientationEventSink:orientationEventSink];
+  }
+  
+  return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+  orientationEventSink = nil;
+  
+  if (self.camera != nil && self.camera.motionController != nil) {
+    [self.camera.motionController setOrientationEventSink:orientationEventSink];
+  }
+  return nil;
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {

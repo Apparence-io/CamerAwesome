@@ -5,9 +5,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CamerawesomePlugin : NSObject<FlutterPlugin, FlutterStreamHandler>
 @end
 
-@interface OrientationStreamHandler : NSObject <FlutterStreamHandler>
-@end
-
 @interface VideoRecordingStreamHandler : NSObject <FlutterStreamHandler>
 @end
 
