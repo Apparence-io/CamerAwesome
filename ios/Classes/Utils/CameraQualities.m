@@ -7,6 +7,7 @@
 
 #import "CameraQualities.h"
 
+// TODO: rework how qualities are working to be more easy
 @implementation CameraQualities
 
 + (NSString *)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
