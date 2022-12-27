@@ -123,8 +123,8 @@ FlutterEventSink imageStreamEventSink;
     [self _handleStopRecordingVideo:call result:result];
   } else if ([@"setRecordingAudioMode" isEqualToString:call.method]) {
     [self _handleRecordingAudioMode:call result:result];
-  } else if ([@"handleAutoFocus" isEqualToString:call.method]) {
-    [self _handleAutoFocus:call result:result];
+  } else if ([@"focusOnPoint" isEqualToString:call.method]) {
+    [self _handleFocusOnPoint:call result:result];
   } else if ([@"setFlashMode" isEqualToString:call.method]) {
     [self _handleFlashMode:call result:result];
   } else if ([@"setAspectRatio" isEqualToString:call.method]) {
@@ -249,8 +249,19 @@ FlutterEventSink imageStreamEventSink;
   result(nil);
 }
 
-- (void)_handleAutoFocus:(FlutterMethodCall*)call result:(FlutterResult)result {
-  [_camera instantFocus];
+- (void)_handleFocusOnPoint:(FlutterMethodCall*)call result:(FlutterResult)result {
+  float positionX = [call.arguments[@"positionX"] floatValue];
+  float positionY = [call.arguments[@"positionY"] floatValue];
+  
+  float previewWidth = [call.arguments[@"previewWidth"] floatValue];
+  float previewHeight = [call.arguments[@"previewHeight"] floatValue];
+  
+  if (previewWidth <= 0 || previewHeight <= 0) {
+    result([FlutterError errorWithCode:@"INVALID_PREVIEW" message:@"preview size width and height must be set" details:nil]);
+    return;
+  }
+  
+  [_camera focusOnPoint:CGPointMake(positionX, positionY) preview:CGSizeMake(previewWidth, previewHeight)];
 }
 
 - (void)_handleCheckPermissions:(FlutterMethodCall*)call result:(FlutterResult)result {

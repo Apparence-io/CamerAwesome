@@ -96,7 +96,7 @@ class CamerawesomePlugin {
   static Stream<CameraOrientations>? getNativeOrientation() {
     if (_orientationStream == null) {
       _orientationStream = _orientationChannel
-          .receiveBroadcastStream()
+          .receiveBroadcastStream('orientationChannel')
           .transform(
               StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
                   handleData: (data, sink) {
@@ -125,7 +125,7 @@ class CamerawesomePlugin {
   static Stream<bool>? listenPermissionResult() {
     if (_permissionsStream == null) {
       _permissionsStream = _permissionsChannel
-          .receiveBroadcastStream()
+          .receiveBroadcastStream('permissionsChannel')
           .transform(StreamTransformer<dynamic, bool>.fromHandlers(
               handleData: (data, sink) {
         sink.add(data);
@@ -134,6 +134,7 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
+  /// this is not needed on iOS
   static Future<void> setupAnalysis({
     int width = 0,
     required InputAnalysisImageFormat format,
@@ -148,7 +149,7 @@ class CamerawesomePlugin {
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
     if (_imagesStream == null) {
-      _imagesStream = _imagesChannel.receiveBroadcastStream().transform(
+      _imagesStream = _imagesChannel.receiveBroadcastStream('imagesChannel').transform(
         StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
           handleData: (data, sink) {
             sink.add(Map<String, dynamic>.from(data));
@@ -343,7 +344,12 @@ class CamerawesomePlugin {
       return CameraInterface()
           .focusOnPoint(previewSize, position.dx, position.dy);
     } else {
-      return _channel.invokeMethod("handleAutoFocus");
+      return _channel.invokeMethod("focusOnPoint", <String, dynamic>{
+        'previewWidth': previewSize.width,
+        'previewHeight': previewSize.height,
+        'positionX': position.dx,
+        'positionY': position.dy,
+      });
     }
   }
 
@@ -395,7 +401,7 @@ class CamerawesomePlugin {
   ///
   /// The GPS value can be null on Android if:
   /// - Location is disabled on the phone
-  /// - ExifPreferences.saveGPSLocat0ion is false
+  /// - ExifPreferences.saveGPSLocation is false
   /// - Permission ACCESS_FINE_LOCATION has not been granted
   static Future<void> setExifPreferences(ExifPreferences savedExifData) {
     if (Platform.isAndroid) {
@@ -431,7 +437,7 @@ class CamerawesomePlugin {
     }
     if (_luminositySensorDataStream == null) {
       _luminositySensorDataStream = _luminosityChannel
-          .receiveBroadcastStream()
+          .receiveBroadcastStream('luminosityChannel')
           .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
               handleData: (data, sink) {
         sink.add(SensorData(data));

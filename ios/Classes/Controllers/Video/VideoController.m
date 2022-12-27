@@ -11,9 +11,8 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 @implementation VideoController
 
-- (instancetype)initWithEventSink:(FlutterEventSink)videoRecordingEventSink result:(FlutterResult)result {
+- (instancetype)initResult:(FlutterResult)result {
   self = [super init];
-  _videoRecordingEventSink = videoRecordingEventSink;
   _result = result;
   _isRecording = NO;
   _isAudioEnabled = YES;
@@ -87,7 +86,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
                                               error:&error];
   NSParameterAssert(_videoWriter);
   if (error) {
-    _videoRecordingEventSink([NSString stringWithFormat:@"impossible to create video writer : %@", error.description]);
+    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer" details:error.description]);
     return NO;
   }
 
@@ -102,7 +101,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _videoAdaptor = [AVAssetWriterInputPixelBufferAdaptor
                    assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoWriterInput
                    sourcePixelBufferAttributes:@{
-    (NSString *)kCVPixelBufferPixelFormatTypeKey : @(videoFormat)
+    (NSString *)kCVPixelBufferPixelFormatTypeKey: @(videoFormat)
   }];
   
   NSParameterAssert(_videoWriterInput);
@@ -136,13 +135,13 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 - (void)newAudioSample:(CMSampleBufferRef)sampleBuffer {
   if (_videoWriter.status != AVAssetWriterStatusWriting) {
     if (_videoWriter.status == AVAssetWriterStatusFailed) {
-      _videoRecordingEventSink([NSString stringWithFormat:@"writing video failed : %@", _videoWriter.error]);
+      _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error]);
     }
     return;
   }
   if (_audioWriterInput.readyForMoreMediaData) {
     if (![_audioWriterInput appendSampleBuffer:sampleBuffer]) {
-      _videoRecordingEventSink([NSString stringWithFormat:@"adding audio channel failed : %@", _videoWriter.error]);
+      _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error]);
     }
   }
 }
@@ -171,7 +170,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   }
   
   if (_videoWriter.status == AVAssetWriterStatusFailed) {
-    _videoRecordingEventSink([NSString stringWithFormat:@"impossible to write video : %@", _videoWriter.error]);
+    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
     return;
   }
   
