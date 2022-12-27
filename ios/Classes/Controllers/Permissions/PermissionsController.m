@@ -1,15 +1,15 @@
 //
-//  CameraPermissions.m
-//  camerawesome
+//  PermissionsController.m
+//  _NIODataStructures
 //
-//  Created by Dimitri Dessus on 23/07/2020.
+//  Created by Dimitri Dessus on 27/12/2022.
 //
 
-#import "CameraPermissions.h"
+#import "PermissionsController.h"
 
-@implementation CameraPermissions
+@implementation PermissionsController
 
-+ (BOOL)checkPermissions {
++ (BOOL)checkCameraPermission {
   NSString *mediaType = AVMediaTypeVideo;
   AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
   
