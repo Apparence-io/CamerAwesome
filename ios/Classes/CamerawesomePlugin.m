@@ -16,30 +16,6 @@ FlutterEventSink imageStreamEventSink;
 
 @end
 
-@implementation ImageStreamHandler
-- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
-  imageStreamEventSink = eventSink;
-  return nil;
-}
-
-- (FlutterError*)onCancelWithArguments:(id)arguments {
-  imageStreamEventSink = nil;
-  return nil;
-}
-@end
-
-@implementation VideoRecordingStreamHandler
-- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
-  videoRecordingEventSink = eventSink;
-  return nil;
-}
-
-- (FlutterError*)onCancelWithArguments:(id)arguments {
-  videoRecordingEventSink = nil;
-  return nil;
-}
-@end
-
 @implementation CamerawesomePlugin {
   dispatch_queue_t _dispatchQueue;
 }
@@ -56,44 +32,49 @@ FlutterEventSink imageStreamEventSink;
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   CamerawesomePlugin *instance = [[CamerawesomePlugin alloc] initWithRegistry:[registrar textures] messenger:[registrar messenger]];
   
-//  OrientationStreamHandler *orientationStreamHandler =
-//  [[OrientationStreamHandler alloc] init];
   FlutterEventChannel *orientationChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/orientation"
                                                                       binaryMessenger:[registrar messenger]];
-  [orientationChannel setStreamHandler:instance];
-  
-  VideoRecordingStreamHandler *videoRecordingStreamHandler =
-  [[VideoRecordingStreamHandler alloc] init];
-  FlutterEventChannel *videoRecordingChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/video-recording"
-                                                                         binaryMessenger:[registrar messenger]];
-  [videoRecordingChannel setStreamHandler:videoRecordingStreamHandler];
-  
-  ImageStreamHandler *imageStreamHandler =
-  [[ImageStreamHandler alloc] init];
   FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/images"
                                                                       binaryMessenger:[registrar messenger]];
-  [imageStreamChannel setStreamHandler:imageStreamHandler];
+  [orientationChannel setStreamHandler:instance];
+  [imageStreamChannel setStreamHandler:instance];
   
-  // TODO: Change to "camerawesome/methods"
   FlutterMethodChannel *methodChannel = [FlutterMethodChannel methodChannelWithName:@"camerawesome" binaryMessenger:[registrar messenger]];
   [registrar addMethodCallDelegate:instance channel:methodChannel];
 }
 
-- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
-  orientationEventSink = eventSink;
-  
-  if (self.camera != nil && self.camera.motionController != nil) {
-    [self.camera.motionController setOrientationEventSink:orientationEventSink];
+- (FlutterError *)onListenWithArguments:(NSString *)arguments eventSink:(FlutterEventSink)eventSink {
+  if ([arguments  isEqual: @"orientationChannel"]) {
+    orientationEventSink = eventSink;
+    
+    if (self.camera != nil) {
+      [self.camera setOrientationEventSink:orientationEventSink];
+    }
+    
+  } else if ([arguments  isEqual: @"imagesChannel"]) {
+    imageStreamEventSink = eventSink;
+    
+    if (self.camera != nil) {
+      [self.camera setImageStreamEvent:imageStreamEventSink];
+    }
   }
   
   return nil;
 }
 
-- (FlutterError*)onCancelWithArguments:(id)arguments {
-  orientationEventSink = nil;
-  
-  if (self.camera != nil && self.camera.motionController != nil) {
-    [self.camera.motionController setOrientationEventSink:orientationEventSink];
+- (FlutterError *)onCancelWithArguments:(NSString *)arguments {
+  if ([arguments  isEqual: @"orientationChannel"]) {
+    orientationEventSink = nil;
+    
+    if (self.camera != nil && self.camera.motionController != nil) {
+      [self.camera setOrientationEventSink:orientationEventSink];
+    }
+  } else if ([arguments  isEqual: @"imagesChannel"]) {
+    imageStreamEventSink = nil;
+    
+    if (self.camera != nil) {
+      [self.camera setImageStreamEvent:imageStreamEventSink];
+    }
   }
   return nil;
 }
@@ -114,10 +95,6 @@ FlutterEventSink imageStreamEventSink;
     [self _handleSetup:call result:result];
   } else if ([@"checkPermissions" isEqualToString:call.method]) {
     [self _handleCheckPermissions:call result:result];
-  } else if ([@"requestPermissions" isEqualToString:call.method]) {
-    // Not possible on iOS
-    result(FlutterMethodNotImplemented);
-    return;
   } else if ([@"start" isEqualToString:call.method]) {
     [self _handleStart:call result:result];
   } else if ([@"stop" isEqualToString:call.method]) {
@@ -277,7 +254,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleCheckPermissions:(FlutterMethodCall*)call result:(FlutterResult)result {
-  result(@([CameraPermissions checkPermissions]));
+  result(@([PermissionsController checkCameraPermission]));
 }
 
 - (void)_handleSizes:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -361,7 +338,7 @@ FlutterEventSink imageStreamEventSink;
   
   CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
   
-  if (![CameraPermissions checkPermissions]) {
+  if (![PermissionsController checkCameraPermission]) {
     result([FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
   }
@@ -377,10 +354,7 @@ FlutterEventSink imageStreamEventSink;
                                                 captureMode:captureMode
                                                      result:result
                                               dispatchQueue:_dispatchQueue
-                                                  messenger:_messenger
-                                           orientationEvent:orientationEventSink
-                                        videoRecordingEvent:videoRecordingEventSink
-                                           imageStreamEvent:imageStreamEventSink];
+                                                  messenger:_messenger];
   [self->_registry textureFrameAvailable:_textureId];
   
   __weak typeof(self) weakSelf = self;
