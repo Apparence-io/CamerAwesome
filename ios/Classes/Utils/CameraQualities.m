@@ -9,7 +9,7 @@
 
 @implementation CameraQualities
 
-+ (NSString *)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session {
++ (NSString *)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
   if (!CGSizeEqualToSize(CGSizeZero, size)) {
     NSString *bestPresset = [CameraQualities selectPresetForSize:size];
     if ([session canSetSessionPreset:bestPresset]) {
@@ -17,11 +17,11 @@
     }
   }
   
-  return [self computeBestPressetWithSession:session];
+  return [self computeBestPressetWithSession:session device:device];
 }
 
-+ (NSString *)selectVideoCapturePresset:(AVCaptureSession *)session {
-  return [self computeBestPressetWithSession:session];
++ (NSString *)selectVideoCapturePresset:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
+  return [self computeBestPressetWithSession:session device:device];
 }
 
 + (CGSize)getSizeForPresset:(NSString *)presset {
@@ -43,8 +43,10 @@
   }
 }
 
-+ (NSString *)computeBestPressetWithSession:(AVCaptureSession *)session {
-  for (NSDictionary *quality in kCameraQualities) {
++ (NSString *)computeBestPressetWithSession:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
+  NSArray *qualities = [CameraQualities captureFormatsForDevice:device];
+  
+  for (NSDictionary *quality in qualities) {
     CGSize qualitySize = CGSizeMake([quality[@"width"] floatValue], [quality[@"height"] floatValue]);
     NSString *currentPresset = [CameraQualities selectPresetForSize:qualitySize];
     
@@ -58,7 +60,7 @@
 }
 
 + (NSString *)selectPresetForSize:(CGSize)size {
-  if (size.width == 3840 && size.height == 2160) {
+  if (size.width >= 3840 && size.height >= 2160) {
     if (@available(iOS 9.0, *)) {
       return AVCaptureSessionPreset3840x2160;
     } else {
@@ -76,6 +78,19 @@
     // Default to HD
     return AVCaptureSessionPreset1280x720;
   }
+}
+
++ (NSArray *)captureFormatsForDevice:(AVCaptureDevice *)device  {
+  NSMutableArray *qualities = [[NSMutableArray alloc] init];
+  NSArray<AVCaptureDeviceFormat *>* formats = [device formats];
+  for(int i = 0; i < formats.count; i++) {
+    AVCaptureDeviceFormat *format = formats[i];
+    [qualities addObject:@{
+      @"width": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width],
+      @"height": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height],
+    }];
+  }
+  return qualities;
 }
 
 @end

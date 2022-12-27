@@ -258,7 +258,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleSizes:(FlutterMethodCall*)call result:(FlutterResult)result {
-  result([_camera getSizes]);
+  result([CameraQualities captureFormatsForDevice:_camera.captureDevice]);
 }
 
 - (void)_handlePreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
