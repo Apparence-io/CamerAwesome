@@ -9,10 +9,9 @@
 
 @implementation MotionController
 
-- (instancetype)initWithEventSink:(FlutterEventSink)orientationEventSink {
+- (instancetype)init {
   self = [super init];
   _motionManager = [[CMMotionManager alloc] init];
-  _orientationEventSink = orientationEventSink;
   _motionManager.deviceMotionUpdateInterval = 0.2f;
   return self;
 }
