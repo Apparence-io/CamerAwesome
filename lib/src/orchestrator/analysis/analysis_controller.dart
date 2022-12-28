@@ -37,10 +37,14 @@ class AnalysisController {
       printLog('AnalysisController controller already started');
       return;
     }
+
+    // TODO: is this very useful ?
+    // not needed for iOS
     await CamerawesomePlugin.setupAnalysis(
       format: conf.outputFormat,
       width: 1024,
     );
+    
     imageSubscription = _images$?.listen((event) {
       onImageListener!(AnalysisImage.from(event));
     });
