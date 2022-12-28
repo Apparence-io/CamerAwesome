@@ -16,10 +16,7 @@
                          captureMode:(CaptureModes)captureMode
                               result:(nonnull FlutterResult)result
                        dispatchQueue:(dispatch_queue_t)dispatchQueue
-                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger
-                    orientationEvent:(FlutterEventSink)orientationEventSink
-                 videoRecordingEvent:(FlutterEventSink)videoRecordingEventSink
-                    imageStreamEvent:(FlutterEventSink)imageStreamEventSink {
+                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
   self = [super init];
   
   _result = result;
@@ -51,9 +48,9 @@
   _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
   
   // Controllers init
-  _videoController = [[VideoController alloc] initWithEventSink:videoRecordingEventSink result:result];
-  _imageStreamController = [[ImageStreamController alloc] initWithEventSink:imageStreamEventSink];
-  _motionController = [[MotionController alloc] initWithEventSink:orientationEventSink];
+  _videoController = [[VideoController alloc] initResult:result];
+  _imageStreamController = [[ImageStreamController alloc] initWithStreamImages:streamImages];
+  _motionController = [[MotionController alloc] init];
   _locationController = [[LocationController alloc] init];
   
   [_motionController startMotionDetection];
@@ -67,15 +64,27 @@
   _aspectRatio = ratio;
 }
 
+/// Set image stream Flutter sink
+- (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink {
+  if (_imageStreamController != nil) {
+    [_imageStreamController setImageStreamEventSink:imageStreamEventSink];
+  }
+}
+
+/// Set orientation stream Flutter sink
+- (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink {
+  if (_motionController != nil) {
+    [_motionController setOrientationEventSink:orientationEventSink];
+  }
+}
+
 /// Assign the default preview qualities
 - (void)setBestPreviewQuality {
-  NSArray *qualities = [self getSizes];
-  NSDictionary *firstSizeDict;
-  if ([qualities count] > 0) {
-    firstSizeDict = qualities.lastObject;
-  } else {
-    firstSizeDict = kCameraQualities.firstObject;
-  }
+  NSArray *qualities = [CameraQualities captureFormatsForDevice:_captureDevice];
+  NSDictionary *firstSizeDict = [qualities count] > 0 ? qualities.lastObject : @{\
+    @"width": @3840,\
+    @"height": @2160\
+  };
   
   CGSize firstSize = CGSizeMake([firstSizeDict[@"width"] floatValue], [firstSizeDict[@"height"] floatValue]);
   [self setCameraPresset:firstSize];
@@ -125,19 +134,6 @@
   [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
 }
 
-- (NSArray *)getSizes {
-  NSMutableArray *qualities = [[NSMutableArray alloc] init];
-  NSArray<AVCaptureDeviceFormat *>* formats = [_captureDevice formats];
-  for(int i = 0; i < formats.count; i++) {
-    AVCaptureDeviceFormat *format = formats[i];
-    [qualities addObject:@{
-      @"width": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width],
-      @"height": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height],
-    }];
-  }
-  return qualities;
-}
-
 - (void)dealloc {
   if (_latestPixelBuffer) {
     CFRelease(_latestPixelBuffer);
@@ -150,10 +146,10 @@
   NSString *presetSelected;
   if (!CGSizeEqualToSize(CGSizeZero, currentPreviewSize)) {
     // Try to get the quality requested
-    presetSelected = [CameraQualities selectVideoCapturePresset:currentPreviewSize session:_captureSession];
+    presetSelected = [CameraQualities selectVideoCapturePresset:currentPreviewSize session:_captureSession device:_captureDevice];
   } else {
     // Compute the best quality supported by the camera device
-    presetSelected = [CameraQualities selectVideoCapturePresset:_captureSession];
+    presetSelected = [CameraQualities selectVideoCapturePresset:_captureSession device:_captureDevice];
   }
   [_captureSession setSessionPreset:presetSelected];
   _currentPresset = presetSelected;
@@ -303,15 +299,9 @@
   _result(nil);
 }
 
-/// Trigger focus on device at the center of the preview
-- (void)instantFocus {
+/// Trigger focus on device at the specific point of the preview
+- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview {
   NSError *error;
-  
-  // Get center point of the preview size
-  double focus_x = _currentPreviewSize.width / 2;
-  double focus_y = _currentPreviewSize.height / 2;
-  
-  CGPoint thisFocusPoint = [_previewLayer captureDevicePointOfInterestForPoint:CGPointMake(focus_x, focus_y)];
   if ([_captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] && [_captureDevice isFocusPointOfInterestSupported]) {
     if ([_captureDevice lockForConfiguration:&error]) {
       if (error != nil) {
@@ -319,8 +309,8 @@
         return;
       }
       
-      [_captureDevice setFocusMode:AVCaptureFocusModeAutoFocus];
-      [_captureDevice setFocusPointOfInterest:thisFocusPoint];
+      [_captureDevice setFocusPointOfInterest:position];
+      [_captureDevice setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
       
       [_captureDevice unlockForConfiguration];
     }
@@ -500,9 +490,9 @@
   if (output == _captureVideoOutput) {
     CVPixelBufferRef newBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CFRetain(newBuffer);
-    CVPixelBufferRef old = _latestPixelBuffer;
-    while (!OSAtomicCompareAndSwapPtrBarrier(old, newBuffer, (void **)&_latestPixelBuffer)) {
-      old = _latestPixelBuffer;
+    CVPixelBufferRef old = atomic_load(&_latestPixelBuffer);
+    while (!atomic_compare_exchange_strong(&_latestPixelBuffer, &old, newBuffer)) {
+      old = atomic_load(&_latestPixelBuffer);
     }
     if (old != nil) {
       CFRelease(old);
@@ -514,7 +504,7 @@
   
   // Process image stream controller
   if (_imageStreamController.streamImages) {
-    [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection];
+    [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection orientation:_motionController.deviceOrientation];
   }
   
   if (_videoController.isRecording) {
@@ -526,9 +516,9 @@
 
 /// Used to copy pixels to in-memory buffer
 - (CVPixelBufferRef _Nullable)copyPixelBuffer {
-  CVPixelBufferRef pixelBuffer = _latestPixelBuffer;
-  while (!OSAtomicCompareAndSwapPtrBarrier(pixelBuffer, nil, (void **)&_latestPixelBuffer)) {
-    pixelBuffer = _latestPixelBuffer;
+  CVPixelBufferRef pixelBuffer = atomic_load(&_latestPixelBuffer);
+  while (!atomic_compare_exchange_strong(&_latestPixelBuffer, &pixelBuffer, nil)) {
+    pixelBuffer = atomic_load(&_latestPixelBuffer);
   }
   
   return pixelBuffer;

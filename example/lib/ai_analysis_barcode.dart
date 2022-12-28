@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'camerAwesome App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -45,11 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late Stream<List<String>> console$ = consoleController.stream;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     consoleController.close();
     super.dispose();
@@ -65,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
               SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
           onImageForAnalysis: analyzeImage,
           imageAnalysisConfig: AnalysisConfig(
-            outputFormat: InputAnalysisImageFormat.nv21,
+            outputFormat: InputAnalysisImageFormat.bgra8888,
             width: 1024,
           ),
           builder: (cameraModeState) {
@@ -124,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final planeData = img.planes.map(
       (plane) {
         return InputImagePlaneMetadata(
-          bytesPerRow: plane.rowStride,
+          bytesPerRow: plane.bytesPerRow,
           height: img.height,
           width: img.width,
         );
@@ -163,25 +159,37 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future processImageBarcode(AnalysisImage img) async {
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final ImagePlane plane in img.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
+
+    final InputImageRotation imageRotation =
+        InputImageRotation.values.byName(img.rotation.name);
+    
     final planeData = img.planes.map(
       (plane) {
         return InputImagePlaneMetadata(
-          bytesPerRow: plane.rowStride,
+          bytesPerRow: plane.bytesPerRow,
           height: img.height,
           width: img.width,
         );
       },
     ).toList();
 
-    final inputImage = InputImage.fromBytes(
-      bytes: img.nv21Image!,
-      inputImageData: InputImageData(
-        imageRotation: InputImageRotation.rotation270deg,
-        inputImageFormat: InputImageFormat.nv21,
-        planeData: planeData,
-        size: Size(img.width.toDouble(), img.height.toDouble()),
-      ),
+    final inputImageData = InputImageData(
+      size: imageSize,
+      imageRotation: imageRotation,
+      inputImageFormat: inputImageFormat(img.format),
+      planeData: planeData,
     );
+
+    final inputImage =
+        InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+
     try {
       var recognizedBarCodes = await barcodeScanner.processImage(inputImage);
       for (Barcode barcode in recognizedBarCodes) {
@@ -216,5 +224,16 @@ class _MyHomePageState extends State<MyHomePage> {
     final String filePath =
         '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
     return filePath;
+  }
+
+  InputImageFormat inputImageFormat(InputAnalysisImageFormat format) {
+    switch (format) {
+      case InputAnalysisImageFormat.bgra8888:
+        return InputImageFormat.bgra8888;
+      case InputAnalysisImageFormat.nv21:
+        return InputImageFormat.nv21;
+      default:
+        return InputImageFormat.yuv420;
+    }
   }
 }
