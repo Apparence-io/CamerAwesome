@@ -38,8 +38,8 @@ Use our awesome built in interface or customize it as you want.
 ## Native features
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                         | Android | iOS | 
-|:-------------------------------|:-------:|:---:|
+| System                         |  Android | iOS | 
+|:-------------------------------|:--------:|:---:|
 | 🔖 Ask permissions             |    ✅    |  ✅  |
 | 🎥 Record video                |    ✅    |  ✅  |
 | 🔈 Enable/disable audio        |    ✅    |  ✅  |
@@ -50,7 +50,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 📸 Device flash support        |    ✅    |  ✅  |
 | ⌛️ Auto focus                  |    ✅    |  ✅  |
 | 📲 Live switching camera       |    ✅    |  ✅  |
-| 😵‍💫 Camera rotation stream   |    ✅    |  ✅  |
+| 😵‍💫 Camera rotation stream      |    ✅    |  ✅  |
 | 🤐 Background auto stop        |    ✅    |  ✅  |
 
 -----
@@ -167,16 +167,16 @@ state.when(
 ## 🔬 Analysis mode (WIP 🚧)
 
 This is a first step into this feature as we are currently working on this.
-> ⚠️ Only work on Android for now
 <br>
 
 Use this to achieve
-- QR-Code scanning
-- facial recognition
-- AI object detection 
-- realtime video chats
+- QR-Code scanning.
+- Facial recognition.
+- AI object detection.
+- Realtime video chats.
+And much more 🤩
 
-You can check an example using MLKit on Android that detect faces inside the '''example''' directory.
+You can check an example using MLKit on Android that detect faces inside the ```example``` directory.
 
 ```dart
 CameraAwesomeBuilder.awesome(
@@ -184,14 +184,15 @@ CameraAwesomeBuilder.awesome(
         pathBuilder: _path(),
     ),
     onImageForAnalysis: analyzeImage,
-    imageAnalysisConfig: AnalysisConfig(
-        outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420_888
+    imageAnalysisConfig: AnalysisConfig( // only for Android for now
+        outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
         width: 1024,
     ),
 ),
 ```
 
-> MLkit recommands to use nv21 format. <br>
+> MLkit recommands to use nv21 format for Android. <br>
+> bgra8888 is the iOS format
 > For machine learning you don't need full resolution images (1024 is enough and makes computation easier)
 
 > See more in documentation
@@ -201,10 +202,10 @@ CameraAwesomeBuilder.awesome(
 Through state you can access to a ```SensorConfig``` class. 
 <br>
 
-| Function   | Comment |
-|------------|---------|
-| setZoom    | changing zoom |
-| setFlashMode    | changing flash between NONE,ON,AUTO,ALWAYS |
+| Function         | Comment                                                    |
+|------------------|------------------------------------------------------------|
+| setZoom          | changing zoom                                              |
+| setFlashMode     | changing flash between NONE,ON,AUTO,ALWAYS                 |
 | setBrightness    | change brightness level manually (better to let this auto) |
 
 All of this configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
