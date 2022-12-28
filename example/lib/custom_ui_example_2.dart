@@ -61,7 +61,8 @@ class CustomUiExample2 extends StatelessWidget {
           },
         ),
         onPreviewTapBuilder: (state) => OnPreviewTap(
-          onTap: (Offset position, PreviewSize flutterPreviewSize, PreviewSize pixelPreviewSize) {
+          onTap: (Offset position, PreviewSize flutterPreviewSize,
+              PreviewSize pixelPreviewSize) {
             state.when(onPhotoMode: (picState) => picState.takePhoto());
           },
           onTapPainter: (tapPosition) => TweenAnimationBuilder(

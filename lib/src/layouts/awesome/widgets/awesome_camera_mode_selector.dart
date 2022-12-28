@@ -51,8 +51,11 @@ class _CameraModePagerState extends State<CameraModePager> {
 
   @override
   void initState() {
-    _index = widget.initialMode !=null ? widget.availableModes.indexOf(widget.initialMode!) : 0;
-    _pageController = PageController(viewportFraction: 0.25, initialPage: _index);
+    _index = widget.initialMode != null
+        ? widget.availableModes.indexOf(widget.initialMode!)
+        : 0;
+    _pageController =
+        PageController(viewportFraction: 0.25, initialPage: _index);
     super.initState();
   }
 

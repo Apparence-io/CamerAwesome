@@ -169,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final InputImageRotation imageRotation =
         InputImageRotation.values.byName(img.rotation.name);
-    
+
     final planeData = img.planes.map(
       (plane) {
         return InputImagePlaneMetadata(

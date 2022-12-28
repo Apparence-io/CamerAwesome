@@ -136,8 +136,7 @@ class CameraContext {
       final yPercentage = flutterPosition.dy / flutterPreviewSize.height;
 
       return CamerawesomePlugin.focusOnPoint(
-        position: Offset(xPercentage,
-            yPercentage),
+        position: Offset(xPercentage, yPercentage),
         previewSize: pixelPreviewSize,
       );
     } else {

@@ -44,7 +44,7 @@ class AnalysisController {
       format: conf.outputFormat,
       width: 1024,
     );
-    
+
     imageSubscription = _images$?.listen((event) {
       onImageListener!(AnalysisImage.from(event));
     });

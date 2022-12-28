@@ -1,7 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
-
 class AwesomeFlashButton extends StatelessWidget {
   final CameraState state;
 

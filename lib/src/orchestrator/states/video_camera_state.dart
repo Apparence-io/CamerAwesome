@@ -83,4 +83,5 @@ class VideoCameraState extends CameraState {
       pixelPreviewSize: pixelPreviewSize,
       flutterPreviewSize: flutterPreviewSize,
     );
-  }}
+  }
+}

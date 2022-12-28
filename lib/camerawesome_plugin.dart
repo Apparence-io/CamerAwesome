@@ -149,7 +149,8 @@ class CamerawesomePlugin {
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
     if (_imagesStream == null) {
-      _imagesStream = _imagesChannel.receiveBroadcastStream('imagesChannel').transform(
+      _imagesStream =
+          _imagesChannel.receiveBroadcastStream('imagesChannel').transform(
         StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
           handleData: (data, sink) {
             sink.add(Map<String, dynamic>.from(data));
