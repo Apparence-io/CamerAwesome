@@ -46,6 +46,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? get pixelPreviewSize => _previewSize;
 
   PreviewSize? get flutterPreviewSize => _flutterPreviewSize;
+  StreamSubscription? _sensorConfigSubscription;
   StreamSubscription? _aspectRatioSubscription;
   CameraAspectRatios? _aspectRatio;
 
@@ -61,20 +62,25 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         });
     });
 
-    _aspectRatioSubscription =
-        widget.state.sensorConfig.aspectRatio$.listen((event) async {
-      final previewSize = await widget.state.previewSize();
-      if ((_previewSize != previewSize || _aspectRatio != event) && mounted) {
-        setState(() {
-          _aspectRatio = event;
-          _previewSize = previewSize;
-        });
-      }
+    _sensorConfigSubscription =
+        widget.state.sensorConfig$.listen((sensorConfig) {
+      _aspectRatioSubscription?.cancel();
+      _aspectRatioSubscription =
+          sensorConfig.aspectRatio$.listen((event) async {
+        final previewSize = await widget.state.previewSize();
+        if ((_previewSize != previewSize || _aspectRatio != event) && mounted) {
+          setState(() {
+            _aspectRatio = event;
+            _previewSize = previewSize;
+          });
+        }
+      });
     });
   }
 
   @override
   void dispose() {
+    _sensorConfigSubscription?.cancel();
     _aspectRatioSubscription?.cancel();
     super.dispose();
   }
