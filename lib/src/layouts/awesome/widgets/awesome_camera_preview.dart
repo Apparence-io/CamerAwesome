@@ -168,15 +168,11 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   CameraPreviewFit.fitWidth,
                   CameraPreviewFit.contain
                 ].contains(widget.previewFit)) {
-              return Container(
-                width: constraints.maxWidth,
-                height: constraints.maxHeight,
-                child: ClipPath(
-                  clipper: CenterCropClipper(
-                    isWidthLarger: constraints.maxWidth > constraints.maxHeight,
-                  ),
-                  child: preview,
+              return ClipPath(
+                clipper: CenterCropClipper(
+                  isWidthLarger: constraints.maxWidth > constraints.maxHeight,
                 ),
+                child: preview,
               );
             } else {
               return preview;
