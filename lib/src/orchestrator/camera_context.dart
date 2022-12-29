@@ -93,7 +93,9 @@ class CameraContext {
       // generates problems (especially when recording a video)
       await CamerawesomePlugin.setCaptureMode(newState.captureMode!);
     }
-    stateController.add(newState);
+    if (!stateController.isClosed) {
+      stateController.add(newState);
+    }
   }
 
   Future<void> switchSensor(SensorConfig newConfig) async {

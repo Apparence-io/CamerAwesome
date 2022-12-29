@@ -136,12 +136,17 @@ void main() {
         expect($(AwesomeCameraModeSelector).$(PageView), findsNothing);
 
         await $(AwesomeCaptureButton).tap();
+        await $.pump();
+        await $.pump(const Duration(milliseconds: 2000));
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
         expect($(AwesomeLocationButton).$(IconButton), findsNothing);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsOneWidget);
+
+        // Sometimes these pump work, sometimes they don't...
+        await $.pump(const Duration(milliseconds: 3000));
         expect($(AwesomeMediaPreview), findsOneWidget);
         expect($(AwesomePauseResumeButton), findsNothing);
         expect($(AwesomeCaptureButton), findsOneWidget);
