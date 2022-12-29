@@ -138,7 +138,7 @@ class AwesomeFlashButton extends StatelessWidget {
       stream: state.sensorConfig$,
       builder: (_, sensorConfigSnapshot) {
         if (!sensorConfigSnapshot.hasData) {
-          return SizedBox();
+          return const SizedBox.shrink();
         }
         final sensorConfig = sensorConfigSnapshot.requireData;
         return StreamBuilder<FlashMode>(

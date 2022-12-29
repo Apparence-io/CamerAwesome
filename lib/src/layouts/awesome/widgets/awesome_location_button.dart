@@ -19,13 +19,13 @@ class AwesomeLocationButton extends StatelessWidget {
         stream: pm.saveGpsLocation$,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return SizedBox();
+            return const SizedBox.shrink();
           }
           final saveGpsLocation = snapshot.data;
           return AwesomeOrientedWidget(
-            child: Material(
-              color: Colors.transparent,
-              child: AwesomeBouncingWidget(
+            child: AwesomeBouncingWidget(
+              child: Container( 
+                color: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Icon(
@@ -35,20 +35,20 @@ class AwesomeLocationButton extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                onTap: () => state.when(onPhotoMode: (pm) {
-                  pm.saveGpsLocation = !(saveGpsLocation ?? false);
-                }),
               ),
+              onTap: () => state.when(onPhotoMode: (pm) {
+                pm.saveGpsLocation = !(saveGpsLocation ?? false);
+              }),
             ),
           );
         },
       );
     }, onPreparingCamera: (_) {
-      return SizedBox();
+      return const SizedBox.shrink();
     }, onVideoMode: (_) {
-      return SizedBox();
+      return const SizedBox.shrink();
     }, onVideoRecordingMode: (_) {
-      return SizedBox();
+      return const SizedBox.shrink();
     });
   }
 }

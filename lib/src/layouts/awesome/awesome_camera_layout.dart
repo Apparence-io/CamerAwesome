@@ -47,15 +47,18 @@ class AwesomeTopActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state is VideoRecordingCameraState) {
-      return SizedBox();
+      return const SizedBox.shrink();
     } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          AwesomeFlashButton(state: state),
-          AwesomeAspectRatioButton(state: state),
-          AwesomeLocationButton(state: state),
-        ],
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AwesomeFlashButton(state: state),
+            AwesomeAspectRatioButton(state: state),
+            AwesomeLocationButton(state: state),
+          ],
+        ),
       );
     }
   }
