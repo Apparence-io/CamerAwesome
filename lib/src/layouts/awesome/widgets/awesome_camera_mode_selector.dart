@@ -91,7 +91,7 @@ class _CameraModePagerState extends State<CameraModePager> {
                 return AnimatedOpacity(
                   duration: Duration(milliseconds: 300),
                   opacity: index == _index ? 1 : 0.2,
-                  child: InkWell(
+                  child: AwesomeBouncingWidget(
                     child: Center(
                       child: Text(
                         cameraMode.name.toUpperCase(),

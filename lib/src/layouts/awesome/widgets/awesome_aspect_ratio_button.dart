@@ -81,12 +81,15 @@ class _AspectRatioButton extends StatelessWidget {
     return AwesomeOrientedWidget(
       child: Material(
         color: Colors.transparent,
-        child: IconButton(
-          onPressed: onTap,
-          icon: Center(
-            child: Image(
-              image: icon,
-              width: width,
+        child: AwesomeBouncingWidget(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Center(
+              child: Image(
+                image: icon,
+                width: width,
+              ),
             ),
           ),
         ),

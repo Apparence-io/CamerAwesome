@@ -1,7 +1,6 @@
+import 'package:camerawesome/src/layouts/awesome/widgets/widgets.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
-
-import 'awesome_oriented_widget.dart';
 
 class AwesomeCameraSwitchButton extends StatelessWidget {
   final CameraState state;
@@ -11,11 +10,11 @@ class AwesomeCameraSwitchButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AwesomeOrientedWidget(
-      child: ClipOval(
-        child: Material(
-          color: Colors.black12,
-          child: InkWell(
-            onTap: state.switchCameraSensor,
+      child: AwesomeBouncingWidget(
+        onTap: state.switchCameraSensor,
+        child: ClipOval(
+          child: Container(
+            color: Colors.black12,
             child: Padding(
               padding: EdgeInsets.all(20),
               child: Icon(
