@@ -15,7 +15,7 @@ class CameraAwesomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'CamerAwesome App',
+      title: 'camerAwesome App',
       home: CameraPage(),
     );
   }

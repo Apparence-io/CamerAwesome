@@ -108,13 +108,21 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   
   float originalImageAspectRatio = originalWidth / originalHeight;
   
+  float outputWidth = originalWidth;
+  float outputHeight = originalHeight;
   if (originalImageAspectRatio != _aspectRatio) {
-    float outputWidth = originalWidth;
-    float outputHeight = originalHeight;
-    if (originalImageAspectRatio > _aspectRatio) {
-      outputWidth = originalHeight * _aspectRatio;
-    } else if (originalImageAspectRatio < _aspectRatio) {
-      outputHeight = originalWidth / _aspectRatio;
+    if (UIDeviceOrientationIsLandscape(_orientation)) {
+      if (originalImageAspectRatio > _aspectRatio) {
+        outputWidth = originalHeight * _aspectRatio;
+      } else if (originalImageAspectRatio < _aspectRatio) {
+        outputHeight = originalWidth / _aspectRatio;
+      }
+    } else {
+      if (originalImageAspectRatio > _aspectRatio) {
+        outputWidth = originalHeight / _aspectRatio;
+      } else if (originalImageAspectRatio < _aspectRatio) {
+        outputHeight = originalWidth * _aspectRatio;
+      }
     }
     
     double refWidth = CGImageGetWidth(image.CGImage);

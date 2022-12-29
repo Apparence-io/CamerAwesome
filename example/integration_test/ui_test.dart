@@ -35,7 +35,7 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(IconButton), findsOneWidget);
+        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         expect($(AwesomeMediaPreview), findsNothing);
         // expect($(AwesomePauseResumeButton), findsNothing);
@@ -52,7 +52,7 @@ void main() {
         await $.pump(const Duration(milliseconds: 400));
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(IconButton),
+        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget),
             findsNothing); // Not visible anymore
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsNothing);
@@ -83,7 +83,7 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(IconButton), findsOneWidget);
+        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsNothing);
         expect($(AwesomeMediaPreview), findsNothing);
@@ -114,7 +114,7 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(IconButton), findsNothing);
+        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // TODO Add an enableAudioButton somewhere in awesome UI ?
         // expect($(AwesomeEnableAudioButton), findsOneWidget);
@@ -127,7 +127,7 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsNothing);
         expect($(AwesomeFlashButton), findsNothing);
-        expect($(AwesomeLocationButton).$(IconButton), findsNothing);
+        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
         expect($(AwesomeCameraSwitchButton), findsNothing);
         // expect($(AwesomeEnableAudioButton), findsOneWidget);
         expect($(AwesomeMediaPreview), findsNothing);
@@ -141,7 +141,7 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(IconButton), findsNothing);
+        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsOneWidget);
 

@@ -11,27 +11,35 @@ class AwesomeAspectRatioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<SensorConfig>(
-      stream: state.sensorConfig$,
-      builder: (_, sensorConfigSnapshot) {
-        if (!sensorConfigSnapshot.hasData) {
-          return SizedBox();
-        }
-        final sensorConfig = sensorConfigSnapshot.requireData;
-        return StreamBuilder<CameraAspectRatios>(
-          stream: sensorConfig.aspectRatio$,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Container();
-            }
-            return _AspectRatioButton.from(
-              aspectRatio: snapshot.requireData,
-              onTap: () => sensorConfig.switchCameraRatio(),
-            );
-          },
-        );
-      },
-    );
+    return state.when(onPhotoMode: (pm) {
+      return StreamBuilder<SensorConfig>(
+        stream: state.sensorConfig$,
+        builder: (_, sensorConfigSnapshot) {
+          if (!sensorConfigSnapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+          final sensorConfig = sensorConfigSnapshot.requireData;
+          return StreamBuilder<CameraAspectRatios>(
+            stream: sensorConfig.aspectRatio$,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Container();
+              }
+              return _AspectRatioButton.from(
+                aspectRatio: snapshot.requireData,
+                onTap: () => sensorConfig.switchCameraRatio(),
+              );
+            },
+          );
+        },
+      );
+    }, onPreparingCamera: (_) {
+      return const SizedBox.shrink();
+    }, onVideoMode: (_) {
+      return const SizedBox.shrink();
+    }, onVideoRecordingMode: (_) {
+      return const SizedBox.shrink();
+    });
   }
 }
 
@@ -79,14 +87,17 @@ class _AspectRatioButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AwesomeOrientedWidget(
-      child: Material(
-        color: Colors.transparent,
-        child: IconButton(
-          onPressed: onTap,
-          icon: Center(
-            child: Image(
-              image: icon,
-              width: width,
+      child: AwesomeBouncingWidget(
+        onTap: onTap,
+        child: Container(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Center(
+              child: Image(
+                image: icon,
+                width: width,
+              ),
             ),
           ),
         ),
