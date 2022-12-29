@@ -79,10 +79,10 @@ class _AspectRatioButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AwesomeOrientedWidget(
-      child: Material(
-        color: Colors.transparent,
-        child: AwesomeBouncingWidget(
-          onTap: onTap,
+      child: AwesomeBouncingWidget(
+        onTap: onTap,
+        child: Container(
+          color: Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.all(10.0),
             child: Center(
