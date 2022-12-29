@@ -183,9 +183,10 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)_handleGetEffectivPreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
   CGSize previewSize = [_camera getEffectivPreviewSize];
+  // height & width are inverted, this is intentionnal, because camera is always on portrait mode
   result(@{
-    @"width": [NSNumber numberWithInt:previewSize.width],
-    @"height": [NSNumber numberWithInt:previewSize.height],
+    @"width": [NSNumber numberWithInt:previewSize.height],
+    @"height": [NSNumber numberWithInt:previewSize.width],
   });
 }
 

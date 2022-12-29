@@ -149,9 +149,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
-          previewFit: Platform.isAndroid
-              ? (previewFit ?? CameraPreviewFit.cover)
-              : CameraPreviewFit.cover,
+          previewFit: previewFit ?? CameraPreviewFit.cover,
         );
 
   /// 🚧 Experimental
@@ -188,9 +186,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
-          previewFit: Platform.isAndroid
-              ? (previewFit ?? CameraPreviewFit.cover)
-              : CameraPreviewFit.cover,
+          previewFit: previewFit ?? CameraPreviewFit.cover,
         );
 
   @override

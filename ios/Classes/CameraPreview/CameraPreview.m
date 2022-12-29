@@ -507,6 +507,7 @@
     [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection orientation:_motionController.deviceOrientation];
   }
   
+  // Process video recording
   if (_videoController.isRecording) {
     [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:_captureVideoOutput];
   }
