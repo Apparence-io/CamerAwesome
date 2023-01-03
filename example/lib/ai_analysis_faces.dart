@@ -79,9 +79,11 @@ class _CameraPageState extends State<CameraPage> {
         // debounceTime does not work for some reasons so we use a workaround
         // .debounceTime(const Duration(milliseconds: 100))
         .bufferTime(const Duration(milliseconds: 300))
-        .map((event) => event.last)
+        .map((event) => event.isNotEmpty ? event.last : null)
         .listen((event) {
-      analyzeImage(event);
+      if (event != null) {
+        analyzeImage(event);
+      }
     });
   }
 
@@ -340,32 +342,37 @@ class FaceDetectorPainter extends CustomPainter {
               ..strokeWidth = 2
               ..style = PaintingStyle.stroke);
       }
-      // canvas.drawRect(
-      //     Rect.fromPoints(
-      //         (face.boundingBox.topLeft
-      //                     .translate(cropRect?.left ?? 0, cropRect?.top ?? 0) *
-      //                 ratio)
-      //             .translate(
-      //                 0, ((size.height - croppedSize.height) / 2) * ratio),
-      //         (face.boundingBox.bottomRight
-      //                     .translate(cropRect?.left ?? 0, cropRect?.top ?? 0) *
-      //                 ratio)
-      //             .translate(
-      //                 0, ((size.height - croppedSize.height) / 2) * ratio)),
-      //     Paint()..color = Colors.red.withOpacity(0.5));
+      canvas.drawRect(
+          Rect.fromPoints(
+              (face.boundingBox.topLeft.translate(
+                          model.cropRect?.left ?? 0, model.cropRect?.top ?? 0) *
+                      ratioAnalysisToPreview)
+                  .translate(
+                      0,
+                      ((size.height - croppedSize.height) / 2) *
+                          ratioAnalysisToPreview),
+              (face.boundingBox.bottomRight.translate(
+                          model.cropRect?.left ?? 0, model.cropRect?.top ?? 0) *
+                      ratioAnalysisToPreview)
+                  .translate(
+                      0,
+                      ((size.height - croppedSize.height) / 2) *
+                          ratioAnalysisToPreview)),
+          Paint()..color = Colors.red.withOpacity(0.5));
 
-      // canvas.drawRect(
-      //   Rect.fromLTRB(
-      //     translateX(
-      //         face.boundingBox.left, rotation!, size, absoluteImageSize!),
-      //     translateY(face.boundingBox.top, rotation!, size, absoluteImageSize!),
-      //     translateX(
-      //         face.boundingBox.right, rotation!, size, absoluteImageSize!),
-      //     translateY(
-      //         face.boundingBox.bottom, rotation!, size, absoluteImageSize!),
-      //   ),
-      //   Paint()..color=Colors.purple,
-      // );
+      canvas.drawRect(
+        Rect.fromLTRB(
+          translateX(face.boundingBox.left, model.rotation, size,
+              model.absoluteImageSize),
+          translateY(face.boundingBox.top, model.rotation, size,
+              model.absoluteImageSize),
+          translateX(face.boundingBox.right, model.rotation, size,
+              model.absoluteImageSize),
+          translateY(face.boundingBox.bottom, model.rotation, size,
+              model.absoluteImageSize),
+        ),
+        Paint()..color = Colors.purple,
+      );
     }
   }
 
@@ -378,10 +385,12 @@ class FaceDetectorPainter extends CustomPainter {
         oldDelegate.model != model;
   }
 
-  double translateX(double x,
-      int rotation,
-      Size size,
-      Size absoluteImageSize,) {
+  double translateX(
+    double x,
+    int rotation,
+    Size size,
+    Size absoluteImageSize,
+  ) {
     switch (rotation) {
       case 90:
         return x *
@@ -401,10 +410,12 @@ class FaceDetectorPainter extends CustomPainter {
     }
   }
 
-  double translateY(double y,
-      int rotation,
-      Size size,
-      Size absoluteImageSize,) {
+  double translateY(
+    double y,
+    int rotation,
+    Size size,
+    Size absoluteImageSize,
+  ) {
     switch (rotation) {
       case 90:
       case 270:
@@ -418,19 +429,20 @@ class FaceDetectorPainter extends CustomPainter {
     }
   }
 
-  Offset _croppedPosition(Point<int> element, {
+  Offset _croppedPosition(
+    Point<int> element, {
     required Size croppedSize,
     required Size painterSize,
     required double ratio,
     required bool flipXY,
   }) {
     return (Offset(
-      (flipXY ? element.y : element.x).toDouble() -
+              (flipXY ? element.y : element.x).toDouble() -
                   ((model.absoluteImageSize.height - croppedSize.width) / 2),
               (flipXY ? element.x : element.y).toDouble() -
                   ((model.absoluteImageSize.width - croppedSize.height) / 2),
             ) *
-        ratio)
+            ratio)
         .translate(
       (painterSize.width - (croppedSize.width * ratio)) / 2,
       (painterSize.height - (croppedSize.height * ratio)) / 2,
