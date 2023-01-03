@@ -164,7 +164,7 @@ state.when(
 <br>
 
 -----
-## 🔬 Analysis mode (WIP 🚧)
+## 🔬 Analysis mode
 
 This is a first step into this feature as we are currently working on this.
 <br>
