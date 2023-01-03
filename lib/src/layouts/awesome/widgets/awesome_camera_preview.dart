@@ -53,8 +53,10 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   @override
   void initState() {
     super.initState();
-    Future.wait([widget.state.previewSize(), widget.state.textureId()])
-        .then((data) {
+    Future.wait([
+      widget.state.previewSize(),
+      widget.state.textureId(),
+    ]).then((data) {
       if (mounted)
         setState(() {
           _previewSize = data[0] as PreviewSize;
