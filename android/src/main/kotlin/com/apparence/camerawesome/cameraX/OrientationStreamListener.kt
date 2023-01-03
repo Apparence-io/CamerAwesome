@@ -7,7 +7,7 @@ import com.apparence.camerawesome.sensors.SensorOrientation
 
 class OrientationStreamListener(
     activity: Activity,
-    private var sensorOrientationListener: SensorOrientation
+    private var listeners: List<SensorOrientation>
 ) {
     var currentOrientation: Int = 0
     val surfaceOrientation
@@ -35,9 +35,9 @@ class OrientationStreamListener(
                     }
                     currentOrientation = (i + 45) / 90 * 90
                     if (currentOrientation == 360) currentOrientation = 0
-                    sensorOrientationListener.notify(
-                        currentOrientation
-                    )
+                    for (listener in listeners) {
+                        listener.onOrientationChanged(currentOrientation)
+                    }
                 }
             }
         orientationEventListener.enable()

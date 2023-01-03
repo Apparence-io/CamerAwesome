@@ -77,7 +77,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             activity!!
         )
         val cameraProvider = future.get()
-        orientationStreamListener = OrientationStreamListener(activity!!, sensorOrientationListener)
         textureEntry = textureRegistry!!.createSurfaceTexture()
 
         val cameraSelector =
@@ -93,6 +92,9 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             this.aspectRatio = if (aspectRatio == "RATIO_16_9") 1 else 0
             this.flashMode = FlashMode.valueOf(flashMode)
         }
+        orientationStreamListener =
+            OrientationStreamListener(activity!!, listOf(sensorOrientationListener, cameraState))
+
         if (enableImageStream) {
             imageStreamChannel.setStreamHandler(cameraState)
         }
@@ -114,9 +116,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             try {
                 this.imageAnalysisBuilder = ImageAnalysisBuilder.configure(
                     aspectRatio ?: AspectRatio.RATIO_4_3,
-                    OutputImageFormat.valueOf(format.uppercase()),
-                    executor(activity!!),
-                    width
+                    when (format.uppercase()) {
+                        "YUV_420" -> OutputImageFormat.YUV_420_888
+                        "NV21" -> OutputImageFormat.NV21
+                        "JPEG" -> OutputImageFormat.JPEG
+                        else -> OutputImageFormat.NV21
+                    },
+                    executor(activity!!), width,
                 )
                 updateLifecycle(activity!!)
             } catch (e: Exception) {

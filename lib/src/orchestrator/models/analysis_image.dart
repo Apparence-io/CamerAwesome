@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 
 enum InputAnalysisImageFormat { yuv_420, bgra8888, jpeg, nv21, unknown }
 
@@ -52,6 +53,7 @@ class AnalysisImage {
   InputAnalysisImageFormat format;
   Uint8List? nv21Image;
   InputAnalysisImageRotation rotation;
+  Rect? cropRect;
 
   AnalysisImage({
     required this.height,
@@ -60,6 +62,7 @@ class AnalysisImage {
     required this.format,
     required this.rotation,
     this.nv21Image,
+    this.cropRect,
   });
 
   factory AnalysisImage.from(Map<String, dynamic> map) {
@@ -71,9 +74,17 @@ class AnalysisImage {
           .toList(),
       rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
       format: inputAnalysisImageFormatParser(map["format"]),
-      nv21Image: map.containsKey("nv21Image")
-          ? map["nv21Image"]
-          : null, // TODO why this ? for Android only
+      // Android only
+      nv21Image: map.containsKey("nv21Image") ? map["nv21Image"] : null,
+      // Android only
+      cropRect: map.containsKey("cropRect")
+          ? Rect.fromLTRB(
+              map["cropRect"]["left"].toDouble(),
+              map["cropRect"]["top"].toDouble(),
+              map["cropRect"]["right"].toDouble(),
+              map["cropRect"]["bottom"].toDouble(),
+            )
+          : null,
     );
   }
 }
@@ -95,7 +106,7 @@ class ImagePlane {
   factory ImagePlane.from(Map<String, dynamic> map) {
     return ImagePlane(
       bytes: map["bytes"],
-      bytesPerRow: map["bytesPerRow"],
+      bytesPerRow: map["bytesPerRow"] ?? map["rowStride"],
       height: map["height"],
       width: map["width"],
     );
