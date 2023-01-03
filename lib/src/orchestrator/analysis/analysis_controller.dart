@@ -42,7 +42,7 @@ class AnalysisController {
     // not needed for iOS
     await CamerawesomePlugin.setupAnalysis(
       format: conf.outputFormat,
-      width: 1024,
+      width: conf.width,
     );
 
     imageSubscription = _images$?.listen((event) {

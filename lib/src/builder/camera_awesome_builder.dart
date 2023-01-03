@@ -75,6 +75,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// only for Android
   final AnalysisConfig? imageAnalysisConfig;
 
+  /// Useful for drawing things based on AI Analysis above the CameraPreview for instance
+  final PreviewDecoratorBuilder? previewDecoratorBuilder;
+
   final OnPreviewTap Function(CameraState)? onPreviewTapBuilder;
   final OnPreviewScale Function(CameraState)? onPreviewScaleBuilder;
 
@@ -94,6 +97,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.imageAnalysisConfig,
     this.onPreviewTapBuilder,
     this.onPreviewScaleBuilder,
+    this.previewDecoratorBuilder,
   });
 
   /// Use the camera with the built-in interface.
@@ -116,22 +120,23 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// If you want to do image analysis (for AI for instance), you can set the
   /// [imageAnaysisConfig] and listen to the stream of images with
   /// [onImageForAnalysis].
-  CameraAwesomeBuilder.awesome({
-    Sensors sensor = Sensors.back,
-    FlashMode flashMode = FlashMode.none,
-    double zoom = 0.0,
-    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
-    Widget? progressIndicator,
-    required SaveConfig saveConfig,
-    Function(MediaCapture)? onMediaTap,
-    OnImageForAnalysis? onImageForAnalysis,
-    AnalysisConfig? imageAnalysisConfig,
-    OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
-    OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
-    CameraPreviewFit? previewFit,
-  }) : this._(
+  CameraAwesomeBuilder.awesome(
+      {Sensors sensor = Sensors.back,
+      FlashMode flashMode = FlashMode.none,
+      double zoom = 0.0,
+      CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+      ExifPreferences? exifPreferences,
+      bool enableAudio = true,
+      Widget? progressIndicator,
+      required SaveConfig saveConfig,
+      Function(MediaCapture)? onMediaTap,
+      OnImageForAnalysis? onImageForAnalysis,
+      AnalysisConfig? imageAnalysisConfig,
+      OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
+      OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
+      CameraPreviewFit? previewFit,
+      PreviewDecoratorBuilder? previewDecoratorBuilder})
+      : this._(
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
@@ -150,28 +155,30 @@ class CameraAwesomeBuilder extends StatefulWidget {
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
           previewFit: previewFit ?? CameraPreviewFit.cover,
+          previewDecoratorBuilder: previewDecoratorBuilder,
         );
 
   /// 🚧 Experimental
   ///
   /// Documentation on its way, API might change
-  CameraAwesomeBuilder.custom({
-    CaptureMode initialCaptureMode = CaptureMode.photo,
-    Sensors sensor = Sensors.back,
-    FlashMode flashMode = FlashMode.none,
-    double zoom = 0.0,
-    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
-    Widget? progressIndicator,
-    required CameraLayoutBuilder builder,
-    required SaveConfig saveConfig,
-    OnImageForAnalysis? onImageForAnalysis,
-    AnalysisConfig? imageAnalysisConfig,
-    OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
-    OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
-    CameraPreviewFit? previewFit,
-  }) : this._(
+  CameraAwesomeBuilder.custom(
+      {CaptureMode initialCaptureMode = CaptureMode.photo,
+      Sensors sensor = Sensors.back,
+      FlashMode flashMode = FlashMode.none,
+      double zoom = 0.0,
+      CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+      ExifPreferences? exifPreferences,
+      bool enableAudio = true,
+      Widget? progressIndicator,
+      required CameraLayoutBuilder builder,
+      required SaveConfig saveConfig,
+      OnImageForAnalysis? onImageForAnalysis,
+      AnalysisConfig? imageAnalysisConfig,
+      OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
+      OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
+      CameraPreviewFit? previewFit,
+      PreviewDecoratorBuilder? previewDecoratorBuilder})
+      : this._(
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
@@ -187,6 +194,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
           previewFit: previewFit ?? CameraPreviewFit.cover,
+          previewDecoratorBuilder: previewDecoratorBuilder,
         );
 
   @override
@@ -311,6 +319,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                             snapshot.requireData.sensorConfig.setZoom(scale);
                           },
                         ),
+                previewDecoratorBuilder: widget.previewDecoratorBuilder,
               ),
             ),
             Positioned.fill(

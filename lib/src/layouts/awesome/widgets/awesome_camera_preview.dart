@@ -14,6 +14,14 @@ enum CameraPreviewFit {
   cover,
 }
 
+typedef PreviewDecoratorBuilder = Widget Function(
+  CameraState state,
+  PreviewSize previewSize,
+
+  /// [previewRect] might be clipped (especially in Ratio 1:1)
+  Rect previewRect,
+);
+
 /// This is a fullscreen camera preview
 /// some part of the preview are cropped so we have a full sized camera preview
 class AwesomeCameraPreview extends StatefulWidget {
@@ -22,6 +30,7 @@ class AwesomeCameraPreview extends StatefulWidget {
   final CameraState state;
   final OnPreviewTap? onPreviewTap;
   final OnPreviewScale? onPreviewScale;
+  final PreviewDecoratorBuilder? previewDecoratorBuilder;
 
   const AwesomeCameraPreview({
     super.key,
@@ -30,6 +39,7 @@ class AwesomeCameraPreview extends StatefulWidget {
     this.onPreviewTap,
     this.onPreviewScale,
     this.previewFit = CameraPreviewFit.cover,
+    this.previewDecoratorBuilder,
   });
 
   @override
@@ -102,9 +112,10 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         return LayoutBuilder(
           builder: (_, constraints) {
             final size = Size(_previewSize!.width, _previewSize!.height);
-            Size maxSize;
+
             final ratioW = constraints.maxWidth / size.width;
             final ratioH = constraints.maxHeight / size.height;
+            Size maxSize;
             switch (widget.previewFit) {
               case CameraPreviewFit.fitWidth:
                 maxSize = Size(constraints.maxWidth, size.height * ratioW);
@@ -128,8 +139,17 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 break;
             }
 
+            final center = Size(constraints.maxWidth, constraints.maxHeight)
+                .center(Offset.zero);
             _flutterPreviewSize =
                 PreviewSize(width: maxSize.width, height: maxSize.height);
+            PreviewSize croppedPreviewSize = _flutterPreviewSize!;
+            if (_aspectRatio == CameraAspectRatios.ratio_1_1) {
+              croppedPreviewSize = PreviewSize(
+                width: maxSize.shortestSide,
+                height: maxSize.shortestSide,
+              );
+            }
             final preview = SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -168,14 +188,45 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   CameraPreviewFit.fitWidth,
                   CameraPreviewFit.contain
                 ].contains(widget.previewFit)) {
-              return ClipPath(
-                clipper: CenterCropClipper(
-                  isWidthLarger: constraints.maxWidth > constraints.maxHeight,
+              return Stack(children: [
+                Positioned.fill(
+                  child: ClipPath(
+                    clipper: CenterCropClipper(
+                      isWidthLarger:
+                          constraints.maxWidth > constraints.maxHeight,
+                    ),
+                    child: preview,
+                  ),
                 ),
-                child: preview,
-              );
+                if (widget.previewDecoratorBuilder != null)
+                  Positioned.fill(
+                    child: widget.previewDecoratorBuilder!(
+                      widget.state,
+                      _flutterPreviewSize!,
+                      Rect.fromCenter(
+                        center: center,
+                        width: croppedPreviewSize.width,
+                        height: croppedPreviewSize.height,
+                      ),
+                    ),
+                  )
+              ]);
             } else {
-              return preview;
+              return Stack(children: [
+                Positioned.fill(child: preview),
+                if (widget.previewDecoratorBuilder != null)
+                  Positioned.fill(
+                    child: widget.previewDecoratorBuilder!(
+                      widget.state,
+                      _flutterPreviewSize!,
+                      Rect.fromCenter(
+                        center: center,
+                        width: croppedPreviewSize.width,
+                        height: croppedPreviewSize.height,
+                      ),
+                    ),
+                  )
+              ]);
             }
           },
         );

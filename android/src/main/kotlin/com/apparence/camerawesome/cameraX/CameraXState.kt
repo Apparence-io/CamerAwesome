@@ -15,6 +15,7 @@ import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.apparence.camerawesome.models.FlashMode
+import com.apparence.camerawesome.sensors.SensorOrientation
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executor
@@ -42,9 +43,10 @@ data class CameraXState(
     var rational: Rational = Rational(3, 4),
     var flashMode: FlashMode = FlashMode.NONE,
     val onStreamReady: (state: CameraXState) -> Unit,
-) : EventChannel.StreamHandler {
+) : EventChannel.StreamHandler, SensorOrientation {
 
     var imageAnalysisBuilder: ImageAnalysisBuilder? = null
+    var imageAnalysis: ImageAnalysis? = null
 
     val maxZoomRatio: Double
         get() = previewCamera!!.cameraInfo.zoomState.value!!.maxZoomRatio.toDouble()
@@ -61,20 +63,17 @@ data class CameraXState(
     fun updateLifecycle(activity: Activity) {
         // Preview
         preview = if (aspectRatio != null) {
-            Preview.Builder()
-                .setTargetAspectRatio(aspectRatio!!)
-                .setCameraSelector(cameraSelector).build()
+            Preview.Builder().setTargetAspectRatio(aspectRatio!!).setCameraSelector(cameraSelector)
+                .build()
         } else {
-            Preview.Builder()
-                .setCameraSelector(cameraSelector).build()
+            Preview.Builder().setCameraSelector(cameraSelector).build()
         }
 
         preview!!.setSurfaceProvider(
             surfaceProvider(executor(activity))
         )
         if (currentCaptureMode == CaptureModes.PHOTO) {
-            imageCapture = ImageCapture.Builder()
-                .setCameraSelector(cameraSelector)
+            imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
 //                .setJpegQuality(100)
                 .apply {
                     //photoSize?.let { setTargetResolution(it) }
@@ -88,12 +87,10 @@ data class CameraXState(
                             else -> ImageCapture.FLASH_MODE_OFF
                         }
                     )
-                }
-                .build()
+                }.build()
         } else {
-            recorder = Recorder.Builder()
-                .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
-                .build()
+            recorder =
+                Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
             videoCapture = VideoCapture.withOutput(recorder!!)
         }
 
@@ -106,30 +103,22 @@ data class CameraXState(
             },
         ).apply {
             if (imageAnalysisBuilder != null) {
-                add(imageAnalysisBuilder!!.build())
+                imageAnalysis = imageAnalysisBuilder!!.build()
+                add(imageAnalysis!!)
             }
         }
 
         cameraProvider.unbindAll()
-        previewCamera = if (rational.denominator == rational.numerator)
-            cameraProvider.bindToLifecycle(
-                activity as LifecycleOwner,
-                cameraSelector,
-                UseCaseGroup.Builder()
-                    .apply {
-                        for (uc in useCases.filterNotNull())
-                            addUseCase(uc)
-                    }
-                    // We don't care about the rotation since rational is only used on 1:1 ratio
-                    .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build())
-                    .build()
-            )
-        else
-            cameraProvider.bindToLifecycle(
-                activity as LifecycleOwner,
-                cameraSelector,
-                *useCases.toTypedArray()
-            )
+        previewCamera = cameraProvider.bindToLifecycle(
+            activity as LifecycleOwner,
+            cameraSelector,
+            UseCaseGroup.Builder().apply {
+                for (uc in useCases.filterNotNull()) addUseCase(uc)
+            }
+                // TODO Orientation might be wrong, to be verified
+                .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build()).build(),
+        )
+
 
         previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
     }
@@ -141,7 +130,7 @@ data class CameraXState(
             val texture = textureEntry.surfaceTexture()
             texture.setDefaultBufferSize(resolution.width, resolution.height)
             val surface = Surface(texture)
-            request.provideSurface(surface, executor) { _: SurfaceRequest.Result? -> }
+            request.provideSurface(surface, executor) { }
         }
     }
 
@@ -210,7 +199,7 @@ data class CameraXState(
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        val previous = imageAnalysisBuilder?.previewStreamSink;
+        val previous = imageAnalysisBuilder?.previewStreamSink
         imageAnalysisBuilder?.previewStreamSink = events
         if (previous == null && events != null) {
             onStreamReady(this)
@@ -220,5 +209,22 @@ data class CameraXState(
     override fun onCancel(arguments: Any?) {
         this.imageAnalysisBuilder?.previewStreamSink?.endOfStream()
         this.imageAnalysisBuilder?.previewStreamSink = null
+    }
+
+    override fun onOrientationChanged(orientation: Int) {
+        imageAnalysis?.targetRotation = when (orientation) {
+            in 225 until 315 -> {
+                Surface.ROTATION_90
+            }
+            in 135 until 225 -> {
+                Surface.ROTATION_180
+            }
+            in 45 until 135 -> {
+                Surface.ROTATION_270
+            }
+            else -> {
+                Surface.ROTATION_0
+            }
+        }
     }
 }
