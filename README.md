@@ -46,12 +46,13 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 🎞 Take photos                 |    ✅    |  ✅  |
 | 🌤 Exposure level              |    ✅    |  ✅  |
 | 📡 Broadcast live image stream |    ✅    |  ✅  |
-| 👁 zoom                        |    ✅    |  ✅  |
+| 👁 Zoom                        |    ✅    |  ✅  |
 | 📸 Device flash support        |    ✅    |  ✅  |
 | ⌛️ Auto focus                  |    ✅    |  ✅  |
 | 📲 Live switching camera       |    ✅    |  ✅  |
 | 😵‍💫 Camera rotation stream      |    ✅    |  ✅  |
 | 🤐 Background auto stop        |    ✅    |  ✅  |
+| 🔀 Sensor type switching       |    ⛔️    |  ✅  |
 
 -----
 
