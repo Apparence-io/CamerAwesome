@@ -210,7 +210,7 @@
 }
 
 /// Set sensor between Front & Rear camera
-- (void)setSensor:(CameraSensor)sensor {
+- (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId {
   // First remove all input & output
   [_captureSession beginConfiguration];
   
@@ -229,6 +229,7 @@
   [_captureSession removeConnection:_captureConnection];
   
   _cameraSensor = sensor;
+  _captureDeviceId = captureDeviceId;
   
   // Init the camera preview with the selected sensor
   [self initCameraPreview:sensor];
@@ -319,6 +320,10 @@
 
 /// Get the first available camera on device (front or rear)
 - (NSString *)selectAvailableCamera:(CameraSensor)sensor {
+  if (_captureDeviceId != nil) {
+    return _captureDeviceId;
+  }
+  
   NSArray<AVCaptureDevice *> *devices = [[NSArray alloc] init];
   AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
                                                        discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera ]
@@ -333,6 +338,46 @@
     }
   }
   return nil;
+}
+
+- (NSArray *)getSensors:(AVCaptureDevicePosition)position {
+  NSMutableArray *sensors = [NSMutableArray new];
+  
+  NSArray *sensorsType = @[AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera];
+
+  AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
+                                                       discoverySessionWithDeviceTypes:sensorsType
+                                                       mediaType:AVMediaTypeVideo
+                                                       position:AVCaptureDevicePositionUnspecified];
+  
+  for (AVCaptureDevice *device in discoverySession.devices) {
+    NSString *type;
+    if (device.deviceType == AVCaptureDeviceTypeBuiltInTelephotoCamera) {
+      type = @"telephoto";
+    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInUltraWideCamera) {
+      type = @"ultraWideAngle";
+    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInTrueDepthCamera) {
+      type = @"trueDepth";
+    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInWideAngleCamera) {
+      type = @"wideAngle";
+    } else {
+      type = @"unknown";
+    }
+    
+    NSDictionary *sensorData = @{
+      @"uid": device.uniqueID,
+      @"type": type,
+      @"name": device.localizedName,
+      @"iso": [NSNumber numberWithFloat:device.ISO],
+      @"flashAvailable": [NSNumber numberWithBool:device.flashAvailable],
+    };
+    
+    if (device.position == position) {
+      [sensors addObject:sensorData];
+    }
+  }
+  
+  return sensors;
 }
 
 /// Set capture mode between Photo & Video mode

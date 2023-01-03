@@ -23,6 +23,7 @@
 #import "CameraPictureController.h"
 #import "PermissionsController.h"
 #import "AspectRatio.h"
+#import "CameraSensorType.h"
 #import "InputAnalysisImageFormat.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -42,6 +43,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
 @property(readonly, nonatomic) CameraSensor cameraSensor;
+@property(readonly, nonatomic) NSString *captureDeviceId;
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) NSString *currentPresset;
@@ -81,8 +83,9 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)stopRecordingVideo;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview;
 - (void)dispose;
+- (NSArray *)getSensors:(AVCaptureDevicePosition)position;
 - (void)setResult:(FlutterResult _Nonnull)result;
-- (void)setSensor:(CameraSensor)sensor;
+- (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
 - (void)setZoom:(float)value;
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
