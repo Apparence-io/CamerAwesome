@@ -12,13 +12,13 @@
 
 <div>
     <a href="https://github.com/Solido/awesome-flutter">
-        <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=flat-square" />
+        <img alt="Awesome Flutter" src="https://img.shields.io/badge/Awesome-Flutter-blue.svg?longCache=true&style=for-the-badge" />
     </a>
     <a href="https://github.com/Apparence-io/camera_awesome">
-        <img src="https://img.shields.io/github/stars/Apparence-io/camera_awesome.svg?style=flat-square&logo=github&colorB=green&label=Stars" alt="Star on Github">
+        <img src="https://img.shields.io/github/stars/Apparence-io/camera_awesome.svg?style=for-the-badge&logo=github&colorB=green&label=Stars" alt="Star on Github">
     </a>
     <a href="https://pub.dev/packages/camerawesome">
-        <img src="https://img.shields.io/pub/v/camerawesome.svg?style=flat-square&label=Pub" alt="Star on Github">
+        <img src="https://img.shields.io/pub/v/camerawesome.svg?style=for-the-badge&label=Pub" alt="Star on Github">
     </a>
 </div>
 
