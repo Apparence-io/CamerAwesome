@@ -16,8 +16,10 @@ enum CameraPreviewFit {
 
 typedef PreviewDecoratorBuilder = Widget Function(
   CameraState state,
-  Size flutterPreviewSize,
-  Rect actualPreviewRect,
+  PreviewSize previewSize,
+
+  /// [previewRect] might be clipped (especially in Ratio 1:1)
+  Rect previewRect,
 );
 
 /// This is a fullscreen camera preview
@@ -110,9 +112,10 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         return LayoutBuilder(
           builder: (_, constraints) {
             final size = Size(_previewSize!.width, _previewSize!.height);
-            Size maxSize;
+
             final ratioW = constraints.maxWidth / size.width;
             final ratioH = constraints.maxHeight / size.height;
+            Size maxSize;
             switch (widget.previewFit) {
               case CameraPreviewFit.fitWidth:
                 maxSize = Size(constraints.maxWidth, size.height * ratioW);
@@ -136,8 +139,17 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 break;
             }
 
+            final center = Size(constraints.maxWidth, constraints.maxHeight)
+                .center(Offset.zero);
             _flutterPreviewSize =
                 PreviewSize(width: maxSize.width, height: maxSize.height);
+            PreviewSize croppedPreviewSize = _flutterPreviewSize!;
+            if (_aspectRatio == CameraAspectRatios.ratio_1_1) {
+              croppedPreviewSize = PreviewSize(
+                width: maxSize.shortestSide,
+                height: maxSize.shortestSide,
+              );
+            }
             final preview = SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -190,11 +202,11 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   Positioned.fill(
                     child: widget.previewDecoratorBuilder!(
                       widget.state,
-                      maxSize,
+                      _flutterPreviewSize!,
                       Rect.fromCenter(
-                        center: maxSize.center(Offset.zero),
-                        width: _flutterPreviewSize!.width,
-                        height: _flutterPreviewSize!.height,
+                        center: center,
+                        width: croppedPreviewSize.width,
+                        height: croppedPreviewSize.height,
                       ),
                     ),
                   )
@@ -206,11 +218,11 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   Positioned.fill(
                     child: widget.previewDecoratorBuilder!(
                       widget.state,
-                      maxSize,
+                      _flutterPreviewSize!,
                       Rect.fromCenter(
-                        center: maxSize.center(Offset.zero),
-                        width: _flutterPreviewSize!.width,
-                        height: _flutterPreviewSize!.height,
+                        center: center,
+                        width: croppedPreviewSize.width,
+                        height: croppedPreviewSize.height,
                       ),
                     ),
                   )

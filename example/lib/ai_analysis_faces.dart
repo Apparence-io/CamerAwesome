@@ -4,10 +4,12 @@ import 'dart:math';
 
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rxdart/rxdart.dart';
 
 /// This is an example using machine learning with the camera image
 /// This is still in progress and some changes are about to come
@@ -40,9 +42,14 @@ class CameraPage extends StatefulWidget {
   State<CameraPage> createState() => _CameraPageState();
 }
 
-class _CameraPageState extends State<CameraPage>
-    with SingleTickerProviderStateMixin {
-  Timer? timer;
+class _CameraPageState extends State<CameraPage> {
+  final BehaviorSubject<AnalysisImage> _analysisImagesStream =
+      BehaviorSubject();
+
+  StreamSubscription? _analysisSubscription;
+
+  final BehaviorSubject<FaceDetectionModel> _faceDetectionStream =
+      BehaviorSubject();
 
   final options = FaceDetectorOptions(
     enableContours: true,
@@ -50,12 +57,6 @@ class _CameraPageState extends State<CameraPage>
     enableLandmarks: true,
   );
   late final faceDetector = FaceDetector(options: options);
-  late final AnimationController animation;
-  List<Face>? _faces;
-  Size? _absoluteImageSize;
-  int? _rotation;
-  InputImageRotation? _imageRotation;
-  Rect? _cropRect;
 
   @override
   void deactivate() {
@@ -64,12 +65,24 @@ class _CameraPageState extends State<CameraPage>
   }
 
   @override
+  void dispose() {
+    _analysisSubscription?.cancel();
+    _analysisImagesStream.close();
+    _faceDetectionStream.close();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
-    animation = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 100))
-      ..forward()
-      ..repeat();
+    _analysisSubscription = _analysisImagesStream.stream
+        // debounceTime does not work for some reasons so we use a workaround
+        // .debounceTime(const Duration(milliseconds: 100))
+        .bufferTime(const Duration(milliseconds: 300))
+        .map((event) => event.last)
+        .listen((event) {
+      analyzeImage(event);
+    });
   }
 
   @override
@@ -86,13 +99,14 @@ class _CameraPageState extends State<CameraPage>
           previewFit: CameraPreviewFit.contain,
           aspectRatio: CameraAspectRatios.ratio_1_1,
           sensor: Sensors.front,
-          onImageForAnalysis: analyzeImage,
+          onImageForAnalysis: (img) {
+            _analysisImagesStream.add(img);
+          },
           imageAnalysisConfig: AnalysisConfig(
             outputFormat: InputAnalysisImageFormat.nv21,
             width: 512,
           ),
-          previewDecoratorBuilder: (state, flutterPreviewSize, previewRect) {
-            // return Container(width: 200, height: 200, color: Colors.pink);
+          previewDecoratorBuilder: (state, previewSize, previewRect) {
             return IgnorePointer(
               child: StreamBuilder(
                 stream: state.sensorConfig$,
@@ -100,23 +114,21 @@ class _CameraPageState extends State<CameraPage>
                   if (!snapshot.hasData) {
                     return const SizedBox();
                   } else {
-                    return AnimatedBuilder(
-                        animation: animation,
-                        builder: (context, widget) {
-                          return CustomPaint(
-                            painter: FaceDetectorPainter(
-                              faces: _faces,
-                              absoluteImageSize: _absoluteImageSize,
-                              rotation: _rotation,
-                              inputImageRotation: _imageRotation,
-                              listenable: animation,
-                              previewRect: previewRect,
-                              cropRect: _cropRect,
-                              isBackCamera:
-                                  snapshot.requireData.sensor == Sensors.back,
-                            ),
-                          );
-                        });
+                    return StreamBuilder<FaceDetectionModel>(
+                      stream: _faceDetectionStream,
+                      builder: (_, faceModelSnapshot) {
+                        if (!faceModelSnapshot.hasData) return const SizedBox();
+                        return CustomPaint(
+                          painter: FaceDetectorPainter(
+                            model: faceModelSnapshot.requireData,
+                            previewSize: previewSize,
+                            previewRect: previewRect,
+                            isBackCamera:
+                                snapshot.requireData.sensor == Sensors.back,
+                          ),
+                        );
+                      },
+                    );
                   }
                 },
               ),
@@ -129,13 +141,7 @@ class _CameraPageState extends State<CameraPage>
 
   // Lets just process only one image / second
   analyzeImage(AnalysisImage img) {
-    if (timer != null && timer!.isActive) {
-      return;
-    }
     processImage(img);
-    timer = Timer(const Duration(milliseconds: 500), () {
-      timer = null;
-    });
   }
 
   Future processImage(AnalysisImage img) async {
@@ -183,11 +189,15 @@ class _CameraPageState extends State<CameraPage>
     }
 
     try {
-      _faces = await faceDetector.processImage(inputImage);
-      _rotation = 0;
-      _imageRotation = imageRotation;
-      _absoluteImageSize = inputImage.inputImageData!.size;
-      _cropRect = img.cropRect;
+      _faceDetectionStream.add(
+        FaceDetectionModel(
+          faces: await faceDetector.processImage(inputImage),
+          absoluteImageSize: inputImage.inputImageData!.size,
+          rotation: 0,
+          imageRotation: imageRotation,
+          cropRect: img.cropRect,
+        ),
+      );
       // debugPrint("...sending image resulted with : ${faces?.length} faces");
     } catch (error) {
       debugPrint("...sending image resulted error $error");
@@ -218,45 +228,35 @@ class _CameraPageState extends State<CameraPage>
 }
 
 class FaceDetectorPainter extends CustomPainter {
-  FaceDetectorPainter({
-    required this.faces,
-    required this.absoluteImageSize,
-    required this.rotation,
-    required this.inputImageRotation,
-    required Listenable listenable,
-    required this.previewRect,
-    required this.cropRect,
-    required this.isBackCamera,
-  }) : super(repaint: listenable);
-
-  final List<Face>? faces;
-  final Size? absoluteImageSize;
-  final int? rotation;
-  final InputImageRotation? inputImageRotation;
+  final FaceDetectionModel model;
+  final PreviewSize previewSize;
   final Rect previewRect;
-  final Rect? cropRect;
   final bool isBackCamera;
+
+  FaceDetectorPainter({
+    required this.model,
+    required this.previewSize,
+    required this.previewRect,
+    required this.isBackCamera,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (faces == null) {
-      return;
-    }
-    final croppedSize = cropRect == null
-        ? absoluteImageSize!
+    final croppedSize = model.cropRect == null
+        ? model.absoluteImageSize
         : Size(
             // TODO Width and height are inverted
-            cropRect!.size.height,
-            cropRect!.size.width,
+            model.cropRect!.size.height,
+            model.cropRect!.size.width,
           );
 
-    final ratioAnalysisToPreview = previewRect.width / croppedSize.width;
+    final ratioAnalysisToPreview = previewSize.width / croppedSize.width;
 
     bool flipXY = false;
     if (Platform.isAndroid) {
       // Symmetry for Android since native image analysis is not mirrored but preview is
       // It also handles device rotation
-      switch (inputImageRotation) {
+      switch (model.imageRotation) {
         case InputImageRotation.rotation0deg:
           if (isBackCamera) {
             flipXY = true;
@@ -286,7 +286,7 @@ class FaceDetectorPainter extends CustomPainter {
           }
           break;
         default:
-          // 270 or null
+        // 270 or null
           if (isBackCamera) {
             canvas.scale(-1, -1);
             canvas.translate(-size.width, -size.height);
@@ -297,7 +297,7 @@ class FaceDetectorPainter extends CustomPainter {
       }
     }
 
-    for (final Face face in faces!) {
+    for (final Face face in model.faces) {
       Map<FaceContourType, Path> paths = {
         for (var fct in FaceContourType.values) fct: Path()
       };
@@ -313,7 +313,7 @@ class FaceDetectorPainter extends CustomPainter {
                       ratio: ratioAnalysisToPreview,
                       flipXY: flipXY,
                     ),
-                  )
+              )
                   .toList(),
               true);
           for (var element in faceContour.points) {
@@ -371,15 +371,17 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(FaceDetectorPainter oldDelegate) {
-    return true;
+    return oldDelegate.isBackCamera != isBackCamera ||
+        oldDelegate.previewSize.width != previewSize.width ||
+        oldDelegate.previewSize.height != previewSize.height ||
+        oldDelegate.previewRect != previewRect ||
+        oldDelegate.model != model;
   }
 
-  double translateX(
-    double x,
-    int rotation,
-    Size size,
-    Size absoluteImageSize,
-  ) {
+  double translateX(double x,
+      int rotation,
+      Size size,
+      Size absoluteImageSize,) {
     switch (rotation) {
       case 90:
         return x *
@@ -399,12 +401,10 @@ class FaceDetectorPainter extends CustomPainter {
     }
   }
 
-  double translateY(
-    double y,
-    int rotation,
-    Size size,
-    Size absoluteImageSize,
-  ) {
+  double translateY(double y,
+      int rotation,
+      Size size,
+      Size absoluteImageSize,) {
     switch (rotation) {
       case 90:
       case 270:
@@ -418,20 +418,19 @@ class FaceDetectorPainter extends CustomPainter {
     }
   }
 
-  Offset _croppedPosition(
-    Point<int> element, {
+  Offset _croppedPosition(Point<int> element, {
     required Size croppedSize,
     required Size painterSize,
     required double ratio,
     required bool flipXY,
   }) {
     return (Offset(
-              (flipXY ? element.y : element.x).toDouble() -
-                  ((absoluteImageSize!.height - croppedSize.width) / 2),
+      (flipXY ? element.y : element.x).toDouble() -
+                  ((model.absoluteImageSize.height - croppedSize.width) / 2),
               (flipXY ? element.x : element.y).toDouble() -
-                  ((absoluteImageSize!.width - croppedSize.height) / 2),
+                  ((model.absoluteImageSize.width - croppedSize.height) / 2),
             ) *
-            ratio)
+        ratio)
         .translate(
       (painterSize.width - (croppedSize.width * ratio)) / 2,
       (painterSize.height - (croppedSize.height * ratio)) / 2,
@@ -457,4 +456,39 @@ extension InputImageRotationConversion on InputImageRotation {
         return 270;
     }
   }
+}
+
+class FaceDetectionModel {
+  final List<Face> faces;
+  final Size absoluteImageSize;
+  final int rotation;
+  final InputImageRotation imageRotation;
+  final Rect? cropRect;
+
+  FaceDetectionModel({
+    required this.faces,
+    required this.absoluteImageSize,
+    required this.rotation,
+    required this.imageRotation,
+    required this.cropRect,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FaceDetectionModel &&
+          runtimeType == other.runtimeType &&
+          faces == other.faces &&
+          absoluteImageSize == other.absoluteImageSize &&
+          rotation == other.rotation &&
+          imageRotation == other.imageRotation &&
+          cropRect == other.cropRect;
+
+  @override
+  int get hashCode =>
+      faces.hashCode ^
+      absoluteImageSize.hashCode ^
+      rotation.hashCode ^
+      imageRotation.hashCode ^
+      cropRect.hashCode;
 }
