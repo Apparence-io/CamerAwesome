@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'analysis/analysis_controller.dart';
@@ -98,13 +99,14 @@ class CameraContext {
     }
   }
 
-  Future<void> switchSensor(SensorConfig newConfig) async {
+  Future<void> setSensorConfig(SensorConfig newConfig) async {
     sensorConfigController.sink.add(newConfig);
     if (sensorConfigController.hasValue &&
         !identical(newConfig, sensorConfigController.value)) {
       sensorConfigController.value.dispose();
     }
-    await CamerawesomePlugin.setSensor(newConfig.sensor);
+    await CamerawesomePlugin.setSensor(newConfig.sensor,
+        deviceId: newConfig.captureDeviceId);
   }
 
   SensorConfig get sensorConfig {
@@ -152,6 +154,10 @@ class CameraContext {
 
   Future<PreviewSize> previewSize() {
     return CamerawesomePlugin.getEffectivPreviewSize();
+  }
+
+  Future<SensorDeviceData> getSensors() {
+    return CamerawesomePlugin.getSensors();
   }
 
   Future<int?> textureId() {
