@@ -29,10 +29,12 @@ class SensorTypeDevice {
 }
 
 class SensorDeviceData {
+  // back
   SensorTypeDevice? wideAngle;
   SensorTypeDevice? ultraWideAngle;
   SensorTypeDevice? telephoto;
 
+  // front
   SensorTypeDevice? trueDepth;
 
   SensorDeviceData({

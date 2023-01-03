@@ -368,6 +368,8 @@ class CamerawesomePlugin {
   }
 
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
+  /// on iOS, you can specify the deviceId if you have multiple cameras
+  /// call [getSensors] to get the list of available cameras
   static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
     if (Platform.isAndroid) {
       return CameraInterface().setSensor(sensor.name.toUpperCase());
@@ -471,6 +473,12 @@ class CamerawesomePlugin {
   }
 
   // TODO: implement it on Android
+  /// Returns the list of available sensors on device.
+  ///
+  /// The list contains the back and front sensors
+  /// with their name, type, uid, iso and flash availability
+  ///
+  /// Only available on iOS for now
   static Future<SensorDeviceData> getSensors() async {
     if (Platform.isAndroid) {
       return Future.value(SensorDeviceData());
@@ -506,18 +514,30 @@ class CamerawesomePlugin {
       );
 
       return SensorDeviceData(
-        ultraWideAngle: backSensors.where(
-          (element) => element.sensorType == SensorType.ultraWideAngle,
-        ).toList().firstOrNull,
-        telephoto: backSensors.where(
-          (element) => element.sensorType == SensorType.telephoto,
-        ).toList().firstOrNull,
-        wideAngle: backSensors.where(
-          (element) => element.sensorType == SensorType.wideAngle,
-        ).toList().firstOrNull,
-        trueDepth: frontSensors.where(
-          (element) => element.sensorType == SensorType.trueDepth,
-        ).toList().firstOrNull,
+        ultraWideAngle: backSensors
+            .where(
+              (element) => element.sensorType == SensorType.ultraWideAngle,
+            )
+            .toList()
+            .firstOrNull,
+        telephoto: backSensors
+            .where(
+              (element) => element.sensorType == SensorType.telephoto,
+            )
+            .toList()
+            .firstOrNull,
+        wideAngle: backSensors
+            .where(
+              (element) => element.sensorType == SensorType.wideAngle,
+            )
+            .toList()
+            .firstOrNull,
+        trueDepth: frontSensors
+            .where(
+              (element) => element.sensorType == SensorType.trueDepth,
+            )
+            .toList()
+            .firstOrNull,
       );
     }
   }

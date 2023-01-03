@@ -137,6 +137,7 @@ class _SensorTypeButton extends StatelessWidget {
           child: Center(
             child: Text(
               '$sensorTypeZoomValue${isSelected ? 'x' : ''}',
+              maxLines: 1,
               style: TextStyle(
                 color: isSelected ? Colors.yellowAccent : Colors.white,
                 fontWeight: FontWeight.bold,
