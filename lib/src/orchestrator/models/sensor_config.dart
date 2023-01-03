@@ -3,12 +3,17 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SensorConfig {
   late BehaviorSubject<FlashMode> _flashModeController;
 
+  late BehaviorSubject<SensorType> _sensorTypeController;
+
   late Stream<FlashMode> flashMode$;
+
+  late Stream<SensorType> sensorType$;
 
   late BehaviorSubject<CameraAspectRatios> _aspectRatioController;
 
@@ -19,6 +24,8 @@ class SensorConfig {
 
   /// [back] or [front] camera
   final Sensors sensor;
+
+  final String? captureDeviceId;
 
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
@@ -36,6 +43,8 @@ class SensorConfig {
   SensorConfig({
     required this.sensor,
     FlashMode flash = FlashMode.none,
+    SensorType type = SensorType.wideAngle,
+    this.captureDeviceId,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
 
     /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)
@@ -43,6 +52,9 @@ class SensorConfig {
   }) {
     _flashModeController = BehaviorSubject<FlashMode>.seeded(flash);
     flashMode$ = _flashModeController.stream;
+
+    _sensorTypeController = BehaviorSubject<SensorType>.seeded(type);
+    sensorType$ = _sensorTypeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
     zoom$ = _zoomController.stream;
@@ -144,6 +156,7 @@ class SensorConfig {
   void dispose() {
     _brightnessSubscription?.cancel();
     _brightnessController.close();
+    _sensorTypeController.close();
     _zoomController.close();
     _flashModeController.close();
     _aspectRatioController.close();
