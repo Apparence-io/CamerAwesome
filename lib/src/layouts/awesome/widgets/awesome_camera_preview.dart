@@ -14,14 +14,6 @@ enum CameraPreviewFit {
   cover,
 }
 
-typedef PreviewDecoratorBuilder = Widget Function(
-  CameraState state,
-  PreviewSize previewSize,
-
-  /// [previewRect] might be clipped (especially in Ratio 1:1)
-  Rect previewRect,
-);
-
 /// This is a fullscreen camera preview
 /// some part of the preview are cropped so we have a full sized camera preview
 class AwesomeCameraPreview extends StatefulWidget {
@@ -30,7 +22,8 @@ class AwesomeCameraPreview extends StatefulWidget {
   final CameraState state;
   final OnPreviewTap? onPreviewTap;
   final OnPreviewScale? onPreviewScale;
-  final PreviewDecoratorBuilder? previewDecoratorBuilder;
+  final CameraLayoutBuilder interfaceBuilder;
+  final CameraLayoutBuilder? previewDecoratorBuilder;
 
   const AwesomeCameraPreview({
     super.key,
@@ -39,6 +32,7 @@ class AwesomeCameraPreview extends StatefulWidget {
     this.onPreviewTap,
     this.onPreviewScale,
     this.previewFit = CameraPreviewFit.cover,
+    required this.interfaceBuilder,
     this.previewDecoratorBuilder,
   });
 
@@ -209,7 +203,18 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                         height: croppedPreviewSize.height,
                       ),
                     ),
-                  )
+                  ),
+                Positioned.fill(
+                  child: widget.interfaceBuilder(
+                    widget.state,
+                    _flutterPreviewSize!,
+                    Rect.fromCenter(
+                      center: center,
+                      width: croppedPreviewSize.width,
+                      height: croppedPreviewSize.height,
+                    ),
+                  ),
+                ),
               ]);
             } else {
               return Stack(children: [
@@ -225,7 +230,18 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                         height: croppedPreviewSize.height,
                       ),
                     ),
-                  )
+                  ),
+                Positioned.fill(
+                  child: widget.interfaceBuilder(
+                    widget.state,
+                    _flutterPreviewSize!,
+                    Rect.fromCenter(
+                      center: center,
+                      width: croppedPreviewSize.width,
+                      height: croppedPreviewSize.height,
+                    ),
+                  ),
+                ),
               ]);
             }
           },

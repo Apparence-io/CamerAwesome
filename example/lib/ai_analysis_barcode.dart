@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
-
-import 'package:camerawesome/camerawesome_plugin.dart';
 
 void main() {
   runApp(const MyApp());
@@ -64,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
             outputFormat: InputAnalysisImageFormat.bgra8888,
             width: 1024,
           ),
-          builder: (cameraModeState) {
+          builder: (cameraModeState, previewSize, previewRect) {
             return Stack(
               fit: StackFit.expand,
               children: [

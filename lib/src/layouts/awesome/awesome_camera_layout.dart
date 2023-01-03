@@ -15,23 +15,26 @@ class AwesomeCameraLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        AwesomeTopActions(state: state),
-        Spacer(),
-        const SizedBox(height: 12),
-        AwesomeBackground(
-          child: SafeArea(
-            top: false,
-            child: Column(children: [
-              AwesomeCameraModeSelector(state: state),
-              AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
-              const SizedBox(height: 32),
-            ]),
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          AwesomeTopActions(state: state),
+          Spacer(),
+          const SizedBox(height: 12),
+          AwesomeBackground(
+            child: SafeArea(
+              top: false,
+              child: Column(children: [
+                AwesomeCameraModeSelector(state: state),
+                AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
+                const SizedBox(height: 32),
+              ]),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
