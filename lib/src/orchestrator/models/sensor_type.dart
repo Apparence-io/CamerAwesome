@@ -22,12 +22,16 @@ enum SensorType {
 
 class SensorTypeDevice {
   final SensorType sensorType;
+
   /// A localized device name for display in the user interface.
   final String name;
+
   /// The current exposure ISO value.
   final num iso;
+
   /// A Boolean value that indicates whether the flash is currently available for use.
   final bool flashAvailable;
+
   /// An identifier that uniquely identifies the device.
   final String uid;
 
