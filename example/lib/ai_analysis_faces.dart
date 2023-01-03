@@ -172,7 +172,7 @@ class _CameraPageState extends State<CameraPage> {
     if (Platform.isIOS) {
       final inputImageData = InputImageData(
         size: imageSize,
-        imageRotation: InputImageRotation.rotation180deg,
+        imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
         inputImageFormat: inputImageFormat(img.format),
         planeData: planeData,
       );
@@ -288,7 +288,7 @@ class FaceDetectorPainter extends CustomPainter {
           }
           break;
         default:
-        // 270 or null
+          // 270 or null
           if (isBackCamera) {
             canvas.scale(-1, -1);
             canvas.translate(-size.width, -size.height);
@@ -315,7 +315,7 @@ class FaceDetectorPainter extends CustomPainter {
                       ratio: ratioAnalysisToPreview,
                       flipXY: flipXY,
                     ),
-              )
+                  )
                   .toList(),
               true);
           for (var element in faceContour.points) {
@@ -342,37 +342,6 @@ class FaceDetectorPainter extends CustomPainter {
               ..strokeWidth = 2
               ..style = PaintingStyle.stroke);
       }
-      canvas.drawRect(
-          Rect.fromPoints(
-              (face.boundingBox.topLeft.translate(
-                          model.cropRect?.left ?? 0, model.cropRect?.top ?? 0) *
-                      ratioAnalysisToPreview)
-                  .translate(
-                      0,
-                      ((size.height - croppedSize.height) / 2) *
-                          ratioAnalysisToPreview),
-              (face.boundingBox.bottomRight.translate(
-                          model.cropRect?.left ?? 0, model.cropRect?.top ?? 0) *
-                      ratioAnalysisToPreview)
-                  .translate(
-                      0,
-                      ((size.height - croppedSize.height) / 2) *
-                          ratioAnalysisToPreview)),
-          Paint()..color = Colors.red.withOpacity(0.5));
-
-      canvas.drawRect(
-        Rect.fromLTRB(
-          translateX(face.boundingBox.left, model.rotation, size,
-              model.absoluteImageSize),
-          translateY(face.boundingBox.top, model.rotation, size,
-              model.absoluteImageSize),
-          translateX(face.boundingBox.right, model.rotation, size,
-              model.absoluteImageSize),
-          translateY(face.boundingBox.bottom, model.rotation, size,
-              model.absoluteImageSize),
-        ),
-        Paint()..color = Colors.purple,
-      );
     }
   }
 
@@ -436,11 +405,19 @@ class FaceDetectorPainter extends CustomPainter {
     required double ratio,
     required bool flipXY,
   }) {
+    num imageDiffX;
+    num imageDiffY;
+    if (Platform.isIOS) {
+      imageDiffX = model.absoluteImageSize.width - croppedSize.width;
+      imageDiffY = model.absoluteImageSize.height - croppedSize.height;
+    } else {
+      imageDiffX = model.absoluteImageSize.height - croppedSize.width;
+      imageDiffY = model.absoluteImageSize.width - croppedSize.height;
+    }
+
     return (Offset(
-              (flipXY ? element.y : element.x).toDouble() -
-                  ((model.absoluteImageSize.height - croppedSize.width) / 2),
-              (flipXY ? element.x : element.y).toDouble() -
-                  ((model.absoluteImageSize.width - croppedSize.height) / 2),
+              (flipXY ? element.y : element.x).toDouble() - (imageDiffX / 2),
+              (flipXY ? element.x : element.y).toDouble() - (imageDiffY / 2),
             ) *
             ratio)
         .translate(

@@ -503,7 +503,7 @@
   }
   
   // Process image stream controller
-  if (_imageStreamController.streamImages) {
+  if (_imageStreamController.streamImages && !_videoController.isRecording) {
     [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection orientation:_motionController.deviceOrientation];
   }
   

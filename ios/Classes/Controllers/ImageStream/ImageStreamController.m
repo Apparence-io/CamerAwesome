@@ -86,15 +86,15 @@
 - (NSString *)getInputImageOrientation:(UIDeviceOrientation)orientation {
   switch (orientation) {
     case UIDeviceOrientationLandscapeLeft:
-      return @"rotation270deg";
+      return @"rotation90deg";
     case UIDeviceOrientationLandscapeRight:
       return @"rotation270deg";
     case UIDeviceOrientationPortrait:
-      return @"rotation270deg";
+      return @"rotation0deg";
     case UIDeviceOrientationPortraitUpsideDown:
-      return @"rotation270deg";
+      return @"rotation180deg";
     default:
-      return @"rotation270deg";
+      return @"rotation0deg";
   }
 }
 
