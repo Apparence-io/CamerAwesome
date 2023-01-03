@@ -61,7 +61,9 @@ class VideoCameraState extends CameraState {
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
-    cameraContext.mediaCaptureController.add(media);
+    if (!cameraContext.mediaCaptureController.isClosed) {
+      cameraContext.mediaCaptureController.add(media);
+    }
   }
 
   @override
@@ -83,4 +85,5 @@ class VideoCameraState extends CameraState {
       pixelPreviewSize: pixelPreviewSize,
       flutterPreviewSize: flutterPreviewSize,
     );
-  }}
+  }
+}

@@ -32,9 +32,8 @@ typedef void(^OnVideoWriterSetup)(void);
 @property(assign, nonatomic) CMTime lastAudioSampleTime;
 @property(assign, nonatomic) CMTime videoTimeOffset;
 @property(assign, nonatomic) CMTime audioTimeOffset;
-@property(nonatomic) FlutterEventSink videoRecordingEventSink;
 
-- (instancetype)initWithEventSink:(FlutterEventSink)videoRecordingEventSink result:(FlutterResult)result;
+- (instancetype)initResult:(FlutterResult)result;
 - (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback;
 - (void)stopRecordingVideo;
 - (void)pauseVideoRecording;

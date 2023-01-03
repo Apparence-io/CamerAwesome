@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,7 +26,7 @@ class CameraAwesomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'CamerAwesome App',
+      title: 'camerAwesome App',
       home: CameraPage(),
     );
   }
@@ -123,28 +124,40 @@ class _CameraPageState extends State<CameraPage>
   int? rotation;
 
   Future processImage(AnalysisImage img) async {
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final ImagePlane plane in img.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
+
+    final InputImageRotation imageRotation =
+        InputImageRotation.values.byName(img.rotation.name);
+
     final planeData = img.planes.map(
-      (plane) {
+      (ImagePlane plane) {
         return InputImagePlaneMetadata(
-          bytesPerRow: plane.rowStride,
-          height: img.height,
-          width: img.width,
+          bytesPerRow: plane.bytesPerRow,
+          height: plane.height,
+          width: plane.width,
         );
       },
     ).toList();
 
-    final inputImage = InputImage.fromBytes(
-      bytes: img.nv21Image!,
-      inputImageData: InputImageData(
-        imageRotation: InputImageRotation.rotation270deg,
-        inputImageFormat: InputImageFormat.nv21,
-        planeData: planeData,
-        size: Size(img.width.toDouble(), img.height.toDouble()),
-      ),
+    final inputImageData = InputImageData(
+      size: imageSize,
+      imageRotation: InputImageRotation.rotation180deg,
+      inputImageFormat: inputImageFormat(img.format),
+      planeData: planeData,
     );
+
+    final inputImage =
+        InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+
     try {
       faces = await faceDetector.processImage(inputImage);
-      rotation = img.rotation;
+      rotation = 0;
       absoluteImageSize = inputImage.inputImageData!.size;
       // debugPrint("...sending image resulted with : ${faces?.length} faces");
     } catch (error) {
@@ -161,6 +174,17 @@ class _CameraPageState extends State<CameraPage>
     final String filePath =
         '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
     return filePath;
+  }
+
+  InputImageFormat inputImageFormat(InputAnalysisImageFormat format) {
+    switch (format) {
+      case InputAnalysisImageFormat.bgra8888:
+        return InputImageFormat.bgra8888;
+      case InputAnalysisImageFormat.nv21:
+        return InputImageFormat.nv21;
+      default:
+        return InputImageFormat.yuv420;
+    }
   }
 }
 

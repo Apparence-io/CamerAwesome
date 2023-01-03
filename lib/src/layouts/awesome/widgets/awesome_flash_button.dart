@@ -1,7 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
-
 class AwesomeFlashButton extends StatelessWidget {
   final CameraState state;
 
@@ -16,7 +15,7 @@ class AwesomeFlashButton extends StatelessWidget {
       stream: state.sensorConfig$,
       builder: (_, sensorConfigSnapshot) {
         if (!sensorConfigSnapshot.hasData) {
-          return SizedBox();
+          return const SizedBox.shrink();
         }
         final sensorConfig = sensorConfigSnapshot.requireData;
         return StreamBuilder<FlashMode>(
@@ -74,11 +73,14 @@ class _FlashButton extends StatelessWidget {
     return AwesomeOrientedWidget(
       child: Material(
         color: Colors.transparent,
-        child: IconButton(
-          onPressed: onTap,
-          icon: Icon(
-            icon,
-            color: Colors.white,
+        child: AwesomeBouncingWidget(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Icon(
+              icon,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

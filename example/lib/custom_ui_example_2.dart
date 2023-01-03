@@ -37,7 +37,7 @@ class CustomUiExample2 extends StatelessWidget {
                     child: StreamBuilder<MediaCapture?>(
                       stream: cameraState.captureState$,
                       builder: (_, snapshot) {
-                        if (snapshot.data == null) return const SizedBox();
+                        if (snapshot.data == null) return const SizedBox.shrink();
                         return AwesomeMediaPreview(
                           mediaCapture: snapshot.data!,
                           onMediaTap: (MediaCapture mediaCapture) {
@@ -61,7 +61,8 @@ class CustomUiExample2 extends StatelessWidget {
           },
         ),
         onPreviewTapBuilder: (state) => OnPreviewTap(
-          onTap: (Offset position, PreviewSize flutterPreviewSize, PreviewSize pixelPreviewSize) {
+          onTap: (Offset position, PreviewSize flutterPreviewSize,
+              PreviewSize pixelPreviewSize) {
             state.when(onPhotoMode: (picState) => picState.takePhoto());
           },
           onTapPainter: (tapPosition) => TweenAnimationBuilder(

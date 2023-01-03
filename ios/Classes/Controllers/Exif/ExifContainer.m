@@ -26,9 +26,7 @@ NSString const * kCGImagePropertyProjection = @"ProjectionType";
   self = [super init];
   
   if (self) {
-    
     _imageMetadata = [[NSMutableDictionary alloc] init];
-    
   }
   
   return self;
@@ -70,13 +68,13 @@ NSString const * kCGImagePropertyProjection = @"ProjectionType";
 }
 
 - (void)addUserComment:(NSString*)comment {
-  NSString *key = kCGImagePropertyExifUserComment;
+  NSString *key = (__bridge_transfer NSString *)kCGImagePropertyExifUserComment;
   [self setValue:comment forExifKey:key];
 }
 
 - (void)addCreationDate:(NSDate *)date {
   NSString *dateString = [self getUTCFormattedDate:date];
-  NSString *key = kCGImagePropertyExifDateTimeOriginal;
+  NSString *key = (__bridge_transfer NSString *)kCGImagePropertyExifDateTimeOriginal;
   [self setValue:dateString forExifKey:key];
   
 }

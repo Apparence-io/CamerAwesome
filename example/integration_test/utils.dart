@@ -20,7 +20,7 @@ Future<void> allowPermissionsIfNeeded(PatrolTester $) async {
 
 Future<String> tempPath(String pictureName) async {
   final file =
-  File('${(await getTemporaryDirectory()).path}/test/$pictureName');
+      File('${(await getTemporaryDirectory()).path}/test/$pictureName');
   await file.create(recursive: true);
   return file.path;
 }

@@ -42,8 +42,8 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
 
           return Material(
             color: Colors.transparent,
-            child: IconButton(
-              onPressed: () {
+            child: AwesomeBouncingWidget(
+              onTap: () {
                 if (recordingPaused) {
                   _controller.reverse();
                   widget.state.resumeRecording(snapshot.data!);
@@ -52,10 +52,13 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
                   widget.state.pauseRecording(snapshot.data!);
                 }
               },
-              icon: AnimatedIcon(
-                icon: AnimatedIcons.pause_play,
-                progress: _animation,
-                color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: AnimatedIcon(
+                  icon: AnimatedIcons.pause_play,
+                  progress: _animation,
+                  color: Colors.white,
+                ),
               ),
             ),
           );

@@ -12,7 +12,7 @@ class AwesomeCameraModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state is VideoRecordingCameraState) {
-      return SizedBox();
+      return const SizedBox.shrink();
     } else {
       return CameraModePager(
         initialMode: state.captureMode,
@@ -51,8 +51,11 @@ class _CameraModePagerState extends State<CameraModePager> {
 
   @override
   void initState() {
-    _index = widget.initialMode !=null ? widget.availableModes.indexOf(widget.initialMode!) : 0;
-    _pageController = PageController(viewportFraction: 0.25, initialPage: _index);
+    _index = widget.initialMode != null
+        ? widget.availableModes.indexOf(widget.initialMode!)
+        : 0;
+    _pageController =
+        PageController(viewportFraction: 0.25, initialPage: _index);
     super.initState();
   }
 
@@ -88,7 +91,7 @@ class _CameraModePagerState extends State<CameraModePager> {
                 return AnimatedOpacity(
                   duration: Duration(milliseconds: 300),
                   opacity: index == _index ? 1 : 0.2,
-                  child: InkWell(
+                  child: AwesomeBouncingWidget(
                     child: Center(
                       child: Text(
                         cameraMode.name.toUpperCase(),

@@ -1,6 +1,7 @@
 // ignore_for_file: close_sinks
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -92,7 +93,9 @@ class CameraContext {
       // generates problems (especially when recording a video)
       await CamerawesomePlugin.setCaptureMode(newState.captureMode!);
     }
-    stateController.add(newState);
+    if (!stateController.isClosed) {
+      stateController.add(newState);
+    }
   }
 
   Future<void> switchSensor(SensorConfig newConfig) async {
@@ -130,11 +133,21 @@ class CameraContext {
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
   }) async {
-    final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
-    // Transform flutter position to pixel position
-    Offset pixelPosition = flutterPosition.scale(ratio, ratio);
-    return CamerawesomePlugin.focusOnPoint(
-        position: pixelPosition, previewSize: pixelPreviewSize);
+    if (Platform.isIOS) {
+      final xPercentage = flutterPosition.dx / flutterPreviewSize.width;
+      final yPercentage = flutterPosition.dy / flutterPreviewSize.height;
+
+      return CamerawesomePlugin.focusOnPoint(
+        position: Offset(xPercentage, yPercentage),
+        previewSize: pixelPreviewSize,
+      );
+    } else {
+      final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
+      // Transform flutter position to pixel position
+      Offset pixelPosition = flutterPosition.scale(ratio, ratio);
+      return CamerawesomePlugin.focusOnPoint(
+          position: pixelPosition, previewSize: pixelPreviewSize);
+    }
   }
 
   Future<PreviewSize> previewSize() {

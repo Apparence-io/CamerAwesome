@@ -19,25 +19,20 @@ class AwesomeMediaPreview extends StatelessWidget {
     return AwesomeOrientedWidget(
       child: AspectRatio(
         aspectRatio: 1,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white10,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white38,
-              width: 2,
-            ),
-          ),
-          child: ClipOval(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: mediaCapture != null && onMediaTap != null
-                    ? () => onMediaTap!(mediaCapture!)
-                    : null,
-                child: _buildMedia(mediaCapture),
+        child: AwesomeBouncingWidget(
+          onTap: mediaCapture != null && onMediaTap != null
+              ? () => onMediaTap!(mediaCapture!)
+              : null,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white38,
+                width: 2,
               ),
             ),
+            child: ClipOval(child: _buildMedia(mediaCapture)),
           ),
         ),
       ),
@@ -57,7 +52,7 @@ class AwesomeMediaPreview extends StatelessWidget {
         );
       case MediaCaptureStatus.success:
         if (mediaCapture!.isPicture) {
-          return Ink.image(
+          return Image(
             fit: BoxFit.cover,
             image: ResizeImage(
               FileImage(

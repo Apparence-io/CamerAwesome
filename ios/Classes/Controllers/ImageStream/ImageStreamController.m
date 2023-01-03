@@ -9,17 +9,25 @@
 
 @implementation ImageStreamController
 
-- (instancetype)initWithEventSink:(FlutterEventSink)imageStreamEventSink {
+- (instancetype)initWithStreamImages:(bool)streamImages {
   self = [super init];
-  _imageStreamEventSink = imageStreamEventSink;
-  _streamImages = imageStreamEventSink != nil;
+  _streamImages = streamImages;
   return self;
 }
 
 # pragma mark - Camera Delegates
-- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection orientation:(UIDeviceOrientation)orientation {
+  if (_imageStreamEventSink == nil) {
+    return;
+  }
+  
   CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
   CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+  
+  size_t imageWidth = CVPixelBufferGetWidth(pixelBuffer);
+  size_t imageHeight = CVPixelBufferGetHeight(pixelBuffer);
+  
+  NSMutableArray *planes = [NSMutableArray array];
   
   const Boolean isPlanar = CVPixelBufferIsPlanar(pixelBuffer);
   size_t planeCount;
@@ -29,7 +37,6 @@
     planeCount = 1;
   }
   
-  FlutterStandardTypedData *data;
   for (int i = 0; i < planeCount; i++) {
     void *planeAddress;
     size_t bytesPerRow;
@@ -50,13 +57,53 @@
     
     NSNumber *length = @(bytesPerRow * height);
     NSData *bytes = [NSData dataWithBytes:planeAddress length:length.unsignedIntegerValue];
-    data = [FlutterStandardTypedData typedDataWithBytes:bytes];
+    
+    [planes addObject:@{
+      @"bytesPerRow": @(bytesPerRow),
+      @"width": @(width),
+      @"height": @(height),
+      @"bytes": [FlutterStandardTypedData typedDataWithBytes:bytes],
+    }];
   }
   
-  // Only send bytes for now
-  _imageStreamEventSink(data);
-  
+
   CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+  
+  NSDictionary *imageBuffer = @{
+    @"width": [NSNumber numberWithUnsignedLong:imageWidth],
+    @"height": [NSNumber numberWithUnsignedLong:imageHeight],
+    @"format": @"bgra8888", // TODO: change this dynamically
+    @"planes": planes,
+    @"rotation": [self getInputImageOrientation:orientation]
+  };
+  
+  dispatch_async(dispatch_get_main_queue(), ^{
+    self->_imageStreamEventSink(imageBuffer);
+  });
+  
+}
+
+- (NSString *)getInputImageOrientation:(UIDeviceOrientation)orientation {
+  switch (orientation) {
+    case UIDeviceOrientationLandscapeLeft:
+      return @"rotation270deg";
+    case UIDeviceOrientationLandscapeRight:
+      return @"rotation270deg";
+    case UIDeviceOrientationPortrait:
+      return @"rotation270deg";
+    case UIDeviceOrientationPortraitUpsideDown:
+      return @"rotation270deg";
+    default:
+      return @"rotation270deg";
+  }
+}
+
+- (void)setImageStreamEventSink:(FlutterEventSink)imageStreamEventSink {
+  _imageStreamEventSink = imageStreamEventSink;
+}
+
+- (void)setStreamImages:(bool)streamImages {
+  _streamImages = streamImages;
 }
 
 @end

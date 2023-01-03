@@ -20,22 +20,22 @@ class CustomMediaPreview extends StatelessWidget {
     return AwesomeOrientedWidget(
       child: AspectRatio(
         aspectRatio: 1,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white10,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white38,
-              width: 2,
-            ),
-          ),
+        child: AwesomeBouncingWidget(
+          onTap: mediaCapture != null && onMediaTap != null
+              ? () => onMediaTap!(mediaCapture!)
+              : null,
           child: ClipOval(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: mediaCapture != null && onMediaTap != null
-                    ? () => onMediaTap!(mediaCapture!)
-                    : null,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white38,
+                  width: 2,
+                ),
+              ),
+              child: Container(
+                color: Colors.transparent,
                 child: _buildMedia(mediaCapture),
               ),
             ),

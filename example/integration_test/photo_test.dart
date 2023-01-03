@@ -11,77 +11,76 @@ import 'utils.dart';
 
 // To run it, you have to use `patrol drive` instead of `flutter test`.
 void main() {
-  group('Take pictures', ()
-  {
-  for (var sensor in Sensors.values) {
-    patrolTest(
-      'Take a single picture ${sensor.name} camera',
-      config: patrolConfig,
-      nativeAutomatorConfig: nativeAutomatorConfig,
-      nativeAutomation: true,
-      ($) async {
-        await $.pumpWidgetAndSettle(
-          DrivableCamera(
-            sensor: sensor,
-            saveConfig: SaveConfig.photo(
-              pathBuilder: () => tempPath('single_photo_back.jpg'),
+  group('Take pictures', () {
+    for (var sensor in Sensors.values) {
+      patrolTest(
+        'Take a single picture ${sensor.name} camera',
+        config: patrolConfig,
+        nativeAutomatorConfig: nativeAutomatorConfig,
+        nativeAutomation: true,
+        ($) async {
+          await $.pumpWidgetAndSettle(
+            DrivableCamera(
+              sensor: sensor,
+              saveConfig: SaveConfig.photo(
+                pathBuilder: () => tempPath('single_photo_back.jpg'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await allowPermissionsIfNeeded($);
+          await allowPermissionsIfNeeded($);
 
-        final filePath = await tempPath('single_photo_back.jpg');
-        await $(AwesomeCaptureButton).tap();
-
-        expect(File(filePath).existsSync(), true);
-        // File size should be quite high (at least more than 100)
-        expect(File(filePath).lengthSync(), greaterThan(100));
-      },
-    );
-
-    patrolTest(
-      'Take multiple picture ${sensor.name} camera',
-      config: patrolConfig,
-      nativeAutomatorConfig: nativeAutomatorConfig,
-      nativeAutomation: true,
-      ($) async {
-        int idxPicture = 0;
-        const picturesToTake = 3;
-        await $.pumpWidgetAndSettle(
-          DrivableCamera(
-            sensor: sensor,
-            saveConfig: SaveConfig.photo(
-              pathBuilder: () async {
-                final path = await tempPath(
-                    'multiple_photo_${sensor.name}_$idxPicture.jpg');
-                idxPicture++;
-                return path;
-              },
-            ),
-          ),
-        );
-
-        await allowPermissionsIfNeeded($);
-
-        for (int i = 0; i < picturesToTake; i++) {
-          final filePath =
-              await tempPath('multiple_photo_${sensor.name}_$idxPicture.jpg');
+          final filePath = await tempPath('single_photo_back.jpg');
           await $(AwesomeCaptureButton).tap();
+
           expect(File(filePath).existsSync(), true);
           // File size should be quite high (at least more than 100)
           expect(File(filePath).lengthSync(), greaterThan(100));
-        }
-      },
-    );
-  }
+        },
+      );
+
+      patrolTest(
+        'Take multiple picture ${sensor.name} camera',
+        config: patrolConfig,
+        nativeAutomatorConfig: nativeAutomatorConfig,
+        nativeAutomation: true,
+        ($) async {
+          int idxPicture = 0;
+          const picturesToTake = 3;
+          await $.pumpWidgetAndSettle(
+            DrivableCamera(
+              sensor: sensor,
+              saveConfig: SaveConfig.photo(
+                pathBuilder: () async {
+                  final path = await tempPath(
+                      'multiple_photo_${sensor.name}_$idxPicture.jpg');
+                  idxPicture++;
+                  return path;
+                },
+              ),
+            ),
+          );
+
+          await allowPermissionsIfNeeded($);
+
+          for (int i = 0; i < picturesToTake; i++) {
+            final filePath =
+                await tempPath('multiple_photo_${sensor.name}_$idxPicture.jpg');
+            await $(AwesomeCaptureButton).tap();
+            expect(File(filePath).existsSync(), true);
+            // File size should be quite high (at least more than 100)
+            expect(File(filePath).lengthSync(), greaterThan(100));
+          }
+        },
+      );
+    }
 
     patrolTest(
       'Take one picture with ${Sensors.back} then one with ${Sensors.front}',
       config: patrolConfig,
       nativeAutomatorConfig: nativeAutomatorConfig,
       nativeAutomation: true,
-          ($) async {
+      ($) async {
         int idxSensor = 0;
         final sensors = [
           Sensors.back,
@@ -94,8 +93,7 @@ void main() {
             saveConfig: SaveConfig.photo(
               pathBuilder: () async {
                 final path = await tempPath(
-                    'switch_sensor_photo_${idxSensor}_${sensors[idxSensor]
-                        .name}.jpg');
+                    'switch_sensor_photo_${idxSensor}_${sensors[idxSensor].name}.jpg');
                 idxSensor++;
                 return path;
               },
@@ -107,8 +105,7 @@ void main() {
 
         for (int i = 0; i < sensors.length; i++) {
           final filePath = await tempPath(
-              'switch_sensor_photo_${idxSensor}_${sensors[idxSensor]
-                  .name}.jpg');
+              'switch_sensor_photo_${idxSensor}_${sensors[idxSensor].name}.jpg');
 
           if (i > 0 && sensors[i - 1] != sensors[i]) {
             await $.tester.pumpAndSettle();
@@ -124,5 +121,3 @@ void main() {
     );
   });
 }
-
-

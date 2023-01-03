@@ -8,6 +8,7 @@
 #import <Flutter/Flutter.h>
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import "InputImageRotation.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,8 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) bool streamImages;
 @property(nonatomic) FlutterEventSink imageStreamEventSink;
 
-- (instancetype)initWithEventSink:(FlutterEventSink)imageStreamEventSink;
-- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection;
+- (instancetype)initWithStreamImages:(bool)streamImages;
+- (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection orientation:(UIDeviceOrientation)orientation;
+- (void)setImageStreamEventSink:(FlutterEventSink)imageStreamEventSink;
+- (void)setStreamImages:(bool)streamImages;
 
 @end
 

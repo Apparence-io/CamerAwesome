@@ -52,6 +52,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// check this for more details
   /// https://api.flutter.dev/flutter/painting/BoxFit.html
   // one of fitWidth, fitHeight, contain, cover
+  // currently only work for Android, this do nothing on iOS
   final CameraPreviewFit previewFit;
 
   /// Enable audio while video recording
@@ -71,6 +72,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final OnImageForAnalysis? onImageForAnalysis;
 
+  /// only for Android
   final AnalysisConfig? imageAnalysisConfig;
 
   final OnPreviewTap Function(CameraState)? onPreviewTapBuilder;
@@ -313,6 +315,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
             ),
             Positioned.fill(
               child: SafeArea(
+                bottom: false,
                 child: widget.builder(snapshot.requireData),
               ),
             ),

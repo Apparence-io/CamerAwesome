@@ -17,9 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) UIDeviceOrientation deviceOrientation;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
 
-- (instancetype)initWithEventSink:(FlutterEventSink)orientationEventSink;
+- (instancetype)init;
 - (void)startMotionDetection;
 - (void)stopMotionDetection;
+- (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
 
 @end
 
