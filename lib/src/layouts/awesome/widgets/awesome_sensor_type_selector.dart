@@ -56,8 +56,14 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
       stream: sensorConfig.sensorType$,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Container();
+          return const SizedBox.shrink();
         }
+
+        if (_sensorDeviceData == null ||
+            _sensorDeviceData!.availableBackSensors <= 0) {
+          return const SizedBox.shrink();
+        }
+
         return Container(
           height: 50,
           decoration: BoxDecoration(
