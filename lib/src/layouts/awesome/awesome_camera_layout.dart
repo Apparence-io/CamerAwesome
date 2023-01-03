@@ -1,4 +1,3 @@
-import 'package:camerawesome/src/layouts/awesome/widgets/awesome_sensor_type_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
