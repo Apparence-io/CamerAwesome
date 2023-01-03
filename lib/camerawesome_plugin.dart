@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:collection/collection.dart';
 
 import 'camerawesome_plugin.dart';
 
@@ -366,12 +368,15 @@ class CamerawesomePlugin {
   }
 
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
-  static Future<void> setSensor(Sensors sensor) {
+  /// on iOS, you can specify the deviceId if you have multiple cameras
+  /// call [getSensors] to get the list of available cameras
+  static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
     if (Platform.isAndroid) {
       return CameraInterface().setSensor(sensor.name.toUpperCase());
     } else {
       return _channel.invokeMethod('setSensor', <String, dynamic>{
         'sensor': sensor.toString().toUpperCase().split(".")[1],
+        'deviceId': deviceId,
       });
     }
   }
@@ -464,6 +469,76 @@ class CamerawesomePlugin {
       return _channel.invokeMethod('setAspectRatio', <String, dynamic>{
         'ratio': ratio.toUpperCase(),
       });
+    }
+  }
+
+  // TODO: implement it on Android
+  /// Returns the list of available sensors on device.
+  ///
+  /// The list contains the back and front sensors
+  /// with their name, type, uid, iso and flash availability
+  ///
+  /// Only available on iOS for now
+  static Future<SensorDeviceData> getSensors() async {
+    if (Platform.isAndroid) {
+      return Future.value(SensorDeviceData());
+    } else {
+      final sensorTypes =
+          await _channel.invokeMapMethod<String, dynamic>('getSensors');
+
+      final List<SensorTypeDevice> backSensors = List<SensorTypeDevice>.from(
+        sensorTypes!['back']
+            .map(
+              (data) => SensorTypeDevice(
+                flashAvailable: data['flashAvailable'],
+                sensorType: SensorType.values.byName(data['type']),
+                name: data['name'],
+                iso: data['iso'],
+                uid: data['uid'],
+              ),
+            )
+            .toList(),
+      );
+      final List<SensorTypeDevice> frontSensors = List<SensorTypeDevice>.from(
+        sensorTypes['front']
+            .map(
+              (data) => SensorTypeDevice(
+                flashAvailable: data['flashAvailable'],
+                sensorType: SensorType.values.byName(data['type']),
+                name: data['name'],
+                iso: data['iso'],
+                uid: data['uid'],
+              ),
+            )
+            .toList(),
+      );
+
+      return SensorDeviceData(
+        ultraWideAngle: backSensors
+            .where(
+              (element) => element.sensorType == SensorType.ultraWideAngle,
+            )
+            .toList()
+            .firstOrNull,
+        telephoto: backSensors
+            .where(
+              (element) => element.sensorType == SensorType.telephoto,
+            )
+            .toList()
+            .firstOrNull,
+        wideAngle: backSensors
+            .where(
+              (element) => element.sensorType == SensorType.wideAngle,
+            )
+            .toList()
+            .firstOrNull,
+        trueDepth: frontSensors
+            .where(
+              (element) => element.sensorType == SensorType.trueDepth,
+            )
+            .toList()
+            .firstOrNull,
+      );
     }
   }
 

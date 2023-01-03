@@ -139,6 +139,8 @@ FlutterEventSink imageStreamEventSink;
     [self _handleGetMaxZoom:call result:result];
   } else if ([@"setExifPreferences" isEqualToString:call.method]) {
     [self _handleSetExifPreferences:call result:result];
+  } else if ([@"getSensors" isEqualToString:call.method]) {
+    [self _handleGetSensors:call result:result];
   } else if ([@"dispose" isEqualToString:call.method]) {
     [self _handleDispose:call result:result];
   } else {
@@ -179,6 +181,16 @@ FlutterEventSink imageStreamEventSink;
 - (void)_handleRecordingAudioMode:(FlutterMethodCall*)call result:(FlutterResult)result {
   bool value = [call.arguments[@"enableAudio"] boolValue];
   [_camera setRecordingAudioMode:value];
+}
+
+- (void)_handleGetSensors:(FlutterMethodCall*)call result:(FlutterResult)result {
+  NSArray *frontSensors = [_camera getSensors:AVCaptureDevicePositionFront];
+  NSArray *backSensors = [_camera getSensors:AVCaptureDevicePositionBack];
+  
+  result(@{
+    @"front": frontSensors,
+    @"back": backSensors
+  });
 }
 
 - (void)_handleGetEffectivPreviewSize:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -233,10 +245,15 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)_handleSetSensor:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSString *sensorName = call.arguments[@"sensor"];
-  // TODO: Return a list of all available cameras to front & then choice in a list the device ID wanted
+  NSString *captureDeviceId;
+  
+  if (call.arguments[@"deviceId"] && call.arguments[@"deviceId"] != [NSNull null]) {
+    captureDeviceId = call.arguments[@"deviceId"];
+  }
+  
   CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
   
-  [_camera setSensor:sensor];
+  [_camera setSensor:sensor deviceId:captureDeviceId];
   
   result(nil);
 }

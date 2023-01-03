@@ -1,3 +1,4 @@
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_sensor_type_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
@@ -20,15 +21,18 @@ class AwesomeCameraLayout extends StatelessWidget {
         const SizedBox(height: 16),
         AwesomeTopActions(state: state),
         Spacer(),
+        AwesomeSensorTypeSelector(state: state),
         const SizedBox(height: 12),
         AwesomeBackground(
           child: SafeArea(
             top: false,
-            child: Column(children: [
-              AwesomeCameraModeSelector(state: state),
-              AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
-              const SizedBox(height: 32),
-            ]),
+            child: Column(
+              children: [
+                AwesomeCameraModeSelector(state: state),
+                AwesomeBottomActions(state: state, onMediaTap: onMediaTap),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ],
