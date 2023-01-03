@@ -1,5 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
 
 import '../camera_context.dart';
@@ -57,7 +58,16 @@ abstract class CameraState {
     final next = SensorConfig(
       sensor: previous.sensor == Sensors.back ? Sensors.front : Sensors.back,
     );
-    cameraContext.switchSensor(next);
+    cameraContext.setSensorConfig(next);
+  }
+
+  void setSensorType(SensorType type, String deviceId) {
+    final next = SensorConfig(
+      captureDeviceId: deviceId,
+      sensor: type == SensorType.trueDepth ? Sensors.front : Sensors.back,
+      type: type,
+    );
+    cameraContext.setSensorConfig(next);
   }
 
   /// The sensor config allows you to
@@ -79,6 +89,10 @@ abstract class CameraState {
 
   Future<PreviewSize> previewSize() {
     return cameraContext.previewSize();
+  }
+
+  Future<SensorDeviceData> getSensors() {
+    return cameraContext.getSensors();
   }
 
   Future<int?> textureId() {
