@@ -29,18 +29,28 @@ enum CupertinoVideoCodec {
 
 enum CupertinoFileType {
   /// The UTI for the QuickTime movie file format.
+  /// 
+  /// Files are identified with the .mov and .qt extensions.
   quickTimeMovie,
 
   /// The UTI for the MPEG-4 file format.
+  /// 
+  /// Files are identified with the .mp4 extension.
   mpeg4,
 
   /// The UTI for the iTunes video file format.
+  /// 
+  /// Files are identified with the .m4v extension.
   appleM4V,
 
   /// The UTI for the 3GPP file format.
+  /// 
+  /// Files are identified with the .3gp, .3gpp, and .sdv extensions.
   type3GPP,
 
   /// The UTI for the 3GPP2 file format.
+  /// 
+  /// Files are identified with the .3g2, .3gp2 extensions.
   type3GPP2,
 }
 
@@ -49,6 +59,8 @@ class CupertinoVideoOptions {
   CupertinoVideoCodec codec;
 
   /// The file type to use when recording a video.
+  /// 
+  /// **WARNING:** Be sure to use the correct file type extension for the video!
   CupertinoFileType fileType;
 
   CupertinoVideoOptions({

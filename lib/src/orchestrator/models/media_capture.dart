@@ -38,7 +38,7 @@ class MediaCapture {
 
   bool get isPicture => filePath.endsWith("jpg");
 
-  bool get isVideo => filePath.endsWith("mp4");
+  bool get isVideo => !isPicture;
 
   bool get isRecordingVideo =>
       isVideo && status == MediaCaptureStatus.capturing;

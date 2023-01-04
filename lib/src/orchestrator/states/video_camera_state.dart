@@ -32,15 +32,10 @@ class VideoCameraState extends CameraState {
   @override
   CaptureMode get captureMode => CaptureMode.video;
 
-  /// Recording is not in MP4 format. [filePath] must end with .mp4.
-  ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
   Future<String> startRecording() async {
     String filePath = await filePathBuilder();
-    if (!filePath.endsWith(".mp4")) {
-      throw ("You can only capture .mp4 files with CamerAwesome");
-    }
     _mediaCapture = MediaCapture.capturing(
         filePath: filePath, videoState: VideoState.started);
     try {
