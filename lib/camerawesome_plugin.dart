@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
+import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:collection/collection.dart';
@@ -287,12 +288,14 @@ class CamerawesomePlugin {
     }
   }
 
-  static recordVideo(String path) {
+  // TODO: add video options for Android
+  static recordVideo(String path, {CupertinoVideoOptions? cupertinoVideoOptions,}) {
     if (Platform.isAndroid) {
       return CameraInterface().recordVideo(path);
     } else {
       return _channel.invokeMethod<void>('recordVideo', <String, dynamic>{
         'path': path,
+        'options': cupertinoVideoOptions?.toMap(),
       });
     }
   }

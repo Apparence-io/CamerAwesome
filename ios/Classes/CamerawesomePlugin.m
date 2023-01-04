@@ -230,13 +230,14 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)_handleRecordVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
   NSString *path = call.arguments[@"path"];
+  NSDictionary *options = call.arguments[@"options"];
   
   if (path == nil || path.length <= 0) {
     result([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
     return;
   }
   
-  [_camera recordVideoAtPath:path];
+  [_camera recordVideoAtPath:path withOptions:options];
 }
 
 - (void)_handleStopRecordingVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
