@@ -86,18 +86,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   AVVideoCodecType codecType = [self getBestCodecTypeAccordingOptions:options];
   AVFileType fileType = [self getBestFileTypeAccordingOptions:options];
   
-  _videoWriter = [[AVAssetWriter alloc] initWithURL:outputURL
-                                           fileType:fileType
-                                              error:&error];
-  NSParameterAssert(_videoWriter);
-  if (error) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description]);
-    return NO;
-  }
-  
-  NSDictionary *videoSettings = [NSDictionary
-                                 dictionaryWithObjectsAndKeys:codecType, AVVideoCodecKey,
-                                 [NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
+  NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:codecType, AVVideoCodecKey,[NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
                                  [NSNumber numberWithInt:_previewSize.width], AVVideoHeightKey,
                                  nil];
   _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
@@ -111,6 +100,17 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   
   NSParameterAssert(_videoWriterInput);
   _videoWriterInput.expectsMediaDataInRealTime = YES;
+  
+  _videoWriter = [[AVAssetWriter alloc] initWithURL:outputURL
+                                           fileType:fileType
+                                              error:&error];
+  NSParameterAssert(_videoWriter);
+  if (error) {
+    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description]);
+    return NO;
+  }
+  
+  [_videoWriter addInput:_videoWriterInput];
   
   if (_isAudioEnabled) {
     AudioChannelLayout acl;
@@ -130,8 +130,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     
     [_videoWriter addInput:_audioWriterInput];
   }
-  
-  [_videoWriter addInput:_videoWriterInput];
   
   return YES;
 }
