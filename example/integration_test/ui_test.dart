@@ -35,7 +35,8 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
+        expect(
+            $(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         expect($(AwesomeMediaPreview), findsNothing);
         // expect($(AwesomePauseResumeButton), findsNothing);
@@ -83,7 +84,8 @@ void main() {
 
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
+        expect(
+            $(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsNothing);
         expect($(AwesomeMediaPreview), findsNothing);

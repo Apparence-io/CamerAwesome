@@ -37,7 +37,9 @@ class CustomUiExample2 extends StatelessWidget {
                     child: StreamBuilder<MediaCapture?>(
                       stream: cameraState.captureState$,
                       builder: (_, snapshot) {
-                        if (snapshot.data == null) return const SizedBox.shrink();
+                        if (snapshot.data == null) {
+                          return const SizedBox.shrink();
+                        }
                         return AwesomeMediaPreview(
                           mediaCapture: snapshot.data!,
                           onMediaTap: (MediaCapture mediaCapture) {

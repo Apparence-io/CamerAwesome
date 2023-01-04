@@ -24,7 +24,7 @@ class AwesomeLocationButton extends StatelessWidget {
           final saveGpsLocation = snapshot.data;
           return AwesomeOrientedWidget(
             child: AwesomeBouncingWidget(
-              child: Container( 
+              child: Container(
                 color: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
