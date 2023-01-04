@@ -62,8 +62,8 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ```yaml
 dependencies:
-    camerawesome: ^1.0.0-rc1
-    ...
+  camerawesome: ^1.0.0-rc3
+  ...
 ```
 
 ### Set permissions
@@ -122,10 +122,11 @@ The camera preview will be visible behind what you will provide to our builder.
 ```dart
 CameraAwesomeBuilder.custom(
     saveConfig: SaveConfig.image(
-        pathBuilder: _path(),
-    ),
-    builder: (state) {
-        // create your interface here 
+        pathBuilder: _path(),)
+,
+builder: (
+state, previewSize, previewRect) {
+// create your interface here 
     },
 ),
 ```
@@ -136,21 +137,26 @@ CameraAwesomeBuilder.custom(
 
 Here is the definition of our builder method. 
 ```dart
-typedef CameraLayoutBuilder = Widget Function(CameraState cameraState);
+typedef CameraLayoutBuilder = Widget Function(CameraState cameraState, PreviewSize previewSize, Rect previewRect);
 ```
+
 <br>
-The only thing you have access is the cameraState.<br>
+The only thing you have access to manage the camera is the cameraState.<br>
 Depending on which state is our camera experience you will have access to some different method. <br>
+```previewSize``` and ```previewRect``` might be used to position your UI around or on top of the camera preview.
 <br>
 
 #### How camerAwesome states works ? 
 Using the state you can do anything you need without having to think about the camera flow<br><br>
-- On app start we are in [PreparingCameraState]<br>
-- Then depending on the initialCaptureMode you set you will be [PhotoCameraState] or [VideoCameraState]<br>
-- Starting a video will push a [VideoRecordingCameraState]<br>
-- Stopping the video will push back the [VideoCameraState]<br>
-<br>
-Also if you want to use some specific function you can use the when method so you can write like this.<br>
+
+- On app start we are in ```PreparingCameraState```<br>
+- Then depending on the initialCaptureMode you set you will be ```PhotoCameraState```
+  or ```VideoCameraState```<br>
+- Starting a video will push a ```VideoRecordingCameraState```<br>
+- Stopping the video will push back the ```VideoCameraState```<br>
+  <br>
+  Also if you want to use some specific function you can use the when method so you can write like
+  this.<br>
 
 ```dart
 state.when(
@@ -167,8 +173,6 @@ state.when(
 -----
 ## 🔬 Analysis mode
 
-This is a first step into this feature as we are currently working on this.
-<br>
 
 Use this to achieve
 - QR-Code scanning.
@@ -177,7 +181,9 @@ Use this to achieve
 - Realtime video chats.
 And much more 🤩
 
-You can check an example using MLKit on Android that detect faces inside the ```example``` directory.
+You can check examples using MLKit inside the ```example``` directory.
+```ai_analysis_faces.dart``` is used to detect faces and ```ai_analysis_barcode.dart``` to read
+barcodes.
 
 ```dart
 CameraAwesomeBuilder.awesome(
@@ -194,7 +200,8 @@ CameraAwesomeBuilder.awesome(
 
 > MLkit recommands to use nv21 format for Android. <br>
 > bgra8888 is the iOS format
-> For machine learning you don't need full resolution images (1024 is enough and makes computation easier)
+> For machine learning you don't need full resolution images (1024 or lower should be enough and
+> makes computation easier)
 
 > See more in documentation
 

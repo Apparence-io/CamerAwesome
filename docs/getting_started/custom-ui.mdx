@@ -4,9 +4,8 @@ Our builder provides a custom factory.
 Now you have access to the builder property and can create your own camera experience without worrying about the camera flow (ex: clicking on take photo while camera is not ready...).
 
 The camera preview will be visible behind what you will provide to our builder.
-
-> Note 
-> The camera preview is not customizable yet
+ 
+> Camera preview positioning is not customizable yet
 
 ```dart
 CameraAwesomeBuilder.custom(
@@ -18,7 +17,7 @@ CameraAwesomeBuilder.custom(
       return "some/path.mp4";
     },
   ),
-  builder: (cameraState) {
+  builder: (cameraState, previewSize, previewRect) {
     // Return your UI (a Widget)
     return cameraState.when(
       onPreparingCamera: (state) => const Center(child: CircularProgressIndicator()),
@@ -54,7 +53,7 @@ You can find more examples on the `example` folder.
 The builder method is the principal method here. 
 
 ```dart
-typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState);
+typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState, PreviewSize previewSize, Rect previewRect);
 ```
 
 CamerAwesome now works using a state pattern to make sure you can only call methods available on the camera current state.
@@ -68,6 +67,9 @@ state.when(
     onPreparingCamera: (preparingCameraState) => Loader(),
 );
 ```
+
+```previewSize``` and ```previewRect``` are additional parameters that might be used to position your UI around or on top of the camera preview.
+
 
 #### CamerAwesome has 4 different states
 - **PreparingCameraState** : camera is starting
