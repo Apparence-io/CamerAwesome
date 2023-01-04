@@ -43,13 +43,10 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage> {
-  final BehaviorSubject<AnalysisImage> _analysisImagesStream =
-      BehaviorSubject();
-
+  final _analysisImagesController = BehaviorSubject<AnalysisImage>();
   StreamSubscription? _analysisSubscription;
 
-  final BehaviorSubject<FaceDetectionModel> _faceDetectionStream =
-      BehaviorSubject();
+  final _faceDetectionController = BehaviorSubject<FaceDetectionModel>();
 
   final options = FaceDetectorOptions(
     enableContours: true,
@@ -67,22 +64,23 @@ class _CameraPageState extends State<CameraPage> {
   @override
   void dispose() {
     _analysisSubscription?.cancel();
-    _analysisImagesStream.close();
-    _faceDetectionStream.close();
+    _analysisImagesController.close();
+    _faceDetectionController.close();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    _analysisSubscription = _analysisImagesStream.stream
+    // Analyze images every 300 seconds only, to reduce impact on performances
+    _analysisSubscription = _analysisImagesController.stream
         // debounceTime does not work for some reasons so we use a workaround
         // .debounceTime(const Duration(milliseconds: 100))
         // .bufferTime(const Duration(milliseconds: 300))
         // .map((event) => event.isNotEmpty ? event.last : null)
         .listen((event) {
       if (event != null) {
-        analyzeImage(event);
+        _analyzeImage(event);
       }
     });
   }
@@ -90,70 +88,35 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox.expand(
-        child: CameraAwesomeBuilder.awesome(
-          saveConfig: SaveConfig.photoAndVideo(
-            photoPathBuilder: () => _path(CaptureMode.photo),
-            videoPathBuilder: () => _path(CaptureMode.video),
-            initialCaptureMode: CaptureMode.photo,
-          ),
-          onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
-          previewFit: CameraPreviewFit.contain,
-          aspectRatio: CameraAspectRatios.ratio_1_1,
-          sensor: Sensors.front,
-          onImageForAnalysis: (img) {
-            _analysisImagesStream.add(img);
-          },
-          imageAnalysisConfig: AnalysisConfig(
-            outputFormat: InputAnalysisImageFormat.nv21,
-            width: 250,
-            maxFramesPerSecond: 12,
-          ),
-          previewDecoratorBuilder: (state, previewSize, previewRect) {
-            return IgnorePointer(
-              child: StreamBuilder(
-                stream: state.sensorConfig$,
-                builder: (_, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox();
-                  } else {
-                    return StreamBuilder<FaceDetectionModel>(
-                      stream: _faceDetectionStream,
-                      builder: (_, faceModelSnapshot) {
-                        if (!faceModelSnapshot.hasData) return const SizedBox();
-                        return CustomPaint(
-                          painter: FaceDetectorPainter(
-                            model: faceModelSnapshot.requireData,
-                            previewSize: previewSize,
-                            previewRect: previewRect,
-                            isBackCamera:
-                                snapshot.requireData.sensor == Sensors.back,
-                          ),
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-            );
-          },
+      body: CameraAwesomeBuilder.awesome(
+        saveConfig: SaveConfig.photoAndVideo(
+          photoPathBuilder: () => _path(CaptureMode.photo),
+          videoPathBuilder: () => _path(CaptureMode.video),
+          initialCaptureMode: CaptureMode.photo,
         ),
+        onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
+        previewFit: CameraPreviewFit.contain,
+        aspectRatio: CameraAspectRatios.ratio_1_1,
+        sensor: Sensors.front,
+        onImageForAnalysis: (img) => _analysisImagesController.add(img),
+        imageAnalysisConfig: AnalysisConfig(
+          outputFormat: InputAnalysisImageFormat.nv21,
+          width: 250,
+            maxFramesPerSecond: 12,
+        ),
+        previewDecoratorBuilder: (state, previewSize, previewRect) {
+          return _MyPreviewDecoratorWidget(
+            cameraState: state,
+            faceDetectionStream: _faceDetectionController,
+            previewSize: previewSize,
+            previewRect: previewRect,
+          );
+        },
       ),
     );
   }
 
-  // Lets just process only one image / second
-  analyzeImage(AnalysisImage img) {
-    processImage(img);
-  }
-
-  Future processImage(AnalysisImage img) async {
-    final WriteBuffer allBytes = WriteBuffer();
-    for (final ImagePlane plane in img.planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
-    final bytes = allBytes.done().buffer.asUint8List();
-
+  Future _analyzeImage(AnalysisImage img) async {
     final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
 
     final InputImageRotation imageRotation =
@@ -177,6 +140,13 @@ class _CameraPageState extends State<CameraPage> {
         inputImageFormat: inputImageFormat(img.format),
         planeData: planeData,
       );
+
+      final WriteBuffer allBytes = WriteBuffer();
+      for (final ImagePlane plane in img.planes) {
+        allBytes.putUint8List(plane.bytes);
+      }
+      final bytes = allBytes.done().buffer.asUint8List();
+
       inputImage =
           InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
     } else {
@@ -192,7 +162,7 @@ class _CameraPageState extends State<CameraPage> {
     }
 
     try {
-      _faceDetectionStream.add(
+      _faceDetectionController.add(
         FaceDetectionModel(
           faces: await faceDetector.processImage(inputImage),
           absoluteImageSize: inputImage.inputImageData!.size,
@@ -227,6 +197,49 @@ class _CameraPageState extends State<CameraPage> {
       default:
         return InputImageFormat.yuv420;
     }
+  }
+}
+
+class _MyPreviewDecoratorWidget extends StatelessWidget {
+  final CameraState cameraState;
+  final Stream<FaceDetectionModel> faceDetectionStream;
+  final PreviewSize previewSize;
+  final Rect previewRect;
+
+  const _MyPreviewDecoratorWidget({
+    required this.cameraState,
+    required this.faceDetectionStream,
+    required this.previewSize,
+    required this.previewRect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: StreamBuilder(
+        stream: cameraState.sensorConfig$,
+        builder: (_, snapshot) {
+          if (!snapshot.hasData) {
+            return const SizedBox();
+          } else {
+            return StreamBuilder<FaceDetectionModel>(
+              stream: faceDetectionStream,
+              builder: (_, faceModelSnapshot) {
+                if (!faceModelSnapshot.hasData) return const SizedBox();
+                return CustomPaint(
+                  painter: FaceDetectorPainter(
+                    model: faceModelSnapshot.requireData,
+                    previewSize: previewSize,
+                    previewRect: previewRect,
+                    isBackCamera: snapshot.requireData.sensor == Sensors.back,
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
   }
 }
 
@@ -353,50 +366,6 @@ class FaceDetectorPainter extends CustomPainter {
         oldDelegate.previewSize.height != previewSize.height ||
         oldDelegate.previewRect != previewRect ||
         oldDelegate.model != model;
-  }
-
-  double translateX(
-    double x,
-    int rotation,
-    Size size,
-    Size absoluteImageSize,
-  ) {
-    switch (rotation) {
-      case 90:
-        return x *
-            size.width /
-            (Platform.isIOS
-                ? absoluteImageSize.width
-                : absoluteImageSize.height);
-      case 270:
-        return size.width -
-            x *
-                size.width /
-                (Platform.isIOS
-                    ? absoluteImageSize.width
-                    : absoluteImageSize.height);
-      default:
-        return x * size.width / absoluteImageSize.width;
-    }
-  }
-
-  double translateY(
-    double y,
-    int rotation,
-    Size size,
-    Size absoluteImageSize,
-  ) {
-    switch (rotation) {
-      case 90:
-      case 270:
-        return y *
-            size.height /
-            (Platform.isIOS
-                ? absoluteImageSize.height
-                : absoluteImageSize.width);
-      default:
-        return y * size.height / absoluteImageSize.height;
-    }
   }
 
   Offset _croppedPosition(
