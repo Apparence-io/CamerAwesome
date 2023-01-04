@@ -79,7 +79,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)start;
 - (void)stop;
 - (void)takePictureAtPath:(NSString *)path;
-- (void)recordVideoAtPath:(NSString *)path;
+- (void)recordVideoAtPath:(NSString *)path withOptions:(NSDictionary *)options;
 - (void)stopRecordingVideo;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview;
 - (void)dispose;

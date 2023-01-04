@@ -156,7 +156,7 @@
   
   // Get preview size according to presset selected
   _currentPreviewSize = [CameraQualities getSizeForPresset:presetSelected];
-  [_videoController setPreviewSize:currentPreviewSize];
+  [_videoController setPreviewSize:_currentPreviewSize];
 }
 
 /// Get current video prewiew size
@@ -432,7 +432,7 @@
 
 # pragma mark - Camera video
 /// Record video into the given path
-- (void)recordVideoAtPath:(NSString *)path {
+- (void)recordVideoAtPath:(NSString *)path withOptions:(NSDictionary *)options {
   if (_imageStreamController.streamImages) {
     _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
   }
@@ -445,7 +445,7 @@
         [self->_audioOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       }
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
-    }];
+    } options:options];
   } else {
     _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }

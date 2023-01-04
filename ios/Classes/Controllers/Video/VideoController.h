@@ -34,7 +34,7 @@ typedef void(^OnVideoWriterSetup)(void);
 @property(assign, nonatomic) CMTime audioTimeOffset;
 
 - (instancetype)initResult:(FlutterResult)result;
-- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback;
+- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(NSDictionary *)options;
 - (void)stopRecordingVideo;
 - (void)pauseVideoRecording;
 - (void)resumeVideoRecording;

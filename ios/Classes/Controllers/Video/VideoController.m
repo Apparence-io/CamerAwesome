@@ -24,9 +24,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback {
+- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(NSDictionary *)options {
   // Create audio & video writer
-  if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback]) {
+  if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options]) {
     _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
     return;
   }
@@ -70,7 +70,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - Audio & Video writers
 
 /// Setup video channel & write file on path
-- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback {
+- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(NSDictionary *)options {
   NSError *error = nil;
   NSURL *outputURL;
   if (path != nil) {
@@ -81,18 +81,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   if (_isAudioEnabled && !_isAudioSetup) {
     audioSetupCallback();
   }
-  _videoWriter = [[AVAssetWriter alloc] initWithURL:outputURL
-                                           fileType:AVFileTypeQuickTimeMovie
-                                              error:&error];
-  NSParameterAssert(_videoWriter);
-  if (error) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer" details:error.description]);
-    return NO;
-  }
-
-  NSDictionary *videoSettings = [NSDictionary
-                                 dictionaryWithObjectsAndKeys:AVVideoCodecH264, AVVideoCodecKey,
-                                 [NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
+  
+  // Read from options if available
+  AVVideoCodecType codecType = [self getBestCodecTypeAccordingOptions:options];
+  AVFileType fileType = [self getBestFileTypeAccordingOptions:options];
+  
+  NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:codecType, AVVideoCodecKey,[NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
                                  [NSNumber numberWithInt:_previewSize.width], AVVideoHeightKey,
                                  nil];
   _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
@@ -106,6 +100,17 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   
   NSParameterAssert(_videoWriterInput);
   _videoWriterInput.expectsMediaDataInRealTime = YES;
+  
+  _videoWriter = [[AVAssetWriter alloc] initWithURL:outputURL
+                                           fileType:fileType
+                                              error:&error];
+  NSParameterAssert(_videoWriter);
+  if (error) {
+    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description]);
+    return NO;
+  }
+  
+  [_videoWriter addInput:_videoWriterInput];
   
   if (_isAudioEnabled) {
     AudioChannelLayout acl;
@@ -125,8 +130,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     
     [_videoWriter addInput:_audioWriterInput];
   }
-  
-  [_videoWriter addInput:_videoWriterInput];
   
   return YES;
 }
@@ -231,6 +234,56 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   }
   
   CFRelease(sampleBuffer);
+}
+
+# pragma mark - Settings converters
+
+- (AVFileType)getBestFileTypeAccordingOptions:(NSDictionary *)options {
+  AVFileType fileType = AVFileTypeQuickTimeMovie;
+  
+  if (options && options != (id)[NSNull null]) {
+    NSString *type = [options objectForKey:@"fileType"];
+    if ([type isEqualToString:@"quickTimeMovie"]) {
+      fileType = AVFileTypeQuickTimeMovie;
+    } else if ([type isEqualToString:@"mpeg4"]) {
+      fileType = AVFileTypeMPEG4;
+    } else if ([type isEqualToString:@"appleM4V"]) {
+      fileType = AVFileTypeAppleM4V;
+    } else if ([type isEqualToString:@"type3GPP"]) {
+      fileType = AVFileType3GPP;
+    } else if ([type isEqualToString:@"type3GPP2"]) {
+      fileType = AVFileType3GPP2;
+    }
+  }
+  
+  return fileType;
+}
+
+- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(NSDictionary *)options {
+  AVVideoCodecType codecType = AVVideoCodecTypeH264;
+  if (options && options != (id)[NSNull null]) {
+    NSString *codec = [options objectForKey:@"codec"];
+    if ([codec isEqualToString:@"h264"]) {
+      codecType = AVVideoCodecTypeH264;
+    } else if ([codec isEqualToString:@"hevc"]) {
+      codecType = AVVideoCodecTypeHEVC;
+    } else if ([codec isEqualToString:@"hevcWithAlpha"]) {
+      codecType = AVVideoCodecTypeHEVCWithAlpha;
+    } else if ([codec isEqualToString:@"jpeg"]) {
+      codecType = AVVideoCodecTypeJPEG;
+    } else if ([codec isEqualToString:@"appleProRes4444"]) {
+      codecType = AVVideoCodecTypeAppleProRes4444;
+    } else if ([codec isEqualToString:@"appleProRes422"]) {
+      codecType = AVVideoCodecTypeAppleProRes422;
+    } else if ([codec isEqualToString:@"appleProRes422HQ"]) {
+      codecType = AVVideoCodecTypeAppleProRes422HQ;
+    } else if ([codec isEqualToString:@"appleProRes422LT"]) {
+      codecType = AVVideoCodecTypeAppleProRes422LT;
+    } else if ([codec isEqualToString:@"appleProRes422Proxy"]) {
+      codecType = AVVideoCodecTypeAppleProRes422Proxy;
+    }
+  }
+  return codecType;
 }
 
 # pragma mark - Setter
