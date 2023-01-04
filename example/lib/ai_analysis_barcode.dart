@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:rxdart/subjects.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(const MyApp());
@@ -36,134 +36,62 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-  final barcodeScanner = BarcodeScanner(formats: [BarcodeFormat.all]);
-  Timer? timer;
-  var consoleController = BehaviorSubject<List<String>>();
+  final _barcodeScanner = BarcodeScanner(formats: [BarcodeFormat.all]);
 
-  List<String> buffer = [];
-  late Stream<List<String>> console$ = consoleController.stream;
+  final _analysisImagesController = BehaviorSubject<AnalysisImage>();
+  StreamSubscription? _analysisSubscription;
+
+  final _buffer = <String>[];
+  final _barcodesController = BehaviorSubject<List<String>>();
+  late final Stream<List<String>> _barcodesStream = _barcodesController.stream;
+  final _scrollController = ScrollController();
 
   @override
   void dispose() {
-    consoleController.close();
+    _analysisSubscription?.cancel();
+    _analysisImagesController.close();
+    _barcodesController.close();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    // Analyze images every 300 seconds only, to reduce impact on performances
+    _analysisSubscription = _analysisImagesController.stream
+        // debounceTime does not work for some reasons so we use a workaround
+        // .debounceTime(const Duration(milliseconds: 100))
+        .bufferTime(const Duration(milliseconds: 300))
+        .map((event) => event.isNotEmpty ? event.last : null)
+        .listen((event) {
+      if (event != null) {
+        _processImageBarcode(event);
+      }
+    });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: CameraAwesomeBuilder.custom(
-          saveConfig:
-              SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
-          onImageForAnalysis: analyzeImage,
-          imageAnalysisConfig: AnalysisConfig(
-            outputFormat: InputAnalysisImageFormat.bgra8888,
-            width: 1024,
-          ),
-          builder: (cameraModeState, previewSize, previewRect) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 120,
-                    width: 32,
-                    padding: const EdgeInsets.all(16),
-                    color: Colors.blueGrey[600]!.withOpacity(1),
-                    child: StreamBuilder<List<String>>(
-                      stream: console$,
-                      builder: (context, value) => !value.hasData
-                          ? Container()
-                          : ListView.builder(
-                              itemCount: value.data!.length,
-                              itemBuilder: (context, index) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                  vertical: 2,
-                                ),
-                                child: Text(
-                                  value.data![index],
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                    ),
-                  ),
-                )
-              ],
-            );
-          },
+      body: CameraAwesomeBuilder.custom(
+        saveConfig:
+            SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
+        onImageForAnalysis: (img) => _analysisImagesController.add(img),
+        imageAnalysisConfig: AnalysisConfig(
+          outputFormat: InputAnalysisImageFormat.nv21,
+          width: 1024,
         ),
+        builder: (cameraModeState, previewSize, previewRect) {
+          return _BarcodeDisplayWidget(
+            barcodesStream: _barcodesStream,
+            scrollController: _scrollController,
+          );
+        },
       ),
     );
   }
 
-  analyzeImage(AnalysisImage img) {
-    if (timer != null && timer!.isActive) {
-      return;
-    }
-    // processImageForText(img);
-    processImageBarcode(img);
-    timer = Timer(const Duration(milliseconds: 500), () {
-      timer = null;
-    });
-  }
-
-  Future processImageForText(AnalysisImage img) async {
-    final planeData = img.planes.map(
-      (plane) {
-        return InputImagePlaneMetadata(
-          bytesPerRow: plane.bytesPerRow,
-          height: img.height,
-          width: img.width,
-        );
-      },
-    ).toList();
-
-    final inputImage = InputImage.fromBytes(
-      bytes: img.nv21Image!,
-      inputImageData: InputImageData(
-        imageRotation: InputImageRotation.rotation270deg,
-        inputImageFormat: InputImageFormat.nv21,
-        planeData: planeData,
-        size: Size(img.width.toDouble(), img.height.toDouble()),
-      ),
-    );
-    try {
-      var recognizedTexts = await textRecognizer.processImage(inputImage);
-      debugPrint("============================");
-      debugPrint("============================");
-      await log("============================");
-      for (TextBlock block in recognizedTexts.blocks) {
-        for (TextLine line in block.lines) {
-          // Same getters as TextBlock
-          debugPrint("Line: ${line.text}");
-          await log("- ${line.text}");
-          // for (TextElement element in line.elements) {
-          // Same getters as TextBlock
-          // debugPrint("...${element.text}");
-          // }
-        }
-      }
-      // debugPrint("...sending image resulted with : ${faces?.length} faces");
-    } catch (error) {
-      debugPrint("...sending image resulted error $error");
-    }
-  }
-
-  Future processImageBarcode(AnalysisImage img) async {
-    final WriteBuffer allBytes = WriteBuffer();
-    for (final ImagePlane plane in img.planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
-    final bytes = allBytes.done().buffer.asUint8List();
-
+  Future _processImageBarcode(AnalysisImage img) async {
     final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
 
     final InputImageRotation imageRotation =
@@ -179,36 +107,60 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     ).toList();
 
-    final inputImageData = InputImageData(
-      size: imageSize,
-      imageRotation: imageRotation,
-      inputImageFormat: inputImageFormat(img.format),
-      planeData: planeData,
-    );
+    final InputImage inputImage;
+    if (Platform.isIOS) {
+      final inputImageData = InputImageData(
+        size: imageSize,
+        imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
+        inputImageFormat: _inputImageFormat(img.format),
+        planeData: planeData,
+      );
 
-    final inputImage =
-        InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+      final WriteBuffer allBytes = WriteBuffer();
+      for (final ImagePlane plane in img.planes) {
+        allBytes.putUint8List(plane.bytes);
+      }
+      final bytes = allBytes.done().buffer.asUint8List();
+
+      inputImage =
+          InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+    } else {
+      inputImage = InputImage.fromBytes(
+        bytes: img.nv21Image!,
+        inputImageData: InputImageData(
+          imageRotation: imageRotation,
+          inputImageFormat: InputImageFormat.nv21,
+          planeData: planeData,
+          size: Size(img.width.toDouble(), img.height.toDouble()),
+        ),
+      );
+    }
 
     try {
-      var recognizedBarCodes = await barcodeScanner.processImage(inputImage);
+      var recognizedBarCodes = await _barcodeScanner.processImage(inputImage);
       for (Barcode barcode in recognizedBarCodes) {
         debugPrint("Barcode: [${barcode.format}]: ${barcode.rawValue}");
-        await log("[${barcode.format.name}]: ${barcode.rawValue}");
+        _addBarcode("[${barcode.format.name}]: ${barcode.rawValue}");
       }
     } catch (error) {
       debugPrint("...sending image resulted error $error");
     }
   }
 
-  log(String value) async {
+  void _addBarcode(String value) {
     try {
-      if (buffer.length > 300) {
-        buffer.removeRange(0, buffer.length - 300);
+      if (_buffer.length > 300) {
+        _buffer.removeRange(0, _buffer.length - 300);
       }
-      if (buffer.isEmpty || value != buffer[buffer.length - 1]) {
-        buffer.add(value);
+      if (_buffer.isEmpty || value != _buffer[_buffer.length - 1]) {
+        _buffer.insert(0, value);
+        _barcodesController.add(_buffer);
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeIn,
+        );
       }
-      consoleController.add(buffer);
     } catch (err) {
       debugPrint("...logging error $err");
     }
@@ -225,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return filePath;
   }
 
-  InputImageFormat inputImageFormat(InputAnalysisImageFormat format) {
+  InputImageFormat _inputImageFormat(InputAnalysisImageFormat format) {
     switch (format) {
       case InputAnalysisImageFormat.bgra8888:
         return InputImageFormat.bgra8888;
@@ -234,5 +186,47 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         return InputImageFormat.yuv420;
     }
+  }
+}
+
+class _BarcodeDisplayWidget extends StatelessWidget {
+  final Stream<List<String>> barcodesStream;
+  final ScrollController scrollController;
+
+  const _BarcodeDisplayWidget({
+    super.key,
+    required this.barcodesStream,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: 120,
+        padding: const EdgeInsets.all(16),
+        color: Colors.blueGrey[600]!.withOpacity(1),
+        child: StreamBuilder<List<String>>(
+          stream: barcodesStream,
+          builder: (context, value) => !value.hasData
+              ? const SizedBox.expand()
+              : ListView.builder(
+                  controller: scrollController,
+                  itemCount: value.data!.length,
+                  itemBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 2,
+                    ),
+                    child: Text(
+                      value.data![index],
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+        ),
+      ),
+    );
   }
 }
