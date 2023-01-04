@@ -11,7 +11,7 @@ However, if you made your own custom UI using `CameraAwesomeBuilder.custom()`, t
 ``` dart
 CameraAwesomeBuilder.custom(
   saveConfig: ...,
-  builder: (state) {
+  builder: (state, previewSize, previewRect) {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[

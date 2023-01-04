@@ -11,3 +11,4 @@ export 'awesome_media_preview.dart';
 export 'awesome_oriented_widget.dart';
 export 'awesome_pause_resume_button.dart';
 export 'awesome_bouncing_widget.dart';
+export 'awesome_sensor_type_selector.dart';
