@@ -194,9 +194,6 @@ FlutterEventSink imageStreamEventSink;
 - (void)_handleSetupAnalysis:(FlutterMethodCall*)call result:(FlutterResult)result {
   float maxFramesPerSecond = [call.arguments[@"maxFramesPerSecond"] floatValue];
   
-  // Force low preview resolution
-  [_camera setPreviewSize:CGSizeMake(720, 1280)];
-  
   // Force a frame rate to improve performance
   [_camera.imageStreamController setMaxFramesPerSecond:maxFramesPerSecond];
   
