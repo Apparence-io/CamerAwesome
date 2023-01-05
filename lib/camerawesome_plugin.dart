@@ -137,16 +137,21 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
-  /// this is not needed on iOS
   static Future<void> setupAnalysis({
     int width = 0,
+    double? maxFramesPerSecond,
     required InputAnalysisImageFormat format,
   }) async {
     if (Platform.isAndroid) {
       return CameraInterface().setupImageAnalysisStream(
         format.name,
         width,
+        maxFramesPerSecond,
       );
+    } else {
+      return _channel.invokeMethod("setupAnalysis", {
+        "maxFramesPerSecond": maxFramesPerSecond ?? 0,
+      });
     }
   }
 
@@ -157,11 +162,20 @@ class CamerawesomePlugin {
         StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
           handleData: (data, sink) {
             sink.add(Map<String, dynamic>.from(data));
+            CamerawesomePlugin.receivedImageFromStream();
           },
         ),
       );
     }
     return _imagesStream;
+  }
+
+  static Future receivedImageFromStream() {
+    if (Platform.isIOS) {
+      return _channel.invokeMethod("receivedImageFromStream");
+    } else {
+      return Future.value();
+    }
   }
 
   static Future<bool?> init(SensorConfig sensorConfig, bool enableImageStream,
@@ -213,7 +227,6 @@ class CamerawesomePlugin {
   }
 
   static Future<num?> getPreviewTexture() {
-    // TODO Provide a different texture for front and back camera, so we can get a preview for both?
     if (Platform.isAndroid) {
       return CameraInterface().getPreviewTextureId();
     } else {
@@ -289,7 +302,10 @@ class CamerawesomePlugin {
   }
 
   // TODO: add video options for Android
-  static recordVideo(String path, {CupertinoVideoOptions? cupertinoVideoOptions,}) {
+  static recordVideo(
+    String path, {
+    CupertinoVideoOptions? cupertinoVideoOptions,
+  }) {
     if (Platform.isAndroid) {
       return CameraInterface().recordVideo(path);
     } else {
@@ -335,7 +351,6 @@ class CamerawesomePlugin {
     }
   }
 
-  /// TODO - Next step focus on a certain point
   static startAutoFocus() {
     if (Platform.isAndroid) {
       return CameraInterface().handleAutoFocus();

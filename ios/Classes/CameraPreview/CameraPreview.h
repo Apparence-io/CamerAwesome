@@ -73,6 +73,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setRecordingAudioMode:(bool)enableAudio;
 - (void)pauseVideoRecording;
 - (void)resumeVideoRecording;
+- (void)receivedImageFromStream;
 - (void)setAspectRatio:(AspectRatio)ratio;
 - (void)setExifPreferencesGPSLocation:(bool)gpsLocation;
 - (void)refresh;

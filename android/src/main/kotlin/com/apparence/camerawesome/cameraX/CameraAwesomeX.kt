@@ -111,7 +111,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         callback(true)
     }
 
-    override fun setupImageAnalysisStream(format: String, width: Long) {
+    override fun setupImageAnalysisStream(
+        format: String,
+        width: Long,
+        maxFramesPerSecond: Double?
+    ) {
         cameraState.apply {
             try {
                 this.imageAnalysisBuilder = ImageAnalysisBuilder.configure(
@@ -123,6 +127,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         else -> OutputImageFormat.NV21
                     },
                     executor(activity!!), width,
+                    maxFramesPerSecond = maxFramesPerSecond,
                 )
                 updateLifecycle(activity!!)
             } catch (e: Exception) {

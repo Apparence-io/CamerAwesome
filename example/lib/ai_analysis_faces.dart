@@ -78,8 +78,8 @@ class _CameraPageState extends State<CameraPage> {
     _analysisSubscription = _analysisImagesStream.stream
         // debounceTime does not work for some reasons so we use a workaround
         // .debounceTime(const Duration(milliseconds: 100))
-        .bufferTime(const Duration(milliseconds: 300))
-        .map((event) => event.isNotEmpty ? event.last : null)
+        // .bufferTime(const Duration(milliseconds: 300))
+        // .map((event) => event.isNotEmpty ? event.last : null)
         .listen((event) {
       if (event != null) {
         analyzeImage(event);
@@ -106,7 +106,8 @@ class _CameraPageState extends State<CameraPage> {
           },
           imageAnalysisConfig: AnalysisConfig(
             outputFormat: InputAnalysisImageFormat.nv21,
-            width: 512,
+            width: 250,
+            maxFramesPerSecond: 12,
           ),
           previewDecoratorBuilder: (state, previewSize, previewRect) {
             return IgnorePointer(

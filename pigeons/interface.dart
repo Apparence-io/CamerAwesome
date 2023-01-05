@@ -86,7 +86,11 @@ abstract class CameraInterface {
 
   void setAspectRatio(String aspectRatio);
 
-  void setupImageAnalysisStream(String format, int width);
+  void setupImageAnalysisStream(
+    String format,
+    int width,
+    double? maxFramesPerSecond,
+  );
 
   void setExifPreferences(ExifPreferences exifPreferences);
 }
