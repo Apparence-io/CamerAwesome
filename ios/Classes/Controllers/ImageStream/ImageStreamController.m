@@ -9,9 +9,12 @@
 
 @implementation ImageStreamController
 
+NSInteger const MaxPendingProcessedImage = 4;
+
 - (instancetype)initWithStreamImages:(bool)streamImages {
   self = [super init];
   _streamImages = streamImages;
+  _processingImage = 0;
   return self;
 }
 
@@ -20,6 +23,11 @@
   if (_imageStreamEventSink == nil) {
     return;
   }
+
+  [self fpsGuard];
+  [self overflowCrashingGuard];
+  
+  _processingImage++;
   
   CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
   CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
@@ -66,7 +74,6 @@
     }];
   }
   
-
   CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
   
   NSDictionary *imageBuffer = @{
@@ -98,8 +105,50 @@
   }
 }
 
+#pragma mark - Guards
+
+- (void)fpsGuard {
+  // calculate time interval between latest emitted frame
+  NSDate *nowDate = [NSDate date];
+  NSTimeInterval secondsBetween = [nowDate timeIntervalSinceDate:_latestEmittedFrame];
+  
+  // fps limit check, ignored if nil or == 0
+  if (_maxFramesPerSecond && _maxFramesPerSecond > 0) {
+    if (secondsBetween <= (1 / _maxFramesPerSecond)) {
+      // skip image because out of time
+      return;
+    }
+  }
+}
+
+- (void)overflowCrashingGuard {
+  // overflow crash prevent condition
+  if (_processingImage > MaxPendingProcessedImage) {
+    // too many frame are pending processing, skipping...
+    // this prevent crashing on older phones like iPhone 6, 7...
+    return;
+  }
+}
+
+// This is used to know the exact time when the image was received on the Flutter part
+- (void)receivedImageFromStream {
+  // used for the fps limit condition
+  _latestEmittedFrame = [NSDate date];
+  
+  // used for the overflow prevent crashing condition
+  if (_processingImage >= 0) {
+    _processingImage--;
+  }
+}
+
+#pragma mark - Setters
+
 - (void)setImageStreamEventSink:(FlutterEventSink)imageStreamEventSink {
   _imageStreamEventSink = imageStreamEventSink;
+}
+
+- (void)setMaxFramesPerSecond:(float)maxFramesPerSecond {
+  _maxFramesPerSecond = maxFramesPerSecond;
 }
 
 - (void)setStreamImages:(bool)streamImages {

@@ -140,6 +140,7 @@ class CamerawesomePlugin {
   /// this is not needed on iOS
   static Future<void> setupAnalysis({
     int width = 0,
+    num maxFramesPerSecond = 0,
     required InputAnalysisImageFormat format,
   }) async {
     if (Platform.isAndroid) {
@@ -148,7 +149,9 @@ class CamerawesomePlugin {
         width,
       );
     } else {
-      return _channel.invokeMethod("setupAnalysis");
+      return _channel.invokeMethod("setupAnalysis", {
+        "maxFramesPerSecond": maxFramesPerSecond,
+      });
     }
   }
 
@@ -159,11 +162,20 @@ class CamerawesomePlugin {
         StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
           handleData: (data, sink) {
             sink.add(Map<String, dynamic>.from(data));
+            CamerawesomePlugin.receivedImageFromStream();
           },
         ),
       );
     }
     return _imagesStream;
+  }
+
+  static Future receivedImageFromStream() {
+    if (Platform.isIOS) {
+      return _channel.invokeMethod("receivedImageFromStream");
+    } else {
+      return Future.value();
+    }
   }
 
   static Future<bool?> init(SensorConfig sensorConfig, bool enableImageStream,
@@ -291,7 +303,10 @@ class CamerawesomePlugin {
   }
 
   // TODO: add video options for Android
-  static recordVideo(String path, {CupertinoVideoOptions? cupertinoVideoOptions,}) {
+  static recordVideo(
+    String path, {
+    CupertinoVideoOptions? cupertinoVideoOptions,
+  }) {
     if (Platform.isAndroid) {
       return CameraInterface().recordVideo(path);
     } else {

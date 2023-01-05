@@ -28,9 +28,20 @@ class AnalysisConfig {
   final InputAnalysisImageFormat outputFormat;
   final int width;
 
+  /// This is used to improve performance on low performance devices.
+  /// It will skip frames if the camera is producing more than the specified.
+  /// 
+  /// For exemple, if the camera is producing 30fps and you set this to 10, it will skip 20 frames.
+  /// 
+  /// Default is 0 (disabled).
+  /// 
+  /// Set it to 0 to disable.
+  final num maxFramesPerSecond;
+
   AnalysisConfig({
     required this.outputFormat,
     required this.width,
+    this.maxFramesPerSecond = 0,
   });
 }
 

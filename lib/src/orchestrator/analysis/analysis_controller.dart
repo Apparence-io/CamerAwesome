@@ -38,11 +38,10 @@ class AnalysisController {
       return;
     }
 
-    // TODO: is this very useful ?
-    // not needed for iOS
     await CamerawesomePlugin.setupAnalysis(
       format: conf.outputFormat,
       width: conf.width,
+      maxFramesPerSecond: conf.maxFramesPerSecond,
     );
 
     imageSubscription = _images$?.listen((event) {

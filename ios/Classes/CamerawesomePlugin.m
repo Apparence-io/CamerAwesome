@@ -141,6 +141,8 @@ FlutterEventSink imageStreamEventSink;
     [self _handleSetExifPreferences:call result:result];
   } else if ([@"setupAnalysis" isEqualToString:call.method]) {
     [self _handleSetupAnalysis:call result:result];
+  } else if ([@"receivedImageFromStream" isEqualToString:call.method]) {
+    [self _handleReceivedImageFromStream:call result:result];
   } else if ([@"getSensors" isEqualToString:call.method]) {
     [self _handleGetSensors:call result:result];
   } else if ([@"dispose" isEqualToString:call.method]) {
@@ -176,6 +178,10 @@ FlutterEventSink imageStreamEventSink;
   [self.camera pauseVideoRecording];
 }
 
+- (void)_handleReceivedImageFromStream:(FlutterMethodCall*)call result:(FlutterResult)result {
+  [self.camera receivedImageFromStream];
+}
+
 - (void)_handleResumeVideoRecording:(FlutterMethodCall*)call result:(FlutterResult)result {
   [self.camera resumeVideoRecording];
 }
@@ -186,8 +192,14 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleSetupAnalysis:(FlutterMethodCall*)call result:(FlutterResult)result {
+  float maxFramesPerSecond = [call.arguments[@"maxFramesPerSecond"] floatValue];
+  
   // Force low preview resolution
   [_camera setPreviewSize:CGSizeMake(720, 1280)];
+  
+  // Force a frame rate to improve performance
+  [_camera.imageStreamController setMaxFramesPerSecond:maxFramesPerSecond];
+  
   result(nil);
 }
 
@@ -266,7 +278,6 @@ FlutterEventSink imageStreamEventSink;
   }
   
   CameraSensor sensor = ([sensorName isEqualToString:@"FRONT"]) ? Front : Back;
-  
   [_camera setSensor:sensor deviceId:captureDeviceId];
   
   result(nil);
