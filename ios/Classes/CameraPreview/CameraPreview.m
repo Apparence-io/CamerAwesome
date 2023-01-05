@@ -318,6 +318,10 @@
   }
 }
 
+- (void)receivedImageFromStream {
+  [self.imageStreamController receivedImageFromStream];
+}
+
 /// Get the first available camera on device (front or rear)
 - (NSString *)selectAvailableCamera:(CameraSensor)sensor {
   if (_captureDeviceId != nil) {
