@@ -143,10 +143,16 @@
 
 /// Set camera preview size
 - (void)setCameraPresset:(CGSize)currentPreviewSize {
+  CGSize preview = currentPreviewSize;
+  if (_imageStreamController.streamImages) {
+    // force preview to HD for image stream
+    preview = CGSizeMake(720, 1280);
+  }
+  
   NSString *presetSelected;
-  if (!CGSizeEqualToSize(CGSizeZero, currentPreviewSize)) {
+  if (!CGSizeEqualToSize(CGSizeZero, preview)) {
     // Try to get the quality requested
-    presetSelected = [CameraQualities selectVideoCapturePresset:currentPreviewSize session:_captureSession device:_captureDevice];
+    presetSelected = [CameraQualities selectVideoCapturePresset:preview session:_captureSession device:_captureDevice];
   } else {
     // Compute the best quality supported by the camera device
     presetSelected = [CameraQualities selectVideoCapturePresset:_captureSession device:_captureDevice];
@@ -156,6 +162,7 @@
   
   // Get preview size according to presset selected
   _currentPreviewSize = [CameraQualities getSizeForPresset:presetSelected];
+  
   [_videoController setPreviewSize:_currentPreviewSize];
 }
 
