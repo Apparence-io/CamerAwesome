@@ -54,7 +54,7 @@ Let's go through this code snippet:
 2. ```onImageForAnalysis``` is called whenever a new ImageAnalysis is available. That's where you might want to make your analysis.
 Yet, since you might receive a lot of images, you might want to debounce these. That's why we use a stream here: ```_analysisImagesController.add(img)```.
 
-3. Pass the ```AnalysisConfig``` you want for Android.
+3. Pass the ```AnalysisConfig``` you want for both iOS & Android.
 
 4. Build your interface with the ```builder```.
 
