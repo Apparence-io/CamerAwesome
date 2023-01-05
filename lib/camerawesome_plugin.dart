@@ -147,6 +147,8 @@ class CamerawesomePlugin {
         format.name,
         width,
       );
+    } else {
+      return _channel.invokeMethod("setupAnalysis");
     }
   }
 

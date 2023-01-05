@@ -139,6 +139,8 @@ FlutterEventSink imageStreamEventSink;
     [self _handleGetMaxZoom:call result:result];
   } else if ([@"setExifPreferences" isEqualToString:call.method]) {
     [self _handleSetExifPreferences:call result:result];
+  } else if ([@"setupAnalysis" isEqualToString:call.method]) {
+    [self _handleSetupAnalysis:call result:result];
   } else if ([@"getSensors" isEqualToString:call.method]) {
     [self _handleGetSensors:call result:result];
   } else if ([@"dispose" isEqualToString:call.method]) {
@@ -181,6 +183,12 @@ FlutterEventSink imageStreamEventSink;
 - (void)_handleRecordingAudioMode:(FlutterMethodCall*)call result:(FlutterResult)result {
   bool value = [call.arguments[@"enableAudio"] boolValue];
   [_camera setRecordingAudioMode:value];
+}
+
+- (void)_handleSetupAnalysis:(FlutterMethodCall*)call result:(FlutterResult)result {
+  // Force low preview resolution
+  [_camera setPreviewSize:CGSizeMake(720, 1280)];
+  result(nil);
 }
 
 - (void)_handleGetSensors:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -229,6 +237,11 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleRecordVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
+  if (_camera.imageStreamController.streamImages == true) {
+    result([FlutterError errorWithCode:@"STREAM_IN_PROGRESS" message:@"camera stream is in progress, please stop streaming before" details:nil]);
+    return;
+  }
+  
   NSString *path = call.arguments[@"path"];
   NSDictionary *options = call.arguments[@"options"];
   
