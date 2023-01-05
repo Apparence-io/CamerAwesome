@@ -30,11 +30,11 @@ class AnalysisConfig {
 
   /// This is used to improve performance on low performance devices.
   /// It will skip frames if the camera is producing more than the specified.
-  /// 
+  ///
   /// For exemple, if the camera is producing 30fps and you set this to 10, it will skip 20 frames.
-  /// 
+  ///
   /// Default is null (disabled).
-  final num? maxFramesPerSecond;
+  final double? maxFramesPerSecond;
 
   AnalysisConfig({
     required this.outputFormat,

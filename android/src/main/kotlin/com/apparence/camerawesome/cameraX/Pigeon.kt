@@ -124,7 +124,7 @@ interface CameraInterface {
   fun setPhotoSize(size: PreviewSize)
   fun setPreviewSize(size: PreviewSize)
   fun setAspectRatio(aspectRatio: String)
-  fun setupImageAnalysisStream(format: String, width: Long)
+  fun setupImageAnalysisStream(format: String, width: Long, maxFramesPerSecond: Double?)
   fun setExifPreferences(exifPreferences: ExifPreferences)
 
   companion object {
@@ -632,7 +632,8 @@ val codec: MessageCodec<Any?> by lazy {
               val args = message as List<Any?>
               val formatArg = args[0] as String
               val widthArg = args[1].let { if (it is Int) it.toLong() else it as Long }
-              api.setupImageAnalysisStream(formatArg, widthArg)
+              val maxFramesPerSecondArg = args[2] as? Double
+              api.setupImageAnalysisStream(formatArg, widthArg, maxFramesPerSecondArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)

@@ -139,13 +139,14 @@ class CamerawesomePlugin {
 
   static Future<void> setupAnalysis({
     int width = 0,
-    num? maxFramesPerSecond,
+    double? maxFramesPerSecond,
     required InputAnalysisImageFormat format,
   }) async {
     if (Platform.isAndroid) {
       return CameraInterface().setupImageAnalysisStream(
         format.name,
         width,
+        maxFramesPerSecond,
       );
     } else {
       return _channel.invokeMethod("setupAnalysis", {
@@ -226,7 +227,6 @@ class CamerawesomePlugin {
   }
 
   static Future<num?> getPreviewTexture() {
-    // TODO Provide a different texture for front and back camera, so we can get a preview for both?
     if (Platform.isAndroid) {
       return CameraInterface().getPreviewTextureId();
     } else {
@@ -351,7 +351,6 @@ class CamerawesomePlugin {
     }
   }
 
-  /// TODO - Next step focus on a certain point
   static startAutoFocus() {
     if (Platform.isAndroid) {
       return CameraInterface().handleAutoFocus();

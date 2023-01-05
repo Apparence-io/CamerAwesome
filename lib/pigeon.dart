@@ -70,7 +70,6 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
       super.writeValue(buffer, value);
     }
   }
-
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
@@ -815,12 +814,13 @@ class CameraInterface {
   }
 
   Future<void> setupImageAnalysisStream(
-      String arg_format, int arg_width) async {
+      String arg_format, int arg_width, double? arg_maxFramesPerSecond) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream', codec,
         binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap = await channel
-        .send(<Object?>[arg_format, arg_width]) as Map<Object?, Object?>?;
+            .send(<Object?>[arg_format, arg_width, arg_maxFramesPerSecond])
+        as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
