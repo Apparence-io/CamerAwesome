@@ -32,8 +32,6 @@
     return CGSizeMake(1920, 1080);
   } else if (presset == AVCaptureSessionPreset1280x720) {
     return CGSizeMake(1280, 720);
-  } else if (presset == AVCaptureSessionPreset1280x720) {
-    return CGSizeMake(1280, 720);
   } else if (presset == AVCaptureSessionPreset640x480) {
     return CGSizeMake(640, 480);
   } else if (presset == AVCaptureSessionPreset352x288) {
@@ -61,19 +59,19 @@
 }
 
 + (NSString *)selectPresetForSize:(CGSize)size {
-  if (size.width >= 3840 && size.height >= 2160) {
+  if (size.width >= 2160 || size.height >= 3840) {
     if (@available(iOS 9.0, *)) {
       return AVCaptureSessionPreset3840x2160;
     } else {
       return AVCaptureSessionPreset1920x1080;
     }
-  } else if (size.width == 1920 && size.height == 1080) {
+  } else if (size.width == 1080 && size.height == 1920) {
     return AVCaptureSessionPreset1920x1080;
-  } else if (size.width == 1280 && size.height == 720) {
+  } else if (size.width == 720 && size.height == 1280) {
     return AVCaptureSessionPreset1280x720;
-  } else if (size.width == 640 && size.height == 480) {
+  } else if (size.width == 480 && size.height == 640) {
     return AVCaptureSessionPreset640x480;
-  } else if (size.width == 352 && size.height == 288) {
+  } else if (size.width == 288 && size.height == 352) {
     return AVCaptureSessionPreset352x288;
   } else {
     // Default to HD
