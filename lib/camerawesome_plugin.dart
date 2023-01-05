@@ -137,10 +137,9 @@ class CamerawesomePlugin {
     return _permissionsStream;
   }
 
-  /// this is not needed on iOS
   static Future<void> setupAnalysis({
     int width = 0,
-    num maxFramesPerSecond = 0,
+    num? maxFramesPerSecond,
     required InputAnalysisImageFormat format,
   }) async {
     if (Platform.isAndroid) {
@@ -150,7 +149,7 @@ class CamerawesomePlugin {
       );
     } else {
       return _channel.invokeMethod("setupAnalysis", {
-        "maxFramesPerSecond": maxFramesPerSecond,
+        "maxFramesPerSecond": maxFramesPerSecond ?? 0,
       });
     }
   }
