@@ -119,8 +119,17 @@ AwesomePauseResumeButton(state: videoRecordingCameraState )
 
 ### AwesomeSensorTypeSelector (iOS only)
 
-Change between different sensor types (ultra wide angle, wide angle, telephoto, true depth).
+![Swap sensor type](/img/sensors_type.gif)
 
+Change between different sensor types. The widget will adapt itself to the available sensors.
+
+Here is an example of all existing sensors on an iPhone 14 Pro:
+- Wide angle.
+- Ultra wide angle.
+- Telephoto.
+- TrueDepth (front camera).
+
+You can call ```CamerawesomePlugin.getSensors()``` to get the list of available sensors.
 
 _Elements of this widget rotate when the camera rotates._
 
