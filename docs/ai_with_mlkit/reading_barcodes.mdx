@@ -1,0 +1,135 @@
+
+## Reading barcodes
+
+![Read barcodes](/img/barcode_ai.gif)
+
+First thing you need to do is adding MLKit's barcode scanner to your pubspec.yaml:
+``` yaml
+google_mlkit_barcode_scanning: ^0.5.0
+```
+
+You will need a `BarcodeScanner`. You can get one with:
+``` dart
+final _barcodeScanner = BarcodeScanner(formats: [BarcodeFormat.all]);
+```
+You might not want to read all `BarcodeFormat`, so feel free to be more selective.
+
+Now you can set up CamerAwesome.
+
+### Setting up CamerAwesome
+
+This is the builder of the ```ai_analysis_barcode.dart``` example:
+
+``` dart
+CameraAwesomeBuilder.custom(
+  // 1.
+  saveConfig: SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
+  // 2.
+  onImageForAnalysis: (AnalysisImage img) => _processImageBarcode(img),
+  // 3.
+  imageAnalysisConfig: AnalysisConfig(
+    outputFormat: InputAnalysisImageFormat.nv21,
+    width: 1024,
+    maxFramesPerSecond: 5,
+  ),
+  // 4.
+  builder: (cameraModeState, previewSize, previewRect) {
+    // 5.
+    return _BarcodeDisplayWidget(
+      barcodesStream: _barcodesStream,
+      scrollController: _scrollController,
+    );
+  },
+)
+```
+Let's go through this code snippet:
+1. `CameraAwesomeBuilder` needs a `SaveConfig` to eventually save pictures or videos. It provides the path where to save them.
+
+2. ```onImageForAnalysis``` is called whenever a new ImageAnalysis is available. That's where you might want to make your analysis.
+
+3. Pass the ```AnalysisConfig``` you want for both iOS & Android. Note that we set `maxFramesPerSecond` to a low value since we only need to read barcodes. It doesn't make sense to read 10s of barcodes per second. It reduces the number of calculations greatly.
+
+4. Build your interface with the ```builder```.
+
+5. Here, we simply made a widget that displays all the barcodes scanned in a ```ListView```.
+
+
+## Extract barcodes from AnalysisImage
+
+Once you get an `AnalysisImage`, you need to convert it to an object that MLKit can handle then you can do your processing.
+
+``` dart
+Future _processImageBarcode(AnalysisImage img) async {
+  // 1.
+  final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
+  final InputImageRotation imageRotation =
+      InputImageRotation.values.byName(img.rotation.name);
+
+  final planeData = img.planes.map(
+    (plane) {
+      return InputImagePlaneMetadata(
+        bytesPerRow: plane.bytesPerRow,
+        height: img.height,
+        width: img.width,
+      );
+    },
+  ).toList();
+
+  final InputImage inputImage;
+  // 2.
+  if (Platform.isIOS) {
+    final inputImageData = InputImageData(
+      size: imageSize,
+      imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
+      inputImageFormat: _inputImageFormat(img.format),
+      planeData: planeData,
+    );
+
+    // 3.
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final ImagePlane plane in img.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    inputImage =
+        InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
+  } else {
+  // 4.
+    inputImage = InputImage.fromBytes(
+      bytes: img.nv21Image!,
+      inputImageData: InputImageData(
+        imageRotation: imageRotation,
+        inputImageFormat: InputImageFormat.nv21,
+        planeData: planeData,
+        size: Size(img.width.toDouble(), img.height.toDouble()),
+      ),
+    );
+  }
+
+  try {
+  // 5.
+    var recognizedBarCodes = await _barcodeScanner.processImage(inputImage);
+    for (Barcode barcode in recognizedBarCodes) {
+      debugPrint("Barcode: [${barcode.format}]: ${barcode.rawValue}");
+      // 6.
+      _addBarcode("[${barcode.format.name}]: ${barcode.rawValue}");
+    }
+  } catch (error) {
+    debugPrint("...sending image resulted error $error");
+  }
+}
+```
+Let's break down above code:
+1. Get image size, rotation and planes.
+2. Obtain an `InputImage`. Note that  the way to do it depends on which platform you are since image formats are not the same.
+3. **iOS** - Combine the planes to bytes to get your `InputImage`.
+4. **Android** - Directly use the `nv21Image` bytes to get an `InputImage`.
+5. Now that you have an `InputImage`, give it to MLKit's `BarcodeScanner` to detect the barcodes.
+6. Handle the barcodes detected. Here, we add them to a stream that is used in our UI to show them.
+
+
+Detecting barcodes is quite straightforward with CamerAwesome.
+You just need to convert `AnalysisImage` to an `InputImage` as it is done in this example and MLKit will handle the rest. 👌
+
+See the [complete example](https://github.com/Apparence-io/camera_awesome/blob/master/example/lib/ai_analysis_barcode.dart) if you need more details.

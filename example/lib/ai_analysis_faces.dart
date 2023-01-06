@@ -43,9 +43,6 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage> {
-  final _analysisImagesController = BehaviorSubject<AnalysisImage>();
-  StreamSubscription? _analysisSubscription;
-
   final _faceDetectionController = BehaviorSubject<FaceDetectionModel>();
 
   final options = FaceDetectorOptions(
@@ -63,26 +60,8 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   void dispose() {
-    _analysisSubscription?.cancel();
-    _analysisImagesController.close();
     _faceDetectionController.close();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Analyze images every 300 seconds only, to reduce impact on performances
-    _analysisSubscription = _analysisImagesController.stream
-        // debounceTime does not work for some reasons so we use a workaround
-        // .debounceTime(const Duration(milliseconds: 100))
-        // .bufferTime(const Duration(milliseconds: 300))
-        // .map((event) => event.isNotEmpty ? event.last : null)
-        .listen((event) {
-      if (event != null) {
-        _analyzeImage(event);
-      }
-    });
   }
 
   @override
@@ -98,11 +77,11 @@ class _CameraPageState extends State<CameraPage> {
         previewFit: CameraPreviewFit.contain,
         aspectRatio: CameraAspectRatios.ratio_1_1,
         sensor: Sensors.front,
-        onImageForAnalysis: (img) => _analysisImagesController.add(img),
+        onImageForAnalysis: (img) => _analyzeImage(img),
         imageAnalysisConfig: AnalysisConfig(
           outputFormat: InputAnalysisImageFormat.nv21,
           width: 250,
-            maxFramesPerSecond: 12,
+          maxFramesPerSecond: 12,
         ),
         previewDecoratorBuilder: (state, previewSize, previewRect) {
           return _MyPreviewDecoratorWidget(

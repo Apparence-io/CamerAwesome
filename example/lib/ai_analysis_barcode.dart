@@ -38,9 +38,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _barcodeScanner = BarcodeScanner(formats: [BarcodeFormat.all]);
 
-  final _analysisImagesController = BehaviorSubject<AnalysisImage>();
-  StreamSubscription? _analysisSubscription;
-
   final _buffer = <String>[];
   final _barcodesController = BehaviorSubject<List<String>>();
   late final Stream<List<String>> _barcodesStream = _barcodesController.stream;
@@ -48,26 +45,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    _analysisSubscription?.cancel();
-    _analysisImagesController.close();
     _barcodesController.close();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    // Analyze images every 300 seconds only, to reduce impact on performances
-    _analysisSubscription = _analysisImagesController.stream
-        // debounceTime does not work for some reasons so we use a workaround
-        // .debounceTime(const Duration(milliseconds: 100))
-        .bufferTime(const Duration(milliseconds: 300))
-        .map((event) => event.isNotEmpty ? event.last : null)
-        .listen((event) {
-      if (event != null) {
-        _processImageBarcode(event);
-      }
-    });
-    super.initState();
   }
 
   @override
@@ -76,10 +55,11 @@ class _MyHomePageState extends State<MyHomePage> {
       body: CameraAwesomeBuilder.custom(
         saveConfig:
             SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
-        onImageForAnalysis: (img) => _analysisImagesController.add(img),
+        onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           outputFormat: InputAnalysisImageFormat.nv21,
           width: 1024,
+          maxFramesPerSecond: 5,
         ),
         builder: (cameraModeState, previewSize, previewRect) {
           return _BarcodeDisplayWidget(
@@ -150,9 +130,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void _addBarcode(String value) {
     try {
       if (_buffer.length > 300) {
-        _buffer.removeRange(0, _buffer.length - 300);
+        _buffer.removeRange(_buffer.length - 300, _buffer.length);
       }
-      if (_buffer.isEmpty || value != _buffer[_buffer.length - 1]) {
+      if (_buffer.isEmpty || value != _buffer[0]) {
         _buffer.insert(0, value);
         _barcodesController.add(_buffer);
         _scrollController.animateTo(
