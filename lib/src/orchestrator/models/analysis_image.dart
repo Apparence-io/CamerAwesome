@@ -25,7 +25,13 @@ InputAnalysisImageFormat inputAnalysisImageFormatParser(String value) {
 }
 
 class AnalysisConfig {
+  /// Image analysis format.
+  /// Used only on Android for now.
   final InputAnalysisImageFormat outputFormat;
+
+  /// `Target width of you image analysis. CamerAwesome will try to find the
+  /// closest resolution to this [width].
+  /// Used only on Android for now.
   final int width;
 
   /// This is used to improve performance on low performance devices.
@@ -37,8 +43,8 @@ class AnalysisConfig {
   final double? maxFramesPerSecond;
 
   AnalysisConfig({
-    required this.outputFormat,
-    required this.width,
+    this.outputFormat = InputAnalysisImageFormat.nv21,
+    this.width = 500,
     this.maxFramesPerSecond,
   });
 }

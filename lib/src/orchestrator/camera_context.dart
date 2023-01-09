@@ -78,7 +78,7 @@ class CameraContext {
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
           onPermissionsResult: onPermissionsResult,
           saveConfig: saveConfig,
-          analysisController: analysisConfig != null
+          analysisController: onImageForAnalysis != null
               ? AnalysisController.fromPlugin(
                   onImageListener: onImageForAnalysis,
                   conf: analysisConfig,

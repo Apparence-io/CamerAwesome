@@ -43,6 +43,23 @@
       ]
     ],
     [
+      "AI with MLKit",
+      [
+        [
+          "Image analysis configuration",
+          "/ai_with_mlkit/image_analysis_configuration"
+        ],
+        [
+          "Reading barcodes",
+          "/ai_with_mlkit/reading_barcodes"
+        ],
+        [
+          "Detecting faces",
+          "/ai_with_mlkit/detecting_faces"
+        ]
+      ]
+    ],
+    [
       "Appendix",
       [
         [

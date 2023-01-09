@@ -20,11 +20,11 @@ class AnalysisController {
 
   factory AnalysisController.fromPlugin({
     OnImageForAnalysis? onImageListener,
-    required AnalysisConfig conf,
+    required AnalysisConfig? conf,
   }) =>
       AnalysisController(
         onImageListener: onImageListener,
-        conf: conf,
+        conf: conf == null ? AnalysisConfig() : conf,
         images$: CamerawesomePlugin.listenCameraImages(),
       );
 
