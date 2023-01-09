@@ -1,6 +1,6 @@
 name: camerawesome
 description: Easiest Flutter camera Plugin supporting capturing images, streaming images, video recording, switch sensors, autofocus, flash... on Android and iOS
-version: 1.0.0
+version: 1.0.0+1
 homepage: https://Apparence.io
 repository: https://github.com/Apparence-io/camera_awesome
 
@@ -10,7 +10,7 @@ environment:
 
 dependencies:
   rxdart: ^0.27.7
-  collection: ^1.17.0
+  collection: ^1.16.0
   flutter:
     sdk: flutter
 dev_dependencies:
