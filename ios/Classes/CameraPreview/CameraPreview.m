@@ -446,6 +446,7 @@
 - (void)recordVideoAtPath:(NSString *)path withOptions:(NSDictionary *)options {
   if (_imageStreamController.streamImages) {
     _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
+    return;
   }
   
   if (!_videoController.isRecording) {
