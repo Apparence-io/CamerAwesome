@@ -246,11 +246,6 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)_handleRecordVideo:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if (_camera.imageStreamController.streamImages == true) {
-    result([FlutterError errorWithCode:@"STREAM_IN_PROGRESS" message:@"camera stream is in progress, please stop streaming before" details:nil]);
-    return;
-  }
-  
   NSString *path = call.arguments[@"path"];
   NSDictionary *options = call.arguments[@"options"];
   
@@ -385,7 +380,7 @@ FlutterEventSink imageStreamEventSink;
 - (void)_handleSetup:(FlutterMethodCall*)call result:(FlutterResult)result  {
   NSString *sensorName = call.arguments[@"sensor"];
   NSString *captureModeName = call.arguments[@"captureMode"];
-  BOOL streamImages = call.arguments[@"streamImages"];
+  BOOL streamImages = [call.arguments[@"streamImages"] boolValue];
   
   CaptureModes captureMode = ([captureModeName isEqualToString:@"PHOTO"]) ? Photo : Video;
   
