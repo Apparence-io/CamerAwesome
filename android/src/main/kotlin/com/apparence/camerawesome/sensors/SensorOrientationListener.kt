@@ -9,8 +9,8 @@ class SensorOrientationListener : EventChannel.StreamHandler, SensorOrientation 
         this.events = events
     }
 
-    override fun onCancel(arguments: Any) {
-        events!!.endOfStream()
+    override fun onCancel(arguments: Any?) {
+        events?.endOfStream()
         events = null
     }
 

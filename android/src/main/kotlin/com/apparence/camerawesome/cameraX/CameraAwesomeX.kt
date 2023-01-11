@@ -89,7 +89,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             currentCaptureMode = CaptureModes.valueOf(captureMode),
             enableImageStream = enableImageStream,
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
-            this.aspectRatio = if (aspectRatio == "RATIO_16_9") 1 else 0
+            this.updateAspectRatio(aspectRatio)
             this.flashMode = FlashMode.valueOf(flashMode)
         }
         orientationStreamListener =
@@ -466,13 +466,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun setAspectRatio(aspectRatio: String) {
         cameraState.apply {
-            // In CameraX, aspect ratio is an Int. RATIO_4_3 = 0 (default), RATIO_16_9 = 1
-            this.aspectRatio = if (aspectRatio == "RATIO_16_9") 1 else 0
-            this.rational = when (aspectRatio) {
-                "RATIO_16_9" -> Rational(9, 16)
-                "RATIO_1_1" -> Rational(1, 1)
-                else -> Rational(3, 4)
-            }
+            this.updateAspectRatio(aspectRatio)
             updateLifecycle(activity!!)
         }
     }

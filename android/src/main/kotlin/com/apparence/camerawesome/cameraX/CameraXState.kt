@@ -227,4 +227,14 @@ data class CameraXState(
             }
         }
     }
+
+    fun updateAspectRatio(newAspectRatio: String) {
+        // In CameraX, aspect ratio is an Int. RATIO_4_3 = 0 (default), RATIO_16_9 = 1
+        aspectRatio = if (newAspectRatio == "RATIO_16_9") 1 else 0
+        rational = when (newAspectRatio) {
+            "RATIO_16_9" -> Rational(9, 16)
+            "RATIO_1_1" -> Rational(1, 1)
+            else -> Rational(3, 4)
+        }
+    }
 }
