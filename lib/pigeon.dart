@@ -70,6 +70,7 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
       super.writeValue(buffer, value);
     }
   }
+
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
