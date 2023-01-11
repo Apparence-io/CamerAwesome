@@ -162,7 +162,7 @@ class _SensorTypeButton extends StatelessWidget {
       case SensorType.wideAngle:
         return '1';
       case SensorType.ultraWideAngle:
-        return '0,5';
+        return '0.5';
       case SensorType.telephoto:
         return '2';
       default:
