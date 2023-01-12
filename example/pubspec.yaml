@@ -21,13 +21,13 @@ dependencies:
 
 dev_dependencies:
   exif: ^3.1.2
-  flutter_lints: ^2.0.0
   flutter_test:
     sdk:
       flutter
   integration_test:
     sdk: flutter
   patrol: ^0.10.4
+  flutter_lints: ^2.0.1
 
 flutter:
   uses-material-design: true

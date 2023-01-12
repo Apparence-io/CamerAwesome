@@ -76,7 +76,7 @@ class PreparingCameraState extends CameraState {
   /////////////////////////////////////
 
   Future _startVideoMode() async {
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
     cameraContext.changeState(VideoCameraState.from(cameraContext));
 
@@ -84,7 +84,7 @@ class PreparingCameraState extends CameraState {
   }
 
   Future _startPhotoMode() async {
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
     cameraContext.changeState(PhotoCameraState.from(cameraContext));
 

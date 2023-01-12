@@ -43,6 +43,7 @@ class CustomUiExample2 extends StatelessWidget {
                         return AwesomeMediaPreview(
                           mediaCapture: snapshot.data!,
                           onMediaTap: (MediaCapture mediaCapture) {
+                            // ignore: avoid_print
                             print("Tap on $mediaCapture");
                           },
                         );

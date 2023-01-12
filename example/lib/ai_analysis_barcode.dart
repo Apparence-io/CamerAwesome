@@ -173,6 +173,7 @@ class _BarcodeDisplayWidget extends StatelessWidget {
   final ScrollController scrollController;
 
   const _BarcodeDisplayWidget({
+    // ignore: unused_element
     super.key,
     required this.barcodesStream,
     required this.scrollController,

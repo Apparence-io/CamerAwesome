@@ -15,7 +15,7 @@ class AwesomeCameraSwitchButton extends StatelessWidget {
         child: ClipOval(
           child: Container(
             color: Colors.black12,
-            child: Padding(
+            child: const Padding(
               padding: EdgeInsets.all(20),
               child: Icon(
                 Icons.cameraswitch,

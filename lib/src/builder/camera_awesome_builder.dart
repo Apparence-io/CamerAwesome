@@ -91,7 +91,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   final OnPreviewTap Function(CameraState)? onPreviewTapBuilder;
   final OnPreviewScale Function(CameraState)? onPreviewScaleBuilder;
 
-  CameraAwesomeBuilder._({
+  const CameraAwesomeBuilder._({
     required this.sensor,
     required this.flashMode,
     required this.zoom,
@@ -172,7 +172,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// 🚧 Experimental
   ///
   /// Documentation on its way, API might change
-  CameraAwesomeBuilder.custom({
+  const CameraAwesomeBuilder.custom({
     CaptureMode initialCaptureMode = CaptureMode.photo,
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
@@ -286,8 +286,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
           return widget.progressIndicator ??
               Center(
                 child: Platform.isIOS
-                    ? CupertinoActivityIndicator()
-                    : CircularProgressIndicator(),
+                    ? const CupertinoActivityIndicator()
+                    : const CircularProgressIndicator(),
               );
         }
         return Stack(
