@@ -1,8 +1,23 @@
+## 1.0.0+4
+
+- Code formatting and linter
+
+## 1.0.0
+
+- Bugfixes (imageAnalysis, initialAspectRatio...)
+- Sensor type switching (iOS)
+- Improve AI documentation
+- Add `previewSize` and `previewRect` to `CameraAwesomeBuilder` builders
+
 ## 1.0.0-rc1
-- Too much new things
-- Take a look on the new documentation 
+
+- Full rework of the API
+- Better feature parity between iOS and Android
+- Use the built-in camera UI or make your own
+- Add docs.page documentation
 
 ## 0.4.0
+
 - Migrate to CameraX instead of Camera2 on Android.
 - Add GPS location in Exif photo on Android.
 - Add Video recording for Android.
@@ -58,7 +73,7 @@
 - fix switch camera on Android with new update (now correctly switch ImageReader and cameraCharacteristics when switch sensor).
 ## 0.0.2+1
 - comment com.google.gms.google-services from example build.gradle.
-This is aimed only to start our e2e tests on testlabs. Put your own google-services.json if you want to start them there.
+  This is aimed only to start our e2e tests on testlabs. Put your own google-services.json if you want to start them there.
 ## 0.0.2
 - updated readme
 ## 0.0.1
