@@ -18,6 +18,105 @@ class ExifPreferences {
   ExifPreferences({required this.saveGPSLocation});
 }
 
+class VideoOptions {
+  String fileType;
+  String codec;
+
+  VideoOptions({
+    required this.fileType,
+    required this.codec,
+  });
+}
+
+enum PigeonSensorType {
+  /// A built-in wide-angle camera.
+  ///
+  /// The wide angle sensor is the default sensor for iOS
+  wideAngle,
+
+  /// A built-in camera with a shorter focal length than that of the wide-angle camera.
+  ultraWideAngle,
+
+  /// A built-in camera device with a longer focal length than the wide-angle camera.
+  telephoto,
+
+  /// A device that consists of two cameras, one Infrared and one YUV.
+  ///
+  /// iOS only
+  trueDepth,
+
+  unknown;
+
+  // SensorType get defaultSensorType => SensorType.wideAngle;
+  // SensorType defaultSensorType() => SensorType.wideAngle;
+}
+
+class PigeonSensorTypeDevice {
+  final PigeonSensorType sensorType;
+
+  /// A localized device name for display in the user interface.
+  final String name;
+
+  /// The current exposure ISO value.
+  final double iso;
+
+  /// A Boolean value that indicates whether the flash is currently available for use.
+  final bool flashAvailable;
+
+  /// An identifier that uniquely identifies the device.
+  final String uid;
+
+  PigeonSensorTypeDevice({
+    required this.sensorType,
+    required this.name,
+    required this.iso,
+    required this.flashAvailable,
+    required this.uid,
+  });
+}
+
+// TODO: instead of storing SensorTypeDevice values,
+// this would be useful when CameraX will support multiple sensors.
+// store them in a list of SensorTypeDevice.
+// ex:
+// List<SensorTypeDevice> wideAngle;
+// List<SensorTypeDevice> ultraWideAngle;
+
+class PigeonSensorDeviceData {
+  /// A built-in wide-angle camera.
+  ///
+  /// The wide angle sensor is the default sensor for iOS
+  PigeonSensorTypeDevice? wideAngle;
+
+  /// A built-in camera with a shorter focal length than that of the wide-angle camera.
+  PigeonSensorTypeDevice? ultraWideAngle;
+
+  /// A built-in camera device with a longer focal length than the wide-angle camera.
+  PigeonSensorTypeDevice? telephoto;
+
+  /// A device that consists of two cameras, one Infrared and one YUV.
+  ///
+  /// iOS only
+  PigeonSensorTypeDevice? trueDepth;
+
+  PigeonSensorDeviceData({
+    this.wideAngle,
+    this.ultraWideAngle,
+    this.telephoto,
+    this.trueDepth,
+  });
+
+  // int get availableBackSensors => [
+  //       wideAngle,
+  //       ultraWideAngle,
+  //       telephoto,
+  //     ].where((element) => element != null).length;
+
+  // int get availableFrontSensors => [
+  //       trueDepth,
+  //     ].where((element) => element != null).length;
+}
+
 @HostApi()
 abstract class CameraInterface {
   @async
@@ -35,20 +134,26 @@ abstract class CameraInterface {
 
   List<String> requestPermissions();
 
-  double getPreviewTextureId();
+  int getPreviewTextureId();
 
   // TODO async with void return type seems to not work (channel-error)
   @async
   bool takePhoto(String path);
 
-  void recordVideo(String path);
+  void recordVideo(String path, VideoOptions? options);
 
   void pauseVideoRecording();
 
   void resumeVideoRecording();
 
+  void receivedImageFromStream();
+
   @async
   bool stopRecordingVideo();
+
+  List<PigeonSensorTypeDevice> getFrontSensors();
+
+  List<PigeonSensorTypeDevice> getBackSensors();
 
   bool start();
 
@@ -62,13 +167,11 @@ abstract class CameraInterface {
 
   void setZoom(double zoom);
 
-  void setSensor(String sensor);
+  void setSensor(String sensor, String? deviceId);
 
   void setCorrection(double brightness);
 
   double getMaxZoom();
-
-  void focus();
 
   void setCaptureMode(String mode);
 
