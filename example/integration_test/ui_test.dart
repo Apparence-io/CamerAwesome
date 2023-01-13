@@ -36,7 +36,9 @@ void main() {
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
         expect(
-            $(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
+          $(AwesomeLocationButton).$(AwesomeBouncingWidget),
+          findsOneWidget,
+        );
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         expect($(AwesomeMediaPreview), findsNothing);
         // expect($(AwesomePauseResumeButton), findsNothing);
@@ -53,8 +55,10 @@ void main() {
         await $.pump(const Duration(milliseconds: 400));
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
-        expect($(AwesomeLocationButton).$(AwesomeBouncingWidget),
-            findsNothing); // Not visible anymore
+        expect(
+          $(AwesomeLocationButton).$(AwesomeBouncingWidget),
+          findsNothing,
+        ); // Not visible anymore
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsNothing);
         expect($(AwesomeCaptureButton), findsOneWidget);
@@ -85,7 +89,9 @@ void main() {
         expect($(AwesomeAspectRatioButton), findsOneWidget);
         expect($(AwesomeFlashButton), findsOneWidget);
         expect(
-            $(AwesomeLocationButton).$(AwesomeBouncingWidget), findsOneWidget);
+          $(AwesomeLocationButton).$(AwesomeBouncingWidget),
+          findsOneWidget,
+        );
         expect($(AwesomeCameraSwitchButton), findsOneWidget);
         // expect($(AwesomeEnableAudioButton), findsNothing);
         expect($(AwesomeMediaPreview), findsNothing);
@@ -180,7 +186,8 @@ void main() {
             .byType(Icon)
             .evaluate()
             .where(
-                (element) => (element.widget as Icon).icon == Icons.flash_off)
+              (element) => (element.widget as Icon).icon == Icons.flash_off,
+            )
             .length,
         equals(1),
       );
@@ -193,7 +200,8 @@ void main() {
             .byType(Icon)
             .evaluate()
             .where(
-                (element) => (element.widget as Icon).icon == Icons.flash_auto)
+              (element) => (element.widget as Icon).icon == Icons.flash_auto,
+            )
             .length,
         equals(1),
       );
@@ -215,8 +223,9 @@ void main() {
         find
             .byType(Icon)
             .evaluate()
-            .where((element) =>
-                (element.widget as Icon).icon == Icons.flashlight_on)
+            .where(
+              (element) => (element.widget as Icon).icon == Icons.flashlight_on,
+            )
             .length,
         equals(1),
       );
@@ -228,7 +237,8 @@ void main() {
             .byType(Icon)
             .evaluate()
             .where(
-                (element) => (element.widget as Icon).icon == Icons.flash_off)
+              (element) => (element.widget as Icon).icon == Icons.flash_off,
+            )
             .length,
         equals(1),
       );

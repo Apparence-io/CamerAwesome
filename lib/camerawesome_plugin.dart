@@ -1,25 +1,25 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:collection/collection.dart';
-
-import 'camerawesome_plugin.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
-
 // built in widgets
 export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
 
+// ignore: public_member_api_docs
 enum CameraRunningState { starting, started, stopping, stopped }
 
+/// Don't use this class directly. Instead, use [CameraAwesomeBuilder].
 class CamerawesomePlugin {
   static const MethodChannel _channel = MethodChannel('camerawesome');
 
@@ -45,6 +45,7 @@ class CamerawesomePlugin {
 
   static CameraRunningState currentState = CameraRunningState.stopped;
 
+  /// Set it to true to print dart logs from camerawesome
   static bool printLogs = false;
 
   static Future<List<String?>> checkAndroidPermissions() =>
@@ -97,19 +98,17 @@ class CamerawesomePlugin {
   static Future<bool?> focus() => _channel.invokeMethod("focus");
 
   static Stream<CameraOrientations>? getNativeOrientation() {
-    if (_orientationStream == null) {
-      _orientationStream = _orientationChannel
-          .receiveBroadcastStream('orientationChannel')
-          .transform(
-              StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
-                  handleData: (data, sink) {
-        CameraOrientations? newOrientation;
-        switch (data) {
-          case 'LANDSCAPE_LEFT':
-            newOrientation = CameraOrientations.landscape_left;
-            break;
-          case 'LANDSCAPE_RIGHT':
-            newOrientation = CameraOrientations.landscape_right;
+    _orientationStream ??= _orientationChannel
+        .receiveBroadcastStream('orientationChannel')
+        .transform(StreamTransformer<dynamic, CameraOrientations>.fromHandlers(
+            handleData: (data, sink) {
+      CameraOrientations? newOrientation;
+      switch (data) {
+        case 'LANDSCAPE_LEFT':
+          newOrientation = CameraOrientations.landscape_left;
+          break;
+        case 'LANDSCAPE_RIGHT':
+          newOrientation = CameraOrientations.landscape_right;
             break;
           case 'PORTRAIT_UP':
             newOrientation = CameraOrientations.portrait_up;
@@ -121,19 +120,16 @@ class CamerawesomePlugin {
         }
         sink.add(newOrientation!);
       }));
-    }
     return _orientationStream;
   }
 
   static Stream<bool>? listenPermissionResult() {
-    if (_permissionsStream == null) {
-      _permissionsStream = _permissionsChannel
-          .receiveBroadcastStream('permissionsChannel')
-          .transform(StreamTransformer<dynamic, bool>.fromHandlers(
-              handleData: (data, sink) {
-        sink.add(data);
-      }));
-    }
+    _permissionsStream ??= _permissionsChannel
+        .receiveBroadcastStream('permissionsChannel')
+        .transform(StreamTransformer<dynamic, bool>.fromHandlers(
+            handleData: (data, sink) {
+      sink.add(data);
+    }));
     return _permissionsStream;
   }
 
@@ -156,17 +152,15 @@ class CamerawesomePlugin {
   }
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
-    if (_imagesStream == null) {
-      _imagesStream =
-          _imagesChannel.receiveBroadcastStream('imagesChannel').transform(
-        StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
-          handleData: (data, sink) {
-            sink.add(Map<String, dynamic>.from(data));
-            CamerawesomePlugin.receivedImageFromStream();
-          },
-        ),
-      );
-    }
+    _imagesStream ??=
+        _imagesChannel.receiveBroadcastStream('imagesChannel').transform(
+      StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
+        handleData: (data, sink) {
+          sink.add(Map<String, dynamic>.from(data));
+          CamerawesomePlugin.receivedImageFromStream();
+        },
+      ),
+    );
     return _imagesStream;
   }
 
@@ -221,7 +215,7 @@ class CamerawesomePlugin {
         });
         return res;
       } catch (e) {
-        throw e;
+        rethrow;
       }
     }
   }
@@ -459,14 +453,12 @@ class CamerawesomePlugin {
       // TODO Implement it on iOS
       throw "not available on this OS for now... only Android";
     }
-    if (_luminositySensorDataStream == null) {
-      _luminositySensorDataStream = _luminosityChannel
-          .receiveBroadcastStream('luminosityChannel')
-          .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
-              handleData: (data, sink) {
-        sink.add(SensorData(data));
-      }));
-    }
+    _luminositySensorDataStream ??= _luminosityChannel
+        .receiveBroadcastStream('luminosityChannel')
+        .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
+            handleData: (data, sink) {
+      sink.add(SensorData(data));
+    }));
     return _luminositySensorDataStream;
   }
 
@@ -570,7 +562,7 @@ class CamerawesomePlugin {
       if (Platform.isAndroid) {
         var missingPermissions =
             await CamerawesomePlugin.checkAndroidPermissions();
-        return Future.value(missingPermissions.length > 0);
+        return Future.value(missingPermissions.isNotEmpty);
       } else if (Platform.isIOS) {
         return CamerawesomePlugin.checkiOSPermissions()
             .then((value) => value ?? false);
@@ -587,7 +579,7 @@ class CamerawesomePlugin {
       if (Platform.isAndroid) {
         var missingPermissions =
             await CamerawesomePlugin.checkAndroidPermissions();
-        if (missingPermissions.length > 0) {
+        if (missingPermissions.isNotEmpty) {
           return CamerawesomePlugin.requestPermissions().then((value) {
             return value.isEmpty;
           });
@@ -598,7 +590,8 @@ class CamerawesomePlugin {
         return CamerawesomePlugin.checkiOSPermissions();
       }
     } catch (e) {
-      print("failed to check permissions here...");
+      printLog("failed to check permissions here...");
+      // ignore: avoid_print
       print(e);
     }
     return Future.value(false);

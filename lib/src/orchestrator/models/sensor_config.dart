@@ -63,7 +63,7 @@ class SensorConfig {
     aspectRatio$ = _aspectRatioController.stream;
 
     _brightnessSubscription = _brightnessController.stream
-        .debounceTime(Duration(milliseconds: 500))
+        .debounceTime(const Duration(milliseconds: 500))
         .listen((value) => CamerawesomePlugin.setBrightness(value));
   }
 

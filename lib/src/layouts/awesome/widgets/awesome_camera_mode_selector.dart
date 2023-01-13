@@ -89,13 +89,13 @@ class _CameraModePagerState extends State<CameraModePager> {
               itemBuilder: ((context, index) {
                 final cameraMode = widget.availableModes[index];
                 return AnimatedOpacity(
-                  duration: Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 300),
                   opacity: index == _index ? 1 : 0.2,
                   child: AwesomeBouncingWidget(
                     child: Center(
                       child: Text(
                         cameraMode.name.toUpperCase(),
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           shadows: [

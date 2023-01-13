@@ -12,7 +12,7 @@ import 'utils.dart';
 // To run it, you have to use `patrol drive` instead of `flutter test`.
 void main() {
   group('Record video', () {
-    for (var sensor in Sensors.values) {
+    for (final sensor in Sensors.values) {
       patrolTest('Record one video with ${Sensors.back}',
           config: patrolConfig,
           nativeAutomatorConfig: nativeAutomatorConfig,

@@ -24,7 +24,7 @@ class AnalysisController {
   }) =>
       AnalysisController(
         onImageListener: onImageListener,
-        conf: conf == null ? AnalysisConfig() : conf,
+        conf: conf ?? AnalysisConfig(),
         images$: CamerawesomePlugin.listenCameraImages(),
       );
 

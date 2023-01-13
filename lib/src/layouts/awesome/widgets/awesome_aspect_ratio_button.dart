@@ -65,15 +65,15 @@ class _AspectRatioButton extends StatelessWidget {
     switch (aspectRatio) {
       case CameraAspectRatios.ratio_16_9:
         width = 32;
-        icon = AssetImage("packages/camerawesome/assets/icons/16_9.png");
+        icon = const AssetImage("packages/camerawesome/assets/icons/16_9.png");
         break;
       case CameraAspectRatios.ratio_4_3:
         width = 24;
-        icon = AssetImage("packages/camerawesome/assets/icons/4_3.png");
+        icon = const AssetImage("packages/camerawesome/assets/icons/4_3.png");
         break;
       case CameraAspectRatios.ratio_1_1:
         width = 24;
-        icon = AssetImage("packages/camerawesome/assets/icons/1_1.png");
+        icon = const AssetImage("packages/camerawesome/assets/icons/1_1.png");
         break;
     }
     return _AspectRatioButton(

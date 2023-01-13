@@ -44,10 +44,10 @@ class AwesomeMediaPreview extends StatelessWidget {
       case MediaCaptureStatus.capturing:
         return Center(
           child: Padding(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             child: Platform.isIOS
-                ? CupertinoActivityIndicator()
-                : CircularProgressIndicator(),
+                ? const CupertinoActivityIndicator()
+                : const CircularProgressIndicator(),
           ),
         );
       case MediaCaptureStatus.success:
@@ -63,13 +63,13 @@ class AwesomeMediaPreview extends StatelessWidget {
           );
         } else {
           return Ink(
-            child: Icon(Icons.play_arrow),
+            child: const Icon(Icons.play_arrow),
           );
         }
       case MediaCaptureStatus.failure:
-        return Icon(Icons.error);
+        return const Icon(Icons.error);
       case null:
-        return Container(
+        return const SizedBox(
           width: 32,
           height: 32,
         );

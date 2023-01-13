@@ -21,7 +21,7 @@ class AwesomeCameraLayout extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           AwesomeTopActions(state: state),
-          Spacer(),
+          const Spacer(),
           AwesomeSensorTypeSelector(state: state),
           const SizedBox(height: 12),
           AwesomeBackground(
@@ -102,12 +102,12 @@ class AwesomeBottomActions extends StatelessWidget {
           Flexible(
             flex: 0,
             child: state is VideoRecordingCameraState
-                ? SizedBox(width: 48)
+                ? const SizedBox(width: 48)
                 : StreamBuilder<MediaCapture?>(
                     stream: state.captureState$,
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Container(width: 72, height: 72);
+                        return const SizedBox(width: 72, height: 72);
                       }
                       return SizedBox(
                         width: 72,

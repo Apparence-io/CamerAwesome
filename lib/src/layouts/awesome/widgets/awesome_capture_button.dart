@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:camerawesome/src/orchestrator/analysis/analysis_controller.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +7,7 @@ import 'package:flutter/material.dart';
 class AwesomeCaptureButton extends StatefulWidget {
   final CameraState state;
 
-  AwesomeCaptureButton({
+  const AwesomeCaptureButton({
     super.key,
     required this.state,
   });
@@ -18,7 +20,7 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late double _scale;
-  Duration _duration = Duration(milliseconds: 100);
+  final Duration _duration = const Duration(milliseconds: 100);
 
   @override
   void initState() {
@@ -30,8 +32,8 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
       lowerBound: 0.0,
       upperBound: 0.1,
     )..addListener(() {
-        setState(() {});
-      });
+      setState(() {});
+    });
   }
 
   @override
@@ -51,8 +53,8 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
-      child: Container(
-        key: ValueKey('cameraButton'),
+      child: SizedBox(
+        key: const ValueKey('cameraButton'),
         height: 80,
         width: 80,
         child: Transform.scale(
@@ -88,12 +90,12 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
   }
 
   get onTap => () {
-        widget.state.when(
-          onPhotoMode: (photoState) => photoState.takePhoto(),
-          onVideoMode: (videoState) => videoState.startRecording(),
-          onVideoRecordingMode: (videoState) => videoState.stopRecording(),
-        );
-      };
+    widget.state.when(
+      onPhotoMode: (photoState) => photoState.takePhoto(),
+      onVideoMode: (videoState) => videoState.startRecording(),
+      onVideoRecordingMode: (videoState) => videoState.stopRecording(),
+    );
+  };
 }
 
 class CameraButtonPainter extends CustomPainter {
@@ -134,7 +136,7 @@ class VideoButtonPainter extends CustomPainter {
     bgPainter.color = Colors.white.withOpacity(.5);
     canvas.drawCircle(center, radius, bgPainter);
 
-    if (this.isRecording) {
+    if (isRecording) {
       bgPainter.color = Colors.red;
       canvas.drawRRect(
           RRect.fromRectAndRadius(
@@ -144,7 +146,7 @@ class VideoButtonPainter extends CustomPainter {
                 size.width - (17 * 2),
                 size.height - (17 * 2),
               ),
-              Radius.circular(12.0)),
+              const Radius.circular(12.0)),
           bgPainter);
     } else {
       bgPainter.color = Colors.red;

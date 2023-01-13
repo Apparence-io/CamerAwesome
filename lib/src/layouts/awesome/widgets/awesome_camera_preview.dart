@@ -61,11 +61,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       widget.state.previewSize(),
       widget.state.textureId(),
     ]).then((data) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _previewSize = data[0] as PreviewSize;
           _textureId = data[1] as int;
         });
+      }
     });
 
     _sensorConfigSubscription =
@@ -97,8 +98,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       return widget.loadingWidget ??
           Center(
             child: Platform.isIOS
-                ? CupertinoActivityIndicator()
-                : CircularProgressIndicator(),
+                ? const CupertinoActivityIndicator()
+                : const CircularProgressIndicator(),
           );
     }
 
@@ -158,7 +159,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                       width: _flutterPreviewSize?.width,
                       height: _flutterPreviewSize?.height,
                       child: AwesomeCameraGestureDetector(
-                        child: Texture(textureId: _textureId!),
                         onPreviewTapBuilder: widget.onPreviewTap != null &&
                                 _previewSize != null &&
                                 _flutterPreviewSize != null
@@ -171,6 +171,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             : null,
                         onPreviewScale: widget.onPreviewScale,
                         initialZoom: widget.state.sensorConfig.zoom,
+                        child: Texture(textureId: _textureId!),
                       ),
                     ),
                   ),

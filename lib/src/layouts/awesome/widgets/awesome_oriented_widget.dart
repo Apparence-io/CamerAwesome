@@ -35,7 +35,7 @@ class AwesomeOrientedWidgetState extends State<AwesomeOrientedWidget> {
 
         return AnimatedRotation(
           turns: turns,
-          duration: Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
           child: widget.child,
         );

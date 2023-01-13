@@ -81,12 +81,6 @@ class _AwesomeCameraGestureDetector
   @override
   Widget build(BuildContext context) {
     return RawGestureDetector(
-      child: Stack(children: [
-        Positioned.fill(child: widget.child),
-        if (_tapPosition != null &&
-            widget.onPreviewTapBuilder?.onPreviewTap.onTapPainter != null)
-          widget.onPreviewTapBuilder!.onPreviewTap.onTapPainter!(_tapPosition!),
-      ]),
       gestures: <Type, GestureRecognizerFactory>{
         if (widget.onPreviewScale != null)
           ScaleGestureRecognizer:
@@ -133,6 +127,12 @@ class _AwesomeCameraGestureDetector
             (instance) {},
           ),
       },
+      child: Stack(children: [
+        Positioned.fill(child: widget.child),
+        if (_tapPosition != null &&
+            widget.onPreviewTapBuilder?.onPreviewTap.onTapPainter != null)
+          widget.onPreviewTapBuilder!.onPreviewTap.onTapPainter!(_tapPosition!),
+      ]),
     );
   }
 
