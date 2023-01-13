@@ -13,6 +13,20 @@ import java.nio.ByteBuffer
 
 /** Generated class from Pigeon. */
 
+enum class PigeonSensorType(val raw: Int) {
+  WIDEANGLE(0),
+  ULTRAWIDEANGLE(1),
+  TELEPHOTO(2),
+  TRUEDEPTH(3),
+  UNKNOWN(4);
+
+  companion object {
+    fun ofRaw(raw: Int): PigeonSensorType? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PreviewSize(
   val width: Double,
@@ -54,6 +68,62 @@ data class ExifPreferences(
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class VideoOptions(
+  val fileType: String,
+  val codec: String
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromMap(map: Map<String, Any?>): VideoOptions {
+      val fileType = map["fileType"] as String
+      val codec = map["codec"] as String
+
+      return VideoOptions(fileType, codec)
+    }
+  }
+  fun toMap(): Map<String, Any?> {
+    val map = mutableMapOf<String, Any?>()
+    map["fileType"] = fileType
+    map["codec"] = codec
+    return map
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PigeonSensorTypeDevice(
+  val sensorType: PigeonSensorType,
+  /** A localized device name for display in the user interface. */
+  val name: String,
+  /** The current exposure ISO value. */
+  val iso: Double,
+  /** A Boolean value that indicates whether the flash is currently available for use. */
+  val flashAvailable: Boolean,
+  /** An identifier that uniquely identifies the device. */
+  val uid: String
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromMap(map: Map<String, Any?>): PigeonSensorTypeDevice {
+      val sensorType = PigeonSensorType.ofRaw(map["sensorType"] as Int)!!      val name = map["name"] as String
+      val iso = map["iso"] as Double
+      val flashAvailable = map["flashAvailable"] as Boolean
+      val uid = map["uid"] as String
+
+      return PigeonSensorTypeDevice(sensorType, name, iso, flashAvailable, uid)
+    }
+  }
+  fun toMap(): Map<String, Any?> {
+    val map = mutableMapOf<String, Any?>()
+    map["sensorType"] = sensorType.raw
+    map["name"] = name
+    map["iso"] = iso
+    map["flashAvailable"] = flashAvailable
+    map["uid"] = uid
+    return map
+  }
+}
+
 @Suppress("UNCHECKED_CAST")
 private object CameraInterfaceCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -65,12 +135,22 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
       }
       129.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
-          PreviewSize.fromMap(it)
+          PigeonSensorTypeDevice.fromMap(it)
         }
       }
       130.toByte() -> {
         return (readValue(buffer) as? Map<String, Any?>)?.let {
           PreviewSize.fromMap(it)
+        }
+      }
+      131.toByte() -> {
+        return (readValue(buffer) as? Map<String, Any?>)?.let {
+          PreviewSize.fromMap(it)
+        }
+      }
+      132.toByte() -> {
+        return (readValue(buffer) as? Map<String, Any?>)?.let {
+          VideoOptions.fromMap(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -82,12 +162,20 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
         stream.write(128)
         writeValue(stream, value.toMap())
       }
-      is PreviewSize -> {
+      is PigeonSensorTypeDevice -> {
         stream.write(129)
         writeValue(stream, value.toMap())
       }
       is PreviewSize -> {
         stream.write(130)
+        writeValue(stream, value.toMap())
+      }
+      is PreviewSize -> {
+        stream.write(131)
+        writeValue(stream, value.toMap())
+      }
+      is VideoOptions -> {
+        stream.write(132)
         writeValue(stream, value.toMap())
       }
       else -> super.writeValue(stream, value)
@@ -100,22 +188,24 @@ interface CameraInterface {
   fun setupCamera(sensor: String, aspectRatio: String, zoom: Double, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
   fun checkPermissions(): List<String>
   fun requestPermissions(): List<String>
-  fun getPreviewTextureId(): Double
+  fun getPreviewTextureId(): Long
   fun takePhoto(path: String, callback: (Boolean) -> Unit)
-  fun recordVideo(path: String)
+  fun recordVideo(path: String, options: VideoOptions?)
   fun pauseVideoRecording()
   fun resumeVideoRecording()
+  fun receivedImageFromStream()
   fun stopRecordingVideo(callback: (Boolean) -> Unit)
+  fun getFrontSensors(): List<PigeonSensorTypeDevice>
+  fun getBackSensors(): List<PigeonSensorTypeDevice>
   fun start(): Boolean
   fun stop(): Boolean
   fun setFlashMode(mode: String)
   fun handleAutoFocus()
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double)
   fun setZoom(zoom: Double)
-  fun setSensor(sensor: String)
+  fun setSensor(sensor: String, deviceId: String?)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
-  fun focus()
   fun setCaptureMode(mode: String)
   fun setRecordingAudioMode(enableAudio: Boolean)
   fun availableSizes(): List<PreviewSize>
@@ -237,7 +327,8 @@ val codec: MessageCodec<Any?> by lazy {
             try {
               val args = message as List<Any?>
               val pathArg = args[0] as String
-              api.recordVideo(pathArg)
+              val optionsArg = args[1] as? VideoOptions
+              api.recordVideo(pathArg, optionsArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
@@ -283,6 +374,23 @@ val codec: MessageCodec<Any?> by lazy {
         }
       }
       run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.receivedImageFromStream", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              api.receivedImageFromStream()
+              wrapped["result"] = null
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.stopRecordingVideo", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
@@ -295,6 +403,38 @@ val codec: MessageCodec<Any?> by lazy {
               wrapped["error"] = wrapError(exception)
               reply.reply(wrapped)
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getFrontSensors", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              wrapped["result"] = api.getFrontSensors()
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getBackSensors", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped = hashMapOf<String, Any?>()
+            try {
+              wrapped["result"] = api.getBackSensors()
+            } catch (exception: Error) {
+              wrapped["error"] = wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -416,7 +556,8 @@ val codec: MessageCodec<Any?> by lazy {
             try {
               val args = message as List<Any?>
               val sensorArg = args[0] as String
-              api.setSensor(sensorArg)
+              val deviceIdArg = args[1] as? String
+              api.setSensor(sensorArg, deviceIdArg)
               wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
@@ -453,23 +594,6 @@ val codec: MessageCodec<Any?> by lazy {
             val wrapped = hashMapOf<String, Any?>()
             try {
               wrapped["result"] = api.getMaxZoom()
-            } catch (exception: Error) {
-              wrapped["error"] = wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.focus", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            val wrapped = hashMapOf<String, Any?>()
-            try {
-              api.focus()
-              wrapped["result"] = null
             } catch (exception: Error) {
               wrapped["error"] = wrapError(exception)
             }

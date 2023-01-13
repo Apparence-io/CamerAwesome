@@ -84,10 +84,9 @@
   NSArray<AVCaptureDeviceFormat *>* formats = [device formats];
   for(int i = 0; i < formats.count; i++) {
     AVCaptureDeviceFormat *format = formats[i];
-    [qualities addObject:@{
-      @"width": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width],
-      @"height": [NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height],
-    }];
+    [qualities addObject:
+       [PreviewSize makeWithWidth:[NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width] height:[NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height]]
+    ];
   }
   return qualities;
 }
