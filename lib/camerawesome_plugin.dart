@@ -140,7 +140,6 @@ class CamerawesomePlugin {
       StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
         handleData: (data, sink) {
           sink.add(Map<String, dynamic>.from(data));
-          CamerawesomePlugin.receivedImageFromStream();
         },
       ),
     );
