@@ -32,8 +32,8 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
       lowerBound: 0.0,
       upperBound: 0.1,
     )..addListener(() {
-      setState(() {});
-    });
+        setState(() {});
+      });
   }
 
   @override
@@ -90,12 +90,12 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
   }
 
   get onTap => () {
-    widget.state.when(
-      onPhotoMode: (photoState) => photoState.takePhoto(),
-      onVideoMode: (videoState) => videoState.startRecording(),
-      onVideoRecordingMode: (videoState) => videoState.stopRecording(),
-    );
-  };
+        widget.state.when(
+          onPhotoMode: (photoState) => photoState.takePhoto(),
+          onVideoMode: (videoState) => videoState.startRecording(),
+          onVideoRecordingMode: (videoState) => videoState.stopRecording(),
+        );
+      };
 }
 
 class CameraButtonPainter extends CustomPainter {

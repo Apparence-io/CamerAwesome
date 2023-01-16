@@ -36,8 +36,8 @@ class _AwesomeBouncingWidgetState extends State<AwesomeBouncingWidget>
       lowerBound: 0.0,
       upperBound: 0.1,
     )..addListener(() {
-      setState(() {});
-    });
+        setState(() {});
+      });
     super.initState();
   }
 
