@@ -1,4 +1,4 @@
-# 1.1.0
+## 1.1.0
 
 - Use [**pigeon**](https://pub.dev/packages/pigeon) for iOS instead of classic method channel.
 - Greatly improve performances on analysis mode when FPS limit disabled.

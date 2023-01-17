@@ -82,45 +82,42 @@ class AwesomeBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Flexible(
-            flex: 0,
-            child: state is VideoRecordingCameraState
-                ? AwesomePauseResumeButton(
-                    state: state as VideoRecordingCameraState)
-                : AwesomeCameraSwitchButton(state: state),
-          ),
-          // Spacer(),
-          AwesomeCaptureButton(
-            state: state,
-          ),
-          // Spacer(),
-          Flexible(
-            flex: 0,
-            child: state is VideoRecordingCameraState
-                ? const SizedBox(width: 48)
-                : StreamBuilder<MediaCapture?>(
-                    stream: state.captureState$,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const SizedBox(width: 72, height: 72);
-                      }
-                      return SizedBox(
-                        width: 72,
-                        child: AwesomeMediaPreview(
-                          mediaCapture: snapshot.requireData,
-                          onMediaTap: onMediaTap,
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Flexible(
+          flex: 0,
+          child: state is VideoRecordingCameraState
+              ? AwesomePauseResumeButton(
+                  state: state as VideoRecordingCameraState)
+              : AwesomeCameraSwitchButton(state: state),
+        ),
+        // Spacer(),
+        AwesomeCaptureButton(
+          state: state,
+        ),
+        // Spacer(),
+        Flexible(
+          flex: 0,
+          child: state is VideoRecordingCameraState
+              ? const SizedBox(width: 48)
+              : StreamBuilder<MediaCapture?>(
+                  stream: state.captureState$,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox(width: 60, height: 60);
+                    }
+                    return SizedBox(
+                      width: 60,
+                      child: AwesomeMediaPreview(
+                        mediaCapture: snapshot.requireData,
+                        onMediaTap: onMediaTap,
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
