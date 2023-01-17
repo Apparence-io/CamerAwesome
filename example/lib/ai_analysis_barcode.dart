@@ -136,8 +136,8 @@ class _MyHomePageState extends State<MyHomePage> {
         _barcodesController.add(_buffer);
         _scrollController.animateTo(
           0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeIn,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.fastLinearToSlowEaseIn,
         );
       }
     } catch (err) {

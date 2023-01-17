@@ -158,8 +158,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         )
     }
 
-    override fun getPreviewTextureId(): Double {
-        return textureEntry!!.id().toDouble()
+    override fun getPreviewTextureId(): Long {
+        return textureEntry!!.id()
     }
 
     /***
@@ -241,7 +241,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun recordVideo(path: String) {
+    override fun recordVideo(path: String, options: VideoOptions?) {
         lastRecordedVideoSubscription?.dispose()
         lastRecordedVideo = BehaviorSubject.create()
         val recordingListener = Consumer<VideoRecordEvent> { event ->
@@ -299,12 +299,24 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
+    override fun getFrontSensors(): List<PigeonSensorTypeDevice> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getBackSensors(): List<PigeonSensorTypeDevice> {
+        TODO("Not yet implemented")
+    }
+
     override fun pauseVideoRecording() {
         cameraState.recording?.pause()
     }
 
     override fun resumeVideoRecording() {
         cameraState.recording?.resume()
+    }
+
+    override fun receivedImageFromStream() {
+        cameraState.imageAnalysisBuilder?.lastFrameAnalysisFinished()
     }
 
 
@@ -335,7 +347,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setSensor(sensor: String) {
+    override fun setSensor(sensor: String, deviceId: String?) {
         val cameraSelector =
             if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA
             else CameraSelector.DEFAULT_FRONT_CAMERA
@@ -366,7 +378,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         return cameraState.maxZoomRatio
     }
 
-    override fun focus() {
+    @Deprecated("Use focusOnPoint instead")
+    fun focus() {
         val autoFocusPoint = SurfaceOrientedMeteringPointFactory(1f, 1f).createPoint(.5f, .5f)
         try {
             val autoFocusAction = FocusMeteringAction.Builder(

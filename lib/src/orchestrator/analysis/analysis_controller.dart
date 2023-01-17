@@ -44,8 +44,9 @@ class AnalysisController {
       maxFramesPerSecond: conf.maxFramesPerSecond,
     );
 
-    imageSubscription = _images$?.listen((event) {
-      onImageListener!(AnalysisImage.from(event));
+    imageSubscription = _images$?.listen((event) async {
+      await onImageListener!(AnalysisImage.from(event));
+      await CamerawesomePlugin.receivedImageFromStream();
     });
     printLog("...AnalysisController started");
   }

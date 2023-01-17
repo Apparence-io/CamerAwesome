@@ -14,13 +14,11 @@
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                          captureMode:(CaptureModes)captureMode
-                              result:(nonnull FlutterResult)result
-                       dispatchQueue:(dispatch_queue_t)dispatchQueue
-                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger {
+                          completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
+                       dispatchQueue:(dispatch_queue_t)dispatchQueue {
   self = [super init];
   
-  _result = result;
-  _messenger = messenger;
+  _completion = completion;
   _dispatchQueue = dispatchQueue;
   
   // Creating capture session
@@ -48,7 +46,7 @@
   _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
   
   // Controllers init
-  _videoController = [[VideoController alloc] initResult:result];
+  _videoController = [[VideoController alloc] init];
   _imageStreamController = [[ImageStreamController alloc] initWithStreamImages:streamImages];
   _motionController = [[MotionController alloc] init];
   _locationController = [[LocationController alloc] init];
@@ -81,12 +79,9 @@
 /// Assign the default preview qualities
 - (void)setBestPreviewQuality {
   NSArray *qualities = [CameraQualities captureFormatsForDevice:_captureDevice];
-  NSDictionary *firstSizeDict = [qualities count] > 0 ? qualities.lastObject : @{\
-    @"width": @3840,\
-    @"height": @2160\
-  };
+  PreviewSize *firstPreviewSize = [qualities count] > 0 ? qualities.lastObject : [PreviewSize makeWithWidth:@3840 height:@2160];
   
-  CGSize firstSize = CGSizeMake([firstSizeDict[@"width"] floatValue], [firstSizeDict[@"height"] floatValue]);
+  CGSize firstSize = CGSizeMake([firstPreviewSize.width floatValue], [firstPreviewSize.height floatValue]);
   [self setCameraPresset:firstSize];
 }
 
@@ -109,7 +104,7 @@
   _captureVideoInput = [AVCaptureDeviceInput deviceInputWithDevice:_captureDevice error:&error];
   
   if (error != nil) {
-    _result([FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
+    _completion(nil, [FlutterError errorWithCode:@"CANNOT_OPEN_CAMERA" message:@"can't attach device to input" details:[error localizedDescription]]);
     return;
   }
   
@@ -176,14 +171,6 @@
   return _captureDevice.activeFormat.videoMaxZoomFactor;
 }
 
-/// Set Flutter results
-- (void)setResult:(FlutterResult _Nonnull)result {
-  _result = result;
-  
-  // Spread resul in controllers
-  [_videoController setResult:result];
-}
-
 /// Dispose camera inputs & outputs
 - (void)dispose {
   [self stop];
@@ -199,7 +186,7 @@
 /// Set preview size resolution
 - (void)setPreviewSize:(CGSize)previewSize {
   if (_videoController.isRecording) {
-    _result([FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""]);
     return;
   }
   
@@ -256,26 +243,26 @@
     _captureDevice.videoZoomFactor = scaledZoom;
     [_captureDevice unlockForConfiguration];
   } else {
-    _result([FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[error localizedDescription]]);
+    _completion(nil, [FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[error localizedDescription]]);
   }
 }
 
 /// Set flash mode
 - (void)setFlashMode:(CameraFlashMode)flashMode {
   if (![_captureDevice hasFlash]) {
-    _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
     return;
   }
   
   if (_cameraSensor == Front) {
-    _result([FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""]);
     return;
   }
   
   NSError *error;
   [_captureDevice lockForConfiguration:&error];
   if (error != nil) {
-    _result([FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""]);
     return;
   }
   
@@ -303,8 +290,6 @@
   }
   [_captureDevice setTorchMode:_torchMode];
   [_captureDevice unlockForConfiguration];
-  
-  _result(nil);
 }
 
 /// Trigger focus on device at the specific point of the preview
@@ -313,7 +298,7 @@
   if ([_captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] && [_captureDevice isFocusPointOfInterestSupported]) {
     if ([_captureDevice lockForConfiguration:&error]) {
       if (error != nil) {
-        _result([FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
+        _completion(nil, [FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
         return;
       }
       
@@ -335,9 +320,10 @@
     return _captureDeviceId;
   }
   
+  // TODO: add dual & triple camera
   NSArray<AVCaptureDevice *> *devices = [[NSArray alloc] init];
   AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                                                       discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera ]
+                                                       discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera, ]
                                                        mediaType:AVMediaTypeVideo
                                                        position:AVCaptureDevicePositionUnspecified];
   devices = discoverySession.devices;
@@ -362,29 +348,23 @@
                                                        position:AVCaptureDevicePositionUnspecified];
   
   for (AVCaptureDevice *device in discoverySession.devices) {
-    NSString *type;
+    PigeonSensorType type;
     if (device.deviceType == AVCaptureDeviceTypeBuiltInTelephotoCamera) {
-      type = @"telephoto";
+      type = PigeonSensorTypeTelephoto;
     } else if (device.deviceType == AVCaptureDeviceTypeBuiltInUltraWideCamera) {
-      type = @"ultraWideAngle";
+      type = PigeonSensorTypeUltraWideAngle;
     } else if (device.deviceType == AVCaptureDeviceTypeBuiltInTrueDepthCamera) {
-      type = @"trueDepth";
+      type = PigeonSensorTypeTrueDepth;
     } else if (device.deviceType == AVCaptureDeviceTypeBuiltInWideAngleCamera) {
-      type = @"wideAngle";
+      type = PigeonSensorTypeWideAngle;
     } else {
-      type = @"unknown";
+      type = PigeonSensorTypeUnknown;
     }
     
-    NSDictionary *sensorData = @{
-      @"uid": device.uniqueID,
-      @"type": type,
-      @"name": device.localizedName,
-      @"iso": [NSNumber numberWithFloat:device.ISO],
-      @"flashAvailable": [NSNumber numberWithBool:device.flashAvailable],
-    };
+    PigeonSensorTypeDevice *sensorType = [PigeonSensorTypeDevice makeWithSensorType:type name:device.localizedName iso:[NSNumber numberWithFloat:device.ISO] flashAvailable:[NSNumber numberWithBool:device.flashAvailable] uid:device.uniqueID];
     
     if (device.position == position) {
-      [sensors addObject:sensorData];
+      [sensors addObject:sensorType];
     }
   }
   
@@ -394,7 +374,7 @@
 /// Set capture mode between Photo & Video mode
 - (void)setCaptureMode:(CaptureModes)captureMode {
   if (_videoController.isRecording) {
-    _result([FlutterError errorWithCode:@"CAPTURE_MODE" message:@"impossible to change capture mode, video already recording" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"CAPTURE_MODE" message:@"impossible to change capture mode, video already recording" details:@""]);
     return;
   }
   
@@ -415,14 +395,14 @@
 # pragma mark - Camera picture
 
 /// Take the picture into the given path
-- (void)takePictureAtPath:(NSString *)path {
+- (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   // Instanciate camera picture obj
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
                                                                                   sensor:_cameraSensor
                                                                          saveGPSLocation:_saveGPSLocation
                                                                              aspectRatio:_aspectRatio
-                                                                                  result:_result
+                                                                              completion:completion
                                                                                 callback:^{
     // If flash mode is always on, restore it back after photo is taken
     if (self->_torchMode == AVCaptureTorchModeOn) {
@@ -430,6 +410,8 @@
       [self->_captureDevice setTorchMode:AVCaptureTorchModeOn];
       [self->_captureDevice unlockForConfiguration];
     }
+    
+    completion(@(YES), nil);
   }];
   
   // Create settings instance
@@ -439,13 +421,14 @@
   
   [_capturePhotoOutput capturePhotoWithSettings:settings
                                        delegate:cameraPicture];
+  
 }
 
 # pragma mark - Camera video
 /// Record video into the given path
-- (void)recordVideoAtPath:(NSString *)path withOptions:(NSDictionary *)options {
+- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (_imageStreamController.streamImages) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
     return;
   }
   
@@ -457,9 +440,9 @@
         [self->_audioOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       }
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
-    } options:options];
+    } options:options error:error];
   } else {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }
 }
 
@@ -474,18 +457,18 @@
 }
 
 /// Stop recording video
-- (void)stopRecordingVideo {
+- (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (_videoController.isRecording) {
-    [_videoController stopRecordingVideo];
+    [_videoController stopRecordingVideo:completion];
   } else {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
   }
 }
 
 /// Set audio recording mode
 - (void)setRecordingAudioMode:(bool)isAudioEnabled {
   if (_videoController.isRecording) {
-    _result([FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
     return;
   }
   
@@ -524,7 +507,7 @@
   AVCaptureDeviceInput *audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioDevice
                                                                            error:&error];
   if (error) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio capture" details:error.description]);
+    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio capture" details:error.description]);
   }
   // Setup the audio output.
   _audioOutput = [[AVCaptureAudioDataOutput alloc] init];

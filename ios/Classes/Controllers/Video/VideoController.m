@@ -11,9 +11,8 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 @implementation VideoController
 
-- (instancetype)initResult:(FlutterResult)result {
+- (instancetype)init {
   self = [super init];
-  _result = result;
   _isRecording = NO;
   _isAudioEnabled = YES;
   _isPaused = NO;
@@ -24,10 +23,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(NSDictionary *)options {
+- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   // Create audio & video writer
-  if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options]) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
+  if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options error:error]) {
+    *error = ([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
     return;
   }
   // Call parent to add delegates for video & audio (if needed)
@@ -38,24 +37,23 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _audioTimeOffset = CMTimeMake(0, 1);
   _videoIsDisconnected = NO;
   _audioIsDisconnected = NO;
-  _result(nil);
 }
 
 /// Stop recording video
-- (void)stopRecordingVideo {
+- (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (_isRecording) {
     _isRecording = NO;
     if (_videoWriter.status != AVAssetWriterStatusUnknown) {
       [_videoWriter finishWritingWithCompletionHandler:^{
         if (self->_videoWriter.status == AVAssetWriterStatusCompleted) {
-          self->_result(nil);
+          completion(@(YES), nil);
         } else {
-          self->_result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to completely write video" details:@""]);
+          completion(@(NO), [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to completely write video" details:@""]);
         }
       }];
     }
   } else {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
+    completion(@(NO), [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
   }
 }
 
@@ -70,7 +68,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - Audio & Video writers
 
 /// Setup video channel & write file on path
-- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(NSDictionary *)options {
+- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)errorFlutter {
   NSError *error = nil;
   NSURL *outputURL;
   if (path != nil) {
@@ -106,7 +104,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
                                               error:&error];
   NSParameterAssert(_videoWriter);
   if (error) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description]);
+    *errorFlutter = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description];
     return NO;
   }
   
@@ -138,13 +136,13 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 - (void)newAudioSample:(CMSampleBufferRef)sampleBuffer {
   if (_videoWriter.status != AVAssetWriterStatusWriting) {
     if (_videoWriter.status == AVAssetWriterStatusFailed) {
-      _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error]);
+//      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error];
     }
     return;
   }
   if (_audioWriterInput.readyForMoreMediaData) {
     if (![_audioWriterInput appendSampleBuffer:sampleBuffer]) {
-      _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error]);
+//      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error];
     }
   }
 }
@@ -173,7 +171,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   }
   
   if (_videoWriter.status == AVAssetWriterStatusFailed) {
-    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
+//    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
     return;
   }
   
@@ -238,11 +236,11 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 # pragma mark - Settings converters
 
-- (AVFileType)getBestFileTypeAccordingOptions:(NSDictionary *)options {
+- (AVFileType)getBestFileTypeAccordingOptions:(VideoOptions *)options {
   AVFileType fileType = AVFileTypeQuickTimeMovie;
   
   if (options && options != (id)[NSNull null]) {
-    NSString *type = [options objectForKey:@"fileType"];
+    NSString *type = options.fileType;
     if ([type isEqualToString:@"quickTimeMovie"]) {
       fileType = AVFileTypeQuickTimeMovie;
     } else if ([type isEqualToString:@"mpeg4"]) {
@@ -259,10 +257,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   return fileType;
 }
 
-- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(NSDictionary *)options {
+- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(VideoOptions *)options {
   AVVideoCodecType codecType = AVVideoCodecTypeH264;
   if (options && options != (id)[NSNull null]) {
-    NSString *codec = [options objectForKey:@"codec"];
+    NSString *codec = options.codec;
     if ([codec isEqualToString:@"h264"]) {
       codecType = AVVideoCodecTypeH264;
     } else if ([codec isEqualToString:@"hevc"]) {
@@ -292,10 +290,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 }
 - (void)setIsAudioSetup:(bool)isAudioSetup {
   _isAudioSetup = isAudioSetup;
-}
-
-- (void)setResult:(FlutterResult _Nonnull)result {
-  _result = result;
 }
 
 - (void)setPreviewSize:(CGSize)previewSize {

@@ -1,3 +1,10 @@
+# 1.1.0
+
+- Use [**pigeon**](https://pub.dev/packages/pigeon) for iOS instead of classic method channel.
+- Greatly improve performances on analysis mode when FPS limit disabled.
+- Fix barcode scrolling to bottom.
+- Fix iOS stream guards.
+
 ## 1.0.0+4
 
 - Code formatting and linter

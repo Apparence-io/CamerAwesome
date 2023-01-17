@@ -18,12 +18,12 @@
                       sensor:(CameraSensor)sensor
              saveGPSLocation:(bool)saveGPSLocation
                  aspectRatio:(AspectRatio)aspectRatio
-                      result:(FlutterResult)result
+                  completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                     callback:(OnPictureTaken)callback {
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
   _path = path;
-  _result = result;
+  _completion = completion;
   _orientation = orientation;
   _completionBlock = callback;
   _sensor = sensor;
@@ -78,7 +78,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
 
   selfReference = nil;
   if (error) {
-    _result([FlutterError errorWithCode:@"CAPTURE ERROR" message:error.description details:@""]);
+    _completion(nil, [FlutterError errorWithCode:@"CAPTURE ERROR" message:error.description details:@""]);
     return;
   }
   
@@ -145,11 +145,10 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   
   bool success = [imageWithExif writeToFile:_path atomically:YES];
   if (!success) {
-    _result([FlutterError errorWithCode:@"IOError" message:@"unable to write file" details:nil]);
+    _completion(nil, [FlutterError errorWithCode:@"IOError" message:@"unable to write file" details:nil]);
     return;
   }
   _completionBlock();
-  _result(nil);
 }
 
 - (UIImageOrientation)getJpegOrientation {

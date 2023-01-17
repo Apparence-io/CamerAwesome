@@ -31,8 +31,9 @@ void main() {
         final filePath =
             await tempPath('record_video_single_${sensor.name}.mp4');
         await $(AwesomeCaptureButton).tap(andSettle: false);
-        await Future.delayed(const Duration(seconds: 5));
+        await $.pump(const Duration(seconds: 5));
         await $(AwesomeCaptureButton).tap();
+        await $.pump(const Duration(milliseconds: 500));
 
         expect(File(filePath).existsSync(), true);
         // File size should be quite high (at least more than 100)
@@ -63,6 +64,7 @@ void main() {
           await Future.delayed(const Duration(seconds: 5));
           await $(AwesomeCaptureButton).tap();
 
+          await $.pump(const Duration(milliseconds: 500));
           expect(File(filePath).existsSync(), true);
           // File size should be quite high (at least more than 100)
           expect(File(filePath).lengthSync(), greaterThan(100));
@@ -95,6 +97,7 @@ void main() {
         await Future.delayed(const Duration(seconds: 1));
 
         await $(AwesomeCaptureButton).tap();
+        await $.pump(const Duration(milliseconds: 500));
 
         final file = File(filePath);
         expect(file.existsSync(), true);
@@ -145,7 +148,7 @@ void main() {
         await $(AwesomeCaptureButton).tap(andSettle: false);
         await Future.delayed(const Duration(seconds: 5));
         await $(AwesomeCaptureButton).tap();
-        await $.pump(const Duration(milliseconds: 2000));
+        await $.pump(const Duration(milliseconds: 500));
 
         expect(File(filePath).existsSync(), true);
         // File size should be quite high (at least more than 100)

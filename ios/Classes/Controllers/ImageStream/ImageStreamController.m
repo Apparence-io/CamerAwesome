@@ -24,8 +24,12 @@ NSInteger const MaxPendingProcessedImage = 4;
     return;
   }
 
-  [self fpsGuard];
-  [self overflowCrashingGuard];
+  bool shouldFPSGuard = [self fpsGuard];
+  bool shouldOverflowCrashingGuard = [self overflowCrashingGuard];
+  
+  if (shouldFPSGuard || shouldOverflowCrashingGuard) {
+    return;
+  }
   
   _processingImage++;
   
@@ -107,7 +111,7 @@ NSInteger const MaxPendingProcessedImage = 4;
 
 #pragma mark - Guards
 
-- (void)fpsGuard {
+- (bool)fpsGuard {
   // calculate time interval between latest emitted frame
   NSDate *nowDate = [NSDate date];
   NSTimeInterval secondsBetween = [nowDate timeIntervalSinceDate:_latestEmittedFrame];
@@ -116,18 +120,22 @@ NSInteger const MaxPendingProcessedImage = 4;
   if (_maxFramesPerSecond && _maxFramesPerSecond > 0) {
     if (secondsBetween <= (1 / _maxFramesPerSecond)) {
       // skip image because out of time
-      return;
+      return YES;
     }
   }
+  
+  return NO;
 }
 
-- (void)overflowCrashingGuard {
+- (bool)overflowCrashingGuard {
   // overflow crash prevent condition
   if (_processingImage > MaxPendingProcessedImage) {
     // too many frame are pending processing, skipping...
     // this prevent crashing on older phones like iPhone 6, 7...
-    return;
+    return YES;
   }
+  
+  return NO;
 }
 
 // This is used to know the exact time when the image was received on the Flutter part

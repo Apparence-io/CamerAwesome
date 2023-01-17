@@ -7,6 +7,14 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
+enum PigeonSensorType {
+  wideAngle,
+  ultraWideAngle,
+  telephoto,
+  trueDepth,
+  unknown,
+}
+
 class PreviewSize {
   PreviewSize({
     required this.width,
@@ -53,6 +61,76 @@ class ExifPreferences {
   }
 }
 
+class VideoOptions {
+  VideoOptions({
+    required this.fileType,
+    required this.codec,
+  });
+
+  String fileType;
+  String codec;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['fileType'] = fileType;
+    pigeonMap['codec'] = codec;
+    return pigeonMap;
+  }
+
+  static VideoOptions decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return VideoOptions(
+      fileType: pigeonMap['fileType']! as String,
+      codec: pigeonMap['codec']! as String,
+    );
+  }
+}
+
+class PigeonSensorTypeDevice {
+  PigeonSensorTypeDevice({
+    required this.sensorType,
+    required this.name,
+    required this.iso,
+    required this.flashAvailable,
+    required this.uid,
+  });
+
+  PigeonSensorType sensorType;
+
+  /// A localized device name for display in the user interface.
+  String name;
+
+  /// The current exposure ISO value.
+  double iso;
+
+  /// A Boolean value that indicates whether the flash is currently available for use.
+  bool flashAvailable;
+
+  /// An identifier that uniquely identifies the device.
+  String uid;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['sensorType'] = sensorType.index;
+    pigeonMap['name'] = name;
+    pigeonMap['iso'] = iso;
+    pigeonMap['flashAvailable'] = flashAvailable;
+    pigeonMap['uid'] = uid;
+    return pigeonMap;
+  }
+
+  static PigeonSensorTypeDevice decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return PigeonSensorTypeDevice(
+      sensorType: PigeonSensorType.values[pigeonMap['sensorType']! as int],
+      name: pigeonMap['name']! as String,
+      iso: pigeonMap['iso']! as double,
+      flashAvailable: pigeonMap['flashAvailable']! as bool,
+      uid: pigeonMap['uid']! as String,
+    );
+  }
+}
+
 class _CameraInterfaceCodec extends StandardMessageCodec {
   const _CameraInterfaceCodec();
   @override
@@ -60,11 +138,17 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
     if (value is ExifPreferences) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is PreviewSize) {
+    } else if (value is PigeonSensorTypeDevice) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else if (value is PreviewSize) {
       buffer.putUint8(130);
+      writeValue(buffer, value.encode());
+    } else if (value is PreviewSize) {
+      buffer.putUint8(131);
+      writeValue(buffer, value.encode());
+    } else if (value is VideoOptions) {
+      buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -78,10 +162,16 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
         return ExifPreferences.decode(readValue(buffer)!);
 
       case 129:
-        return PreviewSize.decode(readValue(buffer)!);
+        return PigeonSensorTypeDevice.decode(readValue(buffer)!);
 
       case 130:
         return PreviewSize.decode(readValue(buffer)!);
+
+      case 131:
+        return PreviewSize.decode(readValue(buffer)!);
+
+      case 132:
+        return VideoOptions.decode(readValue(buffer)!);
 
       default:
         return super.readValueOfType(type, buffer);
@@ -201,7 +291,7 @@ class CameraInterface {
     }
   }
 
-  Future<double> getPreviewTextureId() async {
+  Future<int> getPreviewTextureId() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.getPreviewTextureId', codec,
         binaryMessenger: _binaryMessenger);
@@ -226,7 +316,7 @@ class CameraInterface {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (replyMap['result'] as double?)!;
+      return (replyMap['result'] as int?)!;
     }
   }
 
@@ -259,12 +349,12 @@ class CameraInterface {
     }
   }
 
-  Future<void> recordVideo(String arg_path) async {
+  Future<void> recordVideo(String arg_path, VideoOptions? arg_options) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.recordVideo', codec,
         binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_path]) as Map<Object?, Object?>?;
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object?>[arg_path, arg_options]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -331,6 +421,30 @@ class CameraInterface {
     }
   }
 
+  Future<void> receivedImageFromStream() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.receivedImageFromStream', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(null) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
+    }
+  }
+
   Future<bool> stopRecordingVideo() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.stopRecordingVideo', codec,
@@ -357,6 +471,66 @@ class CameraInterface {
       );
     } else {
       return (replyMap['result'] as bool?)!;
+    }
+  }
+
+  Future<List<PigeonSensorTypeDevice?>> getFrontSensors() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.getFrontSensors', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(null) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else if (replyMap['result'] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyMap['result'] as List<Object?>?)!
+          .cast<PigeonSensorTypeDevice?>();
+    }
+  }
+
+  Future<List<PigeonSensorTypeDevice?>> getBackSensors() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.getBackSensors', codec,
+        binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(null) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error =
+          (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else if (replyMap['result'] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyMap['result'] as List<Object?>?)!
+          .cast<PigeonSensorTypeDevice?>();
     }
   }
 
@@ -516,12 +690,12 @@ class CameraInterface {
     }
   }
 
-  Future<void> setSensor(String arg_sensor) async {
+  Future<void> setSensor(String arg_sensor, String? arg_deviceId) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setSensor', codec,
         binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(<Object?>[arg_sensor]) as Map<Object?, Object?>?;
+    final Map<Object?, Object?>? replyMap = await channel
+        .send(<Object?>[arg_sensor, arg_deviceId]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -590,30 +764,6 @@ class CameraInterface {
       );
     } else {
       return (replyMap['result'] as double?)!;
-    }
-  }
-
-  Future<void> focus() async {
-    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.CameraInterface.focus', codec,
-        binaryMessenger: _binaryMessenger);
-    final Map<Object?, Object?>? replyMap =
-        await channel.send(null) as Map<Object?, Object?>?;
-    if (replyMap == null) {
-      throw PlatformException(
-        code: 'channel-error',
-        message: 'Unable to establish connection on channel.',
-      );
-    } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
-      throw PlatformException(
-        code: (error['code'] as String?)!,
-        message: error['message'] as String?,
-        details: error['details'],
-      );
-    } else {
-      return;
     }
   }
 

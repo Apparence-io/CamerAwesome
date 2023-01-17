@@ -21,8 +21,6 @@ enum CameraRunningState { starting, started, stopping, stopped }
 
 /// Don't use this class directly. Instead, use [CameraAwesomeBuilder].
 class CamerawesomePlugin {
-  static const MethodChannel _channel = MethodChannel('camerawesome');
-
   static const EventChannel _orientationChannel =
       EventChannel('camerawesome/orientation');
 
@@ -51,8 +49,10 @@ class CamerawesomePlugin {
   static Future<List<String?>> checkAndroidPermissions() =>
       CameraInterface().checkPermissions();
 
-  static Future<bool?> checkiOSPermissions() =>
-      _channel.invokeMethod("checkPermissions");
+  static Future<bool?> checkiOSPermissions() async {
+    final permissions = await CameraInterface().checkPermissions();
+    return permissions.isEmpty;
+  }
 
   /// only available on Android
   static Future<List<String?>> requestPermissions() =>
@@ -64,12 +64,7 @@ class CamerawesomePlugin {
       return true;
     }
     currentState = CameraRunningState.starting;
-    bool res;
-    if (Platform.isAndroid) {
-      res = await CameraInterface().start();
-    } else {
-      res = await _channel.invokeMethod("start");
-    }
+    bool res = await CameraInterface().start();
     if (res) currentState = CameraRunningState.started;
     return res;
   }
@@ -83,19 +78,13 @@ class CamerawesomePlugin {
     currentState = CameraRunningState.stopping;
     bool res;
     try {
-      if (Platform.isAndroid) {
-        res = await CameraInterface().stop();
-      } else {
-        res = await _channel.invokeMethod("stop");
-      }
+      res = await CameraInterface().stop();
     } catch (e) {
       return false;
     }
     currentState = CameraRunningState.stopped;
     return res;
   }
-
-  static Future<bool?> focus() => _channel.invokeMethod("focus");
 
   static Stream<CameraOrientations>? getNativeOrientation() {
     _orientationStream ??= _orientationChannel
@@ -109,17 +98,17 @@ class CamerawesomePlugin {
           break;
         case 'LANDSCAPE_RIGHT':
           newOrientation = CameraOrientations.landscape_right;
-            break;
-          case 'PORTRAIT_UP':
-            newOrientation = CameraOrientations.portrait_up;
-            break;
-          case 'PORTRAIT_DOWN':
-            newOrientation = CameraOrientations.portrait_down;
-            break;
-          default:
-        }
-        sink.add(newOrientation!);
-      }));
+          break;
+        case 'PORTRAIT_UP':
+          newOrientation = CameraOrientations.portrait_up;
+          break;
+        case 'PORTRAIT_DOWN':
+          newOrientation = CameraOrientations.portrait_down;
+          break;
+        default:
+      }
+      sink.add(newOrientation!);
+    }));
     return _orientationStream;
   }
 
@@ -138,17 +127,11 @@ class CamerawesomePlugin {
     double? maxFramesPerSecond,
     required InputAnalysisImageFormat format,
   }) async {
-    if (Platform.isAndroid) {
-      return CameraInterface().setupImageAnalysisStream(
-        format.name,
-        width,
-        maxFramesPerSecond,
-      );
-    } else {
-      return _channel.invokeMethod("setupAnalysis", {
-        "maxFramesPerSecond": maxFramesPerSecond ?? 0,
-      });
-    }
+    return CameraInterface().setupImageAnalysisStream(
+      format.name,
+      width,
+      maxFramesPerSecond,
+    );
   }
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
@@ -157,7 +140,6 @@ class CamerawesomePlugin {
       StreamTransformer<dynamic, Map<String, dynamic>>.fromHandlers(
         handleData: (data, sink) {
           sink.add(Map<String, dynamic>.from(data));
-          CamerawesomePlugin.receivedImageFromStream();
         },
       ),
     );
@@ -165,254 +147,143 @@ class CamerawesomePlugin {
   }
 
   static Future receivedImageFromStream() {
-    if (Platform.isIOS) {
-      return _channel.invokeMethod("receivedImageFromStream");
-    } else {
-      return Future.value();
-    }
+    return CameraInterface().receivedImageFromStream();
   }
 
-  static Future<bool?> init(SensorConfig sensorConfig, bool enableImageStream,
-      {CaptureMode captureMode = CaptureMode.photo,
-      required ExifPreferences exifPreferences}) async {
-    if (Platform.isAndroid) {
-      return CameraInterface()
-          .setupCamera(
-            sensorConfig.sensor.name.toUpperCase(),
-            sensorConfig.aspectRatio.name.toUpperCase(),
-            sensorConfig.zoom,
-            sensorConfig.flashMode.name.toUpperCase(),
-            captureMode.name.toUpperCase(),
-            enableImageStream,
-            exifPreferences,
-          )
-          .then((value) => true);
-    } else {
-      return _channel.invokeMethod("init", <String, dynamic>{
-        'sensor': sensorConfig.sensor.toString().toUpperCase().split(".")[1],
-        'captureMode': captureMode.toString().toUpperCase().split(".")[1],
-        'streamImages': enableImageStream,
-      });
-    }
+  static Future<bool?> init(
+    SensorConfig sensorConfig,
+    bool enableImageStream, {
+    CaptureMode captureMode = CaptureMode.photo,
+    required ExifPreferences exifPreferences,
+  }) async {
+    return CameraInterface()
+        .setupCamera(
+          sensorConfig.sensor.name.toUpperCase(),
+          sensorConfig.aspectRatio.name.toUpperCase(),
+          sensorConfig.zoom,
+          sensorConfig.flashMode.name.toUpperCase(),
+          captureMode.name.toUpperCase(),
+          enableImageStream,
+          exifPreferences,
+        )
+        .then((value) => true);
   }
 
   static Future<List<Size>> getSizes() async {
-    if (Platform.isAndroid) {
-      final availableSizes = await CameraInterface().availableSizes();
-      return availableSizes
-          .whereType<PreviewSize>()
-          .map((e) => Size(e.width, e.height))
-          .toList();
-    } else {
-      try {
-        final sizes =
-            await _channel.invokeMethod<List<dynamic>>("availableSizes");
-        final res = <Size>[];
-        sizes?.forEach((el) {
-          int width = el["width"];
-          int height = el["height"];
-          res.add(Size(width.toDouble(), height.toDouble()));
-        });
-        return res;
-      } catch (e) {
-        rethrow;
-      }
-    }
+    final availableSizes = await CameraInterface().availableSizes();
+    return availableSizes
+        .whereType<PreviewSize>()
+        .map((e) => Size(e.width, e.height))
+        .toList();
   }
 
   static Future<num?> getPreviewTexture() {
-    if (Platform.isAndroid) {
-      return CameraInterface().getPreviewTextureId();
-    } else {
-      return _channel.invokeMethod<num?>('previewTexture');
-    }
+    return CameraInterface().getPreviewTextureId();
   }
 
   static Future<void> setPreviewSize(int width, int height) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setPreviewSize(
-          PreviewSize(width: width.toDouble(), height: height.toDouble()));
-    } else {
-      return _channel.invokeMethod<void>('setPreviewSize', <String, dynamic>{
-        'width': width,
-        'height': height,
-      });
-    }
+    return CameraInterface().setPreviewSize(
+        PreviewSize(width: width.toDouble(), height: height.toDouble()));
   }
 
   static Future<void> refresh() {
-    if (Platform.isAndroid) {
-      return CameraInterface().refresh();
-    } else {
-      return _channel.invokeMethod<void>('refresh');
-    }
+    return CameraInterface().refresh();
   }
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
   static Future<PreviewSize> getEffectivPreviewSize() async {
-    if (Platform.isAndroid) {
-      final ps = await CameraInterface().getEffectivPreviewSize();
-      if (ps != null) {
-        return PreviewSize(width: ps.width, height: ps.height);
-      } else {
-        // TODO Should not be null?
-        return PreviewSize(width: 0, height: 0);
-      }
+    final ps = await CameraInterface().getEffectivPreviewSize();
+    if (ps != null) {
+      return PreviewSize(width: ps.width, height: ps.height);
     } else {
-      final sizeMap = await _channel
-          .invokeMapMethod<String, dynamic>("getEffectivPreviewSize");
-
-      final int width = sizeMap?["width"] ?? 0;
-      final int height = sizeMap?["height"] ?? 0;
-      return PreviewSize(width: width.toDouble(), height: height.toDouble());
+      // TODO Should not be null?
+      return PreviewSize(width: 0, height: 0);
     }
   }
 
   /// you can set a different size for preview and for photo
   /// for iOS, when taking a photo, best quality is automatically used
   static Future<void> setPhotoSize(int width, int height) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setPhotoSize(
-          PreviewSize(width: width.toDouble(), height: height.toDouble()));
-    } else {
-      return _channel.invokeMethod<void>('setPhotoSize', <String, dynamic>{
-        'width': width,
-        'height': height,
-      });
-    }
+    return CameraInterface().setPhotoSize(
+      PreviewSize(
+        width: width.toDouble(),
+        height: height.toDouble(),
+      ),
+    );
   }
 
   static Future<bool> takePhoto(String path) async {
-    if (Platform.isAndroid) {
-      return CameraInterface().takePhoto(path);
-    } else {
-      // iOS side doesn't return a boolean
-      await _channel.invokeMethod<void>('takePhoto', <String, dynamic>{
-        'path': path,
-      });
-      return true;
-    }
+    return CameraInterface().takePhoto(path);
   }
 
-  // TODO: add video options for Android
   static recordVideo(
     String path, {
     CupertinoVideoOptions? cupertinoVideoOptions,
   }) {
     if (Platform.isAndroid) {
-      return CameraInterface().recordVideo(path);
+      // TODO: add video options for Android
+      return CameraInterface().recordVideo(path, null);
     } else {
-      return _channel.invokeMethod<void>('recordVideo', <String, dynamic>{
-        'path': path,
-        'options': cupertinoVideoOptions?.toMap(),
-      });
+      return CameraInterface().recordVideo(
+        path,
+        cupertinoVideoOptions != null
+            ? VideoOptions(
+                fileType: cupertinoVideoOptions.fileType.name,
+                codec: cupertinoVideoOptions.codec.name,
+              )
+            : null,
+      );
     }
   }
 
   static pauseVideoRecording() {
-    if (Platform.isAndroid) {
-      return CameraInterface().pauseVideoRecording();
-    } else {
-      return _channel.invokeMethod<void>('pauseVideoRecording');
-    }
+    CameraInterface().pauseVideoRecording();
   }
 
   static resumeVideoRecording() {
-    if (Platform.isAndroid) {
-      return CameraInterface().resumeVideoRecording();
-    } else {
-      return _channel.invokeMethod<void>('resumeVideoRecording');
-    }
+    return CameraInterface().resumeVideoRecording();
   }
 
   static stopRecordingVideo() {
-    if (Platform.isAndroid) {
-      return CameraInterface().stopRecordingVideo();
-    } else {
-      return _channel.invokeMethod<void>('stopRecordingVideo');
-    }
+    return CameraInterface().stopRecordingVideo();
   }
 
   /// Switch flash mode from Android / iOS
   static Future<void> setFlashMode(FlashMode flashMode) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setFlashMode(flashMode.name.toUpperCase());
-    } else {
-      return _channel.invokeMethod('setFlashMode', <String, dynamic>{
-        'mode': flashMode.toString().toUpperCase().split(".")[1],
-      });
-    }
+    return CameraInterface().setFlashMode(flashMode.name.toUpperCase());
   }
 
   static startAutoFocus() {
-    if (Platform.isAndroid) {
-      return CameraInterface().handleAutoFocus();
-    } else {
-      _channel.invokeMethod("handleAutoFocus");
-    }
+    return CameraInterface().handleAutoFocus();
   }
 
   static Future<void> focusOnPoint(
       {required PreviewSize previewSize, required Offset position}) {
-    if (Platform.isAndroid) {
-      return CameraInterface()
-          .focusOnPoint(previewSize, position.dx, position.dy);
-    } else {
-      return _channel.invokeMethod("focusOnPoint", <String, dynamic>{
-        'previewWidth': previewSize.width,
-        'previewHeight': previewSize.height,
-        'positionX': position.dx,
-        'positionY': position.dy,
-      });
-    }
+    return CameraInterface()
+        .focusOnPoint(previewSize, position.dx, position.dy);
   }
 
   /// calls zoom from Android / iOS --
   static Future<void> setZoom(num zoom) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setZoom(zoom.toDouble());
-    } else {
-      return _channel.invokeMethod('setZoom', <String, dynamic>{
-        'zoom': zoom,
-      });
-    }
+    return CameraInterface().setZoom(zoom.toDouble());
   }
 
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
   static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setSensor(sensor.name.toUpperCase());
-    } else {
-      return _channel.invokeMethod('setSensor', <String, dynamic>{
-        'sensor': sensor.toString().toUpperCase().split(".")[1],
-        'deviceId': deviceId,
-      });
-    }
+    return CameraInterface().setSensor(sensor.name.toUpperCase(), deviceId);
   }
 
   /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]
   static Future<void> setCaptureMode(CaptureMode captureMode) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setCaptureMode(captureMode.name.toUpperCase());
-    } else {
-      return _channel.invokeMethod('setCaptureMode', <String, dynamic>{
-        'captureMode': captureMode.toString().toUpperCase().split(".")[1],
-      });
-    }
+    return CameraInterface().setCaptureMode(captureMode.name.toUpperCase());
   }
 
   /// enable audio mode recording or not
   static Future<void> setAudioMode(bool enableAudio) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setRecordingAudioMode(enableAudio);
-    } else {
-      return _channel.invokeMethod('setRecordingAudioMode', <String, dynamic>{
-        'enableAudio': enableAudio,
-      });
-    }
+    return CameraInterface().setRecordingAudioMode(enableAudio);
   }
 
   /// set exif preferences when a photo is saved
@@ -422,13 +293,7 @@ class CamerawesomePlugin {
   /// - ExifPreferences.saveGPSLocation is false
   /// - Permission ACCESS_FINE_LOCATION has not been granted
   static Future<void> setExifPreferences(ExifPreferences savedExifData) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setExifPreferences(savedExifData);
-    } else {
-      return _channel.invokeMethod('setExifPreferences', <String, dynamic>{
-        'saveGPSLocation': savedExifData.saveGPSLocation,
-      });
-    }
+    return CameraInterface().setExifPreferences(savedExifData);
   }
 
   /// set brightness manually with range [0,1]
@@ -436,14 +301,8 @@ class CamerawesomePlugin {
     if (brightness < 0 || brightness > 1) {
       throw "Value must be between [0,1]";
     }
-    if (Platform.isAndroid) {
-      return CameraInterface().setCorrection(brightness);
-    } else {
-      // TODO Implement it on iOS
-      return _channel.invokeMethod('setCorrection', <String, dynamic>{
-        'brightness': brightness,
-      });
-    }
+    // TODO: implement it on iOS
+    return CameraInterface().setCorrection(brightness);
   }
 
   // listen for luminosity level
@@ -464,22 +323,12 @@ class CamerawesomePlugin {
 
   /// returns the max zoom available on device
   static Future<num?> getMaxZoom() {
-    if (Platform.isAndroid) {
-      return CameraInterface().getMaxZoom();
-    } else {
-      return _channel.invokeMethod("getMaxZoom");
-    }
+    return CameraInterface().getMaxZoom();
   }
 
   /// Change aspect ratio when a photo is taken
   static Future<void> setAspectRatio(String ratio) {
-    if (Platform.isAndroid) {
-      return CameraInterface().setAspectRatio(ratio.toUpperCase());
-    } else {
-      return _channel.invokeMethod('setAspectRatio', <String, dynamic>{
-        'ratio': ratio.toUpperCase(),
-      });
-    }
+    return CameraInterface().setAspectRatio(ratio.toUpperCase());
   }
 
   // TODO: implement it on Android
@@ -493,56 +342,57 @@ class CamerawesomePlugin {
     if (Platform.isAndroid) {
       return Future.value(SensorDeviceData());
     } else {
-      final sensorTypes =
-          await _channel.invokeMapMethod<String, dynamic>('getSensors');
+      // Can't use getter with pigeon, so we have to map the data manually...
+      final frontSensors = await CameraInterface().getFrontSensors();
+      final backSensors = await CameraInterface().getBackSensors();
 
-      final List<SensorTypeDevice> backSensors = List<SensorTypeDevice>.from(
-        sensorTypes!['back']
-            .map(
-              (data) => SensorTypeDevice(
-                flashAvailable: data['flashAvailable'],
-                sensorType: SensorType.values.byName(data['type']),
-                name: data['name'],
-                iso: data['iso'],
-                uid: data['uid'],
+      final frontSensorsData = frontSensors
+          .map(
+            (data) => SensorTypeDevice(
+              flashAvailable: data!.flashAvailable,
+              iso: data.iso,
+              name: data.name,
+              uid: data.uid,
+              sensorType: SensorType.values.firstWhere(
+                (element) => element.name == data.sensorType.name,
               ),
-            )
-            .toList(),
-      );
-      final List<SensorTypeDevice> frontSensors = List<SensorTypeDevice>.from(
-        sensorTypes['front']
-            .map(
-              (data) => SensorTypeDevice(
-                flashAvailable: data['flashAvailable'],
-                sensorType: SensorType.values.byName(data['type']),
-                name: data['name'],
-                iso: data['iso'],
-                uid: data['uid'],
+            ),
+          )
+          .toList();
+      final backSensorsData = backSensors
+          .map(
+            (data) => SensorTypeDevice(
+              flashAvailable: data!.flashAvailable,
+              iso: data.iso,
+              name: data.name,
+              uid: data.uid,
+              sensorType: SensorType.values.firstWhere(
+                (element) => element.name == data.sensorType.name,
               ),
-            )
-            .toList(),
-      );
+            ),
+          )
+          .toList();
 
       return SensorDeviceData(
-        ultraWideAngle: backSensors
+        ultraWideAngle: backSensorsData
             .where(
               (element) => element.sensorType == SensorType.ultraWideAngle,
             )
             .toList()
             .firstOrNull,
-        telephoto: backSensors
+        telephoto: backSensorsData
             .where(
               (element) => element.sensorType == SensorType.telephoto,
             )
             .toList()
             .firstOrNull,
-        wideAngle: backSensors
+        wideAngle: backSensorsData
             .where(
               (element) => element.sensorType == SensorType.wideAngle,
             )
             .toList()
             .firstOrNull,
-        trueDepth: frontSensors
+        trueDepth: frontSensorsData
             .where(
               (element) => element.sensorType == SensorType.trueDepth,
             )

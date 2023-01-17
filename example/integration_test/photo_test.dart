@@ -113,6 +113,8 @@ void main() {
             await $.tester.tap(switchButton, warnIfMissed: false);
           }
           await $(AwesomeCaptureButton).tap();
+          await Future.delayed(const Duration(milliseconds: 2000));
+
           expect(File(filePath).existsSync(), true);
           // File size should be quite high (at least more than 100)
           expect(File(filePath).lengthSync(), greaterThan(100));

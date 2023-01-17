@@ -45,25 +45,23 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CameraSensor cameraSensor;
 @property(readonly, nonatomic) NSString *captureDeviceId;
 @property(readonly, nonatomic) CaptureModes captureMode;
-@property(readonly, nonatomic) FlutterResult result;
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) bool saveGPSLocation;
-@property(readonly, nonatomic) NSObject<FlutterBinaryMessenger> *messenger;
 @property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
 @property(readonly, nonatomic) LocationController *locationController;
 @property(readonly, nonatomic) VideoController *videoController;
+@property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                          captureMode:(CaptureModes)captureMode
-                              result:(nonnull FlutterResult)result
-                       dispatchQueue:(dispatch_queue_t)dispatchQueue
-                           messenger:(NSObject<FlutterBinaryMessenger> *)messenger;
+                          completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
+                       dispatchQueue:(dispatch_queue_t)dispatchQueue;
 - (void)setPreviewSize:(CGSize)previewSize;
 - (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
@@ -79,13 +77,12 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)refresh;
 - (void)start;
 - (void)stop;
-- (void)takePictureAtPath:(NSString *)path;
-- (void)recordVideoAtPath:(NSString *)path withOptions:(NSDictionary *)options;
-- (void)stopRecordingVideo;
+- (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
+- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview;
 - (void)dispose;
 - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
-- (void)setResult:(FlutterResult _Nonnull)result;
 - (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
 - (void)setZoom:(float)value;
 - (CGFloat)getMaxZoom;
