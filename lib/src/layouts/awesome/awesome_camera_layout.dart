@@ -86,7 +86,6 @@ class AwesomeBottomActions extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Flexible(
-          flex: 0,
           child: state is VideoRecordingCameraState
               ? AwesomePauseResumeButton(
                   state: state as VideoRecordingCameraState)
@@ -98,7 +97,6 @@ class AwesomeBottomActions extends StatelessWidget {
         ),
         // Spacer(),
         Flexible(
-          flex: 0,
           child: state is VideoRecordingCameraState
               ? const SizedBox(width: 48)
               : StreamBuilder<MediaCapture?>(
