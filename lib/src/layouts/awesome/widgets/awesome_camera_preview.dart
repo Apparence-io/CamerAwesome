@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -147,6 +148,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 height: maxSize.shortestSide,
               );
             }
+
             final preview = SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -171,7 +173,15 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             : null,
                         onPreviewScale: widget.onPreviewScale,
                         initialZoom: widget.state.sensorConfig.zoom,
-                        child: Texture(textureId: _textureId!),
+                        // if there is no filter, just display texture
+                        // to improve a little bit performances
+                        child: widget.state.filter != AwesomeFilter.none
+                            ? ColorFiltered(
+                                colorFilter:
+                                    widget.state.filter.preview,
+                                child: previewTexture,
+                              )
+                            : previewTexture,
                       ),
                     ),
                   ),
@@ -252,6 +262,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       }),
     );
   }
+
+  Widget get previewTexture => Texture(textureId: _textureId!);
 }
 
 class CenterCropClipper extends CustomClipper<Path> {

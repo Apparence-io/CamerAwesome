@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
+import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,6 +60,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// choose if you want to persist user location in image metadata or not
   final ExifPreferences? exifPreferences;
 
+  /// TODO: DOC
+  final AwesomeFilter? filter;
+
   /// check this for more details
   /// https://api.flutter.dev/flutter/painting/BoxFit.html
   // one of fitWidth, fitHeight, contain, cover
@@ -103,6 +107,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.onMediaTap,
     required this.builder,
     required this.previewFit,
+    required this.filter,
     this.onImageForAnalysis,
     this.imageAnalysisConfig,
     this.onPreviewTapBuilder,
@@ -140,6 +145,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget? progressIndicator,
     required SaveConfig saveConfig,
     Function(MediaCapture)? onMediaTap,
+    AwesomeFilter? filter,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
@@ -159,6 +165,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
             state: cameraModeState,
             onMediaTap: onMediaTap,
           ),
+          filter: filter,
           saveConfig: saveConfig,
           onMediaTap: onMediaTap,
           onImageForAnalysis: onImageForAnalysis,
@@ -183,6 +190,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
     required SaveConfig saveConfig,
+    AwesomeFilter? filter,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
@@ -199,6 +207,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           builder: builder,
           saveConfig: saveConfig,
           onMediaTap: null,
+          filter: filter,
           onImageForAnalysis: onImageForAnalysis,
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
@@ -263,6 +272,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         currentZoom: widget.zoom,
         aspectRatio: widget.aspectRatio,
       ),
+      filter: widget.filter ?? AwesomeFilter.none,
       initialCaptureMode: widget.saveConfig.initialCaptureMode,
       saveConfig: widget.saveConfig,
       onImageForAnalysis: widget.onImageForAnalysis,

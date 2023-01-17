@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -47,6 +48,9 @@ class CameraContext {
   /// Preferences concerning Exif (photos metadata)
   final ExifPreferences exifPreferences;
 
+  // TODO: Doc
+  final AwesomeFilter filter;
+
   CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
@@ -54,6 +58,7 @@ class CameraContext {
     required this.saveConfig,
     this.onPermissionsResult,
     required this.exifPreferences,
+    required this.filter,
   }) : sensorConfig$ = sensorConfigController.stream {
     var preparingState = PreparingCameraState(
       this,
@@ -73,6 +78,7 @@ class CameraContext {
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,
+    required AwesomeFilter filter,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
@@ -85,6 +91,7 @@ class CameraContext {
                 )
               : null,
           exifPreferences: exifPreferences,
+          filter: filter,
         );
 
   changeState(CameraState newState) async {

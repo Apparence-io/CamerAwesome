@@ -33,6 +33,7 @@ class CameraPage extends StatelessWidget {
           videoPathBuilder: () => _path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
+        filter: AwesomeFilter.addictiveRed,
         flashMode: FlashMode.auto,
         aspectRatio: CameraAspectRatios.ratio_16_9,
         onMediaTap: (mediaCapture) {

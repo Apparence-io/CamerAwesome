@@ -1,3 +1,4 @@
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
@@ -22,7 +23,19 @@ class AwesomeCameraLayout extends StatelessWidget {
           const SizedBox(height: 16),
           AwesomeTopActions(state: state),
           const Spacer(),
-          AwesomeSensorTypeSelector(state: state),
+          SizedBox(
+            width: double.infinity,
+            child: Stack(
+              children: [
+                Center(child: AwesomeSensorTypeSelector(state: state)),
+                Positioned(
+                  bottom: 0,
+                  right: 20,
+                  child: AwesomeFilterSelector(state: state),
+                )
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           AwesomeBackground(
             child: SafeArea(

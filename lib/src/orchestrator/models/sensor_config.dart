@@ -3,15 +3,20 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SensorConfig {
   late BehaviorSubject<FlashMode> _flashModeController;
 
+  late BehaviorSubject<AwesomeFilter> _filterController;
+
   late BehaviorSubject<SensorType> _sensorTypeController;
 
   late Stream<FlashMode> flashMode$;
+
+  late Stream<AwesomeFilter> filter$;
 
   late Stream<SensorType> sensorType$;
 
@@ -30,7 +35,7 @@ class SensorConfig {
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
 
-  /// set brightness correction manually range [0,1] (optionnal)
+  /// set brightness correction manually range [0,1] (optional)
   late Stream<double>? brightness$;
 
   late BehaviorSubject<double> _zoomController;
@@ -86,6 +91,11 @@ class SensorConfig {
   Future<void> setFlashMode(FlashMode flashMode) async {
     await CamerawesomePlugin.setFlashMode(flashMode);
     _flashModeController.sink.add(flashMode);
+  }
+
+  /// Set manually the CameraFlashes between
+  Future<void> setFilter(AwesomeFilter filter) async {
+    _filterController.sink.add(filter);
   }
 
   /// Returns the current flash mode without stream
@@ -160,5 +170,6 @@ class SensorConfig {
     _zoomController.close();
     _flashModeController.close();
     _aspectRatioController.close();
+    _filterController.close();
   }
 }

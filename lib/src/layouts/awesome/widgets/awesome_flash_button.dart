@@ -1,4 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/layouts/awesome/widgets/utils/awesome_circle_icon_button.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeFlashButton extends StatelessWidget {
@@ -70,20 +71,9 @@ class _FlashButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AwesomeOrientedWidget(
-      child: Material(
-        color: Colors.transparent,
-        child: AwesomeBouncingWidget(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Icon(
-              icon,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
+    return AwesomeCircleButton(
+      icon: icon,
+      onTap: onTap,
     );
   }
 }

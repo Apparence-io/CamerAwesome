@@ -1,5 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
 
@@ -78,6 +79,8 @@ abstract class CameraState {
   SensorConfig get sensorConfig => cameraContext.sensorConfig;
 
   Stream<SensorConfig> get sensorConfig$ => cameraContext.sensorConfig$;
+
+  AwesomeFilter get filter => cameraContext.filter;
 
   /// Switch to a state between
   /// - [CaptureMode.photo]
