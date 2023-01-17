@@ -105,12 +105,13 @@ data class PigeonSensorTypeDevice(
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromMap(map: Map<String, Any?>): PigeonSensorTypeDevice {
-      val sensorType = PigeonSensorType.ofRaw(map["sensorType"] as Int)!!      val name = map["name"] as String
-      val iso = map["iso"] as Double
-      val flashAvailable = map["flashAvailable"] as Boolean
-      val uid = map["uid"] as String
+        val sensorType = PigeonSensorType.ofRaw(map["sensorType"] as Int)!!
+        val name = map["name"] as String
+        val iso = map["iso"] as Double
+        val flashAvailable = map["flashAvailable"] as Boolean
+        val uid = map["uid"] as String
 
-      return PigeonSensorTypeDevice(sensorType, name, iso, flashAvailable, uid)
+        return PigeonSensorTypeDevice(sensorType, name, iso, flashAvailable, uid)
     }
   }
   fun toMap(): Map<String, Any?> {

@@ -146,13 +146,8 @@ class CamerawesomePlugin {
     return _imagesStream;
   }
 
-  // TODO: implement on Android
   static Future receivedImageFromStream() {
-    if (Platform.isAndroid) {
-      return Future.value();
-    } else {
-      return CameraInterface().receivedImageFromStream();
-    }
+    return CameraInterface().receivedImageFromStream();
   }
 
   static Future<bool?> init(

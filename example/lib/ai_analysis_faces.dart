@@ -48,7 +48,6 @@ class _CameraPageState extends State<CameraPage> {
   final options = FaceDetectorOptions(
     enableContours: true,
     enableClassification: true,
-    enableLandmarks: true,
   );
   late final faceDetector = FaceDetector(options: options);
 
@@ -81,7 +80,7 @@ class _CameraPageState extends State<CameraPage> {
         imageAnalysisConfig: AnalysisConfig(
           outputFormat: InputAnalysisImageFormat.nv21,
           width: 250,
-          maxFramesPerSecond: 12,
+          maxFramesPerSecond: 30,
         ),
         previewDecoratorBuilder: (state, previewSize, previewRect) {
           return _MyPreviewDecoratorWidget(

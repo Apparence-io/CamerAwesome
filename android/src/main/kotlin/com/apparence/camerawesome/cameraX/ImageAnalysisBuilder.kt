@@ -2,16 +2,15 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
+import android.util.Log
 import android.util.Size
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.internal.utils.ImageUtil
+import com.apparence.camerawesome.utils.ResettableCountDownLatch
 import io.flutter.plugin.common.EventChannel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.concurrent.Executor
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -28,7 +27,11 @@ class ImageAnalysisBuilder private constructor(
     var previewStreamSink: EventChannel.EventSink? = null,
     private val maxFramesPerSecond: Double?,
 ) {
-    var lastImageEmittedTimeStamp: Long? = null
+    private var lastImageEmittedTimeStamp: Long? = null
+    private var countDownLatch = ResettableCountDownLatch(1)
+    fun lastFrameAnalysisFinished() {
+        countDownLatch.countDown()
+    }
 
     companion object {
         fun configure(
@@ -47,26 +50,28 @@ class ImageAnalysisBuilder private constructor(
                 else -> 16f / 9
             }
             val height = widthOrDefault * (1 / analysisAspectRatio)
+            val maxFps = if (maxFramesPerSecond == 0.0) null else maxFramesPerSecond
             return ImageAnalysisBuilder(
                 format,
                 widthOrDefault,
                 height.toInt(),
                 executor,
-                maxFramesPerSecond = maxFramesPerSecond,
+                maxFramesPerSecond = maxFps,
             )
         }
     }
 
-    @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
+    @SuppressLint("RestrictedApi")
     fun build(): ImageAnalysis {
+        countDownLatch.reset()
         val imageAnalysis = ImageAnalysis.Builder().setTargetResolution(Size(width, height))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888).build()
-        imageAnalysis.setAnalyzer(executor) { imageProxy ->
+        Log.d("AnalysisAZER", "maxFps: $maxFramesPerSecond")
+        imageAnalysis.setAnalyzer(Dispatchers.IO.asExecutor()) { imageProxy ->
             if (previewStreamSink == null) {
                 return@setAnalyzer
             }
-
             when (format) {
                 OutputImageFormat.JPEG -> {
                     val jpegImage = ImageUtil.yuvImageToJpegByteArray(
@@ -75,14 +80,14 @@ class ImageAnalysisBuilder private constructor(
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage
                     imageMap["cropRect"] = cropRect(imageProxy)
-                    previewStreamSink!!.success(imageMap)
+                    executor.execute { previewStreamSink!!.success(imageMap) }
                 }
                 OutputImageFormat.YUV_420_888 -> {
                     val planes = imagePlanesAdapter(imageProxy)
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["planes"] = planes
                     imageMap["cropRect"] = cropRect(imageProxy)
-                    previewStreamSink!!.success(imageMap)
+                    executor.execute { previewStreamSink!!.success(imageMap) }
                 }
                 OutputImageFormat.NV21 -> {
                     val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
@@ -91,26 +96,21 @@ class ImageAnalysisBuilder private constructor(
                     imageMap["nv21Image"] = nv21Image
                     imageMap["planes"] = planes
                     imageMap["cropRect"] = cropRect(imageProxy)
-                    previewStreamSink!!.success(imageMap)
+                    executor.execute { previewStreamSink!!.success(imageMap) }
                 }
             }
-            if (lastImageEmittedTimeStamp == null) {
-                if (maxFramesPerSecond != null) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        delay((1000 / maxFramesPerSecond).roundToLong())
-                        imageProxy.close()
+            CoroutineScope(Dispatchers.IO).launch {
+                maxFramesPerSecond?.let {
+                    if (lastImageEmittedTimeStamp == null) {
+                        delay((1000 / it).roundToLong())
+                    } else {
+                        delay(
+                            (1000 / it).roundToInt() - (System.currentTimeMillis() - lastImageEmittedTimeStamp!!)
+                        )
                     }
-                } else {
-                    imageProxy.close()
                 }
-            } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    delay(
-                        (1000 / (maxFramesPerSecond
-                            ?: 1.0)).roundToInt() - (System.currentTimeMillis() - lastImageEmittedTimeStamp!!)
-                    )
-                    imageProxy.close()
-                }
+                countDownLatch.await()
+                imageProxy.close()
             }
             lastImageEmittedTimeStamp = System.currentTimeMillis()
         }

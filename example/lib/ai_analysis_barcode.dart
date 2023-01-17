@@ -135,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _buffer.insert(0, value);
         _barcodesController.add(_buffer);
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          0,
           duration: const Duration(milliseconds: 400),
           curve: Curves.fastLinearToSlowEaseIn,
         );
