@@ -83,7 +83,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview;
 - (void)dispose;
 - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
-- (void)setResult:(FlutterResult _Nonnull)result;
 - (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
 - (void)setZoom:(float)value;
 - (CGFloat)getMaxZoom;
