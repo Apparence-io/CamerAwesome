@@ -16,7 +16,7 @@ class AwesomeCircleButton extends StatelessWidget {
     required this.onTap,
     this.iconSize = 18,
     this.oriented = true,
-    this.color = Colors.black12,
+    this.color = Colors.black26,
   });
 
   @override
