@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
+import 'package:camerawesome/src/orchestrator/models/filters/awesome_filter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -175,13 +175,17 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                         initialZoom: widget.state.sensorConfig.zoom,
                         // if there is no filter, just display texture
                         // to improve a little bit performances
-                        child: widget.state.filter != AwesomeFilter.none
-                            ? ColorFiltered(
-                                colorFilter:
-                                    widget.state.filter.preview,
-                                child: previewTexture,
-                              )
-                            : previewTexture,
+                        child: StreamBuilder<AwesomeFilter>(
+                            stream: widget.state.filter$,
+                            builder: (context, snapshot) {
+                              return snapshot.hasData &&
+                                      snapshot.data != AwesomeFilter.none
+                                  ? ColorFiltered(
+                                      colorFilter: snapshot.data!.preview,
+                                      child: previewTexture,
+                                    )
+                                  : previewTexture;
+                            }),
                       ),
                     ),
                   ),
