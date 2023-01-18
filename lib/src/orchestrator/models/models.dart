@@ -7,4 +7,4 @@ export 'sensor_data.dart';
 export 'sensors.dart';
 export 'save_config.dart';
 export 'sensor_config.dart';
-export 'awesome_filter.dart';
+export 'filters/awesome_filter.dart';
