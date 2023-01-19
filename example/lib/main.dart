@@ -15,7 +15,7 @@ class CameraAwesomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'camerAwesome App',
+      title: 'camerAwesome',
       home: CameraPage(),
     );
   }
@@ -33,7 +33,7 @@ class CameraPage extends StatelessWidget {
           videoPathBuilder: () => _path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
-        filter: AwesomeFilter.addictiveRed,
+        filter: AwesomeFilter.AddictiveRed,
         flashMode: FlashMode.auto,
         aspectRatio: CameraAspectRatios.ratio_16_9,
         onMediaTap: (mediaCapture) {

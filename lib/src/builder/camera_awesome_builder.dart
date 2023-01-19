@@ -271,7 +271,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         currentZoom: widget.zoom,
         aspectRatio: widget.aspectRatio,
       ),
-      filter: widget.filter ?? AwesomeFilter.none,
+      filter: widget.filter ?? AwesomeFilter.None,
       initialCaptureMode: widget.saveConfig.initialCaptureMode,
       saveConfig: widget.saveConfig,
       onImageForAnalysis: widget.onImageForAnalysis,
