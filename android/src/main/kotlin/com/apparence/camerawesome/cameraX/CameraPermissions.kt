@@ -21,8 +21,7 @@ import kotlin.coroutines.suspendCoroutine
 class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultListener {
     private var permissionGranted = false
     private var events: EventSink? = null
-    private var callbacks: MutableList<PermissionRequest> =
-        mutableListOf()
+    private var callbacks: MutableList<PermissionRequest> = mutableListOf()
 
     // ---------------------------------------------
     // EventChannel.StreamHandler
@@ -42,9 +41,7 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
     // PluginRegistry.RequestPermissionsResultListener
     // ---------------------------------------------
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ): Boolean {
         val grantedPermissions = mutableListOf<String>()
         val deniedPermissions = mutableListOf<String>()
@@ -76,8 +73,7 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
             events!!.success(permissionGranted)
         } else {
             Log.d(
-                TAG,
-                "_onRequestPermissionsResult: received permissions but the EventSink is closed"
+                TAG, "_onRequestPermissionsResult: received permissions but the EventSink is closed"
             )
         }
         return permissionGranted
@@ -87,7 +83,7 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
         activity: Activity,
         saveGps: Boolean,
         recordAudio: Boolean,
-        callback: (denied: List<String>) -> Unit
+        callback: (granted: List<String>) -> Unit
     ) {
         val declared = declaredCameraPermissions(activity)
         // Remove declared permissions not required now
@@ -111,23 +107,25 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
 
         // Check if some of the permissions have already been given
         val permissionsToAsk: MutableList<String> = ArrayList()
+        val permissionsGranted: MutableList<String> = ArrayList()
         for (permission in declared) {
             if (ContextCompat.checkSelfPermission(
-                    activity,
-                    permission
+                    activity, permission
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 permissionsToAsk.add(permission)
+            } else {
+                permissionsGranted.add(permission)
             }
         }
         permissionGranted = permissionsToAsk.size == 0
         if (permissionsToAsk.isEmpty()) {
-            callback(listOf())
+            callback(permissionsGranted)
         } else {
             // Request the not granted permissions
             CoroutineScope(Dispatchers.IO).launch {
                 requestPermissions(activity, permissionsToAsk, PERMISSIONS_MULTIPLE_REQUEST) {
-                    callback(it)
+                    callback(permissionsGranted.apply { addAll(it) })
                 }
             }
         }
@@ -139,23 +137,14 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
      */
     private fun declaredCameraPermissions(context: Context): MutableList<String> {
         val packageInfo = context.packageManager.getPackageInfo(
-            context.packageName,
-            PackageManager.GET_PERMISSIONS
+            context.packageName, PackageManager.GET_PERMISSIONS
         )
         val permissions = packageInfo.requestedPermissions
         val declaredPermissions = mutableListOf<String>()
-        if (permissions.isNullOrEmpty())
-            return declaredPermissions
+        if (permissions.isNullOrEmpty()) return declaredPermissions
 
         for (perm in permissions) {
-            if (arrayOf(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                ).contains(perm)
-            ) {
+            if (allPermissions.contains(perm)) {
                 declaredPermissions.add(perm)
             }
         }
@@ -167,8 +156,7 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
         var granted = true
         for (p in permissions) {
             if (ContextCompat.checkSelfPermission(
-                    activity,
-                    p
+                    activity, p
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 granted = false
@@ -186,19 +174,15 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
     ) {
         val result = suspendCoroutine { continuation ->
             ActivityCompat.requestPermissions(
-                activity,
-                permissions.toTypedArray(),
-                requestCode
+                activity, permissions.toTypedArray(), requestCode
             )
             callbacks.add(
-                PermissionRequest(
-                    UUID.randomUUID().toString(),
+                PermissionRequest(UUID.randomUUID().toString(),
                     permissions,
-                    callback = { _, denied ->
+                    callback = { granted, _ ->
                         // deep equals, ignoring order
-                        continuation.resume(denied)
-                    }
-                )
+                        continuation.resume(granted)
+                    })
             )
         }
         callback(result)
@@ -209,6 +193,14 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
         const val PERMISSIONS_MULTIPLE_REQUEST = 550
         const val PERMISSION_GEOLOC = 560
         const val PERMISSION_RECORD_AUDIO = 570
+
+        val allPermissions = listOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        )
     }
 }
 
@@ -216,5 +208,4 @@ data class PermissionRequest(
     var id: String,
     val permissionsAsked: List<String>,
     val callback: (permissionsGranted: List<String>, permissionsDenied: List<String>) -> Unit
-) {
-}
+) {}

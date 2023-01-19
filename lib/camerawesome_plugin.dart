@@ -10,7 +10,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
-
 // built in widgets
 export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
@@ -398,22 +397,28 @@ class CamerawesomePlugin {
   // ---------------------------------------------------
   // UTILITY METHODS
   // ---------------------------------------------------
-  static Future<bool?> checkAndRequestPermissions(bool saveGpsLocation) async {
+  static Future<List<CamerAwesomePermission>?> checkAndRequestPermissions(
+      bool saveGpsLocation) async {
     try {
       if (Platform.isAndroid) {
         return CameraInterface()
             .requestPermissions(saveGpsLocation)
-            .then((value) {
-          return value.isEmpty;
+            .then((givenPermissions) {
+          return givenPermissions
+              .map((e) => CamerAwesomePermission.values
+                  .firstWhere((element) => element.name == e))
+              .toList();
         });
       } else if (Platform.isIOS) {
-        return CamerawesomePlugin.checkiOSPermissions();
+        // TODO iOS Return only permissions that were given
+        return CamerawesomePlugin.checkiOSPermissions()
+            .then((givenPermissions) => CamerAwesomePermission.values);
       }
     } catch (e) {
       printLog("failed to check permissions here...");
       // ignore: avoid_print
       print(e);
     }
-    return Future.value(false);
+    return Future.value([]);
   }
 }

@@ -106,15 +106,23 @@ class PigeonSensorDeviceData {
     this.trueDepth,
   });
 
-  // int get availableBackSensors => [
-  //       wideAngle,
-  //       ultraWideAngle,
-  //       telephoto,
-  //     ].where((element) => element != null).length;
+// int get availableBackSensors => [
+//       wideAngle,
+//       ultraWideAngle,
+//       telephoto,
+//     ].where((element) => element != null).length;
 
-  // int get availableFrontSensors => [
-  //       trueDepth,
-  //     ].where((element) => element != null).length;
+// int get availableFrontSensors => [
+//       trueDepth,
+//     ].where((element) => element != null).length;
+}
+
+enum CamerAwesomePermission {
+  storage,
+  camera,
+  location,
+  // ignore: constant_identifier_names
+  record_audio,
 }
 
 @HostApi()
@@ -132,6 +140,8 @@ abstract class CameraInterface {
 
   List<String> checkPermissions();
 
+  /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
+  /// refused but the app should still be able to run.
   @async
   List<String> requestPermissions(bool saveGpsLocation);
 

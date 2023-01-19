@@ -159,11 +159,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         activity!!,
                         permissions,
                         CameraPermissions.PERMISSION_GEOLOC,
-                    ) { deniedPermissions ->
-                        if (deniedPermissions.isEmpty()) {
+                    ) { grantedPermissions ->
+                        if (grantedPermissions.isNotEmpty()) {
                             this@CameraAwesomeX.exifPreferences = exifPreferences
                         }
-                        callback(deniedPermissions.isEmpty())
+                        callback(grantedPermissions.isNotEmpty())
                     }
                 }
             }
@@ -173,14 +173,25 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    override fun requestPermissions(saveGpsLocation: Boolean, callback: (List<String>) -> Unit) {
+    override fun requestPermissions(
+        saveGpsLocation: Boolean,
+        callback: (List<String>) -> Unit
+    ) {
         // On a generic call, don't ask for specific permissions (location, record audio)
         cameraPermissions.requestBasePermissions(
             activity!!,
             saveGps = saveGpsLocation,
             recordAudio = false,
-        ) { missingPermissions ->
-            callback(missingPermissions)
+        ) { grantedPermissions ->
+            callback(grantedPermissions.mapNotNull {
+                when (it) {
+                    Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION -> CamerAwesomePermission.LOCATION.name.lowercase()
+                    Manifest.permission.CAMERA -> CamerAwesomePermission.CAMERA.name.lowercase()
+                    Manifest.permission.RECORD_AUDIO -> CamerAwesomePermission.RECORD_AUDIO.name.lowercase()
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE -> CamerAwesomePermission.STORAGE.name.lowercase()
+                    else -> null
+                }
+            })
         }
     }
 
@@ -290,7 +301,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         listOf(Manifest.permission.RECORD_AUDIO),
                         CameraPermissions.PERMISSION_RECORD_AUDIO,
                     ) {
-                        ignoreAudio = it.isNotEmpty()
+                        ignoreAudio = it.isEmpty()
                     }
                 } else {
                     ignoreAudio = false
@@ -305,6 +316,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     is VideoRecordEvent.Start -> {
                         Log.d(CamerawesomePlugin.TAG, "Capture Started")
                     }
+
                     is VideoRecordEvent.Finalize -> {
                         if (!event.hasError()) {
                             Log.d(
@@ -488,14 +500,14 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 activity!!,
                 listOf(Manifest.permission.RECORD_AUDIO),
                 CameraPermissions.PERMISSION_RECORD_AUDIO,
-            ) { denied ->
-                if (denied.isEmpty()) {
+            ) { granted ->
+                if (granted.isNotEmpty()) {
                     cameraState.apply {
                         enableAudioRecording = enableAudio
                         // No need to update lifecycle, it will be applied on next recording
                     }
                 }
-                Dispatchers.Main.run { callback(denied.isEmpty()) }
+                Dispatchers.Main.run { callback(granted.isNotEmpty()) }
             }
         }
     }
@@ -523,6 +535,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 rota90, rota270 -> {
                     PreviewSize(res.height.toDouble(), res.width.toDouble())
                 }
+
                 else -> {
                     PreviewSize(res.width.toDouble(), res.height.toDouble())
                 }

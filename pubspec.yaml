@@ -10,14 +10,14 @@ environment:
 
 dependencies:
   rxdart: ^0.27.7
-  collection: ^1.16.0
+  collection: ^1.17.0
   flutter:
     sdk: flutter
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.1
-  pigeon: ^4.2.0
+  pigeon: ^6.0.3
 
 
 # For information on the generic Dart part of this file, see the

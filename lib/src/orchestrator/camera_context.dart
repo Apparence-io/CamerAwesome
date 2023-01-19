@@ -45,7 +45,7 @@ class CameraContext {
   final AnalysisController? analysisController;
 
   /// Preferences concerning Exif (photos metadata)
-  final ExifPreferences exifPreferences;
+  ExifPreferences exifPreferences;
 
   CameraContext._({
     required this.initialCaptureMode,
