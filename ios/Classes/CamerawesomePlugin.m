@@ -122,13 +122,15 @@ FlutterEventSink imageStreamEventSink;
   [self.camera pauseVideoRecording];
 }
 
-- (void)recordVideoPath:(NSString *)path options:(nullable VideoOptions *)options error:(FlutterError *_Nullable *_Nonnull)error {
+- (void)recordVideoPath:(nonnull NSString *)path options:(nullable VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (path == nil || path.length <= 0) {
     *error = [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil];
     return;
   }
   
   [_camera recordVideoAtPath:path withOptions:options error:error];
+  // TODO Eventually ask user if they want to enable audio for this recording (when CamerAwesome iniated with enableAudio = true, ask when starting to record)
+  completion(nil);
 }
 
 - (void)refreshWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -169,9 +171,10 @@ FlutterEventSink imageStreamEventSink;
 - (void)setCorrectionBrightness:(nonnull NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   // TODO:
 }
-
-- (void)setExifPreferencesExifPreferences:(nonnull ExifPreferences *)exifPreferences error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)setExifPreferencesExifPreferences:(ExifPreferences *)exifPreferences completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
   [self.camera setExifPreferencesGPSLocation: exifPreferences.saveGPSLocation];
+// TODO Return true if location accepted by user, false otherwise
+  completion(nil, nil);
 }
 
 - (void)setFlashModeMode:(nonnull NSString *)mode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -224,8 +227,10 @@ FlutterEventSink imageStreamEventSink;
   [self.camera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue])];
 }
 
-- (void)setRecordingAudioModeEnableAudio:(nonnull NSNumber *)enableAudio error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)setRecordingAudioModeEnableAudio:(NSNumber *)enableAudio completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
   [_camera setRecordingAudioMode:[enableAudio boolValue]];
+  // TODO return true if the user enables audio, false otherwise
+  completion(nil, nil);
 }
 
 - (void)setSensorSensor:(NSString *)sensor deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error {
@@ -335,5 +340,11 @@ FlutterEventSink imageStreamEventSink;
     [self->_camera takePictureAtPath:path completion:completion];
   });
 }
+
+
+- (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
+    <#code#>
+}
+
 
 @end
