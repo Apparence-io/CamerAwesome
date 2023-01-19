@@ -34,6 +34,9 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -55,7 +58,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private lateinit var cameraState: CameraXState
     private val cameraPermissions = CameraPermissions()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var exifPreferences: ExifPreferences
+    private var exifPreferences = ExifPreferences(false)
     private var cancellationTokenSource = CancellationTokenSource()
     private var lastRecordedVideo: BehaviorSubject<Boolean>? = null
     private var lastRecordedVideoSubscription: Disposable? = null
@@ -72,7 +75,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         exifPreferences: ExifPreferences,
         callback: (Boolean) -> Unit,
     ) {
-        this.exifPreferences = ExifPreferences(saveGPSLocation = exifPreferences.saveGPSLocation)
         val future = ProcessCameraProvider.getInstance(
             activity!!
         )
@@ -92,6 +94,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             this.updateAspectRatio(aspectRatio)
             this.flashMode = FlashMode.valueOf(flashMode)
         }
+        this.exifPreferences = exifPreferences
         orientationStreamListener =
             OrientationStreamListener(activity!!, listOf(sensorOrientationListener, cameraState))
 
@@ -109,6 +112,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
 
         callback(true)
+    }
+
+    override fun checkPermissions(): List<String> {
+        throw Exception("Not implemented on Android")
     }
 
     override fun setupImageAnalysisStream(
@@ -137,17 +144,44 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     }
 
-    override fun setExifPreferences(exifPreferences: ExifPreferences) {
-        this.exifPreferences = exifPreferences
+    override fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Boolean) -> Unit) {
+        if (exifPreferences.saveGPSLocation) {
+            val permissions = listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                if (cameraPermissions.hasPermission(activity!!, permissions)) {
+                    this@CameraAwesomeX.exifPreferences = exifPreferences
+                    callback(true)
+                } else {
+                    cameraPermissions.requestPermissions(
+                        activity!!,
+                        permissions,
+                        CameraPermissions.PERMISSION_GEOLOC,
+                    ) { deniedPermissions ->
+                        if (deniedPermissions.isEmpty()) {
+                            this@CameraAwesomeX.exifPreferences = exifPreferences
+                        }
+                        callback(deniedPermissions.isEmpty())
+                    }
+                }
+            }
+        } else {
+            this.exifPreferences = exifPreferences
+            callback(true)
+        }
     }
 
-    override fun checkPermissions(): List<String> {
-        return listOf(*cameraPermissions.checkPermissions(activity))
-    }
-
-    override fun requestPermissions(): List<String> {
-        cameraPermissions.checkAndRequestPermissions(activity)
-        return checkPermissions()
+    override fun requestPermissions(saveGpsLocation: Boolean, callback: (List<String>) -> Unit) {
+        // On a generic call, don't ask for specific permissions (location, record audio)
+        cameraPermissions.requestBasePermissions(
+            activity!!,
+            saveGps = saveGpsLocation,
+            recordAudio = false,
+        ) { missingPermissions ->
+            callback(missingPermissions)
+        }
     }
 
     private fun getOrientedSize(width: Int, height: Int): Size {
@@ -166,6 +200,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
      * [fusedLocationClient.getCurrentLocation] takes time, we might want to use
      * [fusedLocationClient.lastLocation] instead to go faster
      */
+    @SuppressLint("MissingPermission")
     private fun retrieveLocation(callback: (Location?) -> Unit) {
         if (exifPreferences.saveGPSLocation && ActivityCompat.checkSelfPermission(
                 activity!!, Manifest.permission.ACCESS_FINE_LOCATION
@@ -203,7 +238,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         imageFile: File, callback: (Boolean) -> Unit
     ) {
         val outputFileOptions =
-            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(ImageCapture.Metadata())
+            ImageCapture.OutputFileOptions.Builder(imageFile)
+                .setMetadata(ImageCapture.Metadata())
                 .build()
 
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
@@ -219,12 +255,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     )
                     if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
-                            outputFileOptions.metadata.location = it
-                            // We need to actually save the exif data to the file system, not just
-                            // the property to an object like above line
                             val exif: androidx.exifinterface.media.ExifInterface =
                                 androidx.exifinterface.media.ExifInterface(outputFileResults.savedUri!!.path!!)
+                            outputFileOptions.metadata.location = it
                             exif.setGpsInfo(it)
+                            // We need to actually save the exif data to the file system
                             exif.saveAttributes()
                             callback(true)
                         }
@@ -240,41 +275,66 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             })
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun recordVideo(path: String, options: VideoOptions?) {
-        lastRecordedVideoSubscription?.dispose()
-        lastRecordedVideo = BehaviorSubject.create()
-        val recordingListener = Consumer<VideoRecordEvent> { event ->
-            when (event) {
-                is VideoRecordEvent.Start -> {
-                    Log.d(CamerawesomePlugin.TAG, "Capture Started")
+    @SuppressLint("RestrictedApi", "MissingPermission")
+    override fun recordVideo(path: String, options: VideoOptions?, callback: () -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            var ignoreAudio = false
+            if (cameraState.enableAudioRecording) {
+                if (!cameraPermissions.hasPermission(
+                        activity!!,
+                        listOf(Manifest.permission.RECORD_AUDIO)
+                    )
+                ) {
+                    cameraPermissions.requestPermissions(
+                        activity!!,
+                        listOf(Manifest.permission.RECORD_AUDIO),
+                        CameraPermissions.PERMISSION_RECORD_AUDIO,
+                    ) {
+                        ignoreAudio = it.isNotEmpty()
+                    }
+                } else {
+                    ignoreAudio = false
                 }
-                is VideoRecordEvent.Finalize -> {
-                    if (!event.hasError()) {
-                        Log.d(
-                            CamerawesomePlugin.TAG,
-                            "Video capture succeeded: ${event.outputResults.outputUri}"
-                        )
-                        lastRecordedVideo!!.onNext(true)
-                    } else {
-                        // update app state when the capture failed.
-                        cameraState.apply {
-                            recording?.close()
-                            recording = null
+            }
+
+
+            lastRecordedVideoSubscription?.dispose()
+            lastRecordedVideo = BehaviorSubject.create()
+            val recordingListener = Consumer<VideoRecordEvent> { event ->
+                when (event) {
+                    is VideoRecordEvent.Start -> {
+                        Log.d(CamerawesomePlugin.TAG, "Capture Started")
+                    }
+                    is VideoRecordEvent.Finalize -> {
+                        if (!event.hasError()) {
+                            Log.d(
+                                CamerawesomePlugin.TAG,
+                                "Video capture succeeded: ${event.outputResults.outputUri}"
+                            )
+                            lastRecordedVideo!!.onNext(true)
+                        } else {
+                            // update app state when the capture failed.
+                            cameraState.apply {
+                                recording?.close()
+                                recording = null
+                            }
+                            Log.e(
+                                CamerawesomePlugin.TAG,
+                                "Video capture ends with error: ${event.error}"
+                            )
+                            lastRecordedVideo!!.onNext(false)
                         }
-                        Log.e(
-                            CamerawesomePlugin.TAG, "Video capture ends with error: ${event.error}"
-                        )
-                        lastRecordedVideo!!.onNext(false)
                     }
                 }
             }
+            cameraState.videoCapture!!.targetRotation =
+                orientationStreamListener!!.surfaceOrientation
+            cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(
+                activity!!, FileOutputOptions.Builder(File(path)).build()
+            ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
+                .start(cameraState.executor(activity!!), recordingListener)
+            callback()
         }
-        cameraState.videoCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
-        cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(
-            activity!!, FileOutputOptions.Builder(File(path)).build()
-        ).apply { if (cameraState.enableAudioRecording) withAudioEnabled() }
-            .start(cameraState.executor(activity!!), recordingListener)
     }
 
     override fun stopRecordingVideo(callback: (Boolean) -> Unit) {
@@ -422,10 +482,21 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     /// Changing the recording audio mode can't be changed once a recording has starded
-    override fun setRecordingAudioMode(enableAudio: Boolean) {
-        cameraState.apply {
-            enableAudioRecording = enableAudio
-            // No need to update lifecycle, it will be applied on next recording
+    override fun setRecordingAudioMode(enableAudio: Boolean, callback: (Boolean) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            cameraPermissions.requestPermissions(
+                activity!!,
+                listOf(Manifest.permission.RECORD_AUDIO),
+                CameraPermissions.PERMISSION_RECORD_AUDIO,
+            ) { denied ->
+                if (denied.isEmpty()) {
+                    cameraState.apply {
+                        enableAudioRecording = enableAudio
+                        // No need to update lifecycle, it will be applied on next recording
+                    }
+                }
+                Dispatchers.Main.run { callback(denied.isEmpty()) }
+            }
         }
     }
 

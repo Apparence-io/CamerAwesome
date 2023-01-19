@@ -6,9 +6,9 @@ import 'video_test.dart' as video_test;
 
 // TODO Run it on Firebase Test Lab https://patrol.leancode.co/ci
 void main() {
-  group('Bundled tests', () {
+  group("Bundled tests > ", () {
     ui_test.main();
-    photo_test.main();
     video_test.main();
+    photo_test.main();
   });
 }

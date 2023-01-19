@@ -132,7 +132,8 @@ abstract class CameraInterface {
 
   List<String> checkPermissions();
 
-  List<String> requestPermissions();
+  @async
+  List<String> requestPermissions(bool saveGpsLocation);
 
   int getPreviewTextureId();
 
@@ -140,6 +141,7 @@ abstract class CameraInterface {
   @async
   bool takePhoto(String path);
 
+  @async
   void recordVideo(String path, VideoOptions? options);
 
   void pauseVideoRecording();
@@ -175,7 +177,8 @@ abstract class CameraInterface {
 
   void setCaptureMode(String mode);
 
-  void setRecordingAudioMode(bool enableAudio);
+  @async
+  bool setRecordingAudioMode(bool enableAudio);
 
   List<PreviewSize> availableSizes();
 
@@ -195,5 +198,6 @@ abstract class CameraInterface {
     double? maxFramesPerSecond,
   );
 
-  void setExifPreferences(ExifPreferences exifPreferences);
+  @async
+  bool setExifPreferences(ExifPreferences exifPreferences);
 }

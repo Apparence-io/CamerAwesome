@@ -56,8 +56,8 @@ class PreparingCameraState extends CameraState {
         },
       );
     }
-    final hasPermissions =
-        await CamerawesomePlugin.checkAndRequestPermissions();
+    final hasPermissions = await CamerawesomePlugin.checkAndRequestPermissions(
+        cameraContext.exifPreferences.saveGPSLocation);
     if (onPermissionsResult != null) {
       onPermissionsResult!(hasPermissions!);
     }
@@ -101,9 +101,12 @@ class PreparingCameraState extends CameraState {
       sensorConfig,
       enableImageStream: enableImageStream,
     );
-    await CamerawesomePlugin.init(sensorConfig, enableImageStream,
-        captureMode: nextCaptureMode,
-        exifPreferences: cameraContext.exifPreferences);
+    await CamerawesomePlugin.init(
+      sensorConfig,
+      enableImageStream,
+      captureMode: nextCaptureMode,
+      exifPreferences: cameraContext.exifPreferences,
+    );
     _isReady = true;
     return true;
   }
