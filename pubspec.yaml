@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
   colorfilter_generator: ^0.0.8
   carousel_slider: ^4.2.1
+  image: ^3.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
