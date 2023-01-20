@@ -11,13 +11,13 @@ dependencies:
     sdk: flutter
   camerawesome:
     path: ../
-  path_provider: ^2.0.2
+  path_provider: ^2.0.11
   better_open_file: ^3.6.4
   google_mlkit_face_detection: ^0.5.0
   google_mlkit_barcode_scanning: ^0.5.0
   google_mlkit_text_recognition: ^0.5.0
   rxdart: ^0.27.7
-  video_player: ^2.4.10
+  video_player: ^2.5.0
 
 dev_dependencies:
   exif: ^3.1.2
