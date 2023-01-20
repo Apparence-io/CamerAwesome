@@ -44,6 +44,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 🎥 Record video                |    ✅    |  ✅  |
 | 🔈 Enable/disable audio        |    ✅    |  ✅  |
 | 🎞 Take photos                 |    ✅    |  ✅  |
+| 🌆 Photo live filters          |    ✅    |  ✅  |
 | 🌤 Exposure level              |    ✅    |  ✅  |
 | 📡 Broadcast live image stream |    ✅    |  ✅  |
 | 👁 Zoom                        |    ✅    |  ✅  |
@@ -62,7 +63,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ```yaml
 dependencies:
-  camerawesome: ^1.0.0-rc3
+  camerawesome: ^1.2.0
   ...
 ```
 
