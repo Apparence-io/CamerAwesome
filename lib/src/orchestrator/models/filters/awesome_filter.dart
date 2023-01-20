@@ -51,7 +51,7 @@ class AwesomeFilter {
         name: 'Aden',
         previewFilter: ColorFilter.matrix(
           ColorFilterGenerator(
-            name: "Aden",
+            name: 'Aden',
             filters: [
               ColorFilterAddons.addictiveColor(48, 30, 45),
               ColorFilterAddons.saturation(-0.2),
@@ -70,14 +70,26 @@ class AwesomeFilter {
   static AwesomeFilter get Ashby => AwesomeFilter(
         name: 'Ashby',
         previewFilter: ColorFilter.matrix(
-          PresetFilters.ashby.matrix,
+          ColorFilterGenerator(
+            name: 'Ashby',
+            filters: [
+              ColorFilterAddons.addictiveColor(45, 30, 15),
+              ColorFilterAddons.brightness(0.1),
+            ],
+          ).matrix,
         ),
         outputFilter: PhotoFilters.AshbyFilter(),
       );
   static AwesomeFilter get Brannan => AwesomeFilter(
         name: 'Brannan',
         previewFilter: ColorFilter.matrix(
-          PresetFilters.brannan.matrix,
+          ColorFilterGenerator(
+            name: 'Brannan',
+            filters: [
+              ColorFilterAddons.contrast(0.23),
+              ColorFilterAddons.addictiveColor(7, 7, 25),
+            ],
+          ).matrix,
         ),
         outputFilter: PhotoFilters.BrannanFilter(),
       );
