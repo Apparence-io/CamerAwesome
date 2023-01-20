@@ -86,11 +86,17 @@
 }
 
 /// Save exif preferences when taking picture
-- (void)setExifPreferencesGPSLocation:(bool)gpsLocation {
+- (void)setExifPreferencesGPSLocation:(bool)gpsLocation completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
   _saveGPSLocation = gpsLocation;
   
   if (_saveGPSLocation) {
-    [_locationController requestWhenInUseAuthorization];
+    [_locationController requestWhenInUseAuthorizationOnGranted:^{
+      completion(@(YES), nil);
+    } declined:^{
+      completion(@(NO), nil);
+    }];
+  } else {
+    completion(@(YES), nil);
   }
 }
 
@@ -426,9 +432,9 @@
 
 # pragma mark - Camera video
 /// Record video into the given path
-- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (_imageStreamController.streamImages) {
-    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
+    completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
     return;
   }
   
@@ -440,9 +446,11 @@
         [self->_audioOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       }
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
-    } options:options error:error];
+      
+      completion(nil);
+    } options:options completion:completion];
   } else {
-    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
+    completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }
 }
 
@@ -521,6 +529,9 @@
     } else {
       [_videoController setIsAudioSetup:NO];
     }
+  } else {
+    // TODO: microphone permissions seems to be OFF
+    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"microphone permission seems to be denied" details:error.description]);
   }
 }
 

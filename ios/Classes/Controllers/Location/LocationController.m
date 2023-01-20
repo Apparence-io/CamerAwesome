@@ -10,23 +10,43 @@
 @implementation LocationController
 
 - (instancetype)init {
-  self = [super init];
-  
-  if (!self) {
-    return nil;
+  if (self = [super init]) {
+    self.locationManager = [[CLLocationManager alloc] init];
+    self.locationManager.delegate = self;
+    
+    self.locationManager.distanceFilter = kCLDistanceFilterNone;
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
   }
-  
-  self.locationManager = [[CLLocationManager alloc] init];
-  
-  self.locationManager.distanceFilter = kCLDistanceFilterNone;
-  self.locationManager.desiredAccuracy = kCLLocationAccuracyBest;
   
   return self;
 }
 
-- (void)requestWhenInUseAuthorization {
-  if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)]) {
-    [self.locationManager requestWhenInUseAuthorization];
+- (void)requestWhenInUseAuthorizationOnGranted:(OnAuthorizationGranted)granted declined:(OnAuthorizationDeclined)declined {
+  _grantedBlock = granted;
+  _declinedBlock = declined;
+  
+  if (self.locationManager.authorizationStatus ==  kCLAuthorizationStatusNotDetermined) {
+    if ([self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)]) {
+      [self.locationManager requestWhenInUseAuthorization];
+    }
+  } else if (self.locationManager.authorizationStatus ==  kCLAuthorizationStatusAuthorizedAlways || self.locationManager.authorizationStatus == kCLAuthorizationStatusAuthorizedWhenInUse) {
+    _grantedBlock();
+  } else {
+    _declinedBlock();
+  }
+}
+
+- (void)locationManagerDidChangeAuthorization:(CLLocationManager *)manager {
+  if (manager.authorizationStatus ==  kCLAuthorizationStatusAuthorizedAlways || manager.authorizationStatus == kCLAuthorizationStatusAuthorizedWhenInUse) {
+    if (_grantedBlock != nil) {
+      _grantedBlock();
+    }
+    
+  } else {
+    if (_declinedBlock != nil) {
+      _declinedBlock();
+    }
+    
   }
 }
 

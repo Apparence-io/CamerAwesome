@@ -1,6 +1,7 @@
 #import "CamerawesomePlugin.h"
 #import "CameraPreview.h"
 #import "Pigeon/Pigeon.h"
+#import "Permissions.h"
 
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
@@ -124,13 +125,11 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)recordVideoPath:(nonnull NSString *)path options:(nullable VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (path == nil || path.length <= 0) {
-    *error = [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil];
+    completion([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
     return;
   }
   
-  [_camera recordVideoAtPath:path withOptions:options error:error];
-  // TODO Eventually ask user if they want to enable audio for this recording (when CamerAwesome iniated with enableAudio = true, ask when starting to record)
-  completion(nil);
+  [_camera recordVideoAtPath:path withOptions:options completion:completion];
 }
 
 - (void)refreshWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -172,9 +171,7 @@ FlutterEventSink imageStreamEventSink;
   // TODO:
 }
 - (void)setExifPreferencesExifPreferences:(ExifPreferences *)exifPreferences completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
-  [self.camera setExifPreferencesGPSLocation: exifPreferences.saveGPSLocation];
-// TODO Return true if location accepted by user, false otherwise
-  completion(nil, nil);
+  [self.camera setExifPreferencesGPSLocation: exifPreferences.saveGPSLocation completion:completion];
 }
 
 - (void)setFlashModeMode:(nonnull NSString *)mode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -228,9 +225,8 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)setRecordingAudioModeEnableAudio:(NSNumber *)enableAudio completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
+  // TODO: pass completion arg
   [_camera setRecordingAudioMode:[enableAudio boolValue]];
-  // TODO return true if the user enables audio, false otherwise
-  completion(nil, nil);
 }
 
 - (void)setSensorSensor:(NSString *)sensor deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error {
@@ -341,9 +337,24 @@ FlutterEventSink imageStreamEventSink;
   });
 }
 
-
 - (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
-    <#code#>
+  NSMutableArray *permissions = [NSMutableArray new];
+  
+  const Boolean cameraGranted = [PermissionsController checkCameraPermission];
+  if (cameraGranted) {
+    [permissions addObject:@"camera"];
+  }
+  
+  bool needToSaveGPSLocation = [saveGpsLocation boolValue];
+  if (needToSaveGPSLocation) {
+    [self.camera.locationController requestWhenInUseAuthorizationOnGranted:^{
+      [permissions addObject:@"location"];
+      
+      completion(permissions, nil);
+    } declined:^{
+      completion(permissions, nil);
+    }];
+  }
 }
 
 
