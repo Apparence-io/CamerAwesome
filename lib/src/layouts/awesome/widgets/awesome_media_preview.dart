@@ -20,12 +20,15 @@ class AwesomeMediaPreview extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 1,
         child: AwesomeBouncingWidget(
-          onTap: mediaCapture != null && onMediaTap != null
+          onTap: mediaCapture != null &&
+                  onMediaTap != null &&
+                  mediaCapture?.status == MediaCaptureStatus.success
               ? () => onMediaTap!(mediaCapture!)
               : null,
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
-              color: Colors.white10,
+              color: Colors.white30,
               shape: BoxShape.circle,
               border: Border.all(
                 color: Colors.white38,

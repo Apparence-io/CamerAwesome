@@ -6,7 +6,6 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -19,18 +18,12 @@ class CameraContext {
   /// Listen current state from child widgets
   late final BehaviorSubject<CameraState> stateController;
 
-  late final Stream<CameraState> state$;
+  late final BehaviorSubject<AwesomeFilter> filterController;
 
-  CameraState get state => stateController.value;
+  late final BehaviorSubject<bool> filterSelectorOpened;
 
   /// on media capturing stream controller
   late final BehaviorSubject<MediaCapture?> mediaCaptureController;
-
-  late final Stream<MediaCapture?> captureState$;
-
-  /// The config associated with a [Sensors].
-  /// [back] sensor frequently has flash while [front] does not for instance.
-  Stream<SensorConfig> sensorConfig$;
 
   BehaviorSubject<SensorConfig> sensorConfigController;
 
@@ -48,26 +41,32 @@ class CameraContext {
   /// Preferences concerning Exif (photos metadata)
   final ExifPreferences exifPreferences;
 
-  // TODO: Doc
-  final AwesomeFilter filter;
+  Stream<AwesomeFilter> get filter$ => filterController.stream;
+  Stream<bool> get filterSelectorOpened$ => filterSelectorOpened.stream;
+  Stream<CameraState> get state$ => stateController.stream;
+  Stream<MediaCapture?> get captureState$ => mediaCaptureController.stream;
+  CameraState get state => stateController.value;
+
+  /// The config associated with a [Sensors].
+  /// [back] sensor frequently has flash while [front] does not for instance.
+  ValueStream<SensorConfig> get sensorConfig$ => sensorConfigController.stream;
 
   CameraContext._({
     required this.initialCaptureMode,
     required this.sensorConfigController,
     required this.analysisController,
     required this.saveConfig,
-    this.onPermissionsResult,
     required this.exifPreferences,
-    required this.filter,
-  }) : sensorConfig$ = sensorConfigController.stream {
+    required this.filterController,
+    this.onPermissionsResult,
+  }) {
     var preparingState = PreparingCameraState(
       this,
       initialCaptureMode,
     );
     stateController = BehaviorSubject.seeded(preparingState);
+    filterSelectorOpened = BehaviorSubject.seeded(false);
     mediaCaptureController = BehaviorSubject.seeded(null);
-    state$ = stateController.stream;
-    captureState$ = mediaCaptureController.stream;
   }
 
   CameraContext.create(
@@ -82,6 +81,7 @@ class CameraContext {
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
+          filterController: BehaviorSubject.seeded(filter),
           onPermissionsResult: onPermissionsResult,
           saveConfig: saveConfig,
           analysisController: onImageForAnalysis != null
@@ -91,7 +91,6 @@ class CameraContext {
                 )
               : null,
           exifPreferences: exifPreferences,
-          filter: filter,
         );
 
   changeState(CameraState newState) async {
@@ -104,6 +103,21 @@ class CameraContext {
     if (!stateController.isClosed) {
       stateController.add(newState);
     }
+
+    // Reset filter when changing state
+    // Currently camerAwesome does not support filter on video
+    if (newState is VideoCameraState) {
+      filterController.add(AwesomeFilter.None);
+      filterSelectorOpened.add(false);
+    }
+  }
+
+  Future<void> toggleFilterSelector() async {
+    filterSelectorOpened.add(!filterSelectorOpened.value);
+  }
+
+  Future<void> setFilter(AwesomeFilter newFilter) async {
+    filterController.add(newFilter);
   }
 
   Future<void> setSensorConfig(SensorConfig newConfig) async {

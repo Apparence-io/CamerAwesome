@@ -1,6 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/awesome_filter.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
 
@@ -71,16 +70,25 @@ abstract class CameraState {
     cameraContext.setSensorConfig(next);
   }
 
+  void toggleFilterSelector() {
+    cameraContext.toggleFilterSelector();
+  }
+
+  void setFilter(AwesomeFilter addictiveBlue) {
+    cameraContext.setFilter(addictiveBlue);
+  }
+
   /// The sensor config allows you to
   /// - set the [FlashMode]
   /// - set the zoom level
   /// - handle luminosity or get it
   /// - adjust brightness
   SensorConfig get sensorConfig => cameraContext.sensorConfig;
-
   Stream<SensorConfig> get sensorConfig$ => cameraContext.sensorConfig$;
 
-  AwesomeFilter get filter => cameraContext.filter;
+  Stream<bool> get filterSelectorOpened$ => cameraContext.filterSelectorOpened$;
+  Stream<AwesomeFilter> get filter$ => cameraContext.filter$;
+  AwesomeFilter get filter => cameraContext.filterController.value;
 
   /// Switch to a state between
   /// - [CaptureMode.photo]

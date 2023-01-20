@@ -1,9 +1,11 @@
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_button.dart';
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_name_indicator.dart';
 import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
 
-/// This widget doesnt handle [PreparingCameraState]
+/// This widget doesn't handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {
   final CameraState state;
   final OnMediaTap onMediaTap;
@@ -27,16 +29,45 @@ class AwesomeCameraLayout extends StatelessWidget {
             width: double.infinity,
             child: Stack(
               children: [
-                Center(child: AwesomeSensorTypeSelector(state: state)),
+                SizedBox(
+                  height: 50,
+                  child: StreamBuilder<bool>(
+                    stream: state.filterSelectorOpened$,
+                    builder: (_, snapshot) {
+                      return snapshot.data == true
+                          ? Align(
+                              alignment: Alignment.bottomCenter,
+                              child: AwesomeFilterNameIndicator(state: state))
+                          : Center(
+                              child: AwesomeSensorTypeSelector(state: state));
+                    },
+                  ),
+                ),
                 Positioned(
                   bottom: 0,
                   right: 20,
-                  child: AwesomeFilterSelector(state: state),
+                  child: AwesomeFilterButton(state: state),
                 )
               ],
             ),
           ),
           const SizedBox(height: 12),
+          AwesomeBackground(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.fastLinearToSlowEaseIn,
+              child: StreamBuilder<bool>(
+                stream: state.filterSelectorOpened$,
+                builder: (_, snapshot) {
+                  return snapshot.data == true
+                      ? AwesomeFilterSelector(state: state)
+                      : const SizedBox(
+                          width: double.infinity,
+                        );
+                },
+              ),
+            ),
+          ),
           AwesomeBackground(
             child: SafeArea(
               top: false,

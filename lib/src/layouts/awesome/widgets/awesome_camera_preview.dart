@@ -179,7 +179,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             stream: widget.state.filter$,
                             builder: (context, snapshot) {
                               return snapshot.hasData &&
-                                      snapshot.data != AwesomeFilter.none
+                                      snapshot.data != AwesomeFilter.None
                                   ? ColorFiltered(
                                       colorFilter: snapshot.data!.preview,
                                       child: previewTexture,
