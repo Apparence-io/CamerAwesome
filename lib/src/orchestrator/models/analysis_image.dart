@@ -42,10 +42,15 @@ class AnalysisConfig {
   /// Default is null (disabled).
   final double? maxFramesPerSecond;
 
+  /// When set to true, image analysis starts automatically. Otherwise, you will
+  /// have to start it manually using [AnalysisController.start()]
+  final bool autoStart;
+
   AnalysisConfig({
     this.outputFormat = InputAnalysisImageFormat.nv21,
     this.width = 500,
     this.maxFramesPerSecond,
+    this.autoStart = true,
   });
 }
 

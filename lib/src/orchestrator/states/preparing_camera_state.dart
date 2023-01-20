@@ -32,7 +32,7 @@ class PreparingCameraState extends CameraState {
         await _startVideoMode();
         break;
     }
-    await cameraContext.analysisController?.start();
+    await cameraContext.analysisController?.setup();
   }
 
   /// subscription for permissions

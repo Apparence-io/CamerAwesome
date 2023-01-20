@@ -38,6 +38,8 @@ CameraAwesomeBuilder.custom(
     return _BarcodeDisplayWidget(
       barcodesStream: _barcodesStream,
       scrollController: _scrollController,
+      // 6.
+      analysisController: cameraModeState.analysisController!,
     );
   },
 )
@@ -53,6 +55,7 @@ Let's go through this code snippet:
 
 5. Here, we simply made a widget that displays all the barcodes scanned in a ```ListView```.
 
+6. This `analysisController` will be used to pause and resume image analysis.
 
 ## Extract barcodes from AnalysisImage
 
@@ -131,5 +134,51 @@ Let's break down above code:
 
 Detecting barcodes is quite straightforward with CamerAwesome.
 You just need to convert `AnalysisImage` to an `InputImage` as it is done in this example and MLKit will handle the rest. 👌
+
+
+## Pause and Resume Image Analysis
+
+You may want to pause and resume image analysis.
+To do that, CamerAwesome provides an `AnalysisController` through `CameraState`:
+``` dart
+// 1.
+CameraAwesomeBuilder.custom(
+    builder: (cameraState, previewSize, previewRect) {
+        // 2.
+        print("Image analysis enabled: ${cameraState.analysisController?.enabled}");
+
+        return SomeWidget(
+            analysisController: cameraState.analysisController,
+        );
+    },
+)
+```
+The above code shows a simple way to access the `AnalysisController`:
+1. We used the `custom()` constructor here but you can also get one from the `awesome()` constructor. Note that it may be null if no image analysis callback has been set.
+2. Here, we only print if the image analysis is enabled or not thanks to `analysisController`.
+
+Then, you could have a toggle widget like this:
+``` dart
+CheckboxListTile(
+    value: widget.analysisController.enabled,
+    onChanged: (_) async {
+        // 1.
+        if (widget.analysisController?.enabled == true) {
+          // 2.
+          await widget.analysisController.stop();
+        } else {
+          // 3.
+          await widget.analysisController.start();
+        }
+        setState(() {});
+    },
+    title: Text("Enable barcode scan"),
+)
+```
+As a toggle, it swap between image analysis enabled and disabled:
+1. First, check if it was enabled or disabled
+2. If it was enabled, disable image analysis
+3. Otherwise, enable it
+
 
 See the [complete example](https://github.com/Apparence-io/camera_awesome/blob/master/example/lib/ai_analysis_barcode.dart) if you need more details.

@@ -22,6 +22,9 @@ class VideoOptions {
   String fileType;
   String codec;
 
+  // TODO might add the framerate as well https://stackoverflow.com/questions/57485050/how-to-increase-frame-rate-with-android-camerax-imageanalysis
+  // TODO Add video quality
+
   VideoOptions({
     required this.fileType,
     required this.codec,
@@ -44,7 +47,6 @@ enum PigeonSensorType {
   ///
   /// iOS only
   trueDepth,
-
   unknown;
 
   // SensorType get defaultSensorType => SensorType.wideAngle;
@@ -106,15 +108,15 @@ class PigeonSensorDeviceData {
     this.trueDepth,
   });
 
-  // int get availableBackSensors => [
-  //       wideAngle,
-  //       ultraWideAngle,
-  //       telephoto,
-  //     ].where((element) => element != null).length;
+// int get availableBackSensors => [
+//       wideAngle,
+//       ultraWideAngle,
+//       telephoto,
+//     ].where((element) => element != null).length;
 
-  // int get availableFrontSensors => [
-  //       trueDepth,
-  //     ].where((element) => element != null).length;
+// int get availableFrontSensors => [
+//       trueDepth,
+//     ].where((element) => element != null).length;
 }
 
 @HostApi()
@@ -193,7 +195,12 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
+    bool autoStart,
   );
 
   void setExifPreferences(ExifPreferences exifPreferences);
+
+  void startAnalysis();
+
+  void stopAnalysis();
 }

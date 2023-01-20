@@ -72,6 +72,7 @@ class ImageAnalysisBuilder private constructor(
             if (previewStreamSink == null) {
                 return@setAnalyzer
             }
+            Log.d("WXCVBN", "image analysis image...")
             when (format) {
                 OutputImageFormat.JPEG -> {
                     val jpegImage = ImageUtil.yuvImageToJpegByteArray(
@@ -80,14 +81,14 @@ class ImageAnalysisBuilder private constructor(
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage
                     imageMap["cropRect"] = cropRect(imageProxy)
-                    executor.execute { previewStreamSink!!.success(imageMap) }
+                    executor.execute { previewStreamSink?.success(imageMap) }
                 }
                 OutputImageFormat.YUV_420_888 -> {
                     val planes = imagePlanesAdapter(imageProxy)
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["planes"] = planes
                     imageMap["cropRect"] = cropRect(imageProxy)
-                    executor.execute { previewStreamSink!!.success(imageMap) }
+                    executor.execute { previewStreamSink?.success(imageMap) }
                 }
                 OutputImageFormat.NV21 -> {
                     val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
@@ -96,7 +97,7 @@ class ImageAnalysisBuilder private constructor(
                     imageMap["nv21Image"] = nv21Image
                     imageMap["planes"] = planes
                     imageMap["cropRect"] = cropRect(imageProxy)
-                    executor.execute { previewStreamSink!!.success(imageMap) }
+                    executor.execute { previewStreamSink?.success(imageMap) }
                 }
             }
             CoroutineScope(Dispatchers.IO).launch {

@@ -15,6 +15,7 @@ export 'src/builder/camera_awesome_builder.dart';
 export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
+export 'src/orchestrator/analysis/analysis_controller.dart';
 
 // ignore: public_member_api_docs
 enum CameraRunningState { starting, started, stopping, stopped }
@@ -126,12 +127,13 @@ class CamerawesomePlugin {
     int width = 0,
     double? maxFramesPerSecond,
     required InputAnalysisImageFormat format,
+    required bool autoStart,
   }) async {
     return CameraInterface().setupImageAnalysisStream(
       format.name,
       width,
       maxFramesPerSecond,
-    );
+        autoStart);
   }
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
@@ -445,5 +447,13 @@ class CamerawesomePlugin {
       print(e);
     }
     return Future.value(false);
+  }
+
+  static Future<void> startAnalysis() {
+    return CameraInterface().startAnalysis();
+  }
+
+  static Future<void> stopAnalysis() {
+    return CameraInterface().stopAnalysis();
   }
 }
