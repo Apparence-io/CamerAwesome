@@ -1,7 +1,7 @@
 import 'package:camerawesome/src/orchestrator/models/filters/awesome_filter.dart';
 
 // some filters are commented because filter & preview are too different,
-// we need to adjust them 
+// we need to adjust them
 List<AwesomeFilter> awesomePresetFiltersList = [
   AwesomeFilter.None,
   AwesomeFilter.AddictiveBlue,

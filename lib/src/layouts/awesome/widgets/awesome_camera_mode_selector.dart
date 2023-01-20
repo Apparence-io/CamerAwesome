@@ -12,7 +12,9 @@ class AwesomeCameraModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (state is VideoRecordingCameraState) {
-      return const SizedBox(height: 20,);
+      return const SizedBox(
+        height: 20,
+      );
     } else {
       return CameraModePager(
         initialMode: state.captureMode,
