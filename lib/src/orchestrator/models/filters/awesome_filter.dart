@@ -96,7 +96,14 @@ class AwesomeFilter {
   static AwesomeFilter get Brooklyn => AwesomeFilter(
         name: 'Brooklyn',
         previewFilter: ColorFilter.matrix(
-          PresetFilters.brooklyn.matrix,
+          ColorFilterGenerator(
+            name: 'Brooklyn',
+            filters: [
+              ColorFilterAddons.sepia(0.4),
+              ColorFilterAddons.brightness(-0.1),
+              ColorFilterAddons.addictiveColor(25, 30, 42),
+            ],
+          ).matrix,
         ),
         outputFilter: PhotoFilters.BrooklynFilter(),
       );

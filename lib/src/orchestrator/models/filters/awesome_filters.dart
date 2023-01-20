@@ -10,7 +10,7 @@ List<AwesomeFilter> awesomePresetFiltersList = [
   AwesomeFilter.Amaro,
   AwesomeFilter.Ashby,
   AwesomeFilter.Brannan,
-  // AwesomeFilter.Brooklyn,
+  AwesomeFilter.Brooklyn,
   // AwesomeFilter.Charmes,
   AwesomeFilter.Clarendon,
   AwesomeFilter.Crema,
