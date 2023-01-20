@@ -6,7 +6,7 @@ List<AwesomeFilter> awesomePresetFiltersList = [
   AwesomeFilter.None,
   AwesomeFilter.AddictiveBlue,
   AwesomeFilter.AddictiveRed,
-  // AwesomeFilter.Aden,
+  AwesomeFilter.Aden,
   AwesomeFilter.Amaro,
   // AwesomeFilter.Ashby,
   // AwesomeFilter.Brannan,

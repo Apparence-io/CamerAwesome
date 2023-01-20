@@ -50,7 +50,13 @@ class AwesomeFilter {
   static AwesomeFilter get Aden => AwesomeFilter(
         name: 'Aden',
         previewFilter: ColorFilter.matrix(
-          PresetFilters.aden.matrix,
+          ColorFilterGenerator(
+            name: "Aden",
+            filters: [
+              ColorFilterAddons.addictiveColor(48, 30, 45),
+              ColorFilterAddons.saturation(-0.2),
+            ],
+          ).matrix,
         ),
         outputFilter: PhotoFilters.AdenFilter(),
       );
