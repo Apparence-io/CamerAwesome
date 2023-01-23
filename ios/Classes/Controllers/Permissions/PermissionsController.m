@@ -28,4 +28,22 @@
   return permissionsGranted;
 }
 
++ (BOOL)checkMicrophonePermissionGranted {
+  AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
+  
+  __block BOOL permissionsGranted;
+  if (permissionStatus == AVAudioSessionRecordPermissionUndetermined) {
+    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
+      permissionsGranted = granted;
+      dispatch_semaphore_signal(sem);
+    }];
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+  } else {
+    permissionsGranted = (permissionStatus == AVAudioSessionRecordPermissionGranted);
+  }
+  
+  return permissionsGranted;
+}
+
 @end

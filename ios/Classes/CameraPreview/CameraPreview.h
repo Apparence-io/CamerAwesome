@@ -62,13 +62,13 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                        dispatchQueue:(dispatch_queue_t)dispatchQueue;
-- (void)setPreviewSize:(CGSize)previewSize;
+- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
-- (void)setFlashMode:(CameraFlashMode)flashMode;
-- (void)setCaptureMode:(CaptureModes)captureMode;
+- (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCameraPresset:(CGSize)currentPreviewSize;
-- (void)setRecordingAudioMode:(bool)enableAudio;
+- (void)setRecordingAudioMode:(bool)enableAudio completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 - (void)pauseVideoRecording;
 - (void)resumeVideoRecording;
 - (void)receivedImageFromStream;
@@ -80,14 +80,14 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion;
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
-- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview;
+- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)dispose;
 - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
 - (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
-- (void)setZoom:(float)value;
+- (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
-- (void)setUpCaptureSessionForAudio;
+- (void)setUpCaptureSessionForAudioError:(nonnull void (^)(NSError *))error;
 @end
 
 NS_ASSUME_NONNULL_END

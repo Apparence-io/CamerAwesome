@@ -83,12 +83,22 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  NSMutableArray *permissions = [NSMutableArray new];
+  
   bool cameraPermission = [PermissionsController checkCameraPermission];
+  bool microphonePermission = [PermissionsController checkMicrophonePermissionGranted];
+  
+  // TODO: add location
+  
   if (cameraPermission) {
-    return @[];
-  } else {
-    return @[@"camera"];
+    [permissions addObject:@"camera"];
   }
+  
+  if (microphonePermission) {
+    [permissions addObject:@"record_audio"];
+  }
+  
+  return permissions;
 }
 
 - (void)focusOnPointPreviewSize:(nonnull PreviewSize *)previewSize x:(nonnull NSNumber *)x y:(nonnull NSNumber *)y error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -97,7 +107,7 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
-  [_camera focusOnPoint:CGPointMake([x floatValue], [y floatValue]) preview:CGSizeMake([previewSize.width floatValue], [previewSize.height floatValue])];
+  [_camera focusOnPoint:CGPointMake([x floatValue], [y floatValue]) preview:CGSizeMake([previewSize.width floatValue], [previewSize.height floatValue]) error:error];
 }
 
 - (nullable PreviewSize *)getEffectivPreviewSizeWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -164,7 +174,7 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)setCaptureModeMode:(nonnull NSString *)mode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   CaptureModes captureMode = ([mode isEqualToString:@"PHOTO"]) ? Photo : Video;
-  [_camera setCaptureMode:captureMode];
+  [_camera setCaptureMode:captureMode error:error];
 }
 
 - (void)setCorrectionBrightness:(nonnull NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -193,7 +203,7 @@ FlutterEventSink imageStreamEventSink;
     flash = None;
   }
   
-  [_camera setFlashMode:flash];
+  [_camera setFlashMode:flash error:error];
 }
 
 - (void)setPhotoSizeSize:(nonnull PreviewSize *)size error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -221,12 +231,11 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
-  [self.camera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue])];
+  [self.camera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
 }
 
 - (void)setRecordingAudioModeEnableAudio:(NSNumber *)enableAudio completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
-  // TODO: pass completion arg
-  [_camera setRecordingAudioMode:[enableAudio boolValue]];
+  [_camera setRecordingAudioMode:[enableAudio boolValue] completion:completion];
 }
 
 - (void)setSensorSensor:(NSString *)sensor deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error {
@@ -241,7 +250,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)setZoomZoom:(nonnull NSNumber *)zoom error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  [_camera setZoom:[zoom floatValue]];
+  [_camera setZoom:[zoom floatValue] error:error];
 }
 
 - (void)receivedImageFromStreamWithError:(FlutterError *_Nullable *_Nonnull)error {
@@ -345,8 +354,14 @@ FlutterEventSink imageStreamEventSink;
     [permissions addObject:@"camera"];
   }
   
+  const BOOL microphoneGranted = [PermissionsController checkMicrophonePermissionGranted];
+  if (microphoneGranted) {
+    [permissions addObject:@"record_audio"];
+  }
+  
   bool needToSaveGPSLocation = [saveGpsLocation boolValue];
   if (needToSaveGPSLocation) {
+    // TODO: move this to permissions object
     [self.camera.locationController requestWhenInUseAuthorizationOnGranted:^{
       [permissions addObject:@"location"];
       

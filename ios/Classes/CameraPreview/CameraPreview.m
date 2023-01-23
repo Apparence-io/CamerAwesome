@@ -190,9 +190,9 @@
 }
 
 /// Set preview size resolution
-- (void)setPreviewSize:(CGSize)previewSize {
+- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (_videoController.isRecording) {
-    _completion(nil, [FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""]);
+    *error = [FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""];
     return;
   }
   
@@ -240,35 +240,35 @@
 }
 
 /// Set zoom level
-- (void)setZoom:(float)value {
+- (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   CGFloat maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
   CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
   
-  NSError *error;
-  if ([_captureDevice lockForConfiguration:&error]) {
+  NSError *zoomError;
+  if ([_captureDevice lockForConfiguration:&zoomError]) {
     _captureDevice.videoZoomFactor = scaledZoom;
     [_captureDevice unlockForConfiguration];
   } else {
-    _completion(nil, [FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[error localizedDescription]]);
+    *error = [FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[zoomError localizedDescription]];
   }
 }
 
 /// Set flash mode
-- (void)setFlashMode:(CameraFlashMode)flashMode {
+- (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (![_captureDevice hasFlash]) {
-    _completion(nil, [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""]);
+    *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""];
     return;
   }
   
   if (_cameraSensor == Front) {
-    _completion(nil, [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""]);
+    *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""];
     return;
   }
   
-  NSError *error;
-  [_captureDevice lockForConfiguration:&error];
-  if (error != nil) {
-    _completion(nil, [FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""]);
+  NSError *lockError;
+  [_captureDevice lockForConfiguration:&lockError];
+  if (lockError != nil) {
+    *error = [FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""];
     return;
   }
   
@@ -299,12 +299,12 @@
 }
 
 /// Trigger focus on device at the specific point of the preview
-- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview {
-  NSError *error;
+- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  NSError *lockError;
   if ([_captureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] && [_captureDevice isFocusPointOfInterestSupported]) {
-    if ([_captureDevice lockForConfiguration:&error]) {
-      if (error != nil) {
-        _completion(nil, [FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""]);
+    if ([_captureDevice lockForConfiguration:&lockError]) {
+      if (lockError != nil) {
+        *error = [FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""];
         return;
       }
       
@@ -378,16 +378,18 @@
 }
 
 /// Set capture mode between Photo & Video mode
-- (void)setCaptureMode:(CaptureModes)captureMode {
+- (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (_videoController.isRecording) {
-    _completion(nil, [FlutterError errorWithCode:@"CAPTURE_MODE" message:@"impossible to change capture mode, video already recording" details:@""]);
+    *error = [FlutterError errorWithCode:@"CAPTURE_MODE" message:@"impossible to change capture mode, video already recording" details:@""];
     return;
   }
   
   _captureMode = captureMode;
   
   if (captureMode == Video) {
-    [self setUpCaptureSessionForAudio];
+    [self setUpCaptureSessionForAudioError:^(NSError *audioError) {
+      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[audioError localizedDescription]];
+    }];
   }
 }
 
@@ -440,7 +442,9 @@
   
   if (!_videoController.isRecording) {
     [_videoController recordVideoAtPath:path audioSetupCallback:^{
-      [self setUpCaptureSessionForAudio];
+      [self setUpCaptureSessionForAudioError:^(NSError *error) {
+        completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
+      }];
     } videoWriterCallback:^{
       if (self->_videoController.isAudioEnabled) {
         [self->_audioOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
@@ -469,14 +473,14 @@
   if (_videoController.isRecording) {
     [_videoController stopRecordingVideo:completion];
   } else {
-    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
+    completion(@(NO), [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"video is not recording" details:@""]);
   }
 }
 
 /// Set audio recording mode
-- (void)setRecordingAudioMode:(bool)isAudioEnabled {
+- (void)setRecordingAudioMode:(bool)isAudioEnabled completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
   if (_videoController.isRecording) {
-    _completion(nil, [FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
+    completion(@(NO), [FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
     return;
   }
   
@@ -498,7 +502,9 @@
   [_captureSession removeOutput:_audioOutput];
   
   if (_videoController.isRecording) {
-    [self setUpCaptureSessionForAudio];
+    [self setUpCaptureSessionForAudioError:^(NSError *error) {
+      completion(@(NO), [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
+    }];
   }
   
   
@@ -507,16 +513,17 @@
 
 # pragma mark - Audio
 /// Setup audio channel to record audio
-- (void)setUpCaptureSessionForAudio {
-  NSError *error = nil;
+- (void)setUpCaptureSessionForAudioError:(nonnull void (^)(NSError *))error {
+  NSError *audioError = nil;
   // Create a device input with the device and add it to the session.
   // Setup the audio input.
   AVCaptureDevice *audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
   AVCaptureDeviceInput *audioInput = [AVCaptureDeviceInput deviceInputWithDevice:audioDevice
-                                                                           error:&error];
-  if (error) {
-    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio capture" details:error.description]);
+                                                                           error:&audioError];
+  if (audioError) {
+    error(audioError);
   }
+  
   // Setup the audio output.
   _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
   
@@ -529,9 +536,6 @@
     } else {
       [_videoController setIsAudioSetup:NO];
     }
-  } else {
-    // TODO: microphone permissions seems to be OFF
-    _completion(nil, [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"microphone permission seems to be denied" details:error.description]);
   }
 }
 
