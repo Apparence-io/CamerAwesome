@@ -106,15 +106,23 @@ class PigeonSensorDeviceData {
     this.trueDepth,
   });
 
-  // int get availableBackSensors => [
-  //       wideAngle,
-  //       ultraWideAngle,
-  //       telephoto,
-  //     ].where((element) => element != null).length;
+// int get availableBackSensors => [
+//       wideAngle,
+//       ultraWideAngle,
+//       telephoto,
+//     ].where((element) => element != null).length;
 
-  // int get availableFrontSensors => [
-  //       trueDepth,
-  //     ].where((element) => element != null).length;
+// int get availableFrontSensors => [
+//       trueDepth,
+//     ].where((element) => element != null).length;
+}
+
+enum CamerAwesomePermission {
+  storage,
+  camera,
+  location,
+  // ignore: constant_identifier_names
+  record_audio,
 }
 
 @HostApi()
@@ -132,7 +140,10 @@ abstract class CameraInterface {
 
   List<String> checkPermissions();
 
-  List<String> requestPermissions();
+  /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
+  /// refused but the app should still be able to run.
+  @async
+  List<String> requestPermissions(bool saveGpsLocation);
 
   int getPreviewTextureId();
 
@@ -140,6 +151,7 @@ abstract class CameraInterface {
   @async
   bool takePhoto(String path);
 
+  @async
   void recordVideo(String path, VideoOptions? options);
 
   void pauseVideoRecording();
@@ -175,7 +187,8 @@ abstract class CameraInterface {
 
   void setCaptureMode(String mode);
 
-  void setRecordingAudioMode(bool enableAudio);
+  @async
+  bool setRecordingAudioMode(bool enableAudio);
 
   List<PreviewSize> availableSizes();
 
@@ -195,5 +208,6 @@ abstract class CameraInterface {
     double? maxFramesPerSecond,
   );
 
-  void setExifPreferences(ExifPreferences exifPreferences);
+  @async
+  bool setExifPreferences(ExifPreferences exifPreferences);
 }

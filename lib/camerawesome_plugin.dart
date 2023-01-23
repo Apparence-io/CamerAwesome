@@ -7,7 +7,6 @@ import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
@@ -46,17 +45,10 @@ class CamerawesomePlugin {
   /// Set it to true to print dart logs from camerawesome
   static bool printLogs = false;
 
-  static Future<List<String?>> checkAndroidPermissions() =>
-      CameraInterface().checkPermissions();
-
   static Future<bool?> checkiOSPermissions() async {
     final permissions = await CameraInterface().checkPermissions();
     return permissions.isEmpty;
   }
-
-  /// only available on Android
-  static Future<List<String?>> requestPermissions() =>
-      CameraInterface().requestPermissions();
 
   static Future<bool> start() async {
     if (currentState == CameraRunningState.started ||
@@ -217,7 +209,7 @@ class CamerawesomePlugin {
     return CameraInterface().takePhoto(path);
   }
 
-  static recordVideo(
+  static Future<void> recordVideo(
     String path, {
     CupertinoVideoOptions? cupertinoVideoOptions,
   }) {
@@ -292,7 +284,7 @@ class CamerawesomePlugin {
   /// - Location is disabled on the phone
   /// - ExifPreferences.saveGPSLocation is false
   /// - Permission ACCESS_FINE_LOCATION has not been granted
-  static Future<void> setExifPreferences(ExifPreferences savedExifData) {
+  static Future<bool> setExifPreferences(ExifPreferences savedExifData) {
     return CameraInterface().setExifPreferences(savedExifData);
   }
 
@@ -405,45 +397,28 @@ class CamerawesomePlugin {
   // ---------------------------------------------------
   // UTILITY METHODS
   // ---------------------------------------------------
-
-  /// returns true if all permissions are granted
-  static Future<bool> checkPermissions() async {
+  static Future<List<CamerAwesomePermission>?> checkAndRequestPermissions(
+      bool saveGpsLocation) async {
     try {
       if (Platform.isAndroid) {
-        var missingPermissions =
-            await CamerawesomePlugin.checkAndroidPermissions();
-        return Future.value(missingPermissions.isNotEmpty);
+        return CameraInterface()
+            .requestPermissions(saveGpsLocation)
+            .then((givenPermissions) {
+          return givenPermissions
+              .map((e) => CamerAwesomePermission.values
+                  .firstWhere((element) => element.name == e))
+              .toList();
+        });
       } else if (Platform.isIOS) {
+        // TODO iOS Return only permissions that were given
         return CamerawesomePlugin.checkiOSPermissions()
-            .then((value) => value ?? false);
-      }
-    } catch (err, stacktrace) {
-      printLog("failed to check permissions here...");
-      debugPrintStack(stackTrace: stacktrace);
-    }
-    return Future.value(false);
-  }
-
-  static Future<bool?> checkAndRequestPermissions() async {
-    try {
-      if (Platform.isAndroid) {
-        var missingPermissions =
-            await CamerawesomePlugin.checkAndroidPermissions();
-        if (missingPermissions.isNotEmpty) {
-          return CamerawesomePlugin.requestPermissions().then((value) {
-            return value.isEmpty;
-          });
-        } else {
-          return Future.value(true);
-        }
-      } else if (Platform.isIOS) {
-        return CamerawesomePlugin.checkiOSPermissions();
+            .then((givenPermissions) => CamerAwesomePermission.values);
       }
     } catch (e) {
       printLog("failed to check permissions here...");
       // ignore: avoid_print
       print(e);
     }
-    return Future.value(false);
+    return Future.value([]);
   }
 }

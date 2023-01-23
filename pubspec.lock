@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: args
-      sha256: b003c3098049a51720352d219b0bb5f219b60fbfb68e7a4748139a06a5676515
+      sha256: "139d809800a412ebb26a3892da228b2d0ba36f0ef5d9a82166e5e52ec8d61611"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.1"
+    version: "2.3.2"
   async:
     dependency: transitive
     description:
@@ -183,10 +183,10 @@ packages:
     dependency: "direct dev"
     description:
       name: pigeon
-      sha256: "6136ad922578ef81f3c997d3e2814a9c09e90875a4cc99a26f165eed507efe79"
+      sha256: "7e9a3b266027c42342100fef2a64a9f325922218d7ed4a9d0b6a16f0e89d1b89"
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.14"
+    version: "7.0.0"
   pub_semver:
     dependency: transitive
     description:

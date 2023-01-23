@@ -23,10 +23,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   // Create audio & video writer
-  if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options error:error]) {
-    *error = ([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
+  if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
+    completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
     return;
   }
   // Call parent to add delegates for video & audio (if needed)
@@ -68,7 +68,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - Audio & Video writers
 
 /// Setup video channel & write file on path
-- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(VideoOptions *)options error:(FlutterError * _Nullable __autoreleasing * _Nonnull)errorFlutter {
+- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   NSError *error = nil;
   NSURL *outputURL;
   if (path != nil) {
@@ -104,7 +104,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
                                               error:&error];
   NSParameterAssert(_videoWriter);
   if (error) {
-    *errorFlutter = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description];
+    completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to create video writer, check your options" details:error.description]);
     return NO;
   }
   

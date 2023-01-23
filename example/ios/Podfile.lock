@@ -56,11 +56,11 @@ PODS:
     - GoogleToolboxForMac/Defines (= 2.3.2)
     - "GoogleToolboxForMac/NSString+URLArguments (= 2.3.2)"
   - "GoogleToolboxForMac/NSString+URLArguments (2.3.2)"
-  - GoogleUtilities/Environment (7.10.0):
+  - GoogleUtilities/Environment (7.11.0):
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.10.0):
+  - GoogleUtilities/Logger (7.11.0):
     - GoogleUtilities/Environment
-  - GoogleUtilities/UserDefaults (7.10.0):
+  - GoogleUtilities/UserDefaults (7.11.0):
     - GoogleUtilities/Logger
   - GoogleUtilitiesComponents (1.1.0):
     - GoogleUtilities/Logger
@@ -354,7 +354,7 @@ SPEC CHECKSUMS:
   GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
   GoogleMLKit: 0017a6a8372e1a182139b9def4d89be5d87ca5a7
   GoogleToolboxForMac: 8bef7c7c5cf7291c687cf5354f39f9db6399ad34
-  GoogleUtilities: bad72cb363809015b1f7f19beb1f1cd23c589f95
+  GoogleUtilities: c2bdc4cf2ce786c4d2e6b3bcfd599a25ca78f06f
   GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
   GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba

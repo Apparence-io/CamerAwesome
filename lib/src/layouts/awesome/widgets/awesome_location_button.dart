@@ -37,7 +37,7 @@ class AwesomeLocationButton extends StatelessWidget {
                 ),
               ),
               onTap: () => state.when(onPhotoMode: (pm) {
-                pm.saveGpsLocation = !(saveGpsLocation ?? false);
+                pm.shouldSaveGpsLocation(!(saveGpsLocation ?? false));
               }),
             ),
           );

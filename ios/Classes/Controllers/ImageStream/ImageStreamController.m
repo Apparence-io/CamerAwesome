@@ -23,7 +23,7 @@ NSInteger const MaxPendingProcessedImage = 4;
   if (_imageStreamEventSink == nil) {
     return;
   }
-
+  
   bool shouldFPSGuard = [self fpsGuard];
   bool shouldOverflowCrashingGuard = [self overflowCrashingGuard];
   

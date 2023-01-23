@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: args
-      sha256: b003c3098049a51720352d219b0bb5f219b60fbfb68e7a4748139a06a5676515
+      sha256: "139d809800a412ebb26a3892da228b2d0ba36f0ef5d9a82166e5e52ec8d61611"
       url: "https://pub.dev"
     source: hosted
-    version: "2.3.1"
+    version: "2.3.2"
   async:
     dependency: transitive
     description:
@@ -266,10 +266,10 @@ packages:
     dependency: transitive
     description:
       name: json_annotation
-      sha256: "3520fa844009431b5d4491a5a778603520cdc399ab3406332dcc50f93547258c"
+      sha256: c33da08e136c3df0190bd5bbe51ae1df4a7d96e7954d1d7249fea2968a72d317
       url: "https://pub.dev"
     source: hosted
-    version: "4.7.0"
+    version: "4.8.0"
   lints:
     dependency: transitive
     description:
@@ -370,10 +370,10 @@ packages:
     dependency: "direct dev"
     description:
       name: patrol
-      sha256: "9aa4e3122d65eec12897980b138c5c940a03c9ef57466a482b9a7601b00d406f"
+      sha256: "7e46c7a2e3f9012ed6e8651247cb7980d48ae0d8aac6269422f3872d33c46608"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.4"
+    version: "0.10.8"
   platform:
     dependency: transitive
     description:
@@ -503,10 +503,10 @@ packages:
     dependency: "direct main"
     description:
       name: video_player
-      sha256: "86b4fb9e30613ef4ff7e47367bfec4b080ab17205b7d969cd12bbebde49476b1"
+      sha256: "5d1ac207b25f2ea6f29dbd0cd48040b28924ed68d5fe41b4ade4bfa877b8de6f"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.10"
+    version: "2.5.0"
   video_player_android:
     dependency: transitive
     description:

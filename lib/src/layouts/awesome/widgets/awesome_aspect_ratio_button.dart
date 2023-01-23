@@ -13,6 +13,7 @@ class AwesomeAspectRatioButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return state.when(onPhotoMode: (pm) {
       return StreamBuilder<SensorConfig>(
+        key: const ValueKey("ratioButton"),
         stream: state.sensorConfig$,
         builder: (_, sensorConfigSnapshot) {
           if (!sensorConfigSnapshot.hasData) {

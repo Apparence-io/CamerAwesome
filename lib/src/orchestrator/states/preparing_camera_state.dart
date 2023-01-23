@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 
 import '../camera_context.dart';
 import '../exceptions/camera_states_exceptions.dart';
@@ -56,10 +57,19 @@ class PreparingCameraState extends CameraState {
         },
       );
     }
-    final hasPermissions =
-        await CamerawesomePlugin.checkAndRequestPermissions();
+    final grantedPermissions =
+        await CamerawesomePlugin.checkAndRequestPermissions(
+            cameraContext.exifPreferences.saveGPSLocation);
+    if (cameraContext.exifPreferences.saveGPSLocation &&
+        !(grantedPermissions?.contains(CamerAwesomePermission.location) ==
+            true)) {
+      cameraContext.exifPreferences = ExifPreferences(saveGPSLocation: false);
+      cameraContext.state
+          .when(onPhotoMode: (pm) => pm.shouldSaveGpsLocation(false));
+    }
     if (onPermissionsResult != null) {
-      onPermissionsResult!(hasPermissions!);
+      onPermissionsResult!(
+          grantedPermissions?.hasRequiredPermissions() == true);
     }
   }
 
@@ -101,9 +111,12 @@ class PreparingCameraState extends CameraState {
       sensorConfig,
       enableImageStream: enableImageStream,
     );
-    await CamerawesomePlugin.init(sensorConfig, enableImageStream,
-        captureMode: nextCaptureMode,
-        exifPreferences: cameraContext.exifPreferences);
+    await CamerawesomePlugin.init(
+      sensorConfig,
+      enableImageStream,
+      captureMode: nextCaptureMode,
+      exifPreferences: cameraContext.exifPreferences,
+    );
     _isReady = true;
     return true;
   }
