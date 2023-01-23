@@ -80,15 +80,40 @@ dependencies:
 <string>To enable GPS location access for Exif data</string>
 ```
 
-  - **Android**
+- **Android**
+
 Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
-<br>
 
 ```
 minSdkVersion 21
 ```
 
+ìf you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
+
+``` xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourpackage">
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Other declarations -->
+</manifest>
+```
+
+You may also want to save location of your pictures in exif metadata. In this case, add below
+permissions:
+
+``` xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourpackage">
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Other declarations -->
+</manifest>
+```
+
 ### Import the package in your Flutter app
+
 ```dart
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
