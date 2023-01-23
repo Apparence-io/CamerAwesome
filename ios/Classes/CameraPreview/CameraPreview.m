@@ -347,7 +347,7 @@
   NSMutableArray *sensors = [NSMutableArray new];
   
   NSArray *sensorsType = @[AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera];
-
+  
   AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
                                                        discoverySessionWithDeviceTypes:sensorsType
                                                        mediaType:AVMediaTypeVideo

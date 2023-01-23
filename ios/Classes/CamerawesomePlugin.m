@@ -88,8 +88,6 @@ FlutterEventSink imageStreamEventSink;
   bool cameraPermission = [PermissionsController checkCameraPermission];
   bool microphonePermission = [PermissionsController checkMicrophonePermissionGranted];
   
-  // TODO: add location
-  
   if (cameraPermission) {
     [permissions addObject:@"camera"];
   }
