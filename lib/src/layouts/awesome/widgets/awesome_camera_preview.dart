@@ -149,6 +149,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               );
             }
 
+            final previewTexture = Texture(textureId: _textureId!);
+
             final preview = SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -266,8 +268,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       }),
     );
   }
-
-  Widget get previewTexture => Texture(textureId: _textureId!);
 }
 
 class CenterCropClipper extends CustomClipper<Path> {

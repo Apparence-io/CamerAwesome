@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -68,7 +69,8 @@ class PhotoCameraState extends CameraState {
     try {
       final succeeded = await CamerawesomePlugin.takePhoto(path);
       if (succeeded) {
-        if (filter.id != AwesomeFilter.None.id) {
+        // TODO if iOS can do it on native side, we could remove both photofilters and image packages dependencies
+        if (Platform.isIOS && filter.id != AwesomeFilter.None.id) {
           photoFilterIsolate?.kill(priority: Isolate.immediate);
 
           ReceivePort port = ReceivePort();
@@ -78,6 +80,7 @@ class PhotoCameraState extends CameraState {
             onExit: port.sendPort,
           );
           await port.first;
+
           photoFilterIsolate?.kill(priority: Isolate.immediate);
         }
 
@@ -146,7 +149,11 @@ Future<File> applyFilter(PhotoFilterModel model) async {
 
   final pixels = image.getBytes();
   model.filter.apply(pixels, image.width, image.height);
-  final img.Image out = img.Image.fromBytes(image.width, image.height, pixels);
+  final img.Image out = img.Image.fromBytes(
+    image.width,
+    image.height,
+    pixels,
+  );
 
   final List<int>? encodedImage = img.encodeNamedImage(out, model.path);
   if (encodedImage == null) {

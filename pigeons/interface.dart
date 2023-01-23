@@ -196,4 +196,6 @@ abstract class CameraInterface {
   );
 
   void setExifPreferences(ExifPreferences exifPreferences);
+
+  void setFilter(List<double> matrix);
 }

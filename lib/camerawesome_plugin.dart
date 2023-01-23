@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
+
 // built in widgets
 export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
@@ -445,5 +446,9 @@ class CamerawesomePlugin {
       print(e);
     }
     return Future.value(false);
+  }
+
+  static Future<void> setFilter(AwesomeFilter filter) {
+    return CameraInterface().setFilter(filter.matrix);
   }
 }

@@ -42,9 +42,13 @@ class CameraContext {
   final ExifPreferences exifPreferences;
 
   Stream<AwesomeFilter> get filter$ => filterController.stream;
+
   Stream<bool> get filterSelectorOpened$ => filterSelectorOpened.stream;
+
   Stream<CameraState> get state$ => stateController.stream;
+
   Stream<MediaCapture?> get captureState$ => mediaCaptureController.stream;
+
   CameraState get state => stateController.value;
 
   /// The config associated with a [Sensors].
@@ -117,6 +121,7 @@ class CameraContext {
   }
 
   Future<void> setFilter(AwesomeFilter newFilter) async {
+    await CamerawesomePlugin.setFilter(newFilter);
     filterController.add(newFilter);
   }
 

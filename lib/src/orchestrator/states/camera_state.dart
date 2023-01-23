@@ -74,8 +74,8 @@ abstract class CameraState {
     cameraContext.toggleFilterSelector();
   }
 
-  void setFilter(AwesomeFilter addictiveBlue) {
-    cameraContext.setFilter(addictiveBlue);
+  Future<void> setFilter(AwesomeFilter addictiveBlue) {
+    return cameraContext.setFilter(addictiveBlue);
   }
 
   /// The sensor config allows you to
@@ -84,10 +84,13 @@ abstract class CameraState {
   /// - handle luminosity or get it
   /// - adjust brightness
   SensorConfig get sensorConfig => cameraContext.sensorConfig;
+
   Stream<SensorConfig> get sensorConfig$ => cameraContext.sensorConfig$;
 
   Stream<bool> get filterSelectorOpened$ => cameraContext.filterSelectorOpened$;
+
   Stream<AwesomeFilter> get filter$ => cameraContext.filter$;
+
   AwesomeFilter get filter => cameraContext.filterController.value;
 
   /// Switch to a state between

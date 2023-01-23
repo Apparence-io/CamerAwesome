@@ -1,9 +1,15 @@
 package com.apparence.camerawesome.cameraX
 
 import android.Manifest
+import android.R.attr.orientation
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import android.location.Location
 import android.os.CountDownTimer
 import android.os.Handler
@@ -18,6 +24,7 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
+import androidx.exifinterface.media.ExifInterface
 import com.apparence.camerawesome.*
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.CameraSensor
@@ -35,8 +42,11 @@ import io.flutter.view.TextureRegistry
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
+
 
 enum class CaptureModes {
     PHOTO, VIDEO,
@@ -59,6 +69,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private var cancellationTokenSource = CancellationTokenSource()
     private var lastRecordedVideo: BehaviorSubject<Boolean>? = null
     private var lastRecordedVideoSubscription: Disposable? = null
+    private var colorMatrix: List<Double>? = null
 
 
     @SuppressLint("RestrictedApi")
@@ -112,9 +123,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun setupImageAnalysisStream(
-        format: String,
-        width: Long,
-        maxFramesPerSecond: Double?
+        format: String, width: Long, maxFramesPerSecond: Double?
     ) {
         cameraState.apply {
             try {
@@ -139,6 +148,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun setExifPreferences(exifPreferences: ExifPreferences) {
         this.exifPreferences = exifPreferences
+    }
+
+    override fun setFilter(matrix: List<Double>) {
+        colorMatrix = matrix
     }
 
     override fun checkPermissions(): List<String> {
@@ -217,13 +230,43 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         CamerawesomePlugin.TAG,
                         "Success capturing picture ${outputFileResults.savedUri}, with location: ${exifPreferences.saveGPSLocation}"
                     )
+                    if (colorMatrix != null) {
+                        val exif =
+                            ExifInterface(outputFileResults.savedUri!!.path!!)
+
+                        val originalBitmap = BitmapFactory.decodeFile(
+                            outputFileResults.savedUri?.path
+                        )
+                        val bitmapCopy = Bitmap.createBitmap(
+                            originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
+                        )
+
+                        val canvas = Canvas(bitmapCopy)
+                        canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
+                            colorFilter =
+                                ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
+                                    .toFloatArray())
+                        })
+
+                        try {
+                            FileOutputStream(outputFileResults.savedUri?.path).use { out ->
+                                bitmapCopy.compress(
+                                    Bitmap.CompressFormat.JPEG, 100, out
+                                )
+                            }
+                            exif.saveAttributes()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
+                    }
+
                     if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
                             outputFileOptions.metadata.location = it
                             // We need to actually save the exif data to the file system, not just
                             // the property to an object like above line
-                            val exif: androidx.exifinterface.media.ExifInterface =
-                                androidx.exifinterface.media.ExifInterface(outputFileResults.savedUri!!.path!!)
+                            val exif =
+                                ExifInterface(outputFileResults.savedUri!!.path!!)
                             exif.setGpsInfo(it)
                             exif.saveAttributes()
                             callback(true)
@@ -249,6 +292,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 is VideoRecordEvent.Start -> {
                     Log.d(CamerawesomePlugin.TAG, "Capture Started")
                 }
+
                 is VideoRecordEvent.Finalize -> {
                     if (!event.hasError()) {
                         Log.d(
@@ -452,6 +496,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 rota90, rota270 -> {
                     PreviewSize(res.height.toDouble(), res.width.toDouble())
                 }
+
                 else -> {
                     PreviewSize(res.width.toDouble(), res.height.toDouble())
                 }
