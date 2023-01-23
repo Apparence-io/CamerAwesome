@@ -86,7 +86,7 @@ FlutterEventSink imageStreamEventSink;
   NSMutableArray *permissions = [NSMutableArray new];
   
   bool cameraPermission = [PermissionsController checkCameraPermission];
-  bool microphonePermission = [PermissionsController checkMicrophonePermissionGranted];
+  bool microphonePermission = [PermissionsController checkMicrophonePermission];
   
   if (cameraPermission) {
     [permissions addObject:@"camera"];
@@ -352,7 +352,7 @@ FlutterEventSink imageStreamEventSink;
     [permissions addObject:@"camera"];
   }
   
-  const BOOL microphoneGranted = [PermissionsController checkMicrophonePermissionGranted];
+  const BOOL microphoneGranted = [PermissionsController checkMicrophonePermission];
   if (microphoneGranted) {
     [permissions addObject:@"record_audio"];
   }

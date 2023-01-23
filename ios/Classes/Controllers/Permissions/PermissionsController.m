@@ -28,7 +28,7 @@
   return permissionsGranted;
 }
 
-+ (BOOL)checkMicrophonePermissionGranted {
++ (BOOL)checkMicrophonePermission {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
   
   __block BOOL permissionsGranted;
