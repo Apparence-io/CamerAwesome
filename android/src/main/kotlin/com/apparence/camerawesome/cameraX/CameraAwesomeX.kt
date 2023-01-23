@@ -71,6 +71,29 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private var lastRecordedVideoSubscription: Disposable? = null
     private var colorMatrix: List<Double>? = null
 
+    private val noneFilter: List<Double> = listOf(
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+    )
+
 
     @SuppressLint("RestrictedApi")
     override fun setupCamera(
@@ -230,7 +253,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         CamerawesomePlugin.TAG,
                         "Success capturing picture ${outputFileResults.savedUri}, with location: ${exifPreferences.saveGPSLocation}"
                     )
-                    if (colorMatrix != null) {
+                    if (colorMatrix != null && noneFilter != colorMatrix) {
                         val exif =
                             ExifInterface(outputFileResults.savedUri!!.path!!)
 
