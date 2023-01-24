@@ -242,8 +242,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             begin: _previousAspectRatioValue,
                             end: _aspectRatioValue,
                           ),
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut,
+                          duration: const Duration(milliseconds: 700),
+                          curve: Curves.fastLinearToSlowEaseIn,
                         ),
                 ),
                 if (widget.previewDecoratorBuilder != null)
