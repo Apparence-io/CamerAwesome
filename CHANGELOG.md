@@ -2,9 +2,10 @@
 
 - Add filters for photo mode.
 - Rework UI for awesome layout.
-- Add start and stop method for image analysis
+- Add start and stop method for image analysis.
 - **BREAKING** Location and audio recording permissions are now optional. Add them to your
   AndroidManifest manually if you need them.
+- Fix preview aspectRatio on iOS.
 
 # 1.1.0
 
