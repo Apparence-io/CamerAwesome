@@ -1,54 +1,56 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:ui';
 
 import 'package:colorfilter_generator/addons.dart';
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:colorfilter_generator/presets.dart';
-import 'package:photofilters/photofilters.dart' as PhotoFilters;
+import 'package:photofilters/photofilters.dart' as photofilters;
 
 // TODO: colorfilter_generator can be removed from dependencies
 // find a way to do it with photofilters only
 class AwesomeFilter {
   final String _name;
-  final PhotoFilters.Filter _outputFilter;
+  final photofilters.Filter _outputFilter;
   final List<double> matrix;
 
   AwesomeFilter({
     required String name,
-    required PhotoFilters.Filter outputFilter,
+    required photofilters.Filter outputFilter,
     required this.matrix,
   })  : _name = name,
         _outputFilter = outputFilter;
 
   ColorFilter get preview => ColorFilter.matrix(matrix);
 
-  PhotoFilters.Filter get output => _outputFilter;
+  photofilters.Filter get output => _outputFilter;
 
   String get name => _name;
 
   String get id => _name.toUpperCase().replaceAll(' ', '_');
 
   static AwesomeFilter get None => AwesomeFilter(
-        // TODO: add translation
-        name: 'Original',
-        outputFilter: PhotoFilters.NoFilter(),
+    // TODO: add translation
+    name: 'Original',
+        outputFilter: photofilters.NoFilter(),
         matrix: PresetFilters.none.matrix,
       );
 
   static AwesomeFilter get AddictiveBlue => AwesomeFilter(
     name: 'Addictive Blue',
-        outputFilter: PhotoFilters.AddictiveBlueFilter(),
+        outputFilter: photofilters.AddictiveBlueFilter(),
         matrix: PresetFilters.addictiveBlue.matrix,
       );
 
   static AwesomeFilter get AddictiveRed => AwesomeFilter(
     name: 'Addictive Red',
-        outputFilter: PhotoFilters.AddictiveRedFilter(),
+        outputFilter: photofilters.AddictiveRedFilter(),
         matrix: PresetFilters.addictiveRed.matrix,
       );
 
   static AwesomeFilter get Aden => AwesomeFilter(
     name: 'Aden',
-        outputFilter: PhotoFilters.AdenFilter(),
+        outputFilter: photofilters.AdenFilter(),
         matrix: ColorFilterGenerator(
           name: 'Aden',
           filters: [
@@ -60,13 +62,13 @@ class AwesomeFilter {
 
   static AwesomeFilter get Amaro => AwesomeFilter(
     name: 'Amaro',
-        outputFilter: PhotoFilters.AmaroFilter(),
+        outputFilter: photofilters.AmaroFilter(),
         matrix: PresetFilters.amaro.matrix,
       );
 
   static AwesomeFilter get Ashby => AwesomeFilter(
     name: 'Ashby',
-        outputFilter: PhotoFilters.AshbyFilter(),
+        outputFilter: photofilters.AshbyFilter(),
         matrix: ColorFilterGenerator(
           name: 'Ashby',
           filters: [
@@ -78,7 +80,7 @@ class AwesomeFilter {
 
   static AwesomeFilter get Brannan => AwesomeFilter(
     name: 'Brannan',
-        outputFilter: PhotoFilters.BrannanFilter(),
+        outputFilter: photofilters.BrannanFilter(),
         matrix: ColorFilterGenerator(
           name: 'Brannan',
           filters: [
@@ -90,7 +92,7 @@ class AwesomeFilter {
 
   static AwesomeFilter get Brooklyn => AwesomeFilter(
     name: 'Brooklyn',
-        outputFilter: PhotoFilters.BrooklynFilter(),
+        outputFilter: photofilters.BrooklynFilter(),
         matrix: ColorFilterGenerator(
           name: 'Brooklyn',
           filters: [
@@ -109,19 +111,19 @@ class AwesomeFilter {
 
   static AwesomeFilter get Clarendon => AwesomeFilter(
     name: 'Clarendon',
-        outputFilter: PhotoFilters.ClarendonFilter(),
+        outputFilter: photofilters.ClarendonFilter(),
         matrix: PresetFilters.clarendon.matrix,
       );
 
   static AwesomeFilter get Crema => AwesomeFilter(
     name: 'Crema',
-        outputFilter: PhotoFilters.CremaFilter(),
+        outputFilter: photofilters.CremaFilter(),
         matrix: PresetFilters.crema.matrix,
       );
 
   static AwesomeFilter get Dogpatch => AwesomeFilter(
     name: 'Dogpatch',
-        outputFilter: PhotoFilters.DogpatchFilter(),
+        outputFilter: photofilters.DogpatchFilter(),
         matrix: PresetFilters.dogpatch.matrix,
       );
 
@@ -139,19 +141,19 @@ class AwesomeFilter {
 
   static AwesomeFilter get Gingham => AwesomeFilter(
     name: 'Gingham',
-        outputFilter: PhotoFilters.GinghamFilter(),
+        outputFilter: photofilters.GinghamFilter(),
         matrix: PresetFilters.gingham.matrix,
       );
 
   static AwesomeFilter get Ginza => AwesomeFilter(
     name: 'Ginza',
-        outputFilter: PhotoFilters.GinzaFilter(),
+        outputFilter: photofilters.GinzaFilter(),
         matrix: PresetFilters.ginza.matrix,
       );
 
   static AwesomeFilter get Hefe => AwesomeFilter(
     name: 'Hefe',
-        outputFilter: PhotoFilters.HefeFilter(),
+        outputFilter: photofilters.HefeFilter(),
         matrix: PresetFilters.hefe.matrix,
       );
 
@@ -163,19 +165,19 @@ class AwesomeFilter {
 
   static AwesomeFilter get Hudson => AwesomeFilter(
     name: 'Hudson',
-        outputFilter: PhotoFilters.HudsonFilter(),
+        outputFilter: photofilters.HudsonFilter(),
         matrix: PresetFilters.hudson.matrix,
       );
 
   static AwesomeFilter get Inkwell => AwesomeFilter(
     name: 'Inkwell',
-        outputFilter: PhotoFilters.InkwellFilter(),
+        outputFilter: photofilters.InkwellFilter(),
         matrix: PresetFilters.inkwell.matrix,
       );
 
   static AwesomeFilter get Juno => AwesomeFilter(
     name: 'Juno',
-        outputFilter: PhotoFilters.JunoFilter(),
+        outputFilter: photofilters.JunoFilter(),
         matrix: PresetFilters.juno.matrix,
       );
 
@@ -187,19 +189,19 @@ class AwesomeFilter {
 
   static AwesomeFilter get Lark => AwesomeFilter(
     name: 'Lark',
-        outputFilter: PhotoFilters.LarkFilter(),
+        outputFilter: photofilters.LarkFilter(),
         matrix: PresetFilters.lark.matrix,
       );
 
   static AwesomeFilter get LoFi => AwesomeFilter(
     name: 'Lo-Fi',
-        outputFilter: PhotoFilters.LoFiFilter(),
+        outputFilter: photofilters.LoFiFilter(),
         matrix: PresetFilters.loFi.matrix,
       );
 
   static AwesomeFilter get Ludwig => AwesomeFilter(
     name: 'Ludwig',
-        outputFilter: PhotoFilters.LudwigFilter(),
+        outputFilter: photofilters.LudwigFilter(),
         matrix: PresetFilters.ludwig.matrix,
       );
 
@@ -217,7 +219,7 @@ class AwesomeFilter {
 
   static AwesomeFilter get Moon => AwesomeFilter(
     name: 'Moon',
-        outputFilter: PhotoFilters.MoonFilter(),
+        outputFilter: photofilters.MoonFilter(),
         matrix: PresetFilters.moon.matrix,
       );
 
@@ -229,13 +231,13 @@ class AwesomeFilter {
 
   static AwesomeFilter get Perpetua => AwesomeFilter(
     name: 'Perpetua',
-        outputFilter: PhotoFilters.PerpetuaFilter(),
+        outputFilter: photofilters.PerpetuaFilter(),
         matrix: PresetFilters.perpetua.matrix,
       );
 
   static AwesomeFilter get Reyes => AwesomeFilter(
     name: 'Reyes',
-        outputFilter: PhotoFilters.ReyesFilter(),
+        outputFilter: photofilters.ReyesFilter(),
         matrix: PresetFilters.reyes.matrix,
       );
 
@@ -247,7 +249,7 @@ class AwesomeFilter {
 
   static AwesomeFilter get Sierra => AwesomeFilter(
     name: 'Sierra',
-        outputFilter: PhotoFilters.SierraFilter(),
+        outputFilter: photofilters.SierraFilter(),
         matrix: PresetFilters.sierra.matrix,
       );
 
@@ -259,19 +261,19 @@ class AwesomeFilter {
 
   static AwesomeFilter get Slumber => AwesomeFilter(
     name: 'Slumber',
-        outputFilter: PhotoFilters.SlumberFilter(),
+        outputFilter: photofilters.SlumberFilter(),
         matrix: PresetFilters.slumber.matrix,
       );
 
   static AwesomeFilter get Stinson => AwesomeFilter(
     name: 'Stinson',
-        outputFilter: PhotoFilters.StinsonFilter(),
+        outputFilter: photofilters.StinsonFilter(),
         matrix: PresetFilters.stinson.matrix,
       );
 
   static AwesomeFilter get Sutro => AwesomeFilter(
     name: 'Sutro',
-        outputFilter: PhotoFilters.SutroFilter(),
+        outputFilter: photofilters.SutroFilter(),
         matrix: PresetFilters.sutro.matrix,
       );
 
@@ -295,7 +297,7 @@ class AwesomeFilter {
 
   static AwesomeFilter get Walden => AwesomeFilter(
       name: 'Walden',
-      outputFilter: PhotoFilters.WaldenFilter(),
+      outputFilter: photofilters.WaldenFilter(),
       matrix: ColorFilterGenerator(
         name: "Walden",
         filters: [
@@ -305,14 +307,14 @@ class AwesomeFilter {
       ).matrix);
 
   static AwesomeFilter get Willow => AwesomeFilter(
-        name: 'Willow',
-        outputFilter: PhotoFilters.WillowFilter(),
+    name: 'Willow',
+        outputFilter: photofilters.WillowFilter(),
         matrix: PresetFilters.willow.matrix,
       );
 
   static AwesomeFilter get XProII => AwesomeFilter(
-        name: 'X-Pro II',
-        outputFilter: PhotoFilters.XProIIFilter(),
+    name: 'X-Pro II',
+        outputFilter: photofilters.XProIIFilter(),
         matrix: ColorFilterGenerator(
           name: "X-Pro II",
           filters: [

@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/filters/awesome_filter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

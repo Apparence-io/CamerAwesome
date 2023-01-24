@@ -13,13 +13,10 @@ enum PigeonSensorType {
   ///
   /// The wide angle sensor is the default sensor for iOS
   wideAngle,
-
   /// A built-in camera with a shorter focal length than that of the wide-angle camera.
   ultraWideAngle,
-
   /// A built-in camera device with a longer focal length than the wide-angle camera.
   telephoto,
-
   /// A device that consists of two cameras, one Infrared and one YUV.
   ///
   /// iOS only
@@ -151,10 +148,8 @@ class PigeonSensorTypeDevice {
     );
   }
 }
-
 class _CameraInterfaceCodec extends StandardMessageCodec {
   const _CameraInterfaceCodec();
-
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is ExifPreferences) {
@@ -996,6 +991,28 @@ class CameraInterface {
         'dev.flutter.pigeon.CameraInterface.stopAnalysis', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList = await channel.send(null) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setFilter(List<double?> arg_matrix) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.setFilter', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_matrix]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

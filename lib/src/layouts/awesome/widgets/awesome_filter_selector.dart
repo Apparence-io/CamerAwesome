@@ -1,10 +1,7 @@
-import 'package:camerawesome/src/orchestrator/models/filters/awesome_filter.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/models/filters/awesome_filters.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:flutter/material.dart';
-
-import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/services.dart';
 
 class AwesomeFilterSelector extends StatefulWidget {
@@ -82,7 +79,7 @@ class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
                   builder: (BuildContext context) {
                     return AwesomeBouncingWidget(
                       onTap: () {
-                        _controller!.animateToPage(
+                        _controller.animateToPage(
                           presetsIds.indexOf(filter.id),
                           curve: Curves.fastLinearToSlowEaseIn,
                           duration: const Duration(milliseconds: 700),

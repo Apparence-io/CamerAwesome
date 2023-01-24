@@ -30,13 +30,10 @@ enum class PigeonSensorType(val raw: Int) {
    * The wide angle sensor is the default sensor for iOS
    */
   WIDEANGLE(0),
-
   /** A built-in camera with a shorter focal length than that of the wide-angle camera. */
   ULTRAWIDEANGLE(1),
-
   /** A built-in camera device with a longer focal length than the wide-angle camera. */
   TELEPHOTO(2),
-
   /**
    * A device that consists of two cameras, one Infrared and one YUV.
    *
@@ -79,7 +76,6 @@ data class PreviewSize(
       return PreviewSize(width, height)
     }
   }
-
   fun toList(): List<Any?> {
     return listOf<Any?>(
       width,
@@ -100,7 +96,6 @@ data class ExifPreferences(
       return ExifPreferences(saveGPSLocation)
     }
   }
-
   fun toList(): List<Any?> {
     return listOf<Any?>(
       saveGPSLocation,
@@ -122,7 +117,6 @@ data class VideoOptions(
       return VideoOptions(fileType, codec)
     }
   }
-
   fun toList(): List<Any?> {
     return listOf<Any?>(
       fileType,
@@ -155,7 +149,6 @@ data class PigeonSensorTypeDevice(
       return PigeonSensorTypeDevice(sensorType, name, iso, flashAvailable, uid)
     }
   }
-
   fun toList(): List<Any?> {
     return listOf<Any?>(
       sensorType?.raw,
@@ -176,19 +169,16 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
           ExifPreferences.fromList(it)
         }
       }
-
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           PigeonSensorTypeDevice.fromList(it)
         }
       }
-
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           PreviewSize.fromList(it)
         }
       }
-
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           PreviewSize.fromList(it)
@@ -221,17 +211,14 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-
       is PreviewSize -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
-
       is VideoOptions -> {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-
       else -> super.writeValue(stream, value)
     }
   }
@@ -251,7 +238,6 @@ interface CameraInterface {
   )
 
   fun checkPermissions(): List<String>
-
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
    * refused but the app should still be able to run.
@@ -293,13 +279,13 @@ interface CameraInterface {
   fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
   fun startAnalysis()
   fun stopAnalysis()
+  fun setFilter(matrix: List<Double>)
 
   companion object {
     /** The codec used by CameraInterface. */
     val codec: MessageCodec<Any?> by lazy {
       CameraInterfaceCodec
     }
-
     /** Sets up an instance of `CameraInterface` to handle messages through the `binaryMessenger`. */
     @Suppress("UNCHECKED_CAST")
     fun setUp(binaryMessenger: BinaryMessenger, api: CameraInterface?) {
@@ -1037,6 +1023,29 @@ interface CameraInterface {
             var wrapped = listOf<Any?>()
             try {
               api.stopAnalysis()
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Error) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.setFilter",
+          codec
+        )
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            var wrapped = listOf<Any?>()
+            try {
+              val args = message as List<Any?>
+              val matrixArg = args[0] as List<Double>
+              api.setFilter(matrixArg)
               wrapped = listOf<Any?>(null)
             } catch (exception: Error) {
               wrapped = wrapError(exception)

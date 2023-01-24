@@ -9,8 +9,6 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'analysis/analysis_controller.dart';
-
 /// This class handle the current state of the camera
 /// - [PhotoCameraState]
 /// - [VideoCameraState]

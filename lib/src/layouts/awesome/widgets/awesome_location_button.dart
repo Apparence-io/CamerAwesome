@@ -2,9 +2,6 @@ import 'package:camerawesome/src/layouts/awesome/widgets/utils/awesome_circle_ic
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
 
-import 'utils/awesome_bouncing_widget.dart';
-import 'awesome_oriented_widget.dart';
-
 class AwesomeLocationButton extends StatelessWidget {
   final CameraState state;
 
