@@ -1,8 +1,6 @@
+import 'package:camerawesome/src/layouts/awesome/widgets/utils/awesome_circle_icon_button.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
-
-import 'awesome_bouncing_widget.dart';
-import 'awesome_oriented_widget.dart';
 
 class AwesomeLocationButton extends StatelessWidget {
   final CameraState state;
@@ -22,24 +20,14 @@ class AwesomeLocationButton extends StatelessWidget {
             return const SizedBox.shrink();
           }
           final saveGpsLocation = snapshot.data;
-          return AwesomeOrientedWidget(
-            child: AwesomeBouncingWidget(
-              child: Container(
-                color: Colors.transparent,
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Icon(
-                    saveGpsLocation == true
-                        ? Icons.location_pin
-                        : Icons.location_off_outlined,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              onTap: () => state.when(onPhotoMode: (pm) {
-                pm.shouldSaveGpsLocation(!(saveGpsLocation ?? false));
-              }),
-            ),
+
+          return AwesomeCircleButton(
+            icon: saveGpsLocation == true
+                ? Icons.location_pin
+                : Icons.location_off_outlined,
+            onTap: () => state.when(onPhotoMode: (pm) {
+              pm.shouldSaveGpsLocation(!(saveGpsLocation ?? false));
+            }),
           );
         },
       );

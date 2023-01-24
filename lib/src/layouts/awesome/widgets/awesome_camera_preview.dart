@@ -147,6 +147,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 height: maxSize.shortestSide,
               );
             }
+
+            final previewTexture = Texture(textureId: _textureId!);
+
             final preview = SizedBox(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -171,7 +174,19 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             : null,
                         onPreviewScale: widget.onPreviewScale,
                         initialZoom: widget.state.sensorConfig.zoom,
-                        child: Texture(textureId: _textureId!),
+                        // if there is no filter, just display texture
+                        // to improve a little bit performances
+                        child: StreamBuilder<AwesomeFilter>(
+                            stream: widget.state.filter$,
+                            builder: (context, snapshot) {
+                              return snapshot.hasData &&
+                                      snapshot.data != AwesomeFilter.None
+                                  ? ColorFiltered(
+                                      colorFilter: snapshot.data!.preview,
+                                      child: previewTexture,
+                                    )
+                                  : previewTexture;
+                            }),
                       ),
                     ),
                   ),

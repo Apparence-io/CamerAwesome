@@ -44,6 +44,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 🎥 Record video                |    ✅    |  ✅  |
 | 🔈 Enable/disable audio        |    ✅    |  ✅  |
 | 🎞 Take photos                 |    ✅    |  ✅  |
+| 🌆 Photo live filters          |    ✅    |  ✅  |
 | 🌤 Exposure level              |    ✅    |  ✅  |
 | 📡 Broadcast live image stream |    ✅    |  ✅  |
 | 👁 Zoom                        |    ✅    |  ✅  |
@@ -58,26 +59,27 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ## 📖&nbsp; Installation and usage
 
-### Add the package in your pubspec.yaml 
+### Add the package in your pubspec.yaml
 
 ```yaml
 dependencies:
-  camerawesome: ^1.0.0-rc3
+  camerawesome: ^1.2.0
   ...
 ```
 
 ### Set permissions
-   - **iOS** add these on ```ios/Runner/Info.plist``` file
+
+- **iOS** add these on ```ios/Runner/Info.plist``` file
 
 ```xml
-<key>NSCameraUsageDescription</key>
-<string>Your own description</string>
 
-<key>NSMicrophoneUsageDescription</key>
-<string>To enable microphone access when recording video</string>
+<key>NSCameraUsageDescription</key><string>Your own description</string>
 
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>To enable GPS location access for Exif data</string>
+<key>NSMicrophoneUsageDescription</key><string>To enable microphone access when recording video
+</string>
+
+<key>NSLocationWhenInUseUsageDescription</key><string>To enable GPS location access for Exif data
+</string>
 ```
 
 - **Android**
@@ -124,7 +126,8 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 
 Just use our builder. <br>
 That's all you need to create a complete camera experience within you app.
-```dart
+
+``` dart
 CameraAwesomeBuilder.awesome(
     saveConfig: SaveConfig.image(
         pathBuilder: _path(),
@@ -134,7 +137,9 @@ CameraAwesomeBuilder.awesome(
     },
 ),
 ```
+
 ------
+
 ## 🎨 Creating a custom interface
 
 Our builder provides a custom factory. <br>
@@ -145,22 +150,21 @@ The camera preview will be visible behind what you will provide to our builder.
 > Only the camera preview is not customizable yet
 
 ```dart
-CameraAwesomeBuilder.custom(
-    saveConfig: SaveConfig.image(
-        pathBuilder: _path(),)
-,
-builder: (
-state, previewSize, previewRect) {
+CameraAwesomeBuilder.custom
+(
+saveConfig: SaveConfig.image(pathBuilder: _path()),
+builder: (state, previewSize, previewRect) {
 // create your interface here 
-    },
-),
+},
+)
 ```
 
 > See more in documentation
 
 ### Working with the custom builder
 
-Here is the definition of our builder method. 
+Here is the definition of our builder method.
+
 ```dart
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraState, PreviewSize previewSize, Rect previewRect);
 ```
@@ -171,7 +175,8 @@ Depending on which state is our camera experience you will have access to some d
 ```previewSize``` and ```previewRect``` might be used to position your UI around or on top of the camera preview.
 <br>
 
-#### How camerAwesome states works ? 
+#### How camerAwesome states works ?
+
 Using the state you can do anything you need without having to think about the camera flow<br><br>
 
 - On app start we are in ```PreparingCameraState```<br>
@@ -196,8 +201,8 @@ state.when(
 <br>
 
 -----
-## 🔬 Analysis mode
 
+## 🔬 Analysis mode
 
 Use this to achieve
 - QR-Code scanning.
@@ -215,11 +220,16 @@ CameraAwesomeBuilder.awesome(
     saveConfig: SaveConfig.image(
         pathBuilder: _path(),
     ),
-    onImageForAnalysis: analyzeImage,
-    imageAnalysisConfig: AnalysisConfig( // only for Android for now
-        outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
-        width: 1024,
-    ),
+onImageForAnalysis: analyzeImage,
+imageAnalysisConfig: AnalysisConfig(
+outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
+width: 1024,
+maxFramesPerSecond
+:
+30
+,
+)
+,
 ),
 ```
 
@@ -231,7 +241,9 @@ CameraAwesomeBuilder.awesome(
 > See more in documentation
 
 -----
+
 ## 🐽 Setting sensors settings
+
 Through state you can access to a ```SensorConfig``` class. 
 <br>
 
@@ -241,7 +253,47 @@ Through state you can access to a ```SensorConfig``` class.
 | setFlashMode     | changing flash between NONE,ON,AUTO,ALWAYS                 |
 | setBrightness    | change brightness level manually (better to let this auto) |
 
-All of this configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
+All of this configurations are listenable through a stream so your UI can automatically get updated
+according to the actual configuration.
+
+<br>
+
+## 🌆 Photo live filters
+
+Apply live filters to your pictures using the built-in interface:
+![Built-in live filters](docs/img/filters.gif)
+
+You can also choose to use a specific filter from the start:
+
+``` dart
+CameraAwesomeBuilder.awesome(
+  // other params
+  filter: AwesomeFilter.AddictiveRed,
+)
+```
+
+Or set the filter programmatically:
+
+``` dart
+CameraAwesomeBuilder.custom(
+  builder: (cameraState, previewSize, previewRect) {
+    return cameraState.when(
+      onPreparingCamera: (state) =>
+      const Center(child: CircularProgressIndicator()),
+      onPhotoMode: (state) =>
+          TakePhotoUI(state, onFilterTap: () {
+            state.setFilter(AwesomeFilter.Sierra);
+          }),
+      onVideoMode: (state) => RecordVideoUI(state, recording: false),
+      onVideoRecordingMode: (state) =>
+          RecordVideoUI(state, recording: true),
+    );
+  },
+)
+```
+
+See all available filters in
+the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
 
 <br>
 

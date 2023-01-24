@@ -25,6 +25,10 @@ class PreparingCameraState extends CameraState {
   CaptureMode? get captureMode => null;
 
   Future<void> start() async {
+    final filter = cameraContext.filterController.valueOrNull;
+    if (filter != null) {
+      await setFilter(filter);
+    }
     switch (nextCaptureMode) {
       case CaptureMode.photo:
         await _startPhotoMode();

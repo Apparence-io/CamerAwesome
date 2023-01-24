@@ -10,6 +10,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 export 'src/builder/camera_awesome_builder.dart';
+
 // built in widgets
 export 'src/layouts/awesome/widgets/widgets.dart';
 export 'src/orchestrator/models/models.dart';
@@ -430,5 +431,9 @@ class CamerawesomePlugin {
 
   static Future<void> stopAnalysis() {
     return CameraInterface().stopAnalysis();
+  }
+
+  static Future<void> setFilter(AwesomeFilter filter) {
+    return CameraInterface().setFilter(filter.matrix);
   }
 }

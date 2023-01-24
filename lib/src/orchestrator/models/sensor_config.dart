@@ -13,6 +13,8 @@ class SensorConfig {
 
   late Stream<FlashMode> flashMode$;
 
+  late Stream<AwesomeFilter> filter$;
+
   late Stream<SensorType> sensorType$;
 
   late BehaviorSubject<CameraAspectRatios> _aspectRatioController;
@@ -30,7 +32,7 @@ class SensorConfig {
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
 
-  /// set brightness correction manually range [0,1] (optionnal)
+  /// set brightness correction manually range [0,1] (optional)
   late Stream<double>? brightness$;
 
   late BehaviorSubject<double> _zoomController;

@@ -217,4 +217,6 @@ abstract class CameraInterface {
   void startAnalysis();
 
   void stopAnalysis();
+
+  void setFilter(List<double> matrix);
 }

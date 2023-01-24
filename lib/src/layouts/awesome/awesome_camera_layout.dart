@@ -1,8 +1,11 @@
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_button.dart';
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_name_indicator.dart';
+import 'package:camerawesome/src/layouts/awesome/widgets/awesome_filter_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../camerawesome_plugin.dart';
 
-/// This widget doesnt handle [PreparingCameraState]
+/// This widget doesn't handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {
   final CameraState state;
   final OnMediaTap onMediaTap;
@@ -22,8 +25,49 @@ class AwesomeCameraLayout extends StatelessWidget {
           const SizedBox(height: 16),
           AwesomeTopActions(state: state),
           const Spacer(),
-          AwesomeSensorTypeSelector(state: state),
+          SizedBox(
+            width: double.infinity,
+            child: Stack(
+              children: [
+                SizedBox(
+                  height: 50,
+                  child: StreamBuilder<bool>(
+                    stream: state.filterSelectorOpened$,
+                    builder: (_, snapshot) {
+                      return snapshot.data == true
+                          ? Align(
+                              alignment: Alignment.bottomCenter,
+                              child: AwesomeFilterNameIndicator(state: state))
+                          : Center(
+                              child: AwesomeSensorTypeSelector(state: state));
+                    },
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 20,
+                  child: AwesomeFilterButton(state: state),
+                )
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
+          AwesomeBackground(
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.fastLinearToSlowEaseIn,
+              child: StreamBuilder<bool>(
+                stream: state.filterSelectorOpened$,
+                builder: (_, snapshot) {
+                  return snapshot.data == true
+                      ? AwesomeFilterSelector(state: state)
+                      : const SizedBox(
+                          width: double.infinity,
+                        );
+                },
+              ),
+            ),
+          ),
           AwesomeBackground(
             child: SafeArea(
               top: false,
@@ -82,45 +126,40 @@ class AwesomeBottomActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Flexible(
-            flex: 0,
-            child: state is VideoRecordingCameraState
-                ? AwesomePauseResumeButton(
-                    state: state as VideoRecordingCameraState)
-                : AwesomeCameraSwitchButton(state: state),
-          ),
-          // Spacer(),
-          AwesomeCaptureButton(
-            state: state,
-          ),
-          // Spacer(),
-          Flexible(
-            flex: 0,
-            child: state is VideoRecordingCameraState
-                ? const SizedBox(width: 48)
-                : StreamBuilder<MediaCapture?>(
-                    stream: state.captureState$,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const SizedBox(width: 72, height: 72);
-                      }
-                      return SizedBox(
-                        width: 72,
-                        child: AwesomeMediaPreview(
-                          mediaCapture: snapshot.requireData,
-                          onMediaTap: onMediaTap,
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Flexible(
+          child: state is VideoRecordingCameraState
+              ? AwesomePauseResumeButton(
+                  state: state as VideoRecordingCameraState)
+              : AwesomeCameraSwitchButton(state: state),
+        ),
+        // Spacer(),
+        AwesomeCaptureButton(
+          state: state,
+        ),
+        // Spacer(),
+        Flexible(
+          child: state is VideoRecordingCameraState
+              ? const SizedBox(width: 48)
+              : StreamBuilder<MediaCapture?>(
+                  stream: state.captureState$,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox(width: 60, height: 60);
+                    }
+                    return SizedBox(
+                      width: 60,
+                      child: AwesomeMediaPreview(
+                        mediaCapture: snapshot.requireData,
+                        onMediaTap: onMediaTap,
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }
