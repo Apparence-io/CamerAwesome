@@ -336,4 +336,8 @@ FlutterEventSink imageStreamEventSink;
   });
 }
 
+- (void)setFilterMatrix:(NSArray<NSNumber *> *)matrix error:(FlutterError *_Nullable *_Nonnull)error {
+  // TODO: try to use CIFilter when taking a picture
+}
+
 @end
