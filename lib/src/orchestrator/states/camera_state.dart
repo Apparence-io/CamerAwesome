@@ -74,8 +74,8 @@ abstract class CameraState {
     cameraContext.toggleFilterSelector();
   }
 
-  Future<void> setFilter(AwesomeFilter addictiveBlue) {
-    return cameraContext.setFilter(addictiveBlue);
+  Future<void> setFilter(AwesomeFilter newFilter) {
+    return cameraContext.setFilter(newFilter);
   }
 
   /// The sensor config allows you to
