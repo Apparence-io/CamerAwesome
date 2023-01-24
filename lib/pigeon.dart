@@ -154,6 +154,7 @@ class PigeonSensorTypeDevice {
 
 class _CameraInterfaceCodec extends StandardMessageCodec {
   const _CameraInterfaceCodec();
+
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is ExifPreferences) {
@@ -915,14 +916,17 @@ class CameraInterface {
     }
   }
 
-  Future<void> setupImageAnalysisStream(
-      String arg_format, int arg_width, double? arg_maxFramesPerSecond) async {
+  Future<void> setupImageAnalysisStream(String arg_format, int arg_width,
+      double? arg_maxFramesPerSecond, bool arg_autoStart) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-            .send(<Object?>[arg_format, arg_width, arg_maxFramesPerSecond])
-        as List<Object?>?;
+    final List<Object?>? replyList = await channel.send(<Object?>[
+      arg_format,
+      arg_width,
+      arg_maxFramesPerSecond,
+      arg_autoStart
+    ]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -963,6 +967,48 @@ class CameraInterface {
       );
     } else {
       return (replyList[0] as bool?)!;
+    }
+  }
+
+  Future<void> startAnalysis() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.startAnalysis', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList = await channel.send(null) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> stopAnalysis() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.stopAnalysis', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList = await channel.send(null) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return;
     }
   }
 }

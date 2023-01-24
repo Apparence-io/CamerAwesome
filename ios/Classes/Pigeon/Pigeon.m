@@ -809,14 +809,15 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setupImageAnalysisStreamFormat:width:maxFramesPerSecond:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setupImageAnalysisStreamFormat:width:maxFramesPerSecond:error:)", api);
+      NSCAssert([api respondsToSelector:@selector(setupImageAnalysisStreamFormat:width:maxFramesPerSecond:autoStart:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setupImageAnalysisStreamFormat:width:maxFramesPerSecond:autoStart:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSString *arg_format = GetNullableObjectAtIndex(args, 0);
         NSNumber *arg_width = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_maxFramesPerSecond = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_autoStart = GetNullableObjectAtIndex(args, 3);
         FlutterError *error;
-        [api setupImageAnalysisStreamFormat:arg_format width:arg_width maxFramesPerSecond:arg_maxFramesPerSecond error:&error];
+        [api setupImageAnalysisStreamFormat:arg_format width:arg_width maxFramesPerSecond:arg_maxFramesPerSecond autoStart:arg_autoStart error:&error];
         callback(wrapResult(nil, error));
       }];
     }
@@ -838,6 +839,42 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         [api setExifPreferencesExifPreferences:arg_exifPreferences completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.CameraInterface.startAnalysis"
+        binaryMessenger:binaryMessenger
+        codec:CameraInterfaceGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(startAnalysisWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(startAnalysisWithError:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api startAnalysisWithError:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.CameraInterface.stopAnalysis"
+        binaryMessenger:binaryMessenger
+        codec:CameraInterfaceGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(stopAnalysisWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(stopAnalysisWithError:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api stopAnalysisWithError:&error];
+        callback(wrapResult(nil, error));
       }];
     }
     else {
