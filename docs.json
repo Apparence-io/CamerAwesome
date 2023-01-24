@@ -33,6 +33,10 @@
           "/widgets/awesome_oriented_widget"
         ],
         [
+          "Filters",
+          "/widgets/awesome_filters"
+        ],
+        [
           "Buttons",
           "/widgets/awesome_buttons"
         ],
