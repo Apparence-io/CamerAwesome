@@ -97,11 +97,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         this.exifPreferences = exifPreferences
         orientationStreamListener =
             OrientationStreamListener(activity!!, listOf(sensorOrientationListener, cameraState))
-
-        if (enableImageStream) {
-            imageStreamChannel.setStreamHandler(cameraState)
-        }
-
+        imageStreamChannel.setStreamHandler(cameraState)
         cameraState.updateLifecycle(activity!!)
         // Zoom should be set after updateLifeCycle
         if (zoom > 0) {
@@ -121,11 +117,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     override fun setupImageAnalysisStream(
         format: String,
         width: Long,
-        maxFramesPerSecond: Double?
+        maxFramesPerSecond: Double?,
+        autoStart: Boolean
     ) {
         cameraState.apply {
             try {
-                this.imageAnalysisBuilder = ImageAnalysisBuilder.configure(
+                imageAnalysisBuilder = ImageAnalysisBuilder.configure(
                     aspectRatio ?: AspectRatio.RATIO_4_3,
                     when (format.uppercase()) {
                         "YUV_420" -> OutputImageFormat.YUV_420_888
@@ -136,6 +133,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     executor(activity!!), width,
                     maxFramesPerSecond = maxFramesPerSecond,
                 )
+                enableImageStream = autoStart
                 updateLifecycle(activity!!)
             } catch (e: Exception) {
                 Log.e(CamerawesomePlugin.TAG, "error while enable image analysis", e)
@@ -170,6 +168,20 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         } else {
             this.exifPreferences = exifPreferences
             callback(true)
+        }
+    }
+
+    override fun startAnalysis() {
+        cameraState.apply {
+            enableImageStream = true
+            updateLifecycle(activity!!)
+        }
+    }
+
+    override fun stopAnalysis() {
+        cameraState.apply {
+            enableImageStream = false
+            updateLifecycle(activity!!)
         }
     }
 
@@ -535,7 +547,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 rota90, rota270 -> {
                     PreviewSize(res.height.toDouble(), res.width.toDouble())
                 }
-
                 else -> {
                     PreviewSize(res.width.toDouble(), res.height.toDouble())
                 }

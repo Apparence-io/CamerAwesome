@@ -11,26 +11,30 @@ class AnalysisController {
   final AnalysisConfig conf;
 
   StreamSubscription? imageSubscription;
+  bool _analysisEnabled;
 
-  AnalysisController({
+  AnalysisController._({
     required Stream<Map<String, dynamic>>? images$,
     required this.conf,
     this.onImageListener,
-  }) : _images$ = images$;
+    required bool analysisEnabled,
+  })  : _images$ = images$,
+        _analysisEnabled = analysisEnabled;
 
   factory AnalysisController.fromPlugin({
     OnImageForAnalysis? onImageListener,
     required AnalysisConfig? conf,
   }) =>
-      AnalysisController(
+      AnalysisController._(
         onImageListener: onImageListener,
         conf: conf ?? AnalysisConfig(),
         images$: CamerawesomePlugin.listenCameraImages(),
+        analysisEnabled: conf?.autoStart ?? true,
       );
 
-  Future<void> start() async {
-    if (!enabled) {
-      printLog("...AnalysisController off");
+  Future<void> setup() async {
+    if (onImageListener == null) {
+      printLog("...AnalysisController off, no onImageListener");
       return;
     }
     if (imageSubscription != null) {
@@ -42,16 +46,36 @@ class AnalysisController {
       format: conf.outputFormat,
       width: conf.width,
       maxFramesPerSecond: conf.maxFramesPerSecond,
+      autoStart: conf.autoStart,
     );
 
+    if (conf.autoStart) {
+      await start();
+    }
+    printLog("...AnalysisController setup");
+  }
+
+  get enabled => onImageListener != null && _analysisEnabled;
+
+  Future<bool> start() async {
+    if (onImageListener == null) {
+      return false;
+    }
+    await CamerawesomePlugin.startAnalysis();
     imageSubscription = _images$?.listen((event) async {
       await onImageListener!(AnalysisImage.from(event));
       await CamerawesomePlugin.receivedImageFromStream();
     });
+    _analysisEnabled = true;
     printLog("...AnalysisController started");
+    return true;
   }
 
-  get enabled => onImageListener != null;
+  Future<void> stop() async {
+    _analysisEnabled = false;
+    await CamerawesomePlugin.stopAnalysis();
+    close();
+  }
 
   close() {
     imageSubscription?.cancel();
