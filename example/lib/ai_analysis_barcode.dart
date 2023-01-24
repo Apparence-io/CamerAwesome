@@ -59,11 +59,13 @@ class _MyHomePageState extends State<MyHomePage> {
           outputFormat: InputAnalysisImageFormat.nv21,
           width: 1024,
           maxFramesPerSecond: 5,
+          autoStart: false,
         ),
         builder: (cameraModeState, previewSize, previewRect) {
           return _BarcodeDisplayWidget(
             barcodesStream: _barcodesStream,
             scrollController: _scrollController,
+            analysisController: cameraModeState.analysisController!,
           );
         },
       ),
@@ -168,44 +170,70 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class _BarcodeDisplayWidget extends StatelessWidget {
+class _BarcodeDisplayWidget extends StatefulWidget {
   final Stream<List<String>> barcodesStream;
   final ScrollController scrollController;
+
+  final AnalysisController analysisController;
 
   const _BarcodeDisplayWidget({
     // ignore: unused_element
     super.key,
     required this.barcodesStream,
     required this.scrollController,
+    required this.analysisController,
   });
 
+  @override
+  State<_BarcodeDisplayWidget> createState() => _BarcodeDisplayWidgetState();
+}
+
+class _BarcodeDisplayWidgetState extends State<_BarcodeDisplayWidget> {
   @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        height: 120,
-        padding: const EdgeInsets.all(16),
-        color: Colors.blueGrey[600]!.withOpacity(1),
-        child: StreamBuilder<List<String>>(
-          stream: barcodesStream,
-          builder: (context, value) => !value.hasData
-              ? const SizedBox.expand()
-              : ListView.builder(
-                  controller: scrollController,
-                  itemCount: value.data!.length,
-                  itemBuilder: (context, index) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 2,
-                    ),
-                    child: Text(
-                      value.data![index],
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
+        decoration: BoxDecoration(
+          color: Colors.tealAccent.withOpacity(0.7),
         ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Material(
+            color: Colors.transparent,
+            child: CheckboxListTile(
+              value: widget.analysisController.enabled,
+              onChanged: (newValue) async {
+                if (widget.analysisController.enabled == true) {
+                  await widget.analysisController.stop();
+                } else {
+                  await widget.analysisController.start();
+                }
+                setState(() {});
+              },
+              title: const Text(
+                "Enable barcode scan",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          Container(
+            height: 120,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: StreamBuilder<List<String>>(
+              stream: widget.barcodesStream,
+              builder: (context, value) => !value.hasData
+                  ? const SizedBox.expand()
+                  : ListView.separated(
+                      padding: const EdgeInsets.only(top: 8),
+                      controller: widget.scrollController,
+                      itemCount: value.data!.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 4),
+                      itemBuilder: (context, index) => Text(value.data![index]),
+                    ),
+            ),
+          ),
+        ]),
       ),
     );
   }

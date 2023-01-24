@@ -2,6 +2,7 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Log
 import android.util.Rational
 import android.util.Size
 import android.view.Surface
@@ -102,9 +103,18 @@ data class CameraXState(
                 videoCapture
             },
         ).apply {
-            if (imageAnalysisBuilder != null) {
+            if (enableImageStream && imageAnalysisBuilder != null) {
+                Log.d(
+                    "WXCVBN",
+                    "Analysis enabled - enabled: ${enableImageStream}, imageAnalysisBuilder null: ${imageAnalysisBuilder == null}"
+                )
                 imageAnalysis = imageAnalysisBuilder!!.build()
                 add(imageAnalysis!!)
+            } else {
+                Log.d(
+                    "WXCVBN",
+                    "Analysis disabled - enabled: ${enableImageStream}, imageAnalysisBuilder null: ${imageAnalysisBuilder == null}"
+                )
             }
         }
 
@@ -172,21 +182,27 @@ data class CameraXState(
                 Quality.UHD -> {
                     "UHD"
                 }
+
                 Quality.HIGHEST -> {
                     "HIGHEST"
                 }
+
                 Quality.FHD -> {
                     "FHD"
                 }
+
                 Quality.HD -> {
                     "HD"
                 }
+
                 Quality.LOWEST -> {
                     "LOWEST"
                 }
+
                 Quality.SD -> {
                     "SD"
                 }
+
                 else -> {
                     "unknown"
                 }
@@ -216,12 +232,15 @@ data class CameraXState(
             in 225 until 315 -> {
                 Surface.ROTATION_90
             }
+
             in 135 until 225 -> {
                 Surface.ROTATION_180
             }
+
             in 45 until 135 -> {
                 Surface.ROTATION_270
             }
+
             else -> {
                 Surface.ROTATION_0
             }

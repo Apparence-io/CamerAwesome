@@ -39,7 +39,7 @@ class CameraContext {
   final AnalysisController? analysisController;
 
   /// Preferences concerning Exif (photos metadata)
-  final ExifPreferences exifPreferences;
+  ExifPreferences exifPreferences;
 
   Stream<AwesomeFilter> get filter$ => filterController.stream;
 
@@ -139,7 +139,7 @@ class CameraContext {
     return sensorConfigController.value;
   }
 
-  bool get imageAnalysisEnabled => analysisController != null;
+  bool get imageAnalysisEnabled => analysisController?.enabled == true;
 
   dispose() {
     sensorConfig.dispose();

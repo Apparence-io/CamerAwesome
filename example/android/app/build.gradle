@@ -51,6 +51,9 @@ android {
         targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        // Firbease test lab
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -70,4 +73,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.mlkit:face-detection:16.1.5'
     implementation 'com.google.mlkit:vision-common:17.1.0'
+
+
+    testImplementation 'junit:junit:4.12'
 }

@@ -47,10 +47,17 @@ class PhotoCameraState extends CameraState {
 
   bool get saveGpsLocation => _saveGpsLocationController.value;
 
-  set saveGpsLocation(value) {
-    exifPreferences.saveGPSLocation = value;
-    updateExifPreferences(exifPreferences);
-    _saveGpsLocationController.sink.add(value);
+  Future<void> shouldSaveGpsLocation(bool saveGPS) async {
+    final isGranted = await CamerawesomePlugin.setExifPreferences(
+      ExifPreferences(saveGPSLocation: saveGPS),
+    );
+
+    // check if user location has been granted,
+    // always return true if saveGPS is set to false
+    if (isGranted) {
+      exifPreferences.saveGPSLocation = saveGPS;
+      _saveGpsLocationController.sink.add(saveGPS);
+    }
   }
 
   @override
@@ -92,12 +99,6 @@ class PhotoCameraState extends CameraState {
       _mediaCapture = MediaCapture.failure(filePath: path, exception: e);
     }
     return path;
-  }
-
-  /// Use this to determine if you want to save the GPS location with the photo
-  /// as Exif data or not
-  Future<void> updateExifPreferences(ExifPreferences preferences) async {
-    await CamerawesomePlugin.setExifPreferences(preferences);
   }
 
   /// PRIVATES

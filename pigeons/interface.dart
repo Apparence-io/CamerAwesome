@@ -22,6 +22,9 @@ class VideoOptions {
   String fileType;
   String codec;
 
+  // TODO might add the framerate as well https://stackoverflow.com/questions/57485050/how-to-increase-frame-rate-with-android-camerax-imageanalysis
+  // TODO Add video quality
+
   VideoOptions({
     required this.fileType,
     required this.codec,
@@ -44,7 +47,6 @@ enum PigeonSensorType {
   ///
   /// iOS only
   trueDepth,
-
   unknown;
 
   // SensorType get defaultSensorType => SensorType.wideAngle;
@@ -106,15 +108,23 @@ class PigeonSensorDeviceData {
     this.trueDepth,
   });
 
-  // int get availableBackSensors => [
-  //       wideAngle,
-  //       ultraWideAngle,
-  //       telephoto,
-  //     ].where((element) => element != null).length;
+// int get availableBackSensors => [
+//       wideAngle,
+//       ultraWideAngle,
+//       telephoto,
+//     ].where((element) => element != null).length;
 
-  // int get availableFrontSensors => [
-  //       trueDepth,
-  //     ].where((element) => element != null).length;
+// int get availableFrontSensors => [
+//       trueDepth,
+//     ].where((element) => element != null).length;
+}
+
+enum CamerAwesomePermission {
+  storage,
+  camera,
+  location,
+  // ignore: constant_identifier_names
+  record_audio,
 }
 
 @HostApi()
@@ -132,7 +142,10 @@ abstract class CameraInterface {
 
   List<String> checkPermissions();
 
-  List<String> requestPermissions();
+  /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
+  /// refused but the app should still be able to run.
+  @async
+  List<String> requestPermissions(bool saveGpsLocation);
 
   int getPreviewTextureId();
 
@@ -140,6 +153,7 @@ abstract class CameraInterface {
   @async
   bool takePhoto(String path);
 
+  @async
   void recordVideo(String path, VideoOptions? options);
 
   void pauseVideoRecording();
@@ -175,7 +189,8 @@ abstract class CameraInterface {
 
   void setCaptureMode(String mode);
 
-  void setRecordingAudioMode(bool enableAudio);
+  @async
+  bool setRecordingAudioMode(bool enableAudio);
 
   List<PreviewSize> availableSizes();
 
@@ -193,9 +208,15 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
+    bool autoStart,
   );
 
-  void setExifPreferences(ExifPreferences exifPreferences);
+  @async
+  bool setExifPreferences(ExifPreferences exifPreferences);
+
+  void startAnalysis();
+
+  void stopAnalysis();
 
   void setFilter(List<double> matrix);
 }
