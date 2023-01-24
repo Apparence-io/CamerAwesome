@@ -101,11 +101,11 @@ class AwesomeFilter {
         ).matrix,
       );
 
-  static AwesomeFilter get Charmes => AwesomeFilter(
-    name: 'Charmes',
-        outputFilter: PhotoFilters.CharmesFilter(),
-        matrix: PresetFilters.charmes.matrix,
-      );
+  // static AwesomeFilter get Charmes => AwesomeFilter(
+  //   name: 'Charmes',
+  //       outputFilter: PhotoFilters.CharmesFilter(),
+  //       matrix: PresetFilters.charmes.matrix,
+  //     );
 
   static AwesomeFilter get Clarendon => AwesomeFilter(
     name: 'Clarendon',
@@ -125,17 +125,17 @@ class AwesomeFilter {
         matrix: PresetFilters.dogpatch.matrix,
       );
 
-  static AwesomeFilter get Earlybird => AwesomeFilter(
-    name: 'Earlybird',
-        outputFilter: PhotoFilters.EarlybirdFilter(),
-        matrix: PresetFilters.earlybird.matrix,
-      );
+  // static AwesomeFilter get Earlybird => AwesomeFilter(
+  //   name: 'Earlybird',
+  //       outputFilter: PhotoFilters.EarlybirdFilter(),
+  //       matrix: PresetFilters.earlybird.matrix,
+  //     );
 
-  static AwesomeFilter get f1977 => AwesomeFilter(
-    name: '1977',
-        outputFilter: PhotoFilters.F1977Filter(),
-        matrix: PresetFilters.f1977.matrix,
-      );
+  // static AwesomeFilter get f1977 => AwesomeFilter(
+  //   name: '1977',
+  //       outputFilter: PhotoFilters.F1977Filter(),
+  //       matrix: PresetFilters.f1977.matrix,
+  //     );
 
   static AwesomeFilter get Gingham => AwesomeFilter(
     name: 'Gingham',
@@ -155,11 +155,11 @@ class AwesomeFilter {
         matrix: PresetFilters.hefe.matrix,
       );
 
-  static AwesomeFilter get Helena => AwesomeFilter(
-    name: 'Helena',
-        outputFilter: PhotoFilters.HelenaFilter(),
-        matrix: PresetFilters.helena.matrix,
-      );
+  // static AwesomeFilter get Helena => AwesomeFilter(
+  //   name: 'Helena',
+  //       outputFilter: PhotoFilters.HelenaFilter(),
+  //       matrix: PresetFilters.helena.matrix,
+  //     );
 
   static AwesomeFilter get Hudson => AwesomeFilter(
     name: 'Hudson',
@@ -179,11 +179,11 @@ class AwesomeFilter {
         matrix: PresetFilters.juno.matrix,
       );
 
-  static AwesomeFilter get Kelvin => AwesomeFilter(
-    name: 'Kelvin',
-        outputFilter: PhotoFilters.KelvinFilter(),
-        matrix: PresetFilters.kelvin.matrix,
-      );
+  // static AwesomeFilter get Kelvin => AwesomeFilter(
+  //   name: 'Kelvin',
+  //       outputFilter: PhotoFilters.KelvinFilter(),
+  //       matrix: PresetFilters.kelvin.matrix,
+  //     );
 
   static AwesomeFilter get Lark => AwesomeFilter(
     name: 'Lark',
@@ -203,17 +203,17 @@ class AwesomeFilter {
         matrix: PresetFilters.ludwig.matrix,
       );
 
-  static AwesomeFilter get Maven => AwesomeFilter(
-    name: 'Maven',
-        outputFilter: PhotoFilters.MavenFilter(),
-        matrix: PresetFilters.maven.matrix,
-      );
+  // static AwesomeFilter get Maven => AwesomeFilter(
+  //   name: 'Maven',
+  //       outputFilter: PhotoFilters.MavenFilter(),
+  //       matrix: PresetFilters.maven.matrix,
+  //     );
 
-  static AwesomeFilter get Mayfair => AwesomeFilter(
-    name: 'Mayfair',
-        outputFilter: PhotoFilters.MayfairFilter(),
-        matrix: PresetFilters.mayfair.matrix,
-      );
+  // static AwesomeFilter get Mayfair => AwesomeFilter(
+  //   name: 'Mayfair',
+  //       outputFilter: PhotoFilters.MayfairFilter(),
+  //       matrix: PresetFilters.mayfair.matrix,
+  //     );
 
   static AwesomeFilter get Moon => AwesomeFilter(
     name: 'Moon',
@@ -221,11 +221,11 @@ class AwesomeFilter {
         matrix: PresetFilters.moon.matrix,
       );
 
-  static AwesomeFilter get Nashville => AwesomeFilter(
-    name: 'Nashville',
-        outputFilter: PhotoFilters.NashvilleFilter(),
-        matrix: PresetFilters.nashville.matrix,
-      );
+  // static AwesomeFilter get Nashville => AwesomeFilter(
+  //   name: 'Nashville',
+  //       outputFilter: PhotoFilters.NashvilleFilter(),
+  //       matrix: PresetFilters.nashville.matrix,
+  //     );
 
   static AwesomeFilter get Perpetua => AwesomeFilter(
     name: 'Perpetua',
@@ -239,11 +239,11 @@ class AwesomeFilter {
         matrix: PresetFilters.reyes.matrix,
       );
 
-  static AwesomeFilter get Rise => AwesomeFilter(
-    name: 'Rise',
-        outputFilter: PhotoFilters.RiseFilter(),
-        matrix: PresetFilters.rise.matrix,
-      );
+  // static AwesomeFilter get Rise => AwesomeFilter(
+  //   name: 'Rise',
+  //       outputFilter: PhotoFilters.RiseFilter(),
+  //       matrix: PresetFilters.rise.matrix,
+  //     );
 
   static AwesomeFilter get Sierra => AwesomeFilter(
     name: 'Sierra',
@@ -251,11 +251,11 @@ class AwesomeFilter {
         matrix: PresetFilters.sierra.matrix,
       );
 
-  static AwesomeFilter get Skyline => AwesomeFilter(
-    name: 'Skyline',
-        outputFilter: PhotoFilters.SkylineFilter(),
-        matrix: PresetFilters.skyline.matrix,
-      );
+  // static AwesomeFilter get Skyline => AwesomeFilter(
+  //   name: 'Skyline',
+  //       outputFilter: PhotoFilters.SkylineFilter(),
+  //       matrix: PresetFilters.skyline.matrix,
+  //     );
 
   static AwesomeFilter get Slumber => AwesomeFilter(
     name: 'Slumber',
@@ -275,23 +275,23 @@ class AwesomeFilter {
         matrix: PresetFilters.sutro.matrix,
       );
 
-  static AwesomeFilter get Toaster => AwesomeFilter(
-    name: 'Toaster',
-        outputFilter: PhotoFilters.ToasterFilter(),
-        matrix: PresetFilters.toaster.matrix,
-      );
+  // static AwesomeFilter get Toaster => AwesomeFilter(
+  //   name: 'Toaster',
+  //       outputFilter: PhotoFilters.ToasterFilter(),
+  //       matrix: PresetFilters.toaster.matrix,
+  //     );
 
-  static AwesomeFilter get Valencia => AwesomeFilter(
-    name: 'Valencia',
-        outputFilter: PhotoFilters.ValenciaFilter(),
-        matrix: PresetFilters.valencia.matrix,
-      );
+  // static AwesomeFilter get Valencia => AwesomeFilter(
+  //   name: 'Valencia',
+  //       outputFilter: PhotoFilters.ValenciaFilter(),
+  //       matrix: PresetFilters.valencia.matrix,
+  //     );
 
-  static AwesomeFilter get Vesper => AwesomeFilter(
-        name: 'Vesper',
-        outputFilter: PhotoFilters.VesperFilter(),
-        matrix: PresetFilters.vesper.matrix,
-      );
+  // static AwesomeFilter get Vesper => AwesomeFilter(
+  //       name: 'Vesper',
+  //       outputFilter: PhotoFilters.VesperFilter(),
+  //       matrix: PresetFilters.vesper.matrix,
+  //     );
 
   static AwesomeFilter get Walden => AwesomeFilter(
       name: 'Walden',
