@@ -61,6 +61,10 @@ class AnalysisParams {
   });
 }
 
+// TODO Rework AnalysisImage
+// Ideas:
+// - possibility to add the jpeg in addition to other formats (to display it)
+// - Make AnalysisImage abstract and extend it to have Nv21Image and Bgra8888Image for either Android or iOS
 class AnalysisImage {
   int height;
   int width;
