@@ -84,18 +84,18 @@ FlutterEventSink imageStreamEventSink;
 
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   NSMutableArray *permissions = [NSMutableArray new];
-  
+
   bool cameraPermission = [PermissionsController checkCameraPermission];
   bool microphonePermission = [PermissionsController checkMicrophonePermission];
-  
+
   if (cameraPermission) {
     [permissions addObject:@"camera"];
   }
-  
+
   if (microphonePermission) {
     [permissions addObject:@"record_audio"];
   }
-  
+
   return permissions;
 }
 
@@ -294,7 +294,8 @@ FlutterEventSink imageStreamEventSink;
   completion(@(YES), nil);
 }
 
-- (void)setupImageAnalysisStreamFormat:(nonnull NSString *)format width:(nonnull NSNumber *)width maxFramesPerSecond:(nullable NSNumber *)maxFramesPerSecond error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)setupImageAnalysisStreamFormat:(nonnull NSString *)format width:(nonnull NSNumber *)width maxFramesPerSecond:(nullable NSNumber *)maxFramesPerSecond autoStart:(nonnull NSNumber *)autoStart error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  [_camera.imageStreamController setStreamImages:autoStart];
   
   // Force a frame rate to improve performance
   [_camera.imageStreamController setMaxFramesPerSecond:[maxFramesPerSecond floatValue]];
@@ -333,7 +334,6 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)takePhotoPath:(nonnull NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
-  
   if (path == nil || path.length <= 0) {
     completion(nil, [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
     return;
@@ -346,28 +346,43 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
   NSMutableArray *permissions = [NSMutableArray new];
-  
+
   const Boolean cameraGranted = [PermissionsController checkCameraPermission];
   if (cameraGranted) {
     [permissions addObject:@"camera"];
   }
-  
+
   const BOOL microphoneGranted = [PermissionsController checkMicrophonePermission];
   if (microphoneGranted) {
     [permissions addObject:@"record_audio"];
   }
-  
+
   bool needToSaveGPSLocation = [saveGpsLocation boolValue];
   if (needToSaveGPSLocation) {
     // TODO: move this to permissions object
     [self.camera.locationController requestWhenInUseAuthorizationOnGranted:^{
       [permissions addObject:@"location"];
-      
+
       completion(permissions, nil);
     } declined:^{
       completion(permissions, nil);
     }];
   }
+}
+
+
+- (void)startAnalysisWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  if (self.camera.videoController.isRecording) {
+    *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't start image stream because video is recording" details:@""];
+    return;
+  }
+
+  [self.camera.imageStreamController setStreamImages:true];
+}
+
+
+- (void)stopAnalysisWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  [self.camera.imageStreamController setStreamImages:false];
 }
 
 

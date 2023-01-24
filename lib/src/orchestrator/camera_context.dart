@@ -113,7 +113,7 @@ class CameraContext {
     return sensorConfigController.value;
   }
 
-  bool get imageAnalysisEnabled => analysisController != null;
+  bool get imageAnalysisEnabled => analysisController?.enabled == true;
 
   dispose() {
     sensorConfig.dispose();

@@ -26,6 +26,7 @@ CameraAwesomeBuilder.awesome(
         width: 250,
         `// Default to null (no limit)
         maxFramesPerSecond: 12,
+        autoStart: true,
     )
 )
 ```
@@ -38,12 +39,29 @@ Below is a table explaining each parameter:
 | maxFramesPerSecond | Number of image sent per second for analysis.<br/>Set it to null (default) to send as much images as possible. | ✅ | ✅ |
 |format|Format of the picture sent for analysis.<br/>Defaults to `InputAnalysisImageFormat.nv21`.| ✅ | ⛔ |
 |width|Target width for the image analysis.<br/>CamerAwesome will try to find the closest resolution to this definition.<br/>Defaults to `500`.| ✅ | ⛔ |
+|autoStart|`true` if it should start analysis immediately or `false` if it must start manually|✅|⛔|
+
+## Starting and stopping image analysis manually
+
+You can access the `analysisController` from a `CameraState`.
+
+|AnalysisController method and parameters|Description|Android|iOS|
+|----|---|---|---|
+|enabled|Wether image analysis is enabled or not. An image analysis must have been set or it will return false||⛔|
+|start()|Start image analysis. Your callback will be called with the new images provided for analysis.||⛔|
+|stop()|Stop image analysis.||⛔|
+
+You can `start()` and `stop()` image analysis as many times as you want.
+
+> An alternative way to stop doing image analysis is to do nothing in your callback when you don't want to analyze anymore.
+> However, images are still retrieved on the native side, converted and transferred to Dart, making it very inefficient.
+> We recommend you to stop analysis if you don't want to analyze anything by calling `analysisController.stop()`.
 
 
 After having configured your image analysis, you can start making the actual analysis.
 
 The ```example``` folder contains two examples using MLKit:
-- ```ai_analysis_barcode.dart``` reads barcodes
+- ```ai_analysis_barcode.dart``` reads barcodes, with ability to pause and resume image analysis
 - ```ai_analysis_faces.dart``` detects if there is a face on the camera feed and draws its contours when there is one
 
 A detailed explanation of each example is available in this doc.
