@@ -1,6 +1,7 @@
 # 1.2.0
 
 - Add filters for photo mode.
+- Rework UI for awesome layout.
 
 # 1.1.0
 
