@@ -53,6 +53,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   StreamSubscription? _sensorConfigSubscription;
   StreamSubscription? _aspectRatioSubscription;
   CameraAspectRatios? _aspectRatio;
+  double? _aspectRatioValue;
+  double? _previousAspectRatioValue;
 
   @override
   void initState() {
@@ -77,7 +79,22 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         final previewSize = await widget.state.previewSize();
         if ((_previewSize != previewSize || _aspectRatio != event) && mounted) {
           setState(() {
+            _previousAspectRatioValue = _aspectRatioValue;
             _aspectRatio = event;
+            switch (event) {
+              case CameraAspectRatios.ratio_16_9:
+                _aspectRatioValue = 16 / 9;
+                break;
+              case CameraAspectRatios.ratio_4_3:
+                _aspectRatioValue = 4 / 3;
+                break;
+              case CameraAspectRatios.ratio_1_1:
+                _aspectRatioValue = 1;
+                break;
+            }
+            // If aspectRatio was null before, previousAspectRatio should be the same
+            _previousAspectRatioValue ??= _aspectRatioValue;
+
             _previewSize = previewSize;
           });
         }
@@ -194,21 +211,40 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               ),
             );
 
-            if (_aspectRatio == CameraAspectRatios.ratio_1_1 &&
-                [
-                  CameraPreviewFit.fitHeight,
-                  CameraPreviewFit.fitWidth,
-                  CameraPreviewFit.contain
-                ].contains(widget.previewFit)) {
+            if ([
+              CameraPreviewFit.fitHeight,
+              CameraPreviewFit.fitWidth,
+              CameraPreviewFit.contain
+            ].contains(widget.previewFit)) {
               return Stack(children: [
                 Positioned.fill(
-                  child: ClipPath(
-                    clipper: CenterCropClipper(
-                      isWidthLarger:
-                          constraints.maxWidth > constraints.maxHeight,
-                    ),
-                    child: preview,
-                  ),
+                  child: Platform.isAndroid
+                      ? ClipPath(
+                          clipper: CenterCropClipper(
+                            isWidthLarger:
+                                constraints.maxWidth > constraints.maxHeight,
+                            aspectRatio: _aspectRatioValue!,
+                          ),
+                          child: preview,
+                        )
+                      : TweenAnimationBuilder<double>(
+                          builder: (context, anim, _) {
+                            return ClipPath(
+                              clipper: CenterCropClipper(
+                                isWidthLarger: constraints.maxWidth >
+                                    constraints.maxHeight,
+                                aspectRatio: anim,
+                              ),
+                              child: preview,
+                            );
+                          },
+                          tween: Tween<double>(
+                            begin: _previousAspectRatioValue,
+                            end: _aspectRatioValue,
+                          ),
+                          duration: const Duration(milliseconds: 700),
+                          curve: Curves.fastLinearToSlowEaseIn,
+                        ),
                 ),
                 if (widget.previewDecoratorBuilder != null)
                   Positioned.fill(
@@ -271,34 +307,43 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
 class CenterCropClipper extends CustomClipper<Path> {
   final bool isWidthLarger;
+  final double aspectRatio;
 
-  const CenterCropClipper({required this.isWidthLarger});
+  const CenterCropClipper({
+    required this.isWidthLarger,
+    required this.aspectRatio,
+  });
 
   @override
   Path getClip(Size size) {
     final center = size.center(Offset.zero);
     final side = min(size.width, size.height);
+    double otherSide;
+    otherSide = side * aspectRatio;
+    final halfOtherSide = otherSide / 2.0;
+
     if (isWidthLarger) {
       return Path()
         ..moveTo(center.dx, 0)
-        ..lineTo(center.dx - side / 2.0, 0)
-        ..lineTo(center.dx - side / 2.0, side)
-        ..lineTo(center.dx + side / 2.0, side)
-        ..lineTo(center.dx + side / 2.0, 0)
+        ..lineTo(center.dx - halfOtherSide, 0)
+        ..lineTo(center.dx - halfOtherSide, side)
+        ..lineTo(center.dx + halfOtherSide, side)
+        ..lineTo(center.dx + halfOtherSide, 0)
         ..lineTo(center.dx, 0);
     } else {
       return Path()
         ..moveTo(0, center.dy)
-        ..lineTo(0, center.dy - side / 2.0)
-        ..lineTo(side, center.dy - side / 2.0)
-        ..lineTo(side, center.dy + side / 2.0)
-        ..lineTo(0, center.dy + side / 2.0)
+        ..lineTo(0, center.dy - halfOtherSide)
+        ..lineTo(side, center.dy - halfOtherSide)
+        ..lineTo(side, center.dy + halfOtherSide)
+        ..lineTo(0, center.dy + halfOtherSide)
         ..lineTo(0, center.dy);
     }
   }
 
   @override
   bool shouldReclip(covariant CenterCropClipper oldClipper) {
-    return isWidthLarger != oldClipper.isWidthLarger;
+    return isWidthLarger != oldClipper.isWidthLarger ||
+        aspectRatio != oldClipper.aspectRatio;
   }
 }
