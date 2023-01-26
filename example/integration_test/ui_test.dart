@@ -128,7 +128,7 @@ void main() {
       // TODO Add an enableAudioButton somewhere in awesome UI ?
       // expect($(AwesomeEnableAudioButton), findsOneWidget);
       expect($(AwesomeMediaPreview), findsNothing);
-      expect($(AwesomePauseResumeButton), findsNothing);
+      expect($(AnimatedPauseResumeIcon), findsNothing);
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsOneWidget);
 
@@ -142,7 +142,7 @@ void main() {
       expect($(AwesomeCameraSwitchButton), findsNothing);
       // expect($(AwesomeEnableAudioButton), findsOneWidget);
       expect($(AwesomeMediaPreview), findsNothing);
-      expect($(AwesomePauseResumeButton), findsOneWidget);
+      expect($(AnimatedPauseResumeIcon), findsOneWidget);
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsNothing);
 
@@ -159,7 +159,7 @@ void main() {
       // Sometimes these pump work, sometimes they don't...
       await $.pump(const Duration(milliseconds: 3000));
       expect($(AwesomeMediaPreview), findsOneWidget);
-      expect($(AwesomePauseResumeButton), findsNothing);
+      expect($(AnimatedPauseResumeIcon), findsNothing);
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsOneWidget);
     },

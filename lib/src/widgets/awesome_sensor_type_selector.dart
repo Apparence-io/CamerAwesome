@@ -121,6 +121,7 @@ class _SensorTypeButton extends StatelessWidget {
   final SensorType sensorType;
   final bool isSelected;
   final Function()? onTap;
+
   const _SensorTypeButton({
     required this.sensorType,
     this.isSelected = false,
