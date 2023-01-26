@@ -1,4 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeCameraModeSelector extends StatelessWidget {
@@ -11,12 +12,14 @@ class AwesomeCameraModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AwesomeThemeProvider.of(context).theme;
+    Widget content;
     if (state is VideoRecordingCameraState) {
-      return const SizedBox(
+      content = const SizedBox(
         height: 20,
       );
     } else {
-      return CameraModePager(
+      content = CameraModePager(
         initialMode: state.captureMode,
         availableModes: state.saveConfig.captureModes,
         onChangeCameraRequest: (mode) {
@@ -24,6 +27,10 @@ class AwesomeCameraModeSelector extends StatelessWidget {
         },
       );
     }
+    return Container(
+      color: theme.bottomActionsBackground,
+      child: content,
+    );
   }
 }
 

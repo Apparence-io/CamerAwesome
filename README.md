@@ -2,7 +2,7 @@
     <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png" width="100%" />
 </a>
 <div style="margin-top:40px" >
-    <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/header.png" width="100%" />
+    <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/preview.png" width="100%" />
     <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/features.png" width="100%" style="margin-top:32px" />
 </div>
 
