@@ -88,7 +88,7 @@ void main() {
         await allowPermissionsIfNeeded($);
         await Future.delayed(const Duration(seconds: 2));
         await $.tester.pumpAndSettle();
-        final pauseResumeButton = find.byType(AwesomePauseResumeButton);
+        final pauseResumeButton = find.byType(AnimatedPauseResumeIcon);
         await $.tester.tap(pauseResumeButton, warnIfMissed: false);
         await Future.delayed(const Duration(seconds: 3));
         await $.tester.tap(pauseResumeButton, warnIfMissed: false);

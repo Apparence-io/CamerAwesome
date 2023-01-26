@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/layouts/awesome/awesome_camera_layout.dart';
+import 'package:camerawesome/src/widgets/layout/awesome_camera_layout.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -94,6 +95,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
   final OnPreviewTap Function(CameraState)? onPreviewTapBuilder;
   final OnPreviewScale Function(CameraState)? onPreviewScaleBuilder;
 
+  final AwesomeTheme theme;
+
   const CameraAwesomeBuilder._({
     required this.sensor,
     required this.flashMode,
@@ -112,6 +115,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.onPreviewTapBuilder,
     this.onPreviewScaleBuilder,
     this.previewDecoratorBuilder,
+    required this.theme,
   });
 
   /// Use the camera with the built-in interface.
@@ -151,6 +155,10 @@ class CameraAwesomeBuilder extends StatefulWidget {
     OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
     CameraPreviewFit? previewFit,
     CameraLayoutBuilder? previewDecoratorBuilder,
+    AwesomeTheme? theme,
+    Widget? topActions,
+    Widget? bottomActions,
+    Widget? middleContent,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -159,11 +167,15 @@ class CameraAwesomeBuilder extends StatefulWidget {
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
           progressIndicator: progressIndicator,
-          builder: (cameraModeState, previewSize, previewRect) =>
-              AwesomeCameraLayout(
-            state: cameraModeState,
-            onMediaTap: onMediaTap,
-          ),
+          builder: (cameraModeState, previewSize, previewRect) {
+            return AwesomeCameraLayout(
+              state: cameraModeState,
+              onMediaTap: onMediaTap,
+              topActions: topActions,
+              bottomActions: bottomActions,
+              middleContent: middleContent,
+            );
+          },
           filter: filter,
           saveConfig: saveConfig,
           onMediaTap: onMediaTap,
@@ -173,12 +185,13 @@ class CameraAwesomeBuilder extends StatefulWidget {
           onPreviewScaleBuilder: onPreviewScaleBuilder,
           previewFit: previewFit ?? CameraPreviewFit.cover,
           previewDecoratorBuilder: previewDecoratorBuilder,
+          theme: theme ?? AwesomeTheme(),
         );
 
   /// 🚧 Experimental
   ///
   /// Documentation on its way, API might change
-  const CameraAwesomeBuilder.custom({
+  CameraAwesomeBuilder.custom({
     CaptureMode initialCaptureMode = CaptureMode.photo,
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
@@ -195,6 +208,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     OnPreviewTap Function(CameraState)? onPreviewTapBuilder,
     OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
     CameraPreviewFit? previewFit,
+    AwesomeTheme? theme,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -213,6 +227,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           onPreviewScaleBuilder: onPreviewScaleBuilder,
           previewFit: previewFit ?? CameraPreviewFit.cover,
           previewDecoratorBuilder: null,
+          theme: theme ?? AwesomeTheme(),
         );
 
   @override
@@ -286,65 +301,71 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CameraState>(
-      stream: _cameraContext.state$,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData ||
-            snapshot.data!.captureMode == null ||
-            snapshot.requireData is PreparingCameraState) {
-          return widget.progressIndicator ??
-              Center(
-                child: Platform.isIOS
-                    ? const CupertinoActivityIndicator()
-                    : const CircularProgressIndicator(),
-              );
-        }
-        return Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            Positioned.fill(
-              child: AwesomeCameraPreview(
-                key: _cameraPreviewKey,
-                previewFit: widget.previewFit,
-                state: snapshot.requireData,
-                onPreviewTap: widget.onPreviewTapBuilder
-                        ?.call(snapshot.requireData) ??
-                    OnPreviewTap(
-                      onTap: (position, flutterPreviewSize, pixelPreviewSize) {
-                        snapshot.requireData.when(
-                          onPhotoMode: (photoState) => photoState.focusOnPoint(
-                            flutterPosition: position,
-                            pixelPreviewSize: pixelPreviewSize,
-                            flutterPreviewSize: flutterPreviewSize,
+    return AwesomeThemeProvider(
+      theme: widget.theme,
+      child: StreamBuilder<CameraState>(
+        stream: _cameraContext.state$,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData ||
+              snapshot.data!.captureMode == null ||
+              snapshot.requireData is PreparingCameraState) {
+            return widget.progressIndicator ??
+                Center(
+                  child: Platform.isIOS
+                      ? const CupertinoActivityIndicator()
+                      : const CircularProgressIndicator(),
+                );
+          }
+          return Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              Positioned.fill(
+                child: AwesomeCameraPreview(
+                  key: _cameraPreviewKey,
+                  previewFit: widget.previewFit,
+                  state: snapshot.requireData,
+                  onPreviewTap:
+                      widget.onPreviewTapBuilder?.call(snapshot.requireData) ??
+                          OnPreviewTap(
+                            onTap: (position, flutterPreviewSize,
+                                pixelPreviewSize) {
+                              snapshot.requireData.when(
+                                onPhotoMode: (photoState) =>
+                                    photoState.focusOnPoint(
+                                  flutterPosition: position,
+                                  pixelPreviewSize: pixelPreviewSize,
+                                  flutterPreviewSize: flutterPreviewSize,
+                                ),
+                                onVideoMode: (videoState) =>
+                                    videoState.focusOnPoint(
+                                  flutterPosition: position,
+                                  pixelPreviewSize: pixelPreviewSize,
+                                  flutterPreviewSize: flutterPreviewSize,
+                                ),
+                                onVideoRecordingMode: (videoRecState) =>
+                                    videoRecState.focusOnPoint(
+                                  flutterPosition: position,
+                                  pixelPreviewSize: pixelPreviewSize,
+                                  flutterPreviewSize: flutterPreviewSize,
+                                ),
+                              );
+                            },
                           ),
-                          onVideoMode: (videoState) => videoState.focusOnPoint(
-                            flutterPosition: position,
-                            pixelPreviewSize: pixelPreviewSize,
-                            flutterPreviewSize: flutterPreviewSize,
-                          ),
-                          onVideoRecordingMode: (videoRecState) =>
-                              videoRecState.focusOnPoint(
-                            flutterPosition: position,
-                            pixelPreviewSize: pixelPreviewSize,
-                            flutterPreviewSize: flutterPreviewSize,
-                          ),
-                        );
-                      },
-                    ),
-                onPreviewScale:
-                    widget.onPreviewScaleBuilder?.call(snapshot.requireData) ??
-                        OnPreviewScale(
-                          onScale: (scale) {
-                            snapshot.requireData.sensorConfig.setZoom(scale);
-                          },
-                        ),
-                interfaceBuilder: widget.builder,
-                previewDecoratorBuilder: widget.previewDecoratorBuilder,
+                  onPreviewScale: widget.onPreviewScaleBuilder
+                          ?.call(snapshot.requireData) ??
+                      OnPreviewScale(
+                        onScale: (scale) {
+                          snapshot.requireData.sensorConfig.setZoom(scale);
+                        },
+                      ),
+                  interfaceBuilder: widget.builder,
+                  previewDecoratorBuilder: widget.previewDecoratorBuilder,
+                ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 }

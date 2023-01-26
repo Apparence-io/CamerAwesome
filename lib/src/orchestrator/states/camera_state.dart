@@ -53,10 +53,19 @@ abstract class CameraState {
 
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
-  void switchCameraSensor() {
+  void switchCameraSensor({
+    CameraAspectRatios? aspectRatio,
+    double? zoom,
+    FlashMode? flash,
+    SensorType? type,
+  }) {
     final previous = cameraContext.sensorConfig;
     final next = SensorConfig(
       sensor: previous.sensor == Sensors.back ? Sensors.front : Sensors.back,
+      aspectRatio: aspectRatio ?? CameraAspectRatios.ratio_4_3,
+      currentZoom: zoom ?? 0.0,
+      flash: flash ?? FlashMode.none,
+      type: type ?? SensorType.wideAngle,
     );
     cameraContext.setSensorConfig(next);
   }

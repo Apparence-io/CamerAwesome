@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 class AwesomeOrientedWidget extends StatefulWidget {
   final Widget child;
+  final bool rotateWithDevice;
 
   const AwesomeOrientedWidget({
     super.key,
     required this.child,
+    this.rotateWithDevice = true,
   });
 
   @override
@@ -21,26 +23,30 @@ class AwesomeOrientedWidgetState extends State<AwesomeOrientedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CameraOrientations>(
-      stream: CamerawesomePlugin.getNativeOrientation(),
-      builder: (_, orientationSnapshot) {
-        final orientation = orientationSnapshot.data;
-        if (orientation != null && orientation != previousOrientation) {
-          turns = shortestTurnsToReachTarget(
-            current: turns,
-            target: getTurns(orientation),
-          );
-          previousOrientation = orientation;
-        }
+    if (widget.rotateWithDevice) {
+      return StreamBuilder<CameraOrientations>(
+        stream: CamerawesomePlugin.getNativeOrientation(),
+        builder: (_, orientationSnapshot) {
+          final orientation = orientationSnapshot.data;
+          if (orientation != null && orientation != previousOrientation) {
+            turns = shortestTurnsToReachTarget(
+              current: turns,
+              target: getTurns(orientation),
+            );
+            previousOrientation = orientation;
+          }
 
-        return AnimatedRotation(
-          turns: turns,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          child: widget.child,
-        );
-      },
-    );
+          return AnimatedRotation(
+            turns: turns,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: widget.child,
+          );
+        },
+      );
+    } else {
+      return widget.child;
+    }
   }
 
   double getTurns(CameraOrientations orientation) {

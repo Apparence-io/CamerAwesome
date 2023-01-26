@@ -27,19 +27,43 @@ class CameraPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CameraAwesomeBuilder.awesome(
-        saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => _path(CaptureMode.photo),
-          videoPathBuilder: () => _path(CaptureMode.video),
-          initialCaptureMode: CaptureMode.photo,
+      body: Container(
+        color: Colors.white,
+        child: CameraAwesomeBuilder.awesome(
+          saveConfig: SaveConfig.photoAndVideo(
+            photoPathBuilder: () => _path(CaptureMode.photo),
+            videoPathBuilder: () => _path(CaptureMode.video),
+            initialCaptureMode: CaptureMode.photo,
+          ),
+          filter: AwesomeFilter.AddictiveRed,
+          flashMode: FlashMode.auto,
+          aspectRatio: CameraAspectRatios.ratio_16_9,
+          previewFit: CameraPreviewFit.fitWidth,
+          theme: AwesomeTheme(
+            backgroundColor: Colors.deepOrange.withOpacity(0.5),
+            iconBackground: Colors.deepOrange.withOpacity(0.5),
+            iconSize: 25,
+            padding: EdgeInsets.all(10),
+            iconColor: Colors.black,
+            buttonBuilder: (child, onTap) {
+              return ClipOval(
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    splashColor: Colors.deepOrange,
+                    highlightColor: Colors.orange.withOpacity(0.5),
+                    onTap: onTap,
+                    child: child,
+                  ),
+                ),
+              );
+            },
+          ),
+          onMediaTap: (mediaCapture) {
+            OpenFile.open(mediaCapture.filePath);
+          },
         ),
-        filter: AwesomeFilter.AddictiveRed,
-        flashMode: FlashMode.auto,
-        aspectRatio: CameraAspectRatios.ratio_16_9,
-        previewFit: CameraPreviewFit.fitWidth,
-        onMediaTap: (mediaCapture) {
-          OpenFile.open(mediaCapture.filePath);
-        },
       ),
     );
   }

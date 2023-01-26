@@ -1,12 +1,17 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_circle_icon.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/awesome_theme.dart';
 
 class AwesomePauseResumeButton extends StatefulWidget {
   final VideoRecordingCameraState state;
+  final AwesomeTheme? theme;
 
   const AwesomePauseResumeButton({
     super.key,
     required this.state,
+    this.theme,
   });
 
   @override
@@ -30,40 +35,42 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
 
   @override
   Widget build(BuildContext context) {
-    return AwesomeOrientedWidget(
-      child: StreamBuilder<MediaCapture?>(
-        stream: widget.state.captureState$,
-        builder: (_, snapshot) {
-          if (snapshot.data?.isRecordingVideo != true) {
-            return const SizedBox(width: 48);
-          }
+    return StreamBuilder<MediaCapture?>(
+      stream: widget.state.captureState$,
+      builder: (_, snapshot) {
+        if (snapshot.data?.isRecordingVideo != true) {
+          return const SizedBox(width: 48);
+        }
 
-          bool recordingPaused = snapshot.data!.videoState == VideoState.paused;
+        bool recordingPaused = snapshot.data!.videoState == VideoState.paused;
+        final theme = widget.theme ?? AwesomeThemeProvider.of(context).theme;
 
-          return Material(
-            color: Colors.transparent,
-            child: AwesomeBouncingWidget(
-              onTap: () {
-                if (recordingPaused) {
-                  _controller.reverse();
-                  widget.state.resumeRecording(snapshot.data!);
-                } else {
-                  _controller.forward();
-                  widget.state.pauseRecording(snapshot.data!);
-                }
-              },
+        return AwesomeOrientedWidget(
+          rotateWithDevice: theme.rotateButtonsWithCamera,
+          child: theme.buttonBuilder(
+            AwesomeCircleWidget(
+              theme: theme,
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: AnimatedIcon(
                   icon: AnimatedIcons.pause_play,
                   progress: _animation,
-                  color: Colors.white,
+                  color: theme.iconColor,
                 ),
               ),
             ),
-          );
-        },
-      ),
+            () {
+              if (recordingPaused) {
+                _controller.reverse();
+                widget.state.resumeRecording(snapshot.data!);
+              } else {
+                _controller.forward();
+                widget.state.pauseRecording(snapshot.data!);
+              }
+            },
+          ),
+        );
+      },
     );
   }
 }
