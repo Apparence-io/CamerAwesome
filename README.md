@@ -150,12 +150,11 @@ The camera preview will be visible behind what you will provide to our builder.
 > Only the camera preview is not customizable yet
 
 ```dart
-CameraAwesomeBuilder.custom
-(
-saveConfig: SaveConfig.image(pathBuilder: _path()),
-builder: (state, previewSize, previewRect) {
-// create your interface here 
-},
+CameraAwesomeBuilder.custom(
+    saveConfig: SaveConfig.image(pathBuilder: _path()),
+    builder: (state, previewSize, previewRect) {
+        // create your interface here 
+    },
 )
 ```
 
@@ -220,16 +219,11 @@ CameraAwesomeBuilder.awesome(
     saveConfig: SaveConfig.image(
         pathBuilder: _path(),
     ),
-onImageForAnalysis: analyzeImage,
-imageAnalysisConfig: AnalysisConfig(
-outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
-width: 1024,
-maxFramesPerSecond
-:
-30
-,
-)
-,
+    onImageForAnalysis: analyzeImage,
+    imageAnalysisConfig: AnalysisConfig(
+    outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
+    width: 1024,
+    maxFramesPerSecond: 30,
 ),
 ```
 
@@ -261,6 +255,7 @@ according to the actual configuration.
 ## 🌆 Photo live filters
 
 Apply live filters to your pictures using the built-in interface:
+
 ![Built-in live filters](docs/img/filters.gif)
 
 You can also choose to use a specific filter from the start:
