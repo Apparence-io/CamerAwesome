@@ -6,6 +6,7 @@ typedef ButtonBuilder = Widget Function(
   VoidCallback onTap,
 );
 
+// TODO Rename fields
 class AwesomeTheme {
   final bool rotateButtonsWithCamera;
   final ButtonBuilder buttonBuilder;
@@ -13,8 +14,12 @@ class AwesomeTheme {
   final Color iconColor;
   final Color iconBackground;
   final double iconSize;
+
+  // TODO Implement this shape
   final ShapeBorder buttonShape;
   final EdgeInsets padding;
+
+  static const double baseIconSize = 25;
 
   AwesomeTheme({
     this.rotateButtonsWithCamera = true,
@@ -24,14 +29,15 @@ class AwesomeTheme {
     Color? iconBackground,
     double? iconSize,
     ShapeBorder? buttonShape,
-    this.padding = const EdgeInsets.all(8),
-  })  : buttonBuilder = buttonBuilder ??
+    this.padding = const EdgeInsets.all(12),
+  })
+      : buttonBuilder = buttonBuilder ??
             ((Widget child, VoidCallback onTap) =>
                 AwesomeBouncingWidget(onTap: onTap, child: child)),
         bottomActionsBackground = backgroundColor ?? Colors.black54,
         iconColor = iconColor ?? Colors.white,
         iconBackground = iconBackground ?? Colors.black12,
-        iconSize = iconSize ?? 25,
+        iconSize = iconSize ?? baseIconSize,
         buttonShape = buttonShape ?? const CircleBorder();
 
   @override
@@ -56,6 +62,30 @@ class AwesomeTheme {
       iconBackground.hashCode ^
       iconSize.hashCode ^
       buttonShape.hashCode;
+
+  AwesomeTheme copyWith({
+    bool? rotateButtonsWithCamera,
+    ButtonBuilder? buttonBuilder,
+    Color? bottomActionsBackground,
+    Color? iconColor,
+    Color? iconBackground,
+    double? iconSize,
+    ShapeBorder? buttonShape,
+    EdgeInsets? padding,
+    double? baseIconSize,
+  }) {
+    return AwesomeTheme(
+      rotateButtonsWithCamera:
+          rotateButtonsWithCamera ?? this.rotateButtonsWithCamera,
+      buttonBuilder: buttonBuilder ?? this.buttonBuilder,
+      backgroundColor: bottomActionsBackground ?? this.bottomActionsBackground,
+      iconColor: iconColor ?? this.iconColor,
+      iconBackground: iconBackground ?? this.iconBackground,
+      iconSize: iconSize ?? this.iconSize,
+      buttonShape: buttonShape ?? this.buttonShape,
+      padding: padding ?? this.padding,
+    );
+  }
 }
 
 class AwesomeThemeProvider extends InheritedWidget {

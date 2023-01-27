@@ -17,12 +17,13 @@ class AwesomeCameraSwitchButton extends StatelessWidget {
     this.theme,
     Widget Function()? iconBuilder,
     void Function(CameraState)? onSwitchTap,
+    double scale = 1.3,
   })  : iconBuilder = iconBuilder ??
             (() {
               return AwesomeCircleWidget.icon(
                 theme: theme,
                 icon: Icons.cameraswitch,
-                scale: 1.4,
+                scale: scale,
               );
             }),
         onSwitchTap = onSwitchTap ?? ((state) => state.switchCameraSensor());
