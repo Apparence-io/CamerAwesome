@@ -156,9 +156,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
     CameraPreviewFit? previewFit,
     CameraLayoutBuilder? previewDecoratorBuilder,
     AwesomeTheme? theme,
-    Widget? topActions,
-    Widget? bottomActions,
-    Widget? middleContent,
+    Widget Function(CameraState state)? topActionsBuilder,
+    Widget Function(CameraState state)? bottomActionsBuilder,
+    Widget Function(CameraState state)? middleContentBuilder,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -171,9 +171,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
             return AwesomeCameraLayout(
               state: cameraModeState,
               onMediaTap: onMediaTap,
-              topActions: topActions,
-              bottomActions: bottomActions,
-              middleContent: middleContent,
+              topActions: topActionsBuilder?.call(cameraModeState),
+              bottomActions: bottomActionsBuilder?.call(cameraModeState),
+              middleContent: middleContentBuilder?.call(cameraModeState),
             );
           },
           filter: filter,
