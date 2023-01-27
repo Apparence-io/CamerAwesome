@@ -28,7 +28,7 @@
   _completionBlock = callback;
   _sensor = sensor;
   _saveGPSLocation = saveGPSLocation;
-  aspectRatioType = aspectRatio;
+  _aspectRatioType = aspectRatio;
   
   if (aspectRatio == Ratio4_3) {
     _aspectRatio = 4.0/3.0;
