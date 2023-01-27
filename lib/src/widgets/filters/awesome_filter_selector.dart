@@ -6,10 +6,18 @@ import 'package:flutter/services.dart';
 
 class AwesomeFilterSelector extends StatefulWidget {
   final CameraState state;
+  final FilterListPosition filterListPosition;
+  final Widget indicator;
+  final EdgeInsets? filterListPadding;
+  final Color? filterListBackgroundColor;
 
   const AwesomeFilterSelector({
     super.key,
     required this.state,
+    required this.filterListPosition,
+    required this.filterListPadding,
+    required this.filterListBackgroundColor,
+    required this.indicator,
   });
 
   @override
@@ -39,22 +47,12 @@ class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Center(
-            child: Container(
-              height: 6,
-              width: 6,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        ),
-        Stack(
+    final children = [
+      widget.indicator,
+      Container(
+        padding: widget.filterListPadding,
+        color: widget.filterListBackgroundColor,
+        child: Stack(
           children: [
             CarouselSlider(
               options: CarouselOptions(
@@ -112,7 +110,12 @@ class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
             ),
           ],
         ),
-      ],
+      ),
+    ];
+    return Column(
+      children: widget.filterListPosition == FilterListPosition.belowButton
+          ? children
+          : children.reversed.toList(),
     );
   }
 }

@@ -28,6 +28,14 @@ class AwesomeCameraLayout extends StatelessWidget {
               children: [
                 const Spacer(),
                 AwesomeFilterWidget(state: state),
+                Builder(
+                  builder: (context) => Container(
+                    color: AwesomeThemeProvider.of(context)
+                        .theme
+                        .bottomActionsBackground,
+                    height: 8,
+                  ),
+                ),
                 AwesomeCameraModeSelector(state: state),
               ],
             )),

@@ -38,28 +38,33 @@ class AwesomeAspectRatioButton extends StatelessWidget {
                       "packages/camerawesome/assets/icons/1_1.png");
                   break;
               }
-              final iconSize = theme?.iconSize ?? 25;
 
-              final scaleRatio = iconSize / 25;
-              return AwesomeCircleWidget(
-                theme: theme,
-                child: Center(
-                  child: SizedBox(
-                    width: iconSize,
-                    height: iconSize,
-                    child: FittedBox(
-                      child: Builder(
-                        builder: (context) => Image(
-                          image: icon,
-                          color:
-                              AwesomeThemeProvider.of(context).theme.iconColor,
-                          width: width * scaleRatio,
+              return Builder(builder: (context) {
+                final iconSize = theme?.iconSize ??
+                    AwesomeThemeProvider.of(context).theme.iconSize;
+
+                final scaleRatio = iconSize / AwesomeTheme.baseIconSize;
+                return AwesomeCircleWidget(
+                  theme: theme,
+                  child: Center(
+                    child: SizedBox(
+                      width: iconSize,
+                      height: iconSize,
+                      child: FittedBox(
+                        child: Builder(
+                          builder: (context) => Image(
+                            image: icon,
+                            color: AwesomeThemeProvider.of(context)
+                                .theme
+                                .iconColor,
+                            width: width * scaleRatio,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
+                );
+              });
             }),
         onAspectRatioTap = onAspectRatioTap ??
             ((sensorConfig, aspectRatio) => sensorConfig.switchCameraRatio());

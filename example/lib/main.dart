@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:better_open_file/better_open_file.dart';
+import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const CameraAwesomeApp());
@@ -31,51 +29,19 @@ class CameraPage extends StatelessWidget {
         color: Colors.white,
         child: CameraAwesomeBuilder.awesome(
           saveConfig: SaveConfig.photoAndVideo(
-            photoPathBuilder: () => _path(CaptureMode.photo),
-            videoPathBuilder: () => _path(CaptureMode.video),
+            photoPathBuilder: () => path(CaptureMode.photo),
+            videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.photo,
           ),
           filter: AwesomeFilter.AddictiveRed,
           flashMode: FlashMode.auto,
           aspectRatio: CameraAspectRatios.ratio_16_9,
           previewFit: CameraPreviewFit.fitWidth,
-          theme: AwesomeTheme(
-            backgroundColor: Colors.deepOrange.withOpacity(0.5),
-            iconBackground: Colors.deepOrange.withOpacity(0.5),
-            iconSize: 25,
-            padding: EdgeInsets.all(10),
-            iconColor: Colors.black,
-            buttonBuilder: (child, onTap) {
-              return ClipOval(
-                child: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    splashColor: Colors.deepOrange,
-                    highlightColor: Colors.orange.withOpacity(0.5),
-                    onTap: onTap,
-                    child: child,
-                  ),
-                ),
-              );
-            },
-          ),
           onMediaTap: (mediaCapture) {
             OpenFile.open(mediaCapture.filePath);
           },
         ),
       ),
     );
-  }
-
-  Future<String> _path(CaptureMode captureMode) async {
-    final Directory extDir = await getTemporaryDirectory();
-    final testDir =
-        await Directory('${extDir.path}/test').create(recursive: true);
-    final String fileExtension =
-        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
-    final String filePath =
-        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
-    return filePath;
   }
 }

@@ -83,7 +83,7 @@ class _CameraModePagerState extends State<CameraModePager> {
       children: [
         Expanded(
           child: SizedBox(
-            height: 60,
+            height: 32,
             child: PageView.builder(
               scrollDirection: Axis.horizontal,
               controller: _pageController,
@@ -102,17 +102,20 @@ class _CameraModePagerState extends State<CameraModePager> {
                   opacity: index == _index ? 1 : 0.2,
                   child: AwesomeBouncingWidget(
                     child: Center(
-                      child: Text(
-                        cameraMode.name.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 4,
-                              color: Colors.black,
-                            )
-                          ],
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          cameraMode.name.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 4,
+                                color: Colors.black,
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),

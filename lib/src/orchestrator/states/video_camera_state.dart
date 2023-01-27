@@ -46,7 +46,7 @@ class VideoCameraState extends CameraState {
     return filePath;
   }
 
-  /// Wether the video recording should [enableAudio].
+  /// If the video recording should [enableAudio].
   /// This method applies to the next recording. If a recording is ongoing, it will not be affected.
   // TODO Add ability to mute temporarly a video recording
   Future<void> enableAudio(bool enableAudio) {
