@@ -28,7 +28,7 @@
   _completionBlock = callback;
   _sensor = sensor;
   _saveGPSLocation = saveGPSLocation;
-  _aspectRatioEnum = aspectRatio;
+  aspectRatioType = aspectRatio;
   
   if (aspectRatio == Ratio4_3) {
     _aspectRatio = 4.0/3.0;
@@ -161,7 +161,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
     cropRect = CGRectMake(x, y, newCropWidth, newCropHeight);
   } else {
     
-    if (_aspectRatioEnum == Ratio16_9) {
+    if (aspectRatioType == Ratio16_9) {
       cropRect = CGRectMake(0, 0, image.size.height, image.size.width);
     } else {
       // TODO: crop on 4:3 portrait mode not working
