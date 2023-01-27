@@ -24,6 +24,7 @@ typedef void(^OnPictureTaken)(void);
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
 @property(readonly, nonatomic) CameraSensor sensor;
 @property(readonly, nonatomic) float aspectRatio;
+@property(readonly, nonatomic) AspectRatio aspectRatioEnum;
 @property NSInteger orientation;
 @property (nonatomic, copy) OnPictureTaken completionBlock;
 @property(readonly, nonatomic) CMMotionManager *motionManager;

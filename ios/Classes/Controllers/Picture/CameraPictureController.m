@@ -28,6 +28,7 @@
   _completionBlock = callback;
   _sensor = sensor;
   _saveGPSLocation = saveGPSLocation;
+  _aspectRatioEnum = aspectRatio;
   
   if (aspectRatio == Ratio4_3) {
     _aspectRatio = 4.0/3.0;
@@ -75,7 +76,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
       bracketSettings:(AVCaptureBracketedStillImageSettings *)bracketSettings
                 error:(NSError *)error {
 #pragma clang diagnostic pop
-
+  
   selfReference = nil;
   if (error) {
     _completion(nil, [FlutterError errorWithCode:@"CAPTURE ERROR" message:error.description details:@""]);
@@ -94,11 +95,11 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   }
   
   // we ignore this error because plugin can only be installed on iOS 11+
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   NSData *data = [AVCapturePhotoOutput JPEGPhotoDataRepresentationForJPEGSampleBuffer:photoSampleBuffer
                                                              previewPhotoSampleBuffer:previewPhotoSampleBuffer];
-  #pragma clang diagnostic pop
+#pragma clang diagnostic pop
   
   UIImage *image = [UIImage imageWithCGImage:[UIImage imageWithData:data].CGImage
                                        scale:1.0
@@ -111,36 +112,17 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   float outputWidth = originalWidth;
   float outputHeight = originalHeight;
   if (originalImageAspectRatio != _aspectRatio) {
-    if (UIDeviceOrientationIsLandscape(_orientation)) {
-      if (originalImageAspectRatio > _aspectRatio) {
-        outputWidth = originalHeight * _aspectRatio;
-      } else if (originalImageAspectRatio < _aspectRatio) {
-        outputHeight = originalWidth / _aspectRatio;
-      }
-    } else {
-      if (originalImageAspectRatio > _aspectRatio) {
-        outputWidth = originalHeight / _aspectRatio;
-      } else if (originalImageAspectRatio < _aspectRatio) {
-        outputHeight = originalWidth * _aspectRatio;
-      }
+    if (originalImageAspectRatio > _aspectRatio) {
+      outputWidth = originalHeight * _aspectRatio;
+    } else if (originalImageAspectRatio < _aspectRatio) {
+      outputHeight = originalWidth / _aspectRatio;
     }
-    
-    double refWidth = CGImageGetWidth(image.CGImage);
-    double refHeight = CGImageGetHeight(image.CGImage);
-    
-    double x = (refWidth - outputWidth) / 2.0;
-    double y = (refHeight - outputHeight) / 2.0;
-
-    CGRect cropRect = CGRectMake(x, y, outputHeight, outputWidth);
-    CGImageRef imageRef = CGImageCreateWithImageInRect([image CGImage], cropRect);
-
-    image = [UIImage imageWithCGImage:imageRef scale:0.0 orientation:[self getJpegOrientation]];
-    CGImageRelease(imageRef);
   }
   
+  UIImage *imageConverted = [self imageByCroppingImage:image toSize:CGSizeMake(outputWidth, outputHeight)];
   
-  // TODO: crop image to aspect ratio
-  
+  image = [UIImage imageWithCGImage:[imageConverted CGImage] scale:0.0 orientation:[self getJpegOrientation]];
+
   NSData *imageWithExif = [UIImageJPEGRepresentation(image, 1.0) addExif:container];
   
   bool success = [imageWithExif writeToFile:_path atomically:YES];
@@ -149,6 +131,50 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
     return;
   }
   _completionBlock();
+  
+}
+
+- (UIImage *)imageByCroppingImage:(UIImage *)image toSize:(CGSize)size {
+  double newCropWidth, newCropHeight;
+
+  if(image.size.width < image.size.height) {
+    if (image.size.width < size.width) {
+      newCropWidth = size.width;
+    } else {
+      newCropWidth = image.size.width;
+    }
+    newCropHeight = (newCropWidth * size.height)/size.width;
+  } else {
+    if (image.size.height < size.height) {
+      newCropHeight = size.height;
+    } else {
+      newCropHeight = image.size.height;
+    }
+    newCropWidth = (newCropHeight * size.width)/size.height;
+  }
+  
+  double x = image.size.width/2.0 - newCropWidth/2.0;
+  double y = image.size.height/2.0 - newCropHeight/2.0;
+  
+  CGRect cropRect;
+  if (UIDeviceOrientationIsLandscape(_orientation)) {
+    cropRect = CGRectMake(x, y, newCropWidth, newCropHeight);
+  } else {
+    
+    if (_aspectRatioEnum == Ratio16_9) {
+      cropRect = CGRectMake(0, 0, image.size.height, image.size.width);
+    } else {
+      // TODO: crop on 4:3 portrait mode not working
+      cropRect = CGRectMake(y, x, newCropWidth, newCropHeight);
+    }
+  }
+  
+  CGImageRef imageRef = CGImageCreateWithImageInRect([image CGImage], cropRect);
+  
+  UIImage *cropped = [UIImage imageWithCGImage:imageRef];
+  CGImageRelease(imageRef);
+  
+  return cropped;
 }
 
 - (UIImageOrientation)getJpegOrientation {
