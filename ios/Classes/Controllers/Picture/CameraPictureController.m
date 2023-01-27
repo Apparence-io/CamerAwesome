@@ -161,7 +161,7 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
     cropRect = CGRectMake(x, y, newCropWidth, newCropHeight);
   } else {
     
-    if (aspectRatioType == Ratio16_9) {
+    if (_aspectRatioType == Ratio16_9) {
       cropRect = CGRectMake(0, 0, image.size.height, image.size.width);
     } else {
       // TODO: crop on 4:3 portrait mode not working
