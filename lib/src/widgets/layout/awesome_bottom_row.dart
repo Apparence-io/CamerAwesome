@@ -6,6 +6,7 @@ import 'package:camerawesome/src/widgets/buttons/awesome_camera_switch_button.da
 import 'package:camerawesome/src/widgets/buttons/awesome_capture_button.dart';
 import 'package:camerawesome/src/widgets/buttons/awesome_pause_resume_button.dart';
 import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeBottomActions extends StatelessWidget {
@@ -22,8 +23,9 @@ class AwesomeBottomActions extends StatelessWidget {
     Widget? right,
     Widget? captureButton,
     OnMediaTap? onMediaTap,
-    this.padding = const EdgeInsets.only(bottom: 32),
-  })  : captureButton = AwesomeCaptureButton(
+    this.padding = const EdgeInsets.symmetric(vertical: 8),
+  })
+      : captureButton = AwesomeCaptureButton(
           state: state,
         ),
         left = left ??
@@ -31,7 +33,14 @@ class AwesomeBottomActions extends StatelessWidget {
                 ? AwesomePauseResumeButton(
                     state: state,
                   )
-                : AwesomeCameraSwitchButton(state: state)),
+                : Builder(
+                    builder: (context) => AwesomeCameraSwitchButton(
+                      state: state,
+                      theme: AwesomeThemeProvider.of(context).theme.copyWith(
+                            iconBackground: Colors.white12,
+                          ),
+                    ),
+                  )),
         right = right ??
             (state is VideoRecordingCameraState
                 ? const SizedBox(width: 48)
@@ -58,12 +67,16 @@ class AwesomeBottomActions extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Flexible(
-            child: left,
+          Expanded(
+            child: Center(
+              child: left,
+            ),
           ),
           captureButton,
-          Flexible(
-            child: right,
+          Expanded(
+            child: Center(
+              child: right,
+            ),
           ),
         ],
       ),
