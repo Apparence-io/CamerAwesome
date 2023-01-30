@@ -67,12 +67,10 @@ class ImageAnalysisBuilder private constructor(
         val imageAnalysis = ImageAnalysis.Builder().setTargetResolution(Size(width, height))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888).build()
-        Log.d("AnalysisAZER", "maxFps: $maxFramesPerSecond")
         imageAnalysis.setAnalyzer(Dispatchers.IO.asExecutor()) { imageProxy ->
             if (previewStreamSink == null) {
                 return@setAnalyzer
             }
-            Log.d("WXCVBN", "image analysis image...")
             when (format) {
                 OutputImageFormat.JPEG -> {
                     val jpegImage = ImageUtil.yuvImageToJpegByteArray(
