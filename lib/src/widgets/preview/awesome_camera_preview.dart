@@ -24,6 +24,8 @@ class AwesomeCameraPreview extends StatefulWidget {
   final OnPreviewScale? onPreviewScale;
   final CameraLayoutBuilder interfaceBuilder;
   final CameraLayoutBuilder? previewDecoratorBuilder;
+  final EdgeInsets padding;
+  final Alignment alignment;
 
   const AwesomeCameraPreview({
     super.key,
@@ -34,6 +36,8 @@ class AwesomeCameraPreview extends StatefulWidget {
     this.previewFit = CameraPreviewFit.cover,
     required this.interfaceBuilder,
     this.previewDecoratorBuilder,
+    required this.padding,
+    required this.alignment,
   });
 
   @override
@@ -94,7 +98,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             }
             // If aspectRatio was null before, previousAspectRatio should be the same
             _previousAspectRatioValue ??= _aspectRatioValue;
-
             _previewSize = previewSize;
           });
         }
@@ -126,24 +129,32 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         return LayoutBuilder(
           builder: (_, constraints) {
             final size = Size(_previewSize!.width, _previewSize!.height);
+            final constrainedSize = Size(
+              constraints.maxWidth - widget.padding.left - widget.padding.right,
+              constraints.maxHeight -
+                  widget.padding.top -
+                  widget.padding.bottom,
+            );
 
-            final ratioW = constraints.maxWidth / size.width;
-            final ratioH = constraints.maxHeight / size.height;
+            final ratioW = constrainedSize.width / size.width;
+            final ratioH = constrainedSize.height / size.height;
+
+            // maxSize doesn't take account of the aspect ratio
             Size maxSize;
             switch (widget.previewFit) {
               case CameraPreviewFit.fitWidth:
-                maxSize = Size(constraints.maxWidth, size.height * ratioW);
+                maxSize = Size(constrainedSize.width, size.height * ratioW);
                 break;
               case CameraPreviewFit.fitHeight:
-                maxSize = Size(size.width * ratioH, constraints.maxHeight);
+                maxSize = Size(size.width * ratioH, constrainedSize.height);
                 break;
               case CameraPreviewFit.cover:
                 final previewRatio = _previewSize!.width / _previewSize!.height;
                 maxSize = Size(
                   previewRatio > 1
-                      ? constraints.maxHeight / previewRatio
-                      : constraints.maxHeight * previewRatio,
-                  constraints.maxHeight,
+                      ? constrainedSize.height / previewRatio
+                      : constrainedSize.height * previewRatio,
+                  constrainedSize.height,
                 );
 
                 break;
@@ -153,42 +164,38 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 break;
             }
 
-            final center = Size(constraints.maxWidth, constraints.maxHeight)
+            final center = Size(constrainedSize.width, constrainedSize.height)
                 .center(Offset.zero);
             _flutterPreviewSize =
                 PreviewSize(width: maxSize.width, height: maxSize.height);
-            PreviewSize croppedPreviewSize = _flutterPreviewSize!;
-            if (_aspectRatio == CameraAspectRatios.ratio_1_1) {
-              croppedPreviewSize = PreviewSize(
-                width: maxSize.shortestSide,
-                height: maxSize.shortestSide,
-              );
-            }
+
+            // croppedPreviewSize takes care of the aspectRatio
+            final croppedPreviewSize =
+                _croppedPreviewSize(constrainedSize, _aspectRatioValue!);
 
             final previewTexture = Texture(textureId: _textureId!);
 
             final preview = SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
+              width: constrainedSize.width,
+              height: constrainedSize.height,
               child: ClipRect(
                 child: OverflowBox(
                   maxWidth: double.infinity,
                   maxHeight: double.infinity,
                   child: Center(
                     child: SizedBox(
-                      width: _flutterPreviewSize?.width,
-                      height: _flutterPreviewSize?.height,
+                      width: croppedPreviewSize.width,
+                      height: croppedPreviewSize.height,
                       child: AwesomeCameraGestureDetector(
-                        onPreviewTapBuilder: widget.onPreviewTap != null &&
-                                _previewSize != null &&
-                                _flutterPreviewSize != null
-                            ? OnPreviewTapBuilder(
-                                pixelPreviewSizeGetter: () => _previewSize!,
-                                flutterPreviewSizeGetter: () =>
-                                    _flutterPreviewSize!,
-                                onPreviewTap: widget.onPreviewTap!,
-                              )
-                            : null,
+                        onPreviewTapBuilder:
+                            widget.onPreviewTap != null && _previewSize != null
+                                ? OnPreviewTapBuilder(
+                                    pixelPreviewSizeGetter: () => _previewSize!,
+                                    flutterPreviewSizeGetter: () =>
+                                        croppedPreviewSize,
+                                    onPreviewTap: widget.onPreviewTap!,
+                                  )
+                                : null,
                         onPreviewScale: widget.onPreviewScale,
                         initialZoom: widget.state.sensorConfig.zoom,
                         // if there is no filter, just display texture
@@ -211,6 +218,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               ),
             );
 
+            final centeredPreview = SizedBox(
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              child: Center(child: preview),
+            );
+
             if ([
               CameraPreviewFit.fitHeight,
               CameraPreviewFit.fitWidth,
@@ -219,23 +232,19 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               return Stack(children: [
                 Positioned.fill(
                   child: Platform.isAndroid
-                      ? ClipPath(
-                          clipper: CenterCropClipper(
-                            isWidthLarger:
-                                constraints.maxWidth > constraints.maxHeight,
-                            aspectRatio: _aspectRatioValue!,
-                          ),
-                          child: preview,
+                      ? _CroppedPreview(
+                          croppedPreviewSize: croppedPreviewSize,
+                          alignment: widget.alignment,
+                          padding: widget.padding,
+                          child: centeredPreview,
                         )
                       : TweenAnimationBuilder<double>(
                           builder: (context, anim, _) {
-                            return ClipPath(
-                              clipper: CenterCropClipper(
-                                isWidthLarger: constraints.maxWidth >
-                                    constraints.maxHeight,
-                                aspectRatio: anim,
-                              ),
-                              child: preview,
+                            return _CroppedPreview(
+                              croppedPreviewSize: croppedPreviewSize,
+                              alignment: widget.alignment,
+                              padding: widget.padding,
+                              child: centeredPreview,
                             );
                           },
                           tween: Tween<double>(
@@ -272,7 +281,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               ]);
             } else {
               return Stack(children: [
-                Positioned.fill(child: preview),
+                Positioned.fill(child: centeredPreview),
                 if (widget.previewDecoratorBuilder != null)
                   Positioned.fill(
                     child: widget.previewDecoratorBuilder!(
@@ -303,47 +312,87 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       }),
     );
   }
+
+  PreviewSize _croppedPreviewSize(Size constrainedSize, double aspectRatio) {
+    final side = constrainedSize.shortestSide;
+    double otherSide = side * _aspectRatioValue!;
+    final isWidthLarger = constrainedSize.width > constrainedSize.height;
+    double width = isWidthLarger ? side : otherSide;
+    double height = isWidthLarger ? otherSide : side;
+    return PreviewSize(width: width, height: height);
+  }
 }
 
-class CenterCropClipper extends CustomClipper<Path> {
-  final bool isWidthLarger;
-  final double aspectRatio;
+class _CroppedPreview extends StatelessWidget {
+  final Widget child;
+  final PreviewSize croppedPreviewSize;
+  final Alignment alignment;
+  final EdgeInsets padding;
+  final Duration animDuration;
 
-  const CenterCropClipper({
-    required this.isWidthLarger,
-    required this.aspectRatio,
+  const _CroppedPreview({
+    super.key,
+    required this.croppedPreviewSize,
+    required this.alignment,
+    required this.padding,
+    required this.child,
+    this.animDuration = const Duration(milliseconds: 300),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedAlign(
+      alignment: alignment,
+      duration: animDuration,
+      curve: Curves.easeInOut,
+      child: AnimatedPadding(
+        padding: padding,
+        duration: animDuration,
+        curve: Curves.easeInOut,
+        child: AnimatedSize(
+          duration: animDuration,
+          curve: Curves.easeInOut,
+          child: SizedBox(
+            width: croppedPreviewSize.width,
+            height: croppedPreviewSize.height,
+            child: ClipPath(
+              clipper: _CenterCropClipper(
+                width: croppedPreviewSize.width,
+                height: croppedPreviewSize.height,
+              ),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CenterCropClipper extends CustomClipper<Path> {
+  final double width;
+  final double height;
+
+  const _CenterCropClipper({
+    required this.width,
+    required this.height,
   });
 
   @override
   Path getClip(Size size) {
     final center = size.center(Offset.zero);
-    final side = min(size.width, size.height);
-    double otherSide;
-    otherSide = side * aspectRatio;
-    final halfOtherSide = otherSide / 2.0;
-
-    if (isWidthLarger) {
-      return Path()
-        ..moveTo(center.dx, 0)
-        ..lineTo(center.dx - halfOtherSide, 0)
-        ..lineTo(center.dx - halfOtherSide, side)
-        ..lineTo(center.dx + halfOtherSide, side)
-        ..lineTo(center.dx + halfOtherSide, 0)
-        ..lineTo(center.dx, 0);
-    } else {
-      return Path()
-        ..moveTo(0, center.dy)
-        ..lineTo(0, center.dy - halfOtherSide)
-        ..lineTo(side, center.dy - halfOtherSide)
-        ..lineTo(side, center.dy + halfOtherSide)
-        ..lineTo(0, center.dy + halfOtherSide)
-        ..lineTo(0, center.dy);
-    }
+    return Path()
+      ..addRect(
+        Rect.fromCenter(
+          center: center,
+          width: width,
+          height: height,
+        ),
+      );
   }
 
   @override
-  bool shouldReclip(covariant CenterCropClipper oldClipper) {
-    return isWidthLarger != oldClipper.isWidthLarger ||
-        aspectRatio != oldClipper.aspectRatio;
+  bool shouldReclip(covariant _CenterCropClipper oldClipper) {
+    return width != oldClipper.width || height != oldClipper.height;
   }
 }

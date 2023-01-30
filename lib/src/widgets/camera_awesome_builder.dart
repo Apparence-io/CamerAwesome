@@ -95,7 +95,19 @@ class CameraAwesomeBuilder extends StatefulWidget {
   final OnPreviewTap Function(CameraState)? onPreviewTapBuilder;
   final OnPreviewScale Function(CameraState)? onPreviewScaleBuilder;
 
+  /// Theme of the camera UI, used in the built-in interface.
+  ///
+  /// You can also use it in your own UI with [AwesomeThemeProvider].
+  /// You might need to wrap your UI in a [Builder] to get a [context].
   final AwesomeTheme theme;
+
+  /// Add padding to the preview to adjust where you want to position it.
+  /// See also [previewAlignment].
+  final EdgeInsets previewPadding;
+
+  /// Set alignment of the preview to adjust its position.
+  /// See also [previewPadding].
+  final Alignment previewAlignment;
 
   const CameraAwesomeBuilder._({
     required this.sensor,
@@ -116,11 +128,13 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.onPreviewScaleBuilder,
     this.previewDecoratorBuilder,
     required this.theme,
+    this.previewPadding = EdgeInsets.zero,
+    this.previewAlignment = Alignment.center,
   });
 
   /// Use the camera with the built-in interface.
   ///
-  /// You need to provide an [SaveConfig] to define if you want to take
+  /// You need to provide a [SaveConfig] to define if you want to take
   /// photos, videos or both and where to save them.
   ///
   /// You can initiate the camera with a few parameters:
@@ -131,9 +145,13 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// - [exifPreferences] to indicate if you want to save GPS location when
   /// taking photos
   ///
-  /// You can customize the UI with a [progressIndicator] and you can define
-  /// what to do when the preview of the last media taken is tapped thanks to
-  /// [onMediaTap].
+  /// If you want to customize the UI of the camera, you have several options:
+  /// - use a [progressIndicator] and define what to do when the preview of the
+  /// last media taken is tapped thanks to [onMediaTap]
+  /// - use [topActionsBuilder], [bottomActionsBuilder], and
+  /// [middleContentBuilder] which let you build entirely the UI similarly to
+  /// how the built-in UI is done. Check [AwesomeCameraLayout] for more details.
+  /// - build your UI entirely thanks to the [custom] constructor.
   ///
   /// If you want to do image analysis (for AI for instance), you can set the
   /// [imageAnaysisConfig] and listen to the stream of images with
@@ -159,6 +177,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget Function(CameraState state)? topActionsBuilder,
     Widget Function(CameraState state)? bottomActionsBuilder,
     Widget Function(CameraState state)? middleContentBuilder,
+    EdgeInsets previewPadding = EdgeInsets.zero,
+    Alignment previewAlignment = Alignment.center,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -186,6 +206,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewFit: previewFit ?? CameraPreviewFit.cover,
           previewDecoratorBuilder: previewDecoratorBuilder,
           theme: theme ?? AwesomeTheme(),
+          previewPadding: previewPadding,
+          previewAlignment: previewAlignment,
         );
 
   /// 🚧 Experimental
@@ -209,6 +231,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
     OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
     CameraPreviewFit? previewFit,
     AwesomeTheme? theme,
+    EdgeInsets previewPadding = EdgeInsets.zero,
+    Alignment previewAlignment = Alignment.center,
   }) : this._(
           sensor: sensor,
           flashMode: flashMode,
@@ -228,6 +252,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewFit: previewFit ?? CameraPreviewFit.cover,
           previewDecoratorBuilder: null,
           theme: theme ?? AwesomeTheme(),
+          previewPadding: previewPadding,
+          previewAlignment: previewAlignment,
         );
 
   @override
@@ -324,6 +350,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                   key: _cameraPreviewKey,
                   previewFit: widget.previewFit,
                   state: snapshot.requireData,
+                  padding: widget.previewPadding,
+                  alignment: widget.previewAlignment,
                   onPreviewTap:
                       widget.onPreviewTapBuilder?.call(snapshot.requireData) ??
                           OnPreviewTap(
