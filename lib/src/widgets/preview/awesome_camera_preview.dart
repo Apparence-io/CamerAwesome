@@ -184,8 +184,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   maxHeight: double.infinity,
                   child: Center(
                     child: SizedBox(
-                      width: croppedPreviewSize.width,
-                      height: croppedPreviewSize.height,
+                      // Use the max preview size (not the cropped one) and crop it later if needed (ratio 1:1 for example)
+                      width: _flutterPreviewSize!.width,
+                      height: _flutterPreviewSize!.height,
                       child: AwesomeCameraGestureDetector(
                         onPreviewTapBuilder:
                             widget.onPreviewTap != null && _previewSize != null
@@ -316,9 +317,10 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize _croppedPreviewSize(Size constrainedSize, double aspectRatio) {
     final side = constrainedSize.shortestSide;
     double otherSide = side * _aspectRatioValue!;
+    // TODO This is probably wrong on some devices. Not enough tested.
     final isWidthLarger = constrainedSize.width > constrainedSize.height;
-    double width = isWidthLarger ? side : otherSide;
-    double height = isWidthLarger ? otherSide : side;
+    double width = isWidthLarger ? otherSide : side;
+    double height = isWidthLarger ? side : otherSide;
     return PreviewSize(width: width, height: height);
   }
 }
