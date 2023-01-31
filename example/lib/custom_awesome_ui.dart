@@ -1,4 +1,3 @@
-import 'package:better_open_file/better_open_file.dart';
 import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +30,7 @@ class CameraPage extends StatelessWidget {
         ),
         aspectRatio: CameraAspectRatios.ratio_1_1,
         previewFit: CameraPreviewFit.contain,
-        previewPadding: EdgeInsets.only(left: 150, top: 100),
+        previewPadding: const EdgeInsets.only(left: 150, top: 100),
         previewAlignment: Alignment.topRight,
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(
@@ -56,7 +55,7 @@ class CameraPage extends StatelessWidget {
             );
           },
         ),
-        topActionsBuilder: (state) => AwesomeCameraActionsRow(
+        topActionsBuilder: (state) => AwesomeTopActions(
           padding: EdgeInsets.zero,
           state: state,
           children: [

@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 
-import '../camera_context.dart';
-import '../exceptions/camera_states_exceptions.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
+import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
 
 /// When is not ready
 class PreparingCameraState extends CameraState {

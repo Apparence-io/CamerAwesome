@@ -333,7 +333,6 @@ class _CroppedPreview extends StatelessWidget {
   final Duration animDuration;
 
   const _CroppedPreview({
-    super.key,
     required this.croppedPreviewSize,
     required this.alignment,
     required this.padding,

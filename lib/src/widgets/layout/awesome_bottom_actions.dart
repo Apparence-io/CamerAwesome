@@ -1,5 +1,4 @@
 import 'package:camerawesome/src/orchestrator/models/media_capture.dart';
-import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:camerawesome/src/orchestrator/states/states.dart';
 import 'package:camerawesome/src/widgets/awesome_media_preview.dart';
 import 'package:camerawesome/src/widgets/buttons/awesome_camera_switch_button.dart';

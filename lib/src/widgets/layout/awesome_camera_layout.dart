@@ -1,13 +1,11 @@
-import 'package:camerawesome/src/widgets/filters/awesome_filter_button.dart';
-import 'package:camerawesome/src/widgets/filters/awesome_filter_name_indicator.dart';
-import 'package:camerawesome/src/widgets/filters/awesome_filter_selector.dart';
 import 'package:camerawesome/src/widgets/filters/awesome_filter_widget.dart';
-import 'package:camerawesome/src/widgets/layout/awesome_bottom_row.dart';
-import 'package:camerawesome/src/widgets/layout/awesome_top_row.dart';
+import 'package:camerawesome/src/widgets/layout/layout.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../camerawesome_plugin.dart';
+import 'package:camerawesome/src/orchestrator/states/states.dart';
+import 'package:camerawesome/src/widgets/awesome_camera_mode_selector.dart';
+import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
 
 /// This widget doesn't handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {
@@ -39,7 +37,7 @@ class AwesomeCameraLayout extends StatelessWidget {
                 AwesomeCameraModeSelector(state: state),
               ],
             )),
-        topActions = topActions ?? AwesomeCameraActionsRow(state: state),
+        topActions = topActions ?? AwesomeTopActions(state: state),
         bottomActions = bottomActions ??
             AwesomeBottomActions(state: state, onMediaTap: onMediaTap);
 

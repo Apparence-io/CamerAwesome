@@ -44,7 +44,7 @@ class AwesomeLocationButton extends StatelessWidget {
           rotateWithDevice: theme.rotateButtonsWithCamera,
           child: theme.buttonBuilder(
             iconBuilder(snapshot.requireData),
-            () => onLocationTap(state, snapshot.requireData),
+            () => onLocationTap(state, !snapshot.requireData),
           ),
         );
       },
