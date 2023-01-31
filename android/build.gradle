@@ -24,6 +24,12 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
+def DEFAULT_PLAY_SERVICES_LOCATION_VERSION = "21.0.1"
+
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
 android {
     compileSdkVersion 33
 
@@ -56,7 +62,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
     implementation 'androidx.test:rules:1.5.0'
     // implementation project(path: ':integration_test')
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
+    implementation "com.google.android.gms:play-services-location:${safeExtGet('playServicesLocationVersion', DEFAULT_PLAY_SERVICES_LOCATION_VERSION)}"
     implementation 'androidx.exifinterface:exifinterface:1.3.5'
 
     testImplementation 'junit:junit:4.13.2'
