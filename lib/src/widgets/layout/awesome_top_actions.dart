@@ -1,18 +1,17 @@
-import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:camerawesome/src/orchestrator/states/states.dart';
 import 'package:camerawesome/src/widgets/buttons/awesome_aspect_ratio_button.dart';
 import 'package:camerawesome/src/widgets/buttons/awesome_flash_button.dart';
 import 'package:camerawesome/src/widgets/buttons/awesome_location_button.dart';
 import 'package:flutter/material.dart';
 
-class AwesomeCameraActionsRow extends StatelessWidget {
+class AwesomeTopActions extends StatelessWidget {
   final CameraState state;
 
   /// Show only children that are relevant to the current [state]
   final List<Widget> children;
   final EdgeInsets padding;
 
-  AwesomeCameraActionsRow({
+  AwesomeTopActions({
     super.key,
     required this.state,
     List<Widget>? children,

@@ -1,4 +1,4 @@
-import 'capture_modes.dart';
+import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
 
 typedef FilePathBuilder = Future<String> Function();
 

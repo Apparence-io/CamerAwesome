@@ -1,6 +1,9 @@
-import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_bouncing_widget.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/material.dart';
+
+import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
+import 'package:camerawesome/src/orchestrator/states/states.dart';
 
 class AwesomeCameraModeSelector extends StatelessWidget {
   final CameraState state;

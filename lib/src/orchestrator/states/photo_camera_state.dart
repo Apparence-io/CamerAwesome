@@ -8,6 +8,7 @@ import 'package:rxdart/rxdart.dart';
 import '../../photofilters/filters/filters.dart';
 import '../camera_context.dart';
 import 'handlers/filter_handler.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 class PhotoFilterModel {
   PhotoFilterModel(this.path, this.imageFile, this.filter);

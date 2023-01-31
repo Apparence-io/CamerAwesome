@@ -4,7 +4,7 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
 
-import '../camera_context.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 /// When Camera is in Video mode
 class VideoRecordingCameraState extends CameraState {

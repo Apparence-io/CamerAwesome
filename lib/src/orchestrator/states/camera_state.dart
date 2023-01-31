@@ -3,7 +3,7 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
 
-import '../camera_context.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
