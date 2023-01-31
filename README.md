@@ -114,6 +114,32 @@ permissions:
 </manifest>
 ```
 
+⚠️ Play Services Location compatibility
+
+If you are using other plugins that need Play Services Location, you may want to specify which
+version to use.
+To do so, add the following to your `android/app/build.gradle`:
+
+``` gradle
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    ext {
+        // other stuff
+        playServicesLocationVersion = "20.0.0" // default is 21.0.1
+    }
+}
+```
+
+If you are not sure, don't add it and see if there is an exception like this one:
+
+```
+java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.location.ActivityRecognitionClient, but class was expected
+```
+
+In that case, try to see if specifying the version fixes the issue.
+Otherwise, [tell use more about it](https://github.com/Apparence-io/CamerAwesome/issues/new?assignees=&labels=&template=BUG.md)
+.
+
 ### Import the package in your Flutter app
 
 ```dart

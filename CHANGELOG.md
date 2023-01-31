@@ -1,3 +1,7 @@
+# 1.2.1
+
+- Expose play services location version
+
 # 1.2.0
 
 - Add filters for photo mode.
