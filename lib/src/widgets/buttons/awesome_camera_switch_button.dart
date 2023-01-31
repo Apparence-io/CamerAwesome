@@ -3,7 +3,7 @@ import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 
-import '../utils/awesome_oriented_widget.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_oriented_widget.dart';
 
 class AwesomeCameraSwitchButton extends StatelessWidget {
   final CameraState state;
