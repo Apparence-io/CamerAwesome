@@ -1,6 +1,7 @@
 # 1.2.1
 
-- Expose play services location version
+- Expose Gradle variables to avoid conflict with other plugins.
+- iOS aspect ratio fix.
 
 # 1.2.0
 
