@@ -67,9 +67,11 @@ dependencies:
   ...
 ```
 
-### Set permissions
+### Platform specific setup
 
-- **iOS** add these on ```ios/Runner/Info.plist``` file
+- **iOS**
+
+Add these on ```ios/Runner/Info.plist```:
 
 ```xml
 
@@ -84,13 +86,13 @@ dependencies:
 
 - **Android**
 
-Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
+Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```:
 
 ```
 minSdkVersion 21
 ```
 
-ìf you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
+If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ``` xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -114,31 +116,37 @@ permissions:
 </manifest>
 ```
 
-⚠️ Play Services Location compatibility
+<details>
+<summary>⚠️ Overriding Android dependencies</summary>
 
-If you are using other plugins that need Play Services Location, you may want to specify which
-version to use.
-To do so, add the following to your `android/app/build.gradle`:
+Some of the dependencies used by CamerAwesome can be overriden if you have a conflict.
+Change these variables to define which version you want to use:
 
 ``` gradle
 buildscript {
     ext.kotlin_version = '1.7.10'
     ext {
-        // other stuff
-        playServicesLocationVersion = "20.0.0" // default is 21.0.1
+        // You can override these variables
+        compileSdkVersion = 33
+        minSdkVersion = 24 // 21 minimum
+        playServicesLocationVersion = "20.0.0"
+        exifInterfaceVersion = "1.3.4"
     }
+    // ...
 }
 ```
 
-If you are not sure, don't add it and see if there is an exception like this one:
+Only change these variables if you are sure of what you are doing.
+
+For example, setting the Play Services Location version might help you when you have conflicts with
+other plugins.
+The below line shows an example of these conflicts:
 
 ```
 java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.location.ActivityRecognitionClient, but class was expected
 ```
 
-In that case, try to see if specifying the version fixes the issue.
-Otherwise, [tell use more about it](https://github.com/Apparence-io/CamerAwesome/issues/new?assignees=&labels=&template=BUG.md)
-.
+</details>
 
 ### Import the package in your Flutter app
 
