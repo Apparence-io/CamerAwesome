@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -172,7 +173,7 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
         requestCode: Int,
         callback: (denied: List<String>) -> Unit
     ) {
-        val result = suspendCoroutine { continuation ->
+        val result: List<String> = suspendCoroutine { continuation: Continuation<List<String>> ->
             ActivityCompat.requestPermissions(
                 activity, permissions.toTypedArray(), requestCode
             )
@@ -180,7 +181,6 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
                 PermissionRequest(UUID.randomUUID().toString(),
                     permissions,
                     callback = { granted, _ ->
-                        // deep equals, ignoring order
                         continuation.resume(granted)
                     })
             )

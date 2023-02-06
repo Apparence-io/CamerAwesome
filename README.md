@@ -67,9 +67,11 @@ dependencies:
   ...
 ```
 
-### Set permissions
+### Platform specific setup
 
-- **iOS** add these on ```ios/Runner/Info.plist``` file
+- **iOS**
+
+Add these on ```ios/Runner/Info.plist```:
 
 ```xml
 
@@ -84,13 +86,13 @@ dependencies:
 
 - **Android**
 
-Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
+Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```:
 
 ```
 minSdkVersion 21
 ```
 
-ìf you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
+If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ``` xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -113,6 +115,38 @@ permissions:
     <!-- Other declarations -->
 </manifest>
 ```
+
+<details>
+<summary>⚠️ Overriding Android dependencies</summary>
+
+Some of the dependencies used by CamerAwesome can be overriden if you have a conflict.
+Change these variables to define which version you want to use:
+
+``` gradle
+buildscript {
+    ext.kotlin_version = '1.7.10'
+    ext {
+        // You can override these variables
+        compileSdkVersion = 33
+        minSdkVersion = 24 // 21 minimum
+        playServicesLocationVersion = "20.0.0"
+        exifInterfaceVersion = "1.3.4"
+    }
+    // ...
+}
+```
+
+Only change these variables if you are sure of what you are doing.
+
+For example, setting the Play Services Location version might help you when you have conflicts with
+other plugins.
+The below line shows an example of these conflicts:
+
+```
+java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.location.ActivityRecognitionClient, but class was expected
+```
+
+</details>
 
 ### Import the package in your Flutter app
 
