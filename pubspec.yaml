@@ -10,15 +10,16 @@ environment:
 
 dependencies:
   rxdart: ^0.27.7
-  collection: ^1.16.0
+  collection: ^1.17.0
   # TODO Only needed on iOS for now
-  photofilters: ^3.0.1
+  photofilters:
+    git: https://github.com/svenopdehipt/photofilters.git
   flutter:
     sdk: flutter
   colorfilter_generator: ^0.0.8
   carousel_slider: ^4.2.1
   # TODO Only needed on iOS for now
-  image: ^3.3.0
+  image: ^4.0.13
 dev_dependencies:
   flutter_test:
     sdk: flutter
