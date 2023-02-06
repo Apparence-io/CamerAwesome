@@ -1,12 +1,12 @@
 <component name="libraryTable">
   <library name="Flutter Plugins" type="FlutterPluginsLibraryType">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_macos-2.0.7" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_ios-2.0.11" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.0.22" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_windows-2.1.3" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider-2.0.11" />
+      <root url="file://$PROJECT_DIR$" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_linux-2.1.7" />
     </CLASSES>
     <JAVADOC />
