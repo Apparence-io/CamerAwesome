@@ -47,7 +47,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.2.2"
+    version: "1.2.1"
   carousel_slider:
     dependency: transitive
     description:
@@ -269,10 +269,10 @@ packages:
     dependency: transitive
     description:
       name: image
-      sha256: "8e9d133755c3e84c73288363e6343157c383a0c6c56fc51afcc5d4d7180306d6"
+      sha256: "3686865febd85c57a632d87a0fb1f0a8a9ef602fdb68d909c3e9aa29ec70fd24"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.0"
+    version: "4.0.13"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -417,11 +417,12 @@ packages:
   photofilters:
     dependency: transitive
     description:
-      name: photofilters
-      sha256: "757197a7b54b4db36eed3fbdf0afcc8cc3b9058b1242c8f6675426aca1b56d39"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.1"
+      path: "."
+      ref: HEAD
+      resolved-ref: b942739eb1d8fdfe60161f48f25c9c44494e13cb
+      url: "https://github.com/svenopdehipt/photofilters.git"
+    source: git
+    version: "3.0.2"
   platform:
     dependency: transitive
     description:
@@ -628,5 +629,5 @@ packages:
     source: hosted
     version: "6.2.2"
 sdks:
-  dart: ">=2.18.2 <3.0.0"
+  dart: ">=2.19.0 <3.0.0"
   flutter: ">=3.0.0"
