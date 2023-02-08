@@ -11,6 +11,13 @@
             "program": "example/lib/main.dart"
         },
         {
+            "name": "Subroute",
+            "request": "launch",
+            "type": "dart",
+            "program": "example/lib/subroute_camera.dart",
+            "flutterMode": "profile"
+        },
+        {
             "name": "AI analysis - face detection",
             "request": "launch",
             "type": "dart",

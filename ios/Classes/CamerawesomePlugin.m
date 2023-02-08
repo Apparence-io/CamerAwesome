@@ -327,6 +327,7 @@ FlutterEventSink imageStreamEventSink;
   }
   
   dispatch_async(_dispatchQueue, ^{
+    [self->_registry unregisterTexture:self->_textureId]; // Lets try this
     [self->_camera stop];
   });
   
