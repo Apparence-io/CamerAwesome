@@ -25,4 +25,9 @@ assignees: ''
 | ------- | ----------- | --------- |
 | *Apple* | *iPhone X*  | *13.6.1*  |
 
+## Your flutter version
+Run this in your command line 
+```flutter --version```
+Paste the result here
+
 </details>
