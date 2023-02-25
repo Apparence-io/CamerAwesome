@@ -5,9 +5,9 @@ import 'dart:ui';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:image/image.dart' as img;
-import 'package:photofilters/photofilters.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../photofilters/filters/filters.dart';
 import '../camera_context.dart';
 
 class PhotoFilterModel {
