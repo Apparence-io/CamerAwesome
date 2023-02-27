@@ -1,5 +1,7 @@
 name: camerawesome
-description: Easiest Flutter camera Plugin supporting capturing images, streaming images, video recording, switch sensors, autofocus, flash... on Android and iOS
+description: Easiest Flutter camera Plugin supporting capturing images,
+  streaming images, video recording, switch sensors, autofocus, flash... on
+  Android and iOS
 version: 1.2.1
 homepage: https://Apparence.io
 repository: https://github.com/Apparence-io/camera_awesome
@@ -9,27 +11,23 @@ environment:
   flutter: ">=1.10.0"
 
 dependencies:
-  rxdart: ^0.27.7
+  carousel_slider: ^4.2.1
   collection: ^1.17.0
-  # TODO Only needed on iOS for now
-  photofilters:
-    git: https://github.com/svenopdehipt/photofilters.git
+  colorfilter_generator: ^0.0.8
   flutter:
     sdk: flutter
-  colorfilter_generator: ^0.0.8
-  carousel_slider: ^4.2.1
-  # TODO Only needed on iOS for now
   image: ^4.0.13
+  # photofilters:
+    # git: https://github.com/svenopdehipt/photofilters.git
+  rxdart: ^0.27.7
 dev_dependencies:
+  flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
   pigeon: ^7.0.0
-
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
 # The following section is specific to Flutter.
 flutter:
   assets:
@@ -45,7 +43,6 @@ flutter:
         pluginClass: CameraAwesomeX
       ios:
         pluginClass: CamerawesomePlugin
-
   #To add assets to your plugin package, add an assets section, like this:
   #
   # For details regarding assets in packages, see
@@ -53,7 +50,6 @@ flutter:
   #
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
-
   # To add custom fonts to your plugin package, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
