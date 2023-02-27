@@ -139,6 +139,14 @@ class CameraContext {
 
   bool get imageAnalysisEnabled => analysisController?.enabled == true;
 
+  resume() {
+    analysisController?.resume();
+  }
+
+  pause() {
+    analysisController?.pause();
+  }
+
   dispose() {
     sensorConfig.dispose();
     sensorConfigController.close();
@@ -185,7 +193,8 @@ class CameraContext {
   }
 
   Future<int?> textureId() {
-    return CamerawesomePlugin.getPreviewTexture()
-        .then(((value) => value?.toInt()));
+    return CamerawesomePlugin.getPreviewTexture().then(
+      (value) => value?.toInt(),
+    );
   }
 }

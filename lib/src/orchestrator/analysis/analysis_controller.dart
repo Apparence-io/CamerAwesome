@@ -12,6 +12,7 @@ class AnalysisController {
 
   StreamSubscription? imageSubscription;
   bool _analysisEnabled;
+  bool _paused;
 
   AnalysisController._({
     required Stream<Map<String, dynamic>>? images$,
@@ -19,6 +20,7 @@ class AnalysisController {
     this.onImageListener,
     required bool analysisEnabled,
   })  : _images$ = images$,
+        _paused = false,
         _analysisEnabled = analysisEnabled;
 
   factory AnalysisController.fromPlugin({
@@ -57,6 +59,8 @@ class AnalysisController {
 
   get enabled => onImageListener != null && _analysisEnabled;
 
+  get paused => _paused;
+
   Future<bool> start() async {
     if (onImageListener == null) {
       return false;
@@ -71,8 +75,25 @@ class AnalysisController {
     return true;
   }
 
+  Future<void> pause() async {
+    if (!_analysisEnabled) {
+      return;
+    }
+    _paused = true;
+    await CamerawesomePlugin.stopAnalysis();
+  }
+
+  Future<void> resume() async {
+    if (!_paused) {
+      return;
+    }
+    _paused = false;
+    await CamerawesomePlugin.startAnalysis();
+  }
+
   Future<void> stop() async {
     _analysisEnabled = false;
+    _paused = false;
     await CamerawesomePlugin.stopAnalysis();
     close();
   }

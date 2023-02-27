@@ -95,6 +95,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   final OnPreviewScale Function(CameraState)? onPreviewScaleBuilder;
 
   const CameraAwesomeBuilder._({
+    Key? key,
     required this.sensor,
     required this.flashMode,
     required this.zoom,
@@ -112,7 +113,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.onPreviewTapBuilder,
     this.onPreviewScaleBuilder,
     this.previewDecoratorBuilder,
-  });
+  }) : super(key: key);
 
   /// Use the camera with the built-in interface.
   ///
@@ -135,6 +136,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// [imageAnaysisConfig] and listen to the stream of images with
   /// [onImageForAnalysis].
   CameraAwesomeBuilder.awesome({
+    Key? key,
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
@@ -152,6 +154,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     CameraPreviewFit? previewFit,
     CameraLayoutBuilder? previewDecoratorBuilder,
   }) : this._(
+          key: key,
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
@@ -175,10 +178,12 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewDecoratorBuilder: previewDecoratorBuilder,
         );
 
-  /// 🚧 Experimental
+  /// Use the camera with the customisable interface.
   ///
-  /// Documentation on its way, API might change
+  /// You need to provide an [SaveConfig] to define if you want to take
+  /// photos, videos or both and where to save them.
   const CameraAwesomeBuilder.custom({
+    Key? key,
     CaptureMode initialCaptureMode = CaptureMode.photo,
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
@@ -196,6 +201,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     OnPreviewScale Function(CameraState)? onPreviewScaleBuilder,
     CameraPreviewFit? previewFit,
   }) : this._(
+          key: key,
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
@@ -248,12 +254,16 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
+        _cameraContext.resume();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        _cameraContext.state
-            .when(onVideoRecordingMode: (mode) => mode.stopRecording());
+        _cameraContext.pause();
+        // handle those cases in cameraContext
+        _cameraContext.state.when(
+          onVideoRecordingMode: (mode) => mode.stopRecording(),
+        );
         break;
     }
     super.didChangeAppLifecycleState(state);
