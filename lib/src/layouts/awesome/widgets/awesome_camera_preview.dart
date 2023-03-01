@@ -139,13 +139,17 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 break;
               case CameraPreviewFit.cover:
                 final previewRatio = _previewSize!.width / _previewSize!.height;
-                maxSize = Size(
-                  previewRatio > 1
-                      ? constraints.maxHeight / previewRatio
-                      : constraints.maxHeight * previewRatio,
-                  constraints.maxHeight,
-                );
-
+                if (previewRatio <= 1) {
+                  maxSize = Size(
+                    constraints.maxWidth,
+                    constraints.maxWidth / previewRatio,
+                  );
+                } else {
+                  maxSize = Size(
+                    constraints.maxHeight * previewRatio,
+                    constraints.maxHeight,
+                  );
+                }
                 break;
               case CameraPreviewFit.contain:
                 final ratio = min(ratioW, ratioH);
