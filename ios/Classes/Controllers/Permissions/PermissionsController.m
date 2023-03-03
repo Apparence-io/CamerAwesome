@@ -17,7 +17,7 @@
 
 + (BOOL)checkAndRequestPermission {
   NSString *mediaType = AVMediaTypeVideo;
-  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
   
   __block BOOL permissionsGranted;
   if (authStatus == AVAuthorizationStatusNotDetermined) {
