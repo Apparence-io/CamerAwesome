@@ -7,18 +7,17 @@
 
 #import "PermissionsController.h"
 
-@implementation PermissionsController
+@implementation CameraPermissionsController
 
-+ (BOOL)checkCameraPermission {
-  NSString *mediaType = AVMediaTypeVideo;
-  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
++ (BOOL)checkPermission {
+  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
   
   return (authStatus == AVAuthorizationStatusAuthorized);
 }
 
-+ (BOOL)checkAndRequestCameraPermission {
++ (BOOL)checkAndRequestPermission {
   NSString *mediaType = AVMediaTypeVideo;
-  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
+  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
   
   __block BOOL permissionsGranted;
   if (authStatus == AVAuthorizationStatusNotDetermined) {
@@ -35,13 +34,17 @@
   return permissionsGranted;
 }
 
-+ (BOOL)checkMicrophonePermission {
+@end
+
+@implementation MicrophonePermissionsController
+
++ (BOOL)checkPermission {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
   
   return (permissionStatus == AVAudioSessionRecordPermissionGranted);
 }
 
-+ (BOOL)checkAndRequestMicrophonePermission {
++ (BOOL)checkAndRequestPermission {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
   
   __block BOOL permissionsGranted;

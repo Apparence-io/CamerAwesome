@@ -85,8 +85,8 @@ FlutterEventSink imageStreamEventSink;
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   NSMutableArray *permissions = [NSMutableArray new];
 
-  bool cameraPermission = [PermissionsController checkCameraPermission];
-  bool microphonePermission = [PermissionsController checkMicrophonePermission];
+  bool cameraPermission = [CameraPermissionsController checkPermission];
+  bool microphonePermission = [MicrophonePermissionsController checkPermission];
 
   if (cameraPermission) {
     [permissions addObject:@"camera"];
@@ -264,7 +264,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
-  if (![PermissionsController checkAndRequestCameraPermission]) {
+  if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
   }
@@ -348,7 +348,7 @@ FlutterEventSink imageStreamEventSink;
 - (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
   NSMutableArray *permissions = [NSMutableArray new];
 
-  const Boolean cameraGranted = [PermissionsController checkAndRequestCameraPermission];
+  const Boolean cameraGranted = [CameraPermissionsController checkAndRequestPermission];
   if (cameraGranted) {
     [permissions addObject:@"camera"];
   }
