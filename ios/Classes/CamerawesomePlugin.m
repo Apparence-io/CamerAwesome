@@ -264,7 +264,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
-  if (![PermissionsController checkCameraPermission]) {
+  if (![PermissionsController checkAndRequestCameraPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
   }
@@ -348,14 +348,9 @@ FlutterEventSink imageStreamEventSink;
 - (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
   NSMutableArray *permissions = [NSMutableArray new];
 
-  const Boolean cameraGranted = [PermissionsController checkCameraPermission];
+  const Boolean cameraGranted = [PermissionsController checkAndRequestCameraPermission];
   if (cameraGranted) {
     [permissions addObject:@"camera"];
-  }
-
-  const BOOL microphoneGranted = [PermissionsController checkMicrophonePermission];
-  if (microphoneGranted) {
-    [permissions addObject:@"record_audio"];
   }
 
   bool needToSaveGPSLocation = [saveGpsLocation boolValue];

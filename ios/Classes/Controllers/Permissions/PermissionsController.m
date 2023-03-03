@@ -13,6 +13,13 @@
   NSString *mediaType = AVMediaTypeVideo;
   AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
   
+  return (authStatus == AVAuthorizationStatusAuthorized);
+}
+
++ (BOOL)checkAndRequestCameraPermission {
+  NSString *mediaType = AVMediaTypeVideo;
+  AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
+  
   __block BOOL permissionsGranted;
   if (authStatus == AVAuthorizationStatusNotDetermined) {
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
@@ -29,6 +36,12 @@
 }
 
 + (BOOL)checkMicrophonePermission {
+  AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
+  
+  return (permissionStatus == AVAudioSessionRecordPermissionGranted);
+}
+
++ (BOOL)checkAndRequestMicrophonePermission {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
   
   __block BOOL permissionsGranted;
