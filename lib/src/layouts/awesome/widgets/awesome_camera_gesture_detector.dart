@@ -66,15 +66,16 @@ class AwesomeCameraGestureDetector extends StatefulWidget {
 
 class _AwesomeCameraGestureDetector
     extends State<AwesomeCameraGestureDetector> {
-  double _previousZoomScale = 0;
-  double _zoomScale = 0;
+  final _zoomScaleFactor = .01;
+  ValueNotifier<double>? _previousZoomValue;
+  double _currentZoom = 0.0;
   Offset? _tapPosition;
   Timer? _timer;
 
   @override
   void initState() {
-    _previousZoomScale = widget.initialZoom;
-    _zoomScale = widget.initialZoom;
+    _previousZoomValue = ValueNotifier(widget.initialZoom);
+    _currentZoom = widget.initialZoom;
     super.initState();
   }
 
@@ -87,14 +88,22 @@ class _AwesomeCameraGestureDetector
               GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
             () => ScaleGestureRecognizer()
               ..onStart = (_) {
-                _previousZoomScale = _zoomScale + 1;
+                _previousZoomValue!.value = _currentZoom + _zoomScaleFactor;
               }
               ..onUpdate = (ScaleUpdateDetails details) {
-                double result = _previousZoomScale * details.scale - 1;
-                if (result < 1 && result > 0) {
-                  _zoomScale = result;
-                  widget.onPreviewScale!.onScale(_zoomScale);
+                final scale = details.scale;
+
+                final result =
+                    _previousZoomValue!.value * scale - _zoomScaleFactor;
+
+                if (result > 0 && result < 1) {
+                  _currentZoom = result;
+                } else if (result < 0) {
+                  _currentZoom = 0.0;
+                } else if (result > 1) {
+                  _currentZoom = 1.0;
                 }
+                widget.onPreviewScale!.onScale(_currentZoom);
               },
             (instance) {},
           ),
