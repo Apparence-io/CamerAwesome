@@ -1,14 +1,13 @@
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:image/image.dart' as img;
-import 'package:photofilters/photofilters.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../photofilters/filters/filters.dart';
 import '../camera_context.dart';
+import 'handlers/filter_handler.dart';
 
 class PhotoFilterModel {
   PhotoFilterModel(this.path, this.imageFile, this.filter);
@@ -20,8 +19,6 @@ class PhotoFilterModel {
 
 /// When Camera is in Image mode
 class PhotoCameraState extends CameraState {
-  Isolate? photoFilterIsolate;
-
   PhotoCameraState({
     required CameraContext cameraContext,
     required this.filePathBuilder,
@@ -76,21 +73,7 @@ class PhotoCameraState extends CameraState {
     try {
       final succeeded = await CamerawesomePlugin.takePhoto(path);
       if (succeeded) {
-        // TODO if iOS can do it on native side, we could remove both photofilters and image packages dependencies
-        if (Platform.isIOS && filter.id != AwesomeFilter.None.id) {
-          photoFilterIsolate?.kill(priority: Isolate.immediate);
-
-          ReceivePort port = ReceivePort();
-          photoFilterIsolate = await Isolate.spawn<PhotoFilterModel>(
-            applyFilter,
-            PhotoFilterModel(path, File(path), filter.output),
-            onExit: port.sendPort,
-          );
-          await port.first;
-
-          photoFilterIsolate?.kill(priority: Isolate.immediate);
-        }
-
+        await FilterHandler().apply(path: path, filter: filter);
         _mediaCapture = MediaCapture.success(filePath: path);
       } else {
         _mediaCapture = MediaCapture.failure(filePath: path);
@@ -137,33 +120,4 @@ class PhotoCameraState extends CameraState {
       flutterPreviewSize: flutterPreviewSize,
     );
   }
-}
-
-Future<File> applyFilter(PhotoFilterModel model) async {
-  final img.Image? image = img.decodeJpg(model.imageFile.readAsBytesSync());
-  if (image == null) {
-    throw MediaCapture.failure(
-      exception: Exception("could not decode image"),
-      filePath: model.path,
-    );
-  }
-
-  final pixels = image.getBytes();
-  model.filter.apply(pixels, image.width, image.height);
-  final img.Image out = img.Image.fromBytes(
-    width: image.width,
-    height: image.height,
-    bytes: pixels.buffer,
-  );
-
-  final List<int>? encodedImage = img.encodeNamedImage(model.path, out);
-  if (encodedImage == null) {
-    throw MediaCapture.failure(
-      exception: Exception("could not encode image"),
-      filePath: model.path,
-    );
-  }
-
-  model.imageFile.writeAsBytesSync(encodedImage);
-  return model.imageFile;
 }
