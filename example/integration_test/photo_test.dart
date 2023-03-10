@@ -4,10 +4,8 @@ import 'dart:io';
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:patrol/patrol.dart';
 
-import 'config.dart';
-import 'utils.dart';
+import 'common.dart';
 
 // To run it, you have to use `patrol drive` instead of `flutter test`.
 void main() {
@@ -16,11 +14,8 @@ void main() {
 
 void photoTests() {
   for (var sensor in Sensors.values) {
-    patrolTest(
+    patrol(
       'Take pictures > single picture ${sensor.name} camera',
-      config: patrolConfig,
-      nativeAutomatorConfig: nativeAutomatorConfig,
-      nativeAutomation: true,
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
@@ -42,11 +37,8 @@ void photoTests() {
       },
     );
 
-    patrolTest(
+    patrol(
       'Take pictures > multiple picture ${sensor.name} camera',
-      config: patrolConfig,
-      nativeAutomatorConfig: nativeAutomatorConfig,
-      nativeAutomation: true,
       ($) async {
         int idxPicture = 0;
         const picturesToTake = 3;
@@ -78,11 +70,8 @@ void photoTests() {
     );
   }
 
-  patrolTest(
+  patrol(
     'Take pictures > One with ${Sensors.back} then one with ${Sensors.front}',
-    config: patrolConfig,
-    nativeAutomatorConfig: nativeAutomatorConfig,
-    nativeAutomation: true,
     ($) async {
       int idxSensor = 0;
       final sensors = [

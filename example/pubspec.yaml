@@ -22,11 +22,8 @@ dependencies:
 dev_dependencies:
   exif: ^3.1.2
   flutter_test:
-    sdk:
-      flutter
-  integration_test:
     sdk: flutter
-  patrol: ^0.10.8
+  patrol: ^1.0.3
   flutter_lints: ^2.0.1
 
 flutter:
@@ -34,3 +31,9 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+
+patrol:
+  android:
+    package_name: com.example.camera_app
+  ios:
+    bundle_id:
