@@ -1,11 +1,11 @@
-import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
-import 'package:flutter/material.dart';
-
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:camerawesome/src/widgets/awesome_sensor_type_selector.dart';
 import 'package:camerawesome/src/widgets/filters/awesome_filter_button.dart';
 import 'package:camerawesome/src/widgets/filters/awesome_filter_name_indicator.dart';
 import 'package:camerawesome/src/widgets/filters/awesome_filter_selector.dart';
+import 'package:camerawesome/src/widgets/utils/animated_clip_rect.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
+import 'package:flutter/material.dart';
 
 enum FilterListPosition {
   aboveButton,
@@ -18,6 +18,8 @@ class AwesomeFilterWidget extends StatefulWidget {
   final EdgeInsets? filterListPadding;
   final Widget indicator;
   final Widget? spacer;
+  final Curve animationCurve;
+  final Duration animationDuration;
 
   AwesomeFilterWidget({
     required this.state,
@@ -26,6 +28,8 @@ class AwesomeFilterWidget extends StatefulWidget {
     this.filterListPadding,
     Widget? indicator,
     this.spacer = const SizedBox(height: 8),
+    this.animationCurve = Curves.easeInOut,
+    this.animationDuration = const Duration(milliseconds: 400),
   }) : indicator = Builder(
           builder: (context) => Container(
             color:
@@ -56,7 +60,8 @@ class _AwesomeFilterWidgetState extends State<AwesomeFilterWidget> {
     final theme = AwesomeThemeProvider.of(context).theme;
     final children = [
       SizedBox(
-        height: theme.iconSize + theme.padding.top + theme.padding.bottom,
+        height:
+            theme.iconSize + theme.iconPadding.top + theme.iconPadding.bottom,
         width: double.infinity,
         child: Stack(
           children: [
@@ -64,18 +69,26 @@ class _AwesomeFilterWidgetState extends State<AwesomeFilterWidget> {
               child: StreamBuilder<bool>(
                 stream: widget.state.filterSelectorOpened$,
                 builder: (_, snapshot) {
-                  return snapshot.data == true
-                      ? Align(
-                          alignment: widget.filterListPosition ==
-                                  FilterListPosition.belowButton
-                              ? Alignment.bottomCenter
-                              : Alignment.topCenter,
-                          child:
-                              AwesomeFilterNameIndicator(state: widget.state),
-                        )
-                      : Center(
-                          child: AwesomeSensorTypeSelector(state: widget.state),
-                        );
+                  return AnimatedSwitcher(
+                    duration: widget.animationDuration,
+                    switchInCurve: widget.animationCurve,
+                    switchOutCurve: widget.animationCurve.flipped,
+                    child: snapshot.data == true
+                        ? Align(
+                            key: const ValueKey("NameIndicator"),
+                            alignment: widget.filterListPosition ==
+                                    FilterListPosition.belowButton
+                                ? Alignment.bottomCenter
+                                : Alignment.topCenter,
+                            child:
+                                AwesomeFilterNameIndicator(state: widget.state),
+                          )
+                        : Center(
+                            key: const ValueKey("SensorTypeSelector"),
+                            child:
+                                AwesomeSensorTypeSelector(state: widget.state),
+                          ),
+                  );
                 },
               ),
             ),
@@ -94,25 +107,29 @@ class _AwesomeFilterWidgetState extends State<AwesomeFilterWidget> {
         ),
       ),
       if (widget.spacer != null) widget.spacer!,
-      AnimatedSize(
-        duration: const Duration(milliseconds: 700),
-        curve: Curves.fastLinearToSlowEaseIn,
-        child: StreamBuilder<bool>(
-          stream: widget.state.filterSelectorOpened$,
-          builder: (_, snapshot) {
-            return snapshot.data == true
-                ? AwesomeFilterSelector(
-                    state: widget.state,
-                    filterListPosition: widget.filterListPosition,
-                    indicator: widget.indicator,
-                    filterListBackgroundColor: theme.bottomActionsBackground,
-                    filterListPadding: widget.filterListPadding,
-                  )
-                : const SizedBox(
-                    width: double.infinity,
-                  );
-          },
-        ),
+      StreamBuilder<bool>(
+        stream: widget.state.filterSelectorOpened$,
+        builder: (_, snapshot) {
+          return AnimatedClipRect(
+            open: snapshot.data == true,
+            horizontalAnimation: false,
+            verticalAnimation: true,
+            alignment:
+                widget.filterListPosition == FilterListPosition.belowButton
+                    ? Alignment.topCenter
+                    : Alignment.bottomCenter,
+            duration: widget.animationDuration,
+            curve: widget.animationCurve,
+            reverseCurve: widget.animationCurve.flipped,
+            child: AwesomeFilterSelector(
+              state: widget.state,
+              filterListPosition: widget.filterListPosition,
+              indicator: widget.indicator,
+              filterListBackgroundColor: theme.bottomActionsBackground,
+              filterListPadding: widget.filterListPadding,
+            ),
+          );
+        },
       ),
     ];
     return Column(

@@ -14,10 +14,10 @@ class AwesomeTheme {
   final Color iconColor;
   final Color iconBackground;
   final double iconSize;
+  final EdgeInsets iconPadding;
 
   // TODO Implement this shape
   final ShapeBorder buttonShape;
-  final EdgeInsets padding;
 
   static const double baseIconSize = 25;
 
@@ -28,10 +28,9 @@ class AwesomeTheme {
     Color? iconColor,
     Color? iconBackground,
     double? iconSize,
+    this.iconPadding = const EdgeInsets.all(12),
     ShapeBorder? buttonShape,
-    this.padding = const EdgeInsets.all(12),
-  })
-      : buttonBuilder = buttonBuilder ??
+  })  : buttonBuilder = buttonBuilder ??
             ((Widget child, VoidCallback onTap) =>
                 AwesomeBouncingWidget(onTap: onTap, child: child)),
         bottomActionsBackground = backgroundColor ?? Colors.black54,
@@ -83,7 +82,7 @@ class AwesomeTheme {
       iconBackground: iconBackground ?? this.iconBackground,
       iconSize: iconSize ?? this.iconSize,
       buttonShape: buttonShape ?? this.buttonShape,
-      padding: padding ?? this.padding,
+      iconPadding: padding ?? this.iconPadding,
     );
   }
 }
