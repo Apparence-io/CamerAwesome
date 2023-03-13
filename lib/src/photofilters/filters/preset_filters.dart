@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-import 'color_filters.dart';
-import 'subfilters.dart';
-import 'filters.dart';
+import 'package:camerawesome/src/photofilters/filters/color_filters.dart';
+import 'package:camerawesome/src/photofilters/filters/subfilters.dart';
+import 'package:camerawesome/src/photofilters/filters/filters.dart';
 
 // NoFilter: No filter
 class NoFilter extends ColorFilter {
