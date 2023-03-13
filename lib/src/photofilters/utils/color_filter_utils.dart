@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'utils.dart' as image_utils;
+import 'package:camerawesome/src/photofilters/utils/utils.dart' as image_utils;
 
-import '../rgba_model.dart';
+import 'package:camerawesome/src/photofilters/rgba_model.dart';
 
 int clampPixel(int x) => x.clamp(0, 255);
 RGBA saturation(RGBA color, num saturation) {

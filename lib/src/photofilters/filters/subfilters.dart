@@ -1,15 +1,18 @@
 import 'dart:typed_data';
-import '../utils/image_filter_utils.dart' as image_filter_utils;
-import '../utils/color_filter_utils.dart' as color_filter_utils;
-import '../utils/convolution_kernels.dart';
+import 'package:camerawesome/src/photofilters/utils/image_filter_utils.dart'
+    as image_filter_utils;
+import 'package:camerawesome/src/photofilters/utils/color_filter_utils.dart'
+    as color_filter_utils;
+import 'package:camerawesome/src/photofilters/utils/convolution_kernels.dart';
 
-import '../rgba_model.dart';
-import 'image_filters.dart';
-import 'color_filters.dart';
+import 'package:camerawesome/src/photofilters/rgba_model.dart';
+import 'package:camerawesome/src/photofilters/filters/image_filters.dart';
+import 'package:camerawesome/src/photofilters/filters/color_filters.dart';
 
 ///The [ContrastSubFilter] class is a SubFilter class to apply [contrast] to an image.
 class ContrastSubFilter extends ColorSubFilter with ImageSubFilter {
   final num contrast;
+
   ContrastSubFilter(this.contrast);
 
   ///Apply the [ContrastSubFilter] to an Image.
