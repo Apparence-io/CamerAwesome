@@ -1,7 +1,7 @@
 import 'package:camerawesome/src/photofilters/filters/subfilters.dart';
 
-import '../utils/convolution_kernels.dart';
-import 'image_filters.dart';
+import 'package:camerawesome/src/photofilters/utils/convolution_kernels.dart';
+import 'package:camerawesome/src/photofilters/filters/image_filters.dart';
 
 final presetConvolutionFiltersList = [
   ImageFilter(name: "Identity")

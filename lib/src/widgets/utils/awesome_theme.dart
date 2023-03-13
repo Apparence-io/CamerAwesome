@@ -70,7 +70,7 @@ class AwesomeTheme {
     Color? iconBackground,
     double? iconSize,
     ShapeBorder? buttonShape,
-    EdgeInsets? padding,
+    EdgeInsets? iconPadding,
     double? baseIconSize,
   }) {
     return AwesomeTheme(
@@ -82,7 +82,7 @@ class AwesomeTheme {
       iconBackground: iconBackground ?? this.iconBackground,
       iconSize: iconSize ?? this.iconSize,
       buttonShape: buttonShape ?? this.buttonShape,
-      iconPadding: padding ?? this.iconPadding,
+      iconPadding: iconPadding ?? this.iconPadding,
     );
   }
 }

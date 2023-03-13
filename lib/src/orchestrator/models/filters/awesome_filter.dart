@@ -5,8 +5,10 @@ import 'dart:ui';
 import 'package:colorfilter_generator/addons.dart';
 import 'package:colorfilter_generator/colorfilter_generator.dart';
 import 'package:colorfilter_generator/presets.dart';
-import '../../../photofilters/filters/filters.dart' as photofilters;
-import '../../../photofilters/filters/preset_filters.dart' as preset_filters;
+import 'package:camerawesome/src/photofilters/filters/filters.dart'
+    as photofilters;
+import 'package:camerawesome/src/photofilters/filters/preset_filters.dart'
+    as preset_filters;
 
 // TODO: colorfilter_generator can be removed from dependencies
 // find a way to do it with photofilters only
