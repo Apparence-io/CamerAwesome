@@ -441,7 +441,7 @@
   }
   
   if (!_videoController.isRecording) {
-    [_videoController recordVideoAtPath:path audioSetupCallback:^{
+    [_videoController recordVideoAtPath:path orientation:_deviceOrientation audioSetupCallback:^{
       [self setUpCaptureSessionForAudioError:^(NSError *error) {
         completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
       }];
