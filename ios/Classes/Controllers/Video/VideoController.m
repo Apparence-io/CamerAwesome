@@ -23,7 +23,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   // Create audio & video writer
   if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
@@ -37,6 +37,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _audioTimeOffset = CMTimeMake(0, 1);
   _videoIsDisconnected = NO;
   _audioIsDisconnected = NO;
+  _orientation = orientation;
 }
 
 /// Stop recording video
@@ -89,6 +90,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
                                  nil];
   _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
                                                          outputSettings:videoSettings];
+  [_videoWriterInput setTransform:[self getVideoOrientation]];
   
   _videoAdaptor = [AVAssetWriterInputPixelBufferAdaptor
                    assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoWriterInput
@@ -132,17 +134,38 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   return YES;
 }
 
+- (CGAffineTransform)getVideoOrientation {
+  CGAffineTransform transform;
+  
+  switch ([[UIDevice currentDevice] orientation]) {
+    case UIDeviceOrientationLandscapeLeft:
+      transform = CGAffineTransformMakeRotation(-M_PI_2);
+      break;
+    case UIDeviceOrientationLandscapeRight:
+      transform = CGAffineTransformMakeRotation(M_PI_2);
+      break;
+    case UIDeviceOrientationPortraitUpsideDown:
+      transform = CGAffineTransformMakeRotation(M_PI);
+      break;
+    default:
+      transform = CGAffineTransformIdentity;
+      break;
+  }
+  
+  return transform;
+}
+
 /// Append audio data
 - (void)newAudioSample:(CMSampleBufferRef)sampleBuffer {
   if (_videoWriter.status != AVAssetWriterStatusWriting) {
     if (_videoWriter.status == AVAssetWriterStatusFailed) {
-//      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error];
+      //      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error];
     }
     return;
   }
   if (_audioWriterInput.readyForMoreMediaData) {
     if (![_audioWriterInput appendSampleBuffer:sampleBuffer]) {
-//      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error];
+      //      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error];
     }
   }
 }
@@ -171,7 +194,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   }
   
   if (_videoWriter.status == AVAssetWriterStatusFailed) {
-//    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
+    //    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
     return;
   }
   

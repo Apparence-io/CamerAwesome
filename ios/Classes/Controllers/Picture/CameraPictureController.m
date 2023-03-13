@@ -181,16 +181,12 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   switch (_orientation) {
     case UIDeviceOrientationPortrait:
       return (_sensor == Back) ? UIImageOrientationRight : UIImageOrientationLeftMirrored;
-      break;
     case UIDeviceOrientationLandscapeRight:
       return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
-      break;
     case UIDeviceOrientationLandscapeLeft:
       return (_sensor == Back) ? UIImageOrientationDown : UIImageOrientationUp;
-      break;
     default:
       return UIImageOrientationLeft;
-      break;
   }
 }
 
