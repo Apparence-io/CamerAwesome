@@ -38,7 +38,7 @@ class CameraPage extends StatelessWidget {
           iconBackground: Colors.cyan.withOpacity(0.5),
           iconSize: 20,
           iconColor: Colors.white,
-          padding: const EdgeInsets.all(16),
+          iconPadding: const EdgeInsets.all(16),
           // Tap visual feedback (ripple, bounce...)
           buttonBuilder: (child, onTap) {
             return ClipOval(

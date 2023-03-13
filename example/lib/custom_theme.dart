@@ -36,11 +36,11 @@ class CameraPage extends StatelessWidget {
         previewFit: CameraPreviewFit.fitWidth,
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(
-          backgroundColor: Colors.deepOrange.withOpacity(0.5),
-          iconBackground: Colors.deepOrange.withOpacity(0.5),
+          backgroundColor: Colors.deepPurple.withOpacity(0.5),
+          iconBackground: Colors.deepPurple.withOpacity(0.5),
           iconSize: 32,
-          padding: const EdgeInsets.all(10),
-          iconColor: Colors.black,
+          iconPadding: const EdgeInsets.all(18),
+          iconColor: Colors.lightBlue,
           // Tap visual feedback (ripple, bounce...)
           buttonBuilder: (child, onTap) {
             return ClipOval(
@@ -48,7 +48,7 @@ class CameraPage extends StatelessWidget {
                 color: Colors.transparent,
                 shape: const CircleBorder(),
                 child: InkWell(
-                  splashColor: Colors.deepOrange,
+                  splashColor: Colors.deepPurple,
                   highlightColor: Colors.orange.withOpacity(0.5),
                   onTap: onTap,
                   child: child,
