@@ -30,8 +30,8 @@ class CameraPage extends StatelessWidget {
         ),
         aspectRatio: CameraAspectRatios.ratio_1_1,
         previewFit: CameraPreviewFit.contain,
-        previewPadding: const EdgeInsets.only(left: 150, top: 100),
-        previewAlignment: Alignment.topRight,
+        // previewPadding: const EdgeInsets.only(left: 150, top: 100),
+        // previewAlignment: Alignment.topRight,
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(
           bottomActionsBackgroundColor: Colors.cyan.withOpacity(0.5),

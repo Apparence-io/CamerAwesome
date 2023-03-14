@@ -8,6 +8,8 @@ import 'package:camerawesome/src/orchestrator/states/states.dart';
 import 'package:camerawesome/src/widgets/awesome_camera_mode_selector.dart';
 import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
 
+import '../../orchestrator/models/capture_modes.dart';
+
 /// This widget doesn't handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {
   final CameraState state;
