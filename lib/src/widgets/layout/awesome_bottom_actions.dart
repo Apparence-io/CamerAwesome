@@ -23,8 +23,7 @@ class AwesomeBottomActions extends StatelessWidget {
     Widget? captureButton,
     OnMediaTap? onMediaTap,
     this.padding = const EdgeInsets.symmetric(vertical: 8),
-  })
-      : captureButton = AwesomeCaptureButton(
+  })  : captureButton = AwesomeCaptureButton(
           state: state,
         ),
         left = left ??
@@ -32,14 +31,17 @@ class AwesomeBottomActions extends StatelessWidget {
                 ? AwesomePauseResumeButton(
                     state: state,
                   )
-                : Builder(
-                    builder: (context) => AwesomeCameraSwitchButton(
+                : Builder(builder: (context) {
+                    final theme = AwesomeThemeProvider.of(context).theme;
+                    return AwesomeCameraSwitchButton(
                       state: state,
-                      theme: AwesomeThemeProvider.of(context).theme.copyWith(
-                            iconBackground: Colors.white12,
-                          ),
-                    ),
-                  )),
+                      theme: theme.copyWith(
+                        buttonTheme: theme.buttonTheme.copyWith(
+                          backgroundColor: Colors.white12,
+                        ),
+                      ),
+                    );
+                  })),
         right = right ??
             (state is VideoRecordingCameraState
                 ? const SizedBox(width: 48)

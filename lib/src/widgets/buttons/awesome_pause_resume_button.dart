@@ -48,8 +48,8 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
         final theme = widget.theme ?? AwesomeThemeProvider.of(context).theme;
 
         return AwesomeOrientedWidget(
-          rotateWithDevice: theme.rotateButtonsWithCamera,
-          child: theme.buttonBuilder(
+          rotateWithDevice: theme.buttonTheme.rotateWithCamera,
+          child: theme.buttonTheme.buttonBuilder(
             AwesomeCircleWidget(
               theme: theme,
               child: Padding(
@@ -57,7 +57,7 @@ class _AwesomePauseResumeButtonState extends State<AwesomePauseResumeButton>
                 child: AnimatedIcon(
                   icon: AnimatedIcons.pause_play,
                   progress: _animation,
-                  color: theme.iconColor,
+                  color: theme.buttonTheme.foregroundColor,
                 ),
               ),
             ),
