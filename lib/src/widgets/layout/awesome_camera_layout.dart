@@ -1,3 +1,4 @@
+import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
 import 'package:camerawesome/src/orchestrator/states/states.dart';
 import 'package:camerawesome/src/widgets/awesome_camera_mode_selector.dart';
 import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
@@ -24,12 +25,13 @@ class AwesomeCameraLayout extends StatelessWidget {
             (Column(
               children: [
                 const Spacer(),
-                AwesomeFilterWidget(state: state),
+                if (state.captureMode == CaptureMode.photo)
+                  AwesomeFilterWidget(state: state),
                 Builder(
                   builder: (context) => Container(
                     color: AwesomeThemeProvider.of(context)
                         .theme
-                        .bottomActionsBackground,
+                        .bottomActionsBackgroundColor,
                     height: 8,
                   ),
                 ),
@@ -50,7 +52,7 @@ class AwesomeCameraLayout extends StatelessWidget {
           topActions,
           Expanded(child: middleContent),
           Container(
-            color: theme.bottomActionsBackground,
+            color: theme.bottomActionsBackgroundColor,
             child: SafeArea(
               top: false,
               child: Column(

@@ -27,16 +27,17 @@ class AwesomeCircleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = this.theme ?? AwesomeThemeProvider.of(context).theme;
+    final buttonTheme = theme.buttonTheme;
     return Material(
-      shape: theme.buttonShape,
-      color: theme.iconBackground,
+      shape: buttonTheme.shape,
+      color: buttonTheme.backgroundColor,
       child: Padding(
-        padding: theme.iconPadding * scale,
+        padding: buttonTheme.padding * scale,
         child: child ??
             Icon(
               icon,
-              color: theme.iconColor,
-              size: theme.iconSize * scale,
+              color: buttonTheme.foregroundColor,
+              size: buttonTheme.iconSize * scale,
             ),
       ),
     );

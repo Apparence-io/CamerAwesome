@@ -42,10 +42,10 @@ class AwesomeAspectRatioButton extends StatelessWidget {
               }
 
               return Builder(builder: (context) {
-                final iconSize = theme?.iconSize ??
-                    AwesomeThemeProvider.of(context).theme.iconSize;
+                final iconSize = theme?.buttonTheme.iconSize ??
+                    AwesomeThemeProvider.of(context).theme.buttonTheme.iconSize;
 
-                final scaleRatio = iconSize / AwesomeTheme.baseIconSize;
+                final scaleRatio = iconSize / AwesomeButtonTheme.baseIconSize;
                 return AwesomeCircleWidget(
                   theme: theme,
                   child: Center(
@@ -58,7 +58,8 @@ class AwesomeAspectRatioButton extends StatelessWidget {
                             image: icon,
                             color: AwesomeThemeProvider.of(context)
                                 .theme
-                                .iconColor,
+                                .buttonTheme
+                                .foregroundColor,
                             width: width * scaleRatio,
                           ),
                         ),
@@ -90,8 +91,8 @@ class AwesomeAspectRatioButton extends StatelessWidget {
             }
 
             return AwesomeOrientedWidget(
-              rotateWithDevice: theme.rotateButtonsWithCamera,
-              child: theme.buttonBuilder(
+              rotateWithDevice: theme.buttonTheme.rotateWithCamera,
+              child: theme.buttonTheme.buttonBuilder(
                 iconBuilder(snapshot.requireData),
                 () => onAspectRatioTap(sensorConfig, snapshot.requireData),
               ),

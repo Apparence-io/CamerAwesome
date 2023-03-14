@@ -80,7 +80,7 @@ class SensorConfig {
   /// Returns the current zoom without stream
   double get zoom => _zoomController.value;
 
-  /// Set manually the CameraFlashes between
+  /// Set manually the [FlashMode] between
   /// [FlashMode.none] no flash
   /// [FlashMode.on] always flashing when taking photo
   /// [FlashMode.auto] let the camera decide if it should use flash or not

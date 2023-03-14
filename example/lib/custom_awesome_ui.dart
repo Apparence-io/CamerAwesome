@@ -30,30 +30,32 @@ class CameraPage extends StatelessWidget {
         ),
         aspectRatio: CameraAspectRatios.ratio_1_1,
         previewFit: CameraPreviewFit.contain,
-        previewPadding: const EdgeInsets.only(left: 150, top: 100),
-        previewAlignment: Alignment.topRight,
+        // previewPadding: const EdgeInsets.only(left: 150, top: 100),
+        // previewAlignment: Alignment.topRight,
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(
-          backgroundColor: Colors.cyan.withOpacity(0.5),
-          iconBackground: Colors.cyan.withOpacity(0.5),
-          iconSize: 20,
-          iconColor: Colors.white,
-          iconPadding: const EdgeInsets.all(16),
-          // Tap visual feedback (ripple, bounce...)
-          buttonBuilder: (child, onTap) {
-            return ClipOval(
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  splashColor: Colors.cyan,
-                  highlightColor: Colors.cyan.withOpacity(0.5),
-                  onTap: onTap,
-                  child: child,
+          bottomActionsBackgroundColor: Colors.cyan.withOpacity(0.5),
+          buttonTheme: AwesomeButtonTheme(
+            backgroundColor: Colors.cyan.withOpacity(0.5),
+            iconSize: 20,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.all(16),
+            // Tap visual feedback (ripple, bounce...)
+            buttonBuilder: (child, onTap) {
+              return ClipOval(
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    splashColor: Colors.cyan,
+                    highlightColor: Colors.cyan.withOpacity(0.5),
+                    onTap: onTap,
+                    child: child,
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
         topActionsBuilder: (state) => AwesomeTopActions(
           padding: EdgeInsets.zero,
@@ -76,7 +78,7 @@ class CameraPage extends StatelessWidget {
                 return Container(
                   color: AwesomeThemeProvider.of(context)
                       .theme
-                      .bottomActionsBackground,
+                      .bottomActionsBackgroundColor,
                   child: const Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(

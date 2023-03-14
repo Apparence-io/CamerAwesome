@@ -1,9 +1,8 @@
-import 'package:camerawesome/src/widgets/utils/awesome_circle_icon.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
-import 'package:flutter/material.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
-
+import 'package:camerawesome/src/widgets/utils/awesome_circle_icon.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_oriented_widget.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
+import 'package:flutter/material.dart';
 
 class AwesomeCameraSwitchButton extends StatelessWidget {
   final CameraState state;
@@ -33,8 +32,8 @@ class AwesomeCameraSwitchButton extends StatelessWidget {
     final theme = this.theme ?? AwesomeThemeProvider.of(context).theme;
 
     return AwesomeOrientedWidget(
-      rotateWithDevice: theme.rotateButtonsWithCamera,
-      child: theme.buttonBuilder(
+      rotateWithDevice: theme.buttonTheme.rotateWithCamera,
+      child: theme.buttonTheme.buttonBuilder(
         iconBuilder(),
         () => onSwitchTap(state),
       ),

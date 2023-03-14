@@ -36,26 +36,28 @@ class CameraPage extends StatelessWidget {
         previewFit: CameraPreviewFit.fitWidth,
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(
-          backgroundColor: Colors.deepPurple.withOpacity(0.5),
-          iconBackground: Colors.deepPurple.withOpacity(0.5),
-          iconSize: 32,
-          iconPadding: const EdgeInsets.all(18),
-          iconColor: Colors.lightBlue,
-          // Tap visual feedback (ripple, bounce...)
-          buttonBuilder: (child, onTap) {
-            return ClipOval(
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  splashColor: Colors.deepPurple,
-                  highlightColor: Colors.orange.withOpacity(0.5),
-                  onTap: onTap,
-                  child: child,
+          bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+          buttonTheme: AwesomeButtonTheme(
+            backgroundColor: Colors.deepPurple.withOpacity(0.5),
+            iconSize: 32,
+            padding: const EdgeInsets.all(18),
+            foregroundColor: Colors.lightBlue,
+            // Tap visual feedback (ripple, bounce...)
+            buttonBuilder: (child, onTap) {
+              return ClipOval(
+                child: Material(
+                  color: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    splashColor: Colors.deepPurple,
+                    highlightColor: Colors.orange.withOpacity(0.5),
+                    onTap: onTap,
+                    child: child,
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
         onMediaTap: (mediaCapture) {
           OpenFile.open(mediaCapture.filePath);

@@ -111,7 +111,7 @@ class AwesomeFlashButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<CameraFlashes>(
+    return StreamBuilder<FlashMode>(
       stream: state.sensorConfig.flashMode$, // Listen to the currently selected flash mode
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
