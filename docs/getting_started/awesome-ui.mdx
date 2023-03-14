@@ -60,83 +60,91 @@ CameraAwesomeBuilder.awesome(
 )
 ```
 
-|Parameter|Description|
-|-|-|
-| **aspectRatio**           | Initial aspect ratio of photos and videos taken |
-| **enableAudio**           | Activate audio by default (only for video mode) |
-| **exifPreferences**           | Activate or deactivate location in photo exif |
-| **filter**           | Initial preview filter which will be applied to the photo |
-| **flashMode**           | The initial flash mode |
-| **onMediaTap**           | Choose what you want to do when user tap on the last media captured (when using the built-in image preview) |
-| **saveConfig**           | Define if you want to take photos, videos or both and where to save them  |
-| **sensor**           | The initial camera sensor (Back or Front) |
-| **zoom**           | A value between 0.0 (no zoom) and 1.0 (max zoom) |
-
+| Parameter           | Description                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **aspectRatio**     | Initial aspect ratio of photos and videos taken                                                             |
+| **enableAudio**     | Activate audio by default (only for video mode)                                                             |
+| **exifPreferences** | Activate or deactivate location in photo exif                                                               |
+| **filter**          | Initial preview filter which will be applied to the photo                                                   |
+| **flashMode**       | The initial flash mode                                                                                      |
+| **onMediaTap**      | Choose what you want to do when user tap on the last media captured (when using the built-in image preview) |
+| **saveConfig**      | Define if you want to take photos, videos or both and where to save them                                    |
+| **sensor**          | The initial camera sensor (Back or Front)                                                                   |
+| **zoom**            | A value between 0.0 (no zoom) and 1.0 (max zoom)                                                            |
 
 ## 🎨 Customize the built-in UI
 
 Several parameters let you customize the built-in UI.
 
-**Buttons look and feel**
+**Theming**
 
-You can customize the buttons used by CamerAwesome's built-in UI.
+You can customize the look and feel of CamerAwesome's built-in UI by setting your own theme.
 
-By default, they are black with some transparency with a white icon and they bounce when you tap them.
+For example, buttons are black with a white icon and they bounce when you tap them.
+
 You can completely change them with `AwesomeTheme`:
 
 Example:
+
 ```dart
-AwesomeTheme(
-  backgroundColor: Colors.deepPurple.withOpacity(0.5),
-  // Icon related parameters
-  iconBackground: Colors.deepPurple.withOpacity(0.5),
-  iconSize: 26,
-  iconPadding: const EdgeInsets.all(18),
-  iconColor: Colors.lightBlue,
-  // Tap visual feedback (ripple, bounce...)
-  buttonBuilder: (child, onTap) {
-    return ClipOval(
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          splashColor: Colors.deepPurple,
-          highlightColor: Colors.orange.withOpacity(0.5),
-          onTap: onTap,
-          child: child,
-        ),
-      ),
-    );
-  },
-  // Wether buttons should rotate with the camera
-  rotateButtonsWithCamera: true,
-  // Shape of the buttons (circle, rect, rounded rect...)
-  buttonShape: const CircleBorder(),
-)
+CameraAwesomeBuilder.awesome(
+  theme: AwesomeTheme(
+    // Background color of the bottom actions
+    bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+    // Buttons theme
+    buttonTheme: AwesomeButtonTheme(
+      // Background color of the button
+      backgroundColor: Colors.deepPurple.withOpacity(0.5),
+      // Size of the icon
+      iconSize: 32,
+      // Padding around the icon
+      padding: const EdgeInsets.all(18),
+      // Color of the icon
+      foregroundColor: Colors.lightBlue,
+      // Tap visual feedback (ripple, bounce...)
+      buttonBuilder: (child, onTap) {
+        return ClipOval(
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              splashColor: Colors.deepPurple,
+              highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
+              onTap: onTap,
+              child: child,
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+);
 ```
 
+![Custom theme](/img/custom_theme.avif)
 
-|Parameter|Description|
-|-|-|
-| **theme** | Customize the look and feel of buttons |
+Let's see what happens in the above animation:
+- In the first part, the default theme of CamerAwesome is used. Note that the Flash button bounces when tapped.
+- Then, the code is changed to show the custom theme above with a hot reload.
+- Finally, the UI is updated with the new purple theme and you can see that even the Flash button has a different tap effect: it is now a ripple.
 
 If you are using the built-in UI - even partially, it is recommended to use `AwesomeTheme` in the rest of your Camera UI to stay consistent.
 
 You can access the current `AwesomeTheme` by using `AwesomeThemeProvider`:
-  
+
 ```dart
 final myTheme = AwesomeThemeProvider.of(context).theme
 ```
 
+**Tip:** If you don't have a `BuildContext` to access the parent's `AwesomeTheme`, wrap your widget within a `Builder` widget.
 
 See `custom_theme.dart` for an example with a custom theme.
-
 
 **Place widgets in your UI**
 
 The built-in UI is separated in 3 areas:
 
-![Awesome UI parts](../img/awesome_ui_parts.webp)
+![Awesome UI parts](/img/awesome_ui_parts.webp)
 
 1. Top actions built with `topActionsBuilder`
 2. Middle content built with `middleContentBuilder`
@@ -149,27 +157,34 @@ Here is an example of what you can do:
 
 ```dart
 CameraAwesomeBuilder.awesome(
- theme: AwesomeTheme(
-    backgroundColor: Colors.cyan.withOpacity(0.5),
-    iconBackground: Colors.cyan.withOpacity(0.5),
-    iconSize: 20,
-    iconColor: Colors.white,
-    iconPadding: const EdgeInsets.all(16),
-    buttonBuilder: (child, onTap) {
-      return ClipOval(
-        child: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            splashColor: Colors.cyan,
-            highlightColor: Colors.cyan.withOpacity(0.5),
-            onTap: onTap,
-            child: child,
+  // Other parameters
+  ...
+  // Set an AwesomeTheme that you might reuse in your UI
+  theme: AwesomeTheme(
+    bottomActionsBackgroundColor: Colors.cyan.withOpacity(0.5),
+    buttonTheme: AwesomeButtonTheme(
+      backgroundColor: Colors.cyan.withOpacity(0.5),
+      iconSize: 20,
+      foregroundColor: Colors.white,
+      padding: const EdgeInsets.all(16),
+      // Tap visual feedback (ripple, bounce...)
+      buttonBuilder: (child, onTap) {
+        return ClipOval(
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              splashColor: Colors.cyan,
+              highlightColor: Colors.cyan.withOpacity(0.5),
+              onTap: onTap,
+              child: child,
+            ),
           ),
-        ),
-      );
-    },
+        );
+      },
+    ),
   ),
+  // Show the filter button on the top part of the screen
   topActionsBuilder: (state) => AwesomeTopActions(
     padding: EdgeInsets.zero,
     state: state,
@@ -183,15 +198,18 @@ CameraAwesomeBuilder.awesome(
       ),
     ],
   ),
+  // Show some Text with same background as the bottom part
   middleContentBuilder: (state) {
     return Column(
       children: [
         const Spacer(),
+        // Use a Builder to get a BuildContext below AwesomeThemeProvider widget
         Builder(builder: (context) {
           return Container(
+            // Retrieve your AwesomeTheme's background color
             color: AwesomeThemeProvider.of(context)
                 .theme
-                .bottomActionsBackground,
+                .bottomActionsBackgroundColor,
             child: const Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
@@ -211,6 +229,7 @@ CameraAwesomeBuilder.awesome(
       ],
     );
   },
+  // Show Flash button on the left and Camera switch button on the right
   bottomActionsBuilder: (state) => AwesomeBottomActions(
     state: state,
     left: AwesomeFlashButton(
@@ -226,20 +245,18 @@ CameraAwesomeBuilder.awesome(
       },
     ),
   ),
-);
+)
 ```
 
-![Custom awesome UI](../img/custom_awesome_ui.jpg)
+![Custom awesome UI](/img/custom_awesome_ui.jpg)
 
-|Parameter|Description|
-|-|-|
-| **topActionsBuilder** | Top part of the built-in UI |
+| Parameter                | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| **topActionsBuilder**    | Top part of the built-in UI                             |
 | **middleContentBuilder** | Content between top and bottom parts of the built-in UI |
-| **bottomActionsBuilder** | Bottom part of the built-in UI |
-
+| **bottomActionsBuilder** | Bottom part of the built-in UI                          |
 
 See `custom_awesome_ui.dart` for an example using these parameters.
-
 
 **Camera preview positioning**
 
@@ -254,17 +271,16 @@ CamerAwesomeBuilder.awesome(
 )
 ```
 
-![Custom preview positioning](../img/camera_preview_position.jpg)
+![Custom preview positioning](/img/camera_preview_position.jpg)
 
 By default, preview is centered with no padding.
 
-|Parameter|Description|
-|-|-|
-| **previewPadding** | Add padding around the preview |
-| **previewAlignment** | Align the preview |
+| Parameter            | Description                    |
+| -------------------- | ------------------------------ |
+| **previewPadding**   | Add padding around the preview |
+| **previewAlignment** | Align the preview              |
 
 You can see these parameters in use in `custom_awesome_ui.dart` example.
-
 
 **Add additional content on top of the preview**
 
@@ -272,20 +288,19 @@ If you'd like to place elements on top of the preview, like you would do it in a
 
 This feature can be used combined with image analysis to show face filters (like snapchat ones) for example:
 
-![Face filter using previewDecoratorBuilder](../img/face_filter.jpg)
+![Face filter using previewDecoratorBuilder](/img/face_filter.jpg)
 
-|Parameter|Description|
-|-|-|
+| Parameter                   | Description                        |
+| --------------------------- | ---------------------------------- |
 | **previewDecoratorBuilder** | Add a widget on top of the preview |
 
 That's what is used in `ai_analysis_faces.dart` to draw contours of the detected face.
-
 
 ## 📝 Complete example
 
 Here is an example showing the complete list of parameters you can set to customize your camera experience:
 
-``` dart
+```dart
 CameraAwesomeBuilder.awesome(
   // Define if you want to take photos, videos or both and where to save them
   saveConfig: SaveConfig.photoAndVideo(
@@ -380,41 +395,43 @@ CameraAwesomeBuilder.awesome(
   },
   // CamerAwesome theme used to customize the built-in UI
   theme: AwesomeTheme(
-    backgroundColor: Colors.deepPurple.withOpacity(0.5),
-    // Icon related parameters
-    iconBackground: Colors.deepPurple.withOpacity(0.5),
-    iconSize: 26,
-    iconPadding: const EdgeInsets.all(18),
-    iconColor: Colors.lightBlue,
-    // Tap visual feedback (ripple, bounce...)
-    buttonBuilder: (child, onTap) {
-      return ClipOval(
-        child: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            splashColor: Colors.deepPurple,
-            highlightColor: Colors.orange.withOpacity(0.5),
-            onTap: onTap,
-            child: child,
+    // Background color of the bottom actions
+    bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+    // Buttons theme
+    buttonTheme: AwesomeButtonTheme(
+      // Background color of the buttons
+      backgroundColor: Colors.deepPurple.withOpacity(0.5),
+      // Buttons icon size
+      iconSize: 32,
+      // Padding around icons
+      padding: const EdgeInsets.all(18),
+      // Buttons icon color
+      foregroundColor: Colors.lightBlue,
+      // Tap visual feedback (ripple, bounce...)
+      buttonBuilder: (child, onTap) {
+        return ClipOval(
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              splashColor: Colors.deepPurple,
+              highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
+              onTap: onTap,
+              child: child,
+            ),
           ),
-        ),
-      );
-    },
-    // Wether buttons should rotate with the camera
-    rotateButtonsWithCamera: true,
-    // Shape of the buttons (circle, rect, rounded rect...)
-    buttonShape: const CircleBorder(),
+        );
+      },
+    ),
   ),
   // Filter to apply on the preview
   filter: AwesomeFilter.AddictiveRed,
   // Padding around the preview
   previewPadding: const EdgeInsets.all(20),
-  // Alignment of the preview, mostly useful when padding is not the same on each side
+  // Alignment of the preview
   previewAlignment: Alignment.center,
   // Bottom actions (take photo, switch camera...)
   bottomActionsBuilder: (state) {
-    // Use this to add buttons on the bottom of the preview
     return AwesomeBottomActions(
       state: state,
       onMediaTap: _handleMediaTap,
@@ -422,7 +439,6 @@ CameraAwesomeBuilder.awesome(
   },
   // Top actions (flash, timer...)
   topActionsBuilder: (state) {
-    // Use this to add buttons on the top of the preview
     return AwesomeTopActions(state: state);
   },
   // Middle content (filters, photo/video switcher...)
@@ -436,7 +452,7 @@ CameraAwesomeBuilder.awesome(
           builder: (context) => Container(
             color: AwesomeThemeProvider.of(context)
                 .theme
-                .bottomActionsBackground,
+                .bottomActionsBackgroundColor,
             height: 8,
           ),
         ),
@@ -447,34 +463,32 @@ CameraAwesomeBuilder.awesome(
 )
 ```
 
-### 🔬 Properties
+### 🔬 Full list of properties
 
-| Method                           | Comment | 
-|----------------------------------|---------|
-| **aspectRatio**           | Initial aspect ratio of photos and videos taken |
-| **bottomActionsBuilder** | A widget builder used to show buttons on the bottom of the preview.<br/>`AwesomeBottomActions` by default. |
-| **enableAudio**           | Activate audio by default (only for video mode) |
-| **exifPreferences**           | Activate or deactivate location in photo exif |
-| **filter**           | Initial preview filter which will be applied to the photo |
-| **flashMode**           | The initial flash mode |
-| **imageAnalysisConfig** | Image format, resolution and autoStart (start analysis immediately or later)|
-| **middleContentBuilder** | A widget builder used to add widgets above the middle part of the preview (between bottom and top actions).<br/>Shows the filter selector by default. |
-| **onImageForAnalysis**           | Callback that will provide an image stream for AI analysis |
-| **onMediaTap**           | Choose what you want to do when user tap on the last media captured |
-| **onPreviewTapBuilder** | Customize the behavior when the camera preview is tapped (tap to focus by default) |
-| **onPreviewScaleBuilder** | Customize what to do when the user makes a pinch (pinch to zoom by default) |
-| **previewAlignment** | Alignment of the preview |
-| **previewDecoratorBuilder** | A widget builder used to draw elements around or on top of the preview |
-| **previewFit** | One of fitWidth, fitHeight, contain, cover |
-| **previewPadding** | Padding around the preview |
-| **progressIndicator**           | Widget to show when loading |
-| **saveConfig**           | Define if you want to take photos, videos or both and where to save them  |
-| **sensor**           | The initial camera sensor (Back or Front) |
-| **theme** | Theme used to customize the built-in UI |
-| **topActionsBuilder** | A widget builder used to show buttons on the top of the preview.<br/>`AwesomeTopActions` by default. |
-| **zoom**           | A value between 0.0 (no zoom) and 1.0 (max zoom) |
-
-
+| Method                      | Comment                                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **aspectRatio**             | Initial aspect ratio of photos and videos taken                                                                                                       |
+| **bottomActionsBuilder**    | A widget builder used to show buttons on the bottom of the preview.<br/>`AwesomeBottomActions` by default.                                            |
+| **enableAudio**             | Activate audio by default (only for video mode)                                                                                                       |
+| **exifPreferences**         | Activate or deactivate location in photo exif                                                                                                         |
+| **filter**                  | Initial preview filter which will be applied to the photo                                                                                             |
+| **flashMode**               | The initial flash mode                                                                                                                                |
+| **imageAnalysisConfig**     | Image format, resolution and autoStart (start analysis immediately or later)                                                                          |
+| **middleContentBuilder**    | A widget builder used to add widgets above the middle part of the preview (between bottom and top actions).<br/>Shows the filter selector by default. |
+| **onImageForAnalysis**      | Callback that will provide an image stream for AI analysis                                                                                            |
+| **onMediaTap**              | Choose what you want to do when user tap on the last media captured                                                                                   |
+| **onPreviewTapBuilder**     | Customize the behavior when the camera preview is tapped (tap to focus by default)                                                                    |
+| **onPreviewScaleBuilder**   | Customize what to do when the user makes a pinch (pinch to zoom by default)                                                                           |
+| **previewAlignment**        | Alignment of the preview                                                                                                                              |
+| **previewDecoratorBuilder** | A widget builder used to draw elements around or on top of the preview                                                                                |
+| **previewFit**              | One of fitWidth, fitHeight, contain, cover                                                                                                            |
+| **previewPadding**          | Padding around the preview                                                                                                                            |
+| **progressIndicator**       | Widget to show when loading                                                                                                                           |
+| **saveConfig**              | Define if you want to take photos, videos or both and where to save them                                                                              |
+| **sensor**                  | The initial camera sensor (Back or Front)                                                                                                             |
+| **theme**                   | Theme used to customize the built-in UI                                                                                                               |
+| **topActionsBuilder**       | A widget builder used to show buttons on the top of the preview.<br/>`AwesomeTopActions` by default.                                                  |
+| **zoom**                    | A value between 0.0 (no zoom) and 1.0 (max zoom)                                                                                                      |
 
 ## 🔨 Need more customization ?
 
