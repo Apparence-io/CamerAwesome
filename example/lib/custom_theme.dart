@@ -50,7 +50,7 @@ class CameraPage extends StatelessWidget {
                   shape: const CircleBorder(),
                   child: InkWell(
                     splashColor: Colors.deepPurple,
-                    highlightColor: Colors.orange.withOpacity(0.5),
+                    highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
                     onTap: onTap,
                     child: child,
                   ),
