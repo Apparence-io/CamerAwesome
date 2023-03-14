@@ -214,7 +214,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   ///
   /// Documentation on its way, API might change
   CameraAwesomeBuilder.custom({
-    CaptureMode initialCaptureMode = CaptureMode.photo,
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
