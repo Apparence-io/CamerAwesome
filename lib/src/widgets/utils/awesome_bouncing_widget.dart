@@ -8,14 +8,14 @@ class AwesomeBouncingWidget extends StatefulWidget {
     Key? key,
     required this.child,
     this.onTap,
-    this.disabledOpacity,
+    this.disabledOpacity = 0.3,
     this.vibrationEnabled = true,
     this.duration = const Duration(milliseconds: 100),
   }) : super(key: key);
 
   final Widget child;
   final VoidCallback? onTap;
-  final double? disabledOpacity;
+  final double disabledOpacity;
   final Duration duration;
   final bool? vibrationEnabled;
 
@@ -57,7 +57,7 @@ class _AwesomeBouncingWidgetState extends State<AwesomeBouncingWidget>
       ignoring: widget.onTap == null,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
-        opacity: (widget.onTap != null) ? 1.0 : widget.disabledOpacity ?? 0.3,
+        opacity: (widget.onTap != null) ? 1.0 : widget.disabledOpacity,
         child: GestureDetector(
           onTapDown: _onTapDown,
           onTapUp: _onTapUp,
