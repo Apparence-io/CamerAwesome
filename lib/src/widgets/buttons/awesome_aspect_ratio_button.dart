@@ -1,10 +1,9 @@
-import 'package:camerawesome/src/widgets/utils/awesome_circle_icon.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
-import 'package:flutter/material.dart';
-
 import 'package:camerawesome/src/orchestrator/models/models.dart';
 import 'package:camerawesome/src/orchestrator/states/photo_camera_state.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_circle_icon.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_oriented_widget.dart';
+import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
+import 'package:flutter/material.dart';
 
 class AwesomeAspectRatioButton extends StatelessWidget {
   final PhotoCameraState state;
@@ -43,10 +42,10 @@ class AwesomeAspectRatioButton extends StatelessWidget {
               }
 
               return Builder(builder: (context) {
-                final iconSize = theme?.iconSize ??
-                    AwesomeThemeProvider.of(context).theme.iconSize;
+                final iconSize = theme?.buttonTheme.iconSize ??
+                    AwesomeThemeProvider.of(context).theme.buttonTheme.iconSize;
 
-                final scaleRatio = iconSize / AwesomeTheme.baseIconSize;
+                final scaleRatio = iconSize / AwesomeButtonTheme.baseIconSize;
                 return AwesomeCircleWidget(
                   theme: theme,
                   child: Center(
@@ -59,7 +58,8 @@ class AwesomeAspectRatioButton extends StatelessWidget {
                             image: icon,
                             color: AwesomeThemeProvider.of(context)
                                 .theme
-                                .iconColor,
+                                .buttonTheme
+                                .foregroundColor,
                             width: width * scaleRatio,
                           ),
                         ),
@@ -91,8 +91,8 @@ class AwesomeAspectRatioButton extends StatelessWidget {
             }
 
             return AwesomeOrientedWidget(
-              rotateWithDevice: theme.rotateButtonsWithCamera,
-              child: theme.buttonBuilder(
+              rotateWithDevice: theme.buttonTheme.rotateWithCamera,
+              child: theme.buttonTheme.buttonBuilder(
                 iconBuilder(snapshot.requireData),
                 () => onAspectRatioTap(sensorConfig, snapshot.requireData),
               ),

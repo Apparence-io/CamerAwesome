@@ -19,15 +19,27 @@
         },
         {
             "name": "AI analysis - face detection",
-            "request": "launch",
-            "type": "dart",
-            "program": "example/lib/ai_analysis_faces.dart"
+          "request": "launch",
+          "type": "dart",
+          "program": "example/lib/ai_analysis_faces.dart"
         },
-        {
-            "name": "AI analysis - text/barcode detection",
-            "request": "launch",
-            "type": "dart",
-            "program": "example/lib/ai_analysis_barcode.dart"
-        },
+      {
+        "name": "AI analysis - text/barcode detection",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/ai_analysis_barcode.dart"
+      },
+      {
+        "name": "Awesome UI - Custom Theme",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/custom_theme.dart"
+      },
+      {
+        "name": "Awesome UI - Custom widgets",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/custom_awesome_ui.dart"
+      }
     ]
 }

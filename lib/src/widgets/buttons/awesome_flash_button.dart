@@ -62,8 +62,8 @@ class AwesomeFlashButton extends StatelessWidget {
             }
 
             return AwesomeOrientedWidget(
-              rotateWithDevice: theme.rotateButtonsWithCamera,
-              child: theme.buttonBuilder(
+              rotateWithDevice: theme.buttonTheme.rotateWithCamera,
+              child: theme.buttonTheme.buttonBuilder(
                 iconBuilder(snapshot.requireData),
                 () => onFlashTap(sensorConfig, snapshot.requireData),
               ),

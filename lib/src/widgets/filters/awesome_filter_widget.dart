@@ -32,8 +32,9 @@ class AwesomeFilterWidget extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 400),
   }) : indicator = Builder(
           builder: (context) => Container(
-            color:
-                AwesomeThemeProvider.of(context).theme.bottomActionsBackground,
+            color: AwesomeThemeProvider.of(context)
+                .theme
+                .bottomActionsBackgroundColor,
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: const Center(
               child: SizedBox(
@@ -60,8 +61,9 @@ class _AwesomeFilterWidgetState extends State<AwesomeFilterWidget> {
     final theme = AwesomeThemeProvider.of(context).theme;
     final children = [
       SizedBox(
-        height:
-            theme.iconSize + theme.iconPadding.top + theme.iconPadding.bottom,
+        height: theme.buttonTheme.iconSize +
+            theme.buttonTheme.padding.top +
+            theme.buttonTheme.padding.bottom,
         width: double.infinity,
         child: Stack(
           children: [
@@ -125,7 +127,7 @@ class _AwesomeFilterWidgetState extends State<AwesomeFilterWidget> {
               state: widget.state,
               filterListPosition: widget.filterListPosition,
               indicator: widget.indicator,
-              filterListBackgroundColor: theme.bottomActionsBackground,
+              filterListBackgroundColor: theme.bottomActionsBackgroundColor,
               filterListPadding: widget.filterListPadding,
             ),
           );

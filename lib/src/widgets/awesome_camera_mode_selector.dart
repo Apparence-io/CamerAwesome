@@ -31,7 +31,7 @@ class AwesomeCameraModeSelector extends StatelessWidget {
       );
     }
     return Container(
-      color: theme.bottomActionsBackground,
+      color: theme.bottomActionsBackgroundColor,
       child: content,
     );
   }
