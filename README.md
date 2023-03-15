@@ -317,7 +317,7 @@ according to the actual configuration.
 
 Apply live filters to your pictures using the built-in interface:
 
-![Built-in live filters](docs/img/filters.avif)
+![Built-in live filters](docs/img/filters.gif)
 
 You can also choose to use a specific filter from the start:
 
