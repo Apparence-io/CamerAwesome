@@ -28,6 +28,8 @@ CameraAwesomeBuilder.awesome(
 )
 ```
 
+![Base Awesome UI](/img/base_awesome_ui.jpg)
+
 ## 📷 Initial Camera setup
 
 You can set the initial camera configuration using the `CameraAwesomeBuilder` parameters.
@@ -124,6 +126,7 @@ CameraAwesomeBuilder.awesome(
 ![Custom theme](/img/custom_theme.avif)
 
 Let's see what happens in the above animation:
+
 - In the first part, the default theme of CamerAwesome is used. Note that the Flash button bounces when tapped.
 - Then, the code is changed to show the custom theme above with a hot reload.
 - Finally, the UI is updated with the new purple theme and you can see that even the Flash button has a different tap effect: it is now a ripple.
@@ -138,7 +141,7 @@ final myTheme = AwesomeThemeProvider.of(context).theme
 
 **Tip:** If you don't have a `BuildContext` to access the parent's `AwesomeTheme`, wrap your widget within a `Builder` widget.
 
-See `custom_theme.dart` for an example with a custom theme.
+See also [Theming](/widgets/theming) and `custom_theme.dart` for an example with a custom theme.
 
 **Place widgets in your UI**
 
