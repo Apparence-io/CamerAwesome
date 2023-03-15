@@ -70,6 +70,7 @@ class _AwesomeCameraGestureDetector
   double _zoomScale = 0;
   Offset? _tapPosition;
   Timer? _timer;
+  double? _firstOffset;
 
   @override
   void initState() {
@@ -88,9 +89,14 @@ class _AwesomeCameraGestureDetector
             () => ScaleGestureRecognizer()
               ..onStart = (_) {
                 _previousZoomScale = _zoomScale + 1;
+                _firstOffset = null;
               }
               ..onUpdate = (ScaleUpdateDetails details) {
-                double result = _previousZoomScale * details.scale - 1;
+                _firstOffset ??= details.scale - 1;
+
+                double result =
+                    _previousZoomScale * (details.scale - _firstOffset!) - 1;
+
                 if (result < 1 && result > 0) {
                   _zoomScale = result;
                   widget.onPreviewScale!.onScale(_zoomScale);
