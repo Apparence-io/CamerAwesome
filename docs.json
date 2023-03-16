@@ -15,11 +15,11 @@
           "/getting_started/installing"
         ],
         [
-          "Using built-in UI ",
+          "Using the built-in UI ",
           "/getting_started/awesome-ui"
         ],
         [
-          "Creating my own UI",
+          "Creating your own UI",
           "/getting_started/custom-ui"
         ]
       ]
@@ -27,7 +27,18 @@
     [
       "Widgets",
       [
-
+        [
+          "Theming",
+          "/widgets/theming"
+        ],
+        [
+          "Buttons",
+          "/widgets/awesome_buttons"
+        ],
+        [
+          "Layout",
+          "/widgets/layout"
+        ],
         [
           "AwesomeOrientedWidget",
           "/widgets/awesome_oriented_widget"
@@ -35,10 +46,6 @@
         [
           "Filters",
           "/widgets/awesome_filters"
-        ],
-        [
-          "Buttons",
-          "/widgets/awesome_buttons"
         ],
         [
           "AwesomeCameraModeSelector",

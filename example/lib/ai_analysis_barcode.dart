@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 void main() {
@@ -53,7 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
         saveConfig:
-            SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
+            SaveConfig.photo(pathBuilder: () => path(CaptureMode.photo)),
         onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           outputFormat: InputAnalysisImageFormat.nv21,
@@ -145,17 +145,6 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (err) {
       debugPrint("...logging error $err");
     }
-  }
-
-  Future<String> _path(CaptureMode captureMode) async {
-    final Directory extDir = await getTemporaryDirectory();
-    final testDir =
-        await Directory('${extDir.path}/test').create(recursive: true);
-    final String fileExtension =
-        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
-    final String filePath =
-        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
-    return filePath;
   }
 
   InputImageFormat _inputImageFormat(InputAnalysisImageFormat format) {

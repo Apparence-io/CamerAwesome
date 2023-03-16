@@ -3,7 +3,7 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
 
-import '../camera_context.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
@@ -53,12 +53,28 @@ abstract class CameraState {
 
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
-  void switchCameraSensor() {
+  Future<void> switchCameraSensor({
+    CameraAspectRatios? aspectRatio,
+    double? zoom,
+    FlashMode? flash,
+    SensorType? type,
+  }) async {
     final previous = cameraContext.sensorConfig;
     final next = SensorConfig(
       sensor: previous.sensor == Sensors.back ? Sensors.front : Sensors.back,
+      type: type ?? SensorType.wideAngle,
     );
-    cameraContext.setSensorConfig(next);
+    await cameraContext.setSensorConfig(next);
+
+    if (aspectRatio != null) {
+      await next.setAspectRatio(aspectRatio);
+    }
+    if (zoom != null) {
+      await next.setZoom(zoom);
+    }
+    if (flash != null) {
+      await next.setFlashMode(flash);
+    }
   }
 
   void setSensorType(SensorType type, String deviceId) {

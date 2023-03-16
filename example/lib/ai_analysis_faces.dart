@@ -3,12 +3,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:better_open_file/better_open_file.dart';
+import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// This is an example using machine learning with the camera image
@@ -68,8 +68,8 @@ class _CameraPageState extends State<CameraPage> {
     return Scaffold(
       body: CameraAwesomeBuilder.awesome(
         saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => _path(CaptureMode.photo),
-          videoPathBuilder: () => _path(CaptureMode.video),
+          photoPathBuilder: () => path(CaptureMode.photo),
+          videoPathBuilder: () => path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
         onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
@@ -153,17 +153,6 @@ class _CameraPageState extends State<CameraPage> {
     } catch (error) {
       debugPrint("...sending image resulted error $error");
     }
-  }
-
-  Future<String> _path(CaptureMode captureMode) async {
-    final Directory extDir = await getTemporaryDirectory();
-    final testDir =
-        await Directory('${extDir.path}/test').create(recursive: true);
-    final String fileExtension =
-        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
-    final String filePath =
-        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
-    return filePath;
   }
 
   InputImageFormat inputImageFormat(InputAnalysisImageFormat format) {

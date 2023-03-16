@@ -129,8 +129,10 @@ class CameraContext {
         !identical(newConfig, sensorConfigController.value)) {
       sensorConfigController.value.dispose();
     }
-    await CamerawesomePlugin.setSensor(newConfig.sensor,
-        deviceId: newConfig.captureDeviceId);
+    await CamerawesomePlugin.setSensor(
+      newConfig.sensor,
+      deviceId: newConfig.captureDeviceId,
+    );
   }
 
   SensorConfig get sensorConfig {

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import '../rgba_model.dart';
-import 'filters.dart';
+import 'package:camerawesome/src/photofilters/rgba_model.dart';
+import 'package:camerawesome/src/photofilters/filters/filters.dart';
 
 ///The [ColorSubFilter] class is the abstract class to define any ColorSubFilter.
 abstract class ColorSubFilter extends SubFilter {

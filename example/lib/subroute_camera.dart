@@ -24,9 +24,9 @@ class CameraAwesomeApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case 'cameraPage':
-            return MaterialPageRoute(builder: (_) => CameraPage());
+            return MaterialPageRoute(builder: (_) => const CameraPage());
           default:
-            return MaterialPageRoute(builder: (_) => EmptyPage());
+            return MaterialPageRoute(builder: (_) => const EmptyPage());
         }
       },
     );

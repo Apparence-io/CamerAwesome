@@ -104,17 +104,10 @@ data class CameraXState(
             },
         ).apply {
             if (enableImageStream && imageAnalysisBuilder != null) {
-                Log.d(
-                    "WXCVBN",
-                    "Analysis enabled - enabled: ${enableImageStream}, imageAnalysisBuilder null: ${imageAnalysisBuilder == null}"
-                )
                 imageAnalysis = imageAnalysisBuilder!!.build()
                 add(imageAnalysis!!)
             } else {
-                Log.d(
-                    "WXCVBN",
-                    "Analysis disabled - enabled: ${enableImageStream}, imageAnalysisBuilder null: ${imageAnalysisBuilder == null}"
-                )
+                imageAnalysis = null
             }
         }
 
@@ -128,7 +121,6 @@ data class CameraXState(
                 // TODO Orientation might be wrong, to be verified
                 .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build()).build(),
         )
-
 
         previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
     }

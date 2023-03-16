@@ -80,10 +80,10 @@ class SensorConfig {
   /// Returns the current zoom without stream
   double get zoom => _zoomController.value;
 
-  /// Set manually the CameraFlashes between
+  /// Set manually the [FlashMode] between
   /// [FlashMode.none] no flash
   /// [FlashMode.on] always flashing when taking photo
-  /// [FlashMode.auto] let the decide wether or not using the flash
+  /// [FlashMode.auto] let the camera decide if it should use flash or not
   /// [FlashMode.always] flash light stays open
   Future<void> setFlashMode(FlashMode flashMode) async {
     await CamerawesomePlugin.setFlashMode(flashMode);

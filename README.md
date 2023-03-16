@@ -1,9 +1,19 @@
 <a href="https://apparence.io">
-    <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png" width="100%" />
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
+    width="100%"
+  />
 </a>
-<div style="margin-top:40px" >
-    <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/header.png" width="100%" />
-    <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/features.png" width="100%" style="margin-top:32px" />
+<div style="margin-top:40px">
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/preview.png"
+    width="100%"
+  />
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/features.png"
+    width="100%"
+    style="margin-top:32px"
+  />
 </div>
 
 <br>
@@ -24,38 +34,44 @@
 
 📸 Embedding a camera experience within your own app should't be that hard. <br>
 A flutter plugin to integrate awesome Android / iOS camera experience.<br>
+
 <br>
 This packages provides you a fully customizable camera experience that you can use within your app.<br>
-Use our awesome built in interface or customize it as you want. 
+Use our awesome built in interface or customize it as you want.
 
---------
+---
+
 <div style="margin-top:16px;margin-bottom:16px">
-    <a href="https://docs.page/Apparence-io/camera_awesome" style="">
-        <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/doc.png" width="100%" />
-    </a>
+  <a href="https://docs.page/Apparence-io/camera_awesome" style="">
+    <img
+      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/doc.png"
+      width="100%"
+    />
+  </a>
 </div>
 
 ## Native features
+
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                         |  Android | iOS | 
-|:-------------------------------|:--------:|:---:|
-| 🔖 Ask permissions             |    ✅    |  ✅  |
-| 🎥 Record video                |    ✅    |  ✅  |
-| 🔈 Enable/disable audio        |    ✅    |  ✅  |
-| 🎞 Take photos                 |    ✅    |  ✅  |
-| 🌆 Photo live filters          |    ✅    |  ✅  |
-| 🌤 Exposure level              |    ✅    |  ✅  |
-| 📡 Broadcast live image stream |    ✅    |  ✅  |
-| 👁 Zoom                        |    ✅    |  ✅  |
-| 📸 Device flash support        |    ✅    |  ✅  |
-| ⌛️ Auto focus                  |    ✅    |  ✅  |
-| 📲 Live switching camera       |    ✅    |  ✅  |
-| 😵‍💫 Camera rotation stream      |    ✅    |  ✅  |
-| 🤐 Background auto stop        |    ✅    |  ✅  |
-| 🔀 Sensor type switching       |    ⛔️    |  ✅  |
+| System                        | Android |  iOS  |
+| :---------------------------- | :-----: | :---: |
+| 🔖 Ask permissions             |    ✅    |   ✅   |
+| 🎥 Record video                |    ✅    |   ✅   |
+| 🔈 Enable/disable audio        |    ✅    |   ✅   |
+| 🎞 Take photos                 |    ✅    |   ✅   |
+| 🌆 Photo live filters          |    ✅    |   ✅   |
+| 🌤 Exposure level              |    ✅    |   ✅   |
+| 📡 Broadcast live image stream |    ✅    |   ✅   |
+| 👁 Zoom                        |    ✅    |   ✅   |
+| 📸 Device flash support        |    ✅    |   ✅   |
+| ⌛️ Auto focus                  |    ✅    |   ✅   |
+| 📲 Live switching camera       |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream     |    ✅    |   ✅   |
+| 🤐 Background auto stop        |    ✅    |   ✅   |
+| 🔀 Sensor type switching       |    ⛔️    |   ✅   |
 
------
+---
 
 ## 📖&nbsp; Installation and usage
 
@@ -71,7 +87,7 @@ dependencies:
 
 - **iOS**
 
-Add these on ```ios/Runner/Info.plist```:
+Add these on `ios/Runner/Info.plist`:
 
 ```xml
 
@@ -86,7 +102,7 @@ Add these on ```ios/Runner/Info.plist```:
 
 - **Android**
 
-Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```:
+Change the minimum SDK version to 21 (or higher) in `android/app/build.gradle`:
 
 ```
 minSdkVersion 21
@@ -94,7 +110,7 @@ minSdkVersion 21
 
 If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
-``` xml
+```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.yourpackage">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -106,7 +122,7 @@ If you want to record videos with audio, add this permission to your `AndroidMan
 You may also want to save location of your pictures in exif metadata. In this case, add below
 permissions:
 
-``` xml
+```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.yourpackage">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -122,7 +138,7 @@ permissions:
 Some of the dependencies used by CamerAwesome can be overriden if you have a conflict.
 Change these variables to define which version you want to use:
 
-``` gradle
+```gradle
 buildscript {
     ext.kotlin_version = '1.7.10'
     ext {
@@ -154,14 +170,14 @@ java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.l
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
 
------
+---
 
-## 👌 Awesome build-in interface
+## 👌 Awesome built-in interface
 
 Just use our builder. <br>
 That's all you need to create a complete camera experience within you app.
 
-``` dart
+```dart
 CameraAwesomeBuilder.awesome(
     saveConfig: SaveConfig.image(
         pathBuilder: _path(),
@@ -172,7 +188,16 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
-------
+This builder can be customized with various settings:
+- a theme
+- builders for each part of the screen
+- initial camera setup
+- preview positioning
+- and more!
+
+Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
+
+---
 
 ## 🎨 Creating a custom interface
 
@@ -180,19 +205,16 @@ Our builder provides a custom factory. <br>
 Now you have access to the builder property and can create your own camera experience. <br>
 The camera preview will be visible behind what you will provide to our builder.
 
-> Note <br>
-> Only the camera preview is not customizable yet
-
 ```dart
 CameraAwesomeBuilder.custom(
     saveConfig: SaveConfig.image(pathBuilder: _path()),
     builder: (state, previewSize, previewRect) {
-        // create your interface here 
+        // create your interface here
     },
 )
 ```
 
-> See more in documentation
+> See more in [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
 
 ### Working with the custom builder
 
@@ -212,11 +234,11 @@ Depending on which state is our camera experience you will have access to some d
 
 Using the state you can do anything you need without having to think about the camera flow<br><br>
 
-- On app start we are in ```PreparingCameraState```<br>
-- Then depending on the initialCaptureMode you set you will be ```PhotoCameraState```
-  or ```VideoCameraState```<br>
-- Starting a video will push a ```VideoRecordingCameraState```<br>
-- Stopping the video will push back the ```VideoCameraState```<br>
+- On app start we are in `PreparingCameraState`<br>
+- Then depending on the initialCaptureMode you set you will be `PhotoCameraState`
+  or `VideoCameraState`<br>
+- Starting a video will push a `VideoRecordingCameraState`<br>
+- Stopping the video will push back the `VideoCameraState`<br>
   <br>
   Also if you want to use some specific function you can use the when method so you can write like
   this.<br>
@@ -229,23 +251,24 @@ state.when(
 );
 ```
 
-> See more in documentation
+> See more in [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
 
 <br>
 
------
+---
 
 ## 🔬 Analysis mode
 
 Use this to achieve
+
 - QR-Code scanning.
 - Facial recognition.
 - AI object detection.
 - Realtime video chats.
-And much more 🤩
+  And much more 🤩
 
-You can check examples using MLKit inside the ```example``` directory.
-```ai_analysis_faces.dart``` is used to detect faces and ```ai_analysis_barcode.dart``` to read
+You can check examples using MLKit inside the `example` directory.
+`ai_analysis_faces.dart` is used to detect faces and `ai_analysis_barcode.dart` to read
 barcodes.
 
 ```dart
@@ -255,9 +278,10 @@ CameraAwesomeBuilder.awesome(
     ),
     onImageForAnalysis: analyzeImage,
     imageAnalysisConfig: AnalysisConfig(
-    outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
-    width: 1024,
-    maxFramesPerSecond: 30,
+      outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
+      width: 1024,
+      maxFramesPerSecond: 30,
+    ),
 ),
 ```
 
@@ -266,20 +290,23 @@ CameraAwesomeBuilder.awesome(
 > For machine learning you don't need full resolution images (1024 or lower should be enough and
 > makes computation easier)
 
-> See more in documentation
+Learn more about the image analysis configuration in the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration).
 
------
+Check also detailed explanations on how to use MLKit to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes) and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
 
-## 🐽 Setting sensors settings
+---
 
-Through state you can access to a ```SensorConfig``` class. 
+## 🐽 Updating Sensor configuration
+
+Through state you can access to a `SensorConfig` class.
+
 <br>
 
-| Function         | Comment                                                    |
-|------------------|------------------------------------------------------------|
-| setZoom          | changing zoom                                              |
-| setFlashMode     | changing flash between NONE,ON,AUTO,ALWAYS                 |
-| setBrightness    | change brightness level manually (better to let this auto) |
+| Function      | Comment                                                    |
+| ------------- | ---------------------------------------------------------- |
+| setZoom       | changing zoom                                              |
+| setFlashMode  | changing flash between NONE,ON,AUTO,ALWAYS                 |
+| setBrightness | change brightness level manually (better to let this auto) |
 
 All of this configurations are listenable through a stream so your UI can automatically get updated
 according to the actual configuration.
@@ -294,7 +321,7 @@ Apply live filters to your pictures using the built-in interface:
 
 You can also choose to use a specific filter from the start:
 
-``` dart
+```dart
 CameraAwesomeBuilder.awesome(
   // other params
   filter: AwesomeFilter.AddictiveRed,
@@ -303,7 +330,7 @@ CameraAwesomeBuilder.awesome(
 
 Or set the filter programmatically:
 
-``` dart
+```dart
 CameraAwesomeBuilder.custom(
   builder: (cameraState, previewSize, previewRect) {
     return cameraState.when(
@@ -321,11 +348,13 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-See all available filters in
-the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
+See all available filters in the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
 
 <br>
 
 <a href="https://apparence.io">
-    <img src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png" width="100%" />
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
+    width="100%"
+  />
 </a>

@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'utils.dart';
+import 'package:camerawesome/src/photofilters/utils/utils.dart';
 
 int clampPixel(int x) => x.clamp(0, 255);
 void saturation(Uint8List bytes, num saturation) {
