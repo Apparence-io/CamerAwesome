@@ -52,8 +52,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
-        saveConfig:
-            SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
+        saveConfig: SaveConfig.photo(
+          pathBuilder: () => _path(CaptureMode.photo),
+        ),
         onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           outputFormat: InputAnalysisImageFormat.nv21,
