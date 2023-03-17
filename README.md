@@ -188,22 +188,33 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
+![CamerAwesome default UI](/docs/img/base_awesome_ui.jpg)
+
 This builder can be customized with various settings:
+
 - a theme
 - builders for each part of the screen
 - initial camera setup
 - preview positioning
+- additional preview decoration
 - and more!
 
-Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
+Here is an example:
+![Customized UI](/docs/img/custom_awesome_ui.jpg)
+
+Check
+the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui)
+to learn more.
 
 ---
 
 ## 🎨 Creating a custom interface
 
-Our builder provides a custom factory. <br>
-Now you have access to the builder property and can create your own camera experience. <br>
-The camera preview will be visible behind what you will provide to our builder.
+If the `awesome()` factory is not enough, you can use `custom()` instead.
+
+It provides a `builder` property that lets you create your own camera experience. <br>
+
+The camera preview will be visible behind what you will provide to the builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
@@ -267,9 +278,19 @@ Use this to achieve
 - Realtime video chats.
   And much more 🤩
 
+![Face AI](/docs/img/face_ai.gif)
+
 You can check examples using MLKit inside the `example` directory.
-`ai_analysis_faces.dart` is used to detect faces and `ai_analysis_barcode.dart` to read
-barcodes.
+The above example is from `ai_analysis_faces.dart`. It detects faces and draw their contours.
+
+It's also possible to use MLKit to read barcodes:
+
+![Barcode scanning](/docs/img/barcode_overlay.gif)
+
+Check `ai_analysis_barcode.dart` and `preview_overlay_example.dart` for examples or
+the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
+
+### How to use it
 
 ```dart
 CameraAwesomeBuilder.awesome(
@@ -279,15 +300,15 @@ CameraAwesomeBuilder.awesome(
     onImageForAnalysis: analyzeImage,
     imageAnalysisConfig: AnalysisConfig(
       outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
-      width: 1024,
-      maxFramesPerSecond: 30,
+      width: 720,
+      maxFramesPerSecond: 20,
     ),
 ),
 ```
 
 > MLkit recommands to use nv21 format for Android. <br>
 > bgra8888 is the iOS format
-> For machine learning you don't need full resolution images (1024 or lower should be enough and
+> For machine learning you don't need full resolution images (720 or lower should be enough and
 > makes computation easier)
 
 Learn more about the image analysis configuration in the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration).

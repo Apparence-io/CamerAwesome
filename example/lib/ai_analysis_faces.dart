@@ -280,6 +280,33 @@ class FaceDetectorPainter extends CustomPainter {
       }
     }
 
+    final topLeft = _croppedPosition(
+      const Point(0, 0),
+      croppedSize: croppedSize,
+      painterSize: size,
+      ratio: ratioAnalysisToPreview,
+      flipXY: flipXY,
+    );
+    final bottomRight = _croppedPosition(
+      Point(croppedSize.width.toInt(), croppedSize.height.toInt()),
+      croppedSize: croppedSize,
+      painterSize: size,
+      ratio: ratioAnalysisToPreview,
+      flipXY: flipXY,
+    );
+    final rect =
+        Rect.fromLTRB(topLeft.dx, topLeft.dy, bottomRight.dx, bottomRight.dy);
+    print(
+        "rect: $rect with img analysis: $croppedSize - ${model.absoluteImageSize}");
+    // rect: Rect.fromLTRB(-89.3, 76.4, 303.5, 774.5) with img analysis: Size(198.0, 352.0) - Size(352.0, 288.0)
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..color = Colors.purple
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+
     for (final Face face in model.faces) {
       Map<FaceContourType, Path> paths = {
         for (var fct in FaceContourType.values) fct: Path()

@@ -128,6 +128,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         return LayoutBuilder(
           builder: (_, constraints) {
             final size = Size(_previewSize!.width, _previewSize!.height);
+
             final constrainedSize = Size(
               constraints.maxWidth - widget.padding.left - widget.padding.right,
               constraints.maxHeight -
@@ -167,7 +168,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 .center(Offset.zero);
             _flutterPreviewSize =
                 PreviewSize(width: maxSize.width, height: maxSize.height);
-
             // croppedPreviewSize takes care of the aspectRatio
             final croppedPreviewSize =
                 _croppedPreviewSize(constrainedSize, _aspectRatioValue!);
