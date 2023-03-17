@@ -58,7 +58,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   StreamSubscription? _aspectRatioSubscription;
   CameraAspectRatios? _aspectRatio;
   double? _aspectRatioValue;
-  double? _previousAspectRatioValue;
+
+  Size? _previousCroppedSize;
+  Size? _croppedSize;
 
   @override
   void initState() {
@@ -83,7 +85,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         final previewSize = await widget.state.previewSize();
         if ((_previewSize != previewSize || _aspectRatio != event) && mounted) {
           setState(() {
-            _previousAspectRatioValue = _aspectRatioValue;
             _aspectRatio = event;
             switch (event) {
               case CameraAspectRatios.ratio_16_9:
@@ -96,8 +97,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 _aspectRatioValue = 1;
                 break;
             }
-            // If aspectRatio was null before, previousAspectRatio should be the same
-            _previousAspectRatioValue ??= _aspectRatioValue;
             _previewSize = previewSize;
           });
         }
@@ -172,6 +171,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             // croppedPreviewSize takes care of the aspectRatio
             final croppedPreviewSize =
                 _croppedPreviewSize(constrainedSize, _aspectRatioValue!);
+            _previousCroppedSize = _croppedSize;
+            _croppedSize =
+                Size(croppedPreviewSize.width, croppedPreviewSize.height);
+            // if croppedSize was null before
+            _previousCroppedSize ??=
+                Size(_croppedSize!.width, _croppedSize!.height);
 
             final previewTexture = Texture(textureId: _textureId!);
 
@@ -232,29 +237,22 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             ].contains(widget.previewFit)) {
               return Stack(children: [
                 Positioned.fill(
-                  child: Platform.isAndroid
-                      ? _CroppedPreview(
-                          croppedPreviewSize: croppedPreviewSize,
-                          alignment: widget.alignment,
-                          padding: widget.padding,
-                          child: centeredPreview,
-                        )
-                      : TweenAnimationBuilder<double>(
-                          builder: (context, anim, _) {
-                            return _CroppedPreview(
-                              croppedPreviewSize: croppedPreviewSize,
-                              alignment: widget.alignment,
-                              padding: widget.padding,
-                              child: centeredPreview,
-                            );
-                          },
-                          tween: Tween<double>(
-                            begin: _previousAspectRatioValue,
-                            end: _aspectRatioValue,
-                          ),
-                          duration: const Duration(milliseconds: 700),
-                          curve: Curves.fastLinearToSlowEaseIn,
-                        ),
+                  child: TweenAnimationBuilder<Size>(
+                    builder: (context, anim, _) {
+                      return _CroppedPreview(
+                        croppedSize: anim,
+                        alignment: widget.alignment,
+                        padding: widget.padding,
+                        child: centeredPreview,
+                      );
+                    },
+                    tween: Tween<Size>(
+                      begin: _previousCroppedSize,
+                      end: _croppedSize,
+                    ),
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.fastLinearToSlowEaseIn,
+                  ),
                 ),
                 if (widget.previewDecoratorBuilder != null)
                   Positioned.fill(
@@ -327,13 +325,13 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
 class _CroppedPreview extends StatelessWidget {
   final Widget child;
-  final PreviewSize croppedPreviewSize;
+  final Size croppedSize;
   final Alignment alignment;
   final EdgeInsets padding;
   final Duration animDuration;
 
   const _CroppedPreview({
-    required this.croppedPreviewSize,
+    required this.croppedSize,
     required this.alignment,
     required this.padding,
     required this.child,
@@ -342,28 +340,20 @@ class _CroppedPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedAlign(
+    return AnimatedContainer(
       alignment: alignment,
       duration: animDuration,
       curve: Curves.easeInOut,
-      child: AnimatedPadding(
-        padding: padding,
-        duration: animDuration,
-        curve: Curves.easeInOut,
-        child: AnimatedSize(
-          duration: animDuration,
-          curve: Curves.easeInOut,
-          child: SizedBox(
-            width: croppedPreviewSize.width,
-            height: croppedPreviewSize.height,
-            child: ClipPath(
-              clipper: _CenterCropClipper(
-                width: croppedPreviewSize.width,
-                height: croppedPreviewSize.height,
-              ),
-              child: child,
-            ),
+      padding: padding,
+      child: SizedBox(
+        width: croppedSize.width,
+        height: croppedSize.height,
+        child: ClipPath(
+          clipper: _CenterCropClipper(
+            width: croppedSize.width,
+            height: croppedSize.height,
           ),
+          child: child,
         ),
       ),
     );
