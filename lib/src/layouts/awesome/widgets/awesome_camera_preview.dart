@@ -96,6 +96,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             // If aspectRatio was null before, previousAspectRatio should be the same
             _previousAspectRatioValue ??= _aspectRatioValue;
 
+            if (_previewSize != null) {
+              _previousPreviewSize = PreviewSize(
+                width: _previewSize!.width,
+                height: _previewSize!.height,
+              );
+            }
             _previewSize = previewSize;
           });
         }
@@ -109,6 +115,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     _aspectRatioSubscription?.cancel();
     super.dispose();
   }
+
+  PreviewSize? _previousPreviewSize;
 
   @override
   Widget build(BuildContext context) {
@@ -130,12 +138,19 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               constraints.maxWidth,
               constraints.maxHeight,
             ).center(Offset.zero);
-            var preview = PreviewFitBuilder(
+
+            final sizeCalculator = PreviewSizeCalculator(
               previewFit: widget.previewFit,
               previewSize: _previewSize!,
+            );
+            _flutterPreviewSize = sizeCalculator.getMaxPreviewSize(constraints);
+
+            AnimatedPreviewFit preview = AnimatedPreviewFit(
+              previewFit: widget.previewFit,
+              previewSize: _previewSize!,
+              previousPreviewSize: _previousPreviewSize,
               child: Texture(textureId: _textureId!),
             );
-            _flutterPreviewSize = preview.getMaxPreviewSize(constraints);
 
             return Stack(children: [
               Positioned.fill(

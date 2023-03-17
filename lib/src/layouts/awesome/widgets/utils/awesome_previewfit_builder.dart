@@ -4,12 +4,56 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 
-class PreviewFitBuilder extends StatelessWidget {
+class AnimatedPreviewFit extends StatelessWidget {
+  final CameraPreviewFit previewFit;
+  final PreviewSize previewSize;
+  final PreviewSize? previousPreviewSize;
+  final Widget child;
+
+  const AnimatedPreviewFit({
+    super.key,
+    required this.previewFit,
+    required this.previewSize,
+    required this.previousPreviewSize,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<Size>(
+      builder: (context, currentSize, child) {
+        return PreviewFitWidget(
+          previewFit: previewFit,
+          previewSize: PreviewSize(
+            width: currentSize.width,
+            height: currentSize.height,
+          ),
+          child: child!,
+        );
+      },
+      tween: Tween<Size>(
+        begin: Size(
+          previousPreviewSize?.width ?? previewSize.width,
+          previousPreviewSize?.height ?? previewSize.height,
+        ),
+        end: Size(
+          previewSize.width,
+          previewSize.height,
+        ),
+      ),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.fastLinearToSlowEaseIn,
+      child: child,
+    );
+  }
+}
+
+class PreviewFitWidget extends StatelessWidget {
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final Widget child;
 
-  const PreviewFitBuilder({
+  const PreviewFitWidget({
     super.key,
     required this.previewFit,
     required this.previewSize,
@@ -19,8 +63,12 @@ class PreviewFitBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      final ratio = getZoom(constraints);
-      final maxSize = getMaxSize(constraints);
+      final sizeCalculator = PreviewSizeCalculator(
+        previewFit: previewFit,
+        previewSize: previewSize,
+      );
+      final ratio = sizeCalculator.getZoom(constraints);
+      final maxSize = sizeCalculator.getMaxSize(constraints);
       var transformController = TransformationController();
       transformController.value = Matrix4.identity() * ratio;
 
@@ -42,6 +90,18 @@ class PreviewFitBuilder extends StatelessWidget {
       );
     });
   }
+
+  double get previewRatio => previewSize.width / previewSize.height;
+}
+
+class PreviewSizeCalculator {
+  final CameraPreviewFit previewFit;
+  final PreviewSize previewSize;
+
+  PreviewSizeCalculator({
+    required this.previewFit,
+    required this.previewSize,
+  });
 
   Size getMaxSize(BoxConstraints constraints) {
     final size = Size(previewSize.width, previewSize.height);
@@ -94,6 +154,4 @@ class PreviewFitBuilder extends StatelessWidget {
     }
     return ratio;
   }
-
-  double get previewRatio => previewSize.width / previewSize.height;
 }
