@@ -24,18 +24,17 @@ class PreviewFitBuilder extends StatelessWidget {
       var transformController = TransformationController();
       transformController.value = Matrix4.identity() * ratio;
 
-      return SizedBox(
-        width: maxSize.width,
-        height: maxSize.height,
-        child: InteractiveViewer(
-          transformationController: transformController,
-          scaleEnabled: false,
-          constrained: false,
-          child: SizedBox(
-            width: previewSize.width,
-            height: previewSize.height,
-            child: AspectRatio(
-              aspectRatio: 1 / previewRatio,
+      return Center(
+        child: SizedBox(
+          width: maxSize.width,
+          height: maxSize.height,
+          child: InteractiveViewer(
+            transformationController: transformController,
+            scaleEnabled: false,
+            constrained: false,
+            child: SizedBox(
+              width: previewSize.width,
+              height: previewSize.height,
               child: child,
             ),
           ),

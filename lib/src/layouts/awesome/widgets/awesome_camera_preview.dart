@@ -139,34 +139,31 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
             return Stack(children: [
               Positioned.fill(
-                child: Center(
-                  child: AwesomeCameraGestureDetector(
-                    onPreviewTapBuilder: widget.onPreviewTap != null &&
-                            _previewSize != null &&
-                            _flutterPreviewSize != null
-                        ? OnPreviewTapBuilder(
-                            pixelPreviewSizeGetter: () => _previewSize!,
-                            flutterPreviewSizeGetter: () =>
-                                _flutterPreviewSize!,
-                            onPreviewTap: widget.onPreviewTap!,
-                          )
-                        : null,
-                    onPreviewScale: widget.onPreviewScale,
-                    initialZoom: widget.state.sensorConfig.zoom,
-                    // if there is no filter, just display texture
-                    // to improve a little bit performances
-                    child: StreamBuilder<AwesomeFilter>(
-                        stream: widget.state.filter$,
-                        builder: (context, snapshot) {
-                          return snapshot.hasData &&
-                                  snapshot.data != AwesomeFilter.None
-                              ? ColorFiltered(
-                                  colorFilter: snapshot.data!.preview,
-                                  child: preview,
-                                )
-                              : preview;
-                        }),
-                  ),
+                child: AwesomeCameraGestureDetector(
+                  onPreviewTapBuilder: widget.onPreviewTap != null &&
+                          _previewSize != null &&
+                          _flutterPreviewSize != null
+                      ? OnPreviewTapBuilder(
+                          pixelPreviewSizeGetter: () => _previewSize!,
+                          flutterPreviewSizeGetter: () => _flutterPreviewSize!,
+                          onPreviewTap: widget.onPreviewTap!,
+                        )
+                      : null,
+                  onPreviewScale: widget.onPreviewScale,
+                  initialZoom: widget.state.sensorConfig.zoom,
+                  // if there is no filter, just display texture
+                  // to improve a little bit performances
+                  child: StreamBuilder<AwesomeFilter>(
+                      stream: widget.state.filter$,
+                      builder: (context, snapshot) {
+                        return snapshot.hasData &&
+                                snapshot.data != AwesomeFilter.None
+                            ? ColorFiltered(
+                                colorFilter: snapshot.data!.preview,
+                                child: preview,
+                              )
+                            : preview;
+                      }),
                 ),
               ),
               if (widget.previewDecoratorBuilder != null)
