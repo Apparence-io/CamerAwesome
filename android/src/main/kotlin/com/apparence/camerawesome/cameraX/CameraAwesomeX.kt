@@ -1,7 +1,6 @@
 package com.apparence.camerawesome.cameraX
 
 import android.Manifest
-import android.R.attr.orientation
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
@@ -149,10 +148,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun setupImageAnalysisStream(
-        format: String,
-        width: Long,
-        maxFramesPerSecond: Double?,
-        autoStart: Boolean
+        format: String, width: Long, maxFramesPerSecond: Double?, autoStart: Boolean
     ) {
         cameraState.apply {
             try {
@@ -179,8 +175,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     override fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Boolean) -> Unit) {
         if (exifPreferences.saveGPSLocation) {
             val permissions = listOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION
             )
             CoroutineScope(Dispatchers.Main).launch {
                 if (cameraPermissions.hasPermission(activity!!, permissions)) {
@@ -224,8 +219,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun requestPermissions(
-        saveGpsLocation: Boolean,
-        callback: (List<String>) -> Unit
+        saveGpsLocation: Boolean, callback: (List<String>) -> Unit
     ) {
         // On a generic call, don't ask for specific permissions (location, record audio)
         cameraPermissions.requestBasePermissions(
@@ -299,13 +293,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         imageFile: File, callback: (Boolean) -> Unit
     ) {
         val outputFileOptions =
-            ImageCapture.OutputFileOptions.Builder(imageFile)
-                .setMetadata(ImageCapture.Metadata())
+            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(ImageCapture.Metadata())
                 .build()
 
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
-        cameraState.imageCapture!!.takePicture(
-            outputFileOptions,
+        cameraState.imageCapture!!.takePicture(outputFileOptions,
             ContextCompat.getMainExecutor(activity!!),
             object : ImageCapture.OnImageSavedCallback {
 
@@ -315,8 +307,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         "Success capturing picture ${outputFileResults.savedUri}, with location: ${exifPreferences.saveGPSLocation}"
                     )
                     if (colorMatrix != null && noneFilter != colorMatrix) {
-                        val exif =
-                            ExifInterface(outputFileResults.savedUri!!.path!!)
+                        val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
 
                         val originalBitmap = BitmapFactory.decodeFile(
                             outputFileResults.savedUri?.path
@@ -327,9 +318,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
                         val canvas = Canvas(bitmapCopy)
                         canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
-                            colorFilter =
-                                ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
-                                    .toFloatArray())
+                            colorFilter = ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
+                                .toFloatArray())
                         })
 
                         try {
@@ -346,8 +336,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
                     if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
-                            val exif: androidx.exifinterface.media.ExifInterface =
-                                androidx.exifinterface.media.ExifInterface(outputFileResults.savedUri!!.path!!)
+                            val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
                             outputFileOptions.metadata.location = it
                             exif.setGpsInfo(it)
                             // We need to actually save the exif data to the file system
@@ -372,8 +361,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             var ignoreAudio = false
             if (cameraState.enableAudioRecording) {
                 if (!cameraPermissions.hasPermission(
-                        activity!!,
-                        listOf(Manifest.permission.RECORD_AUDIO)
+                        activity!!, listOf(Manifest.permission.RECORD_AUDIO)
                     )
                 ) {
                     cameraPermissions.requestPermissions(
@@ -486,7 +474,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         val flashMode = FlashMode.valueOf(mode)
         cameraState.apply {
             this.flashMode = flashMode
-            updateLifecycle(activity!!)
+            this.imageCapture?.flashMode = when (flashMode) {
+                FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
+                FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
+                else -> ImageCapture.FLASH_MODE_OFF
+            }
+            previewCamera?.cameraControl?.enableTorch(flashMode == FlashMode.ALWAYS)
         }
     }
 
@@ -615,6 +608,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 rota90, rota270 -> {
                     PreviewSize(res.height.toDouble(), res.width.toDouble())
                 }
+
                 else -> {
                     PreviewSize(res.width.toDouble(), res.height.toDouble())
                 }
