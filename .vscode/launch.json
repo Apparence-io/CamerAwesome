@@ -30,6 +30,12 @@
         "program": "example/lib/ai_analysis_barcode.dart"
       },
       {
+        "name": "AI Analysis - barcode with overlay",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/preview_overlay_example.dart"
+      },
+      {
         "name": "Awesome UI - Custom Theme",
         "request": "launch",
         "type": "dart",

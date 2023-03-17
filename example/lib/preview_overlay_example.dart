@@ -92,7 +92,7 @@ class _CameraPageState extends State<CameraPage> {
           imageAnalysisConfig: AnalysisConfig(
             outputFormat: InputAnalysisImageFormat.nv21,
             width: 256,
-            maxFramesPerSecond: 5,
+            maxFramesPerSecond: 3,
           ),
         ),
       ),
