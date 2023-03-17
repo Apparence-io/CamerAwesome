@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/layouts/awesome/widgets/utils/awesome_previewfit_builder.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -125,183 +126,73 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       child: OrientationBuilder(builder: (context, orientation) {
         return LayoutBuilder(
           builder: (_, constraints) {
-            final size = Size(_previewSize!.width, _previewSize!.height);
+            final center = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            ).center(Offset.zero);
+            var preview = PreviewFitBuilder(
+              previewFit: widget.previewFit,
+              previewSize: _previewSize!,
+              child: Texture(textureId: _textureId!),
+            );
+            _flutterPreviewSize = preview.getMaxPreviewSize(constraints);
 
-            final ratioW = constraints.maxWidth / size.width;
-            final ratioH = constraints.maxHeight / size.height;
-            Size maxSize;
-            switch (widget.previewFit) {
-              case CameraPreviewFit.fitWidth:
-                maxSize = Size(constraints.maxWidth, size.height * ratioW);
-                break;
-              case CameraPreviewFit.fitHeight:
-                maxSize = Size(size.width * ratioH, constraints.maxHeight);
-                break;
-              case CameraPreviewFit.cover:
-                final previewRatio = _previewSize!.width / _previewSize!.height;
-                if (previewRatio <= 1) {
-                  maxSize = Size(
-                    constraints.maxWidth,
-                    constraints.maxWidth / previewRatio,
-                  );
-                } else {
-                  maxSize = Size(
-                    constraints.maxHeight * previewRatio,
-                    constraints.maxHeight,
-                  );
-                }
-                break;
-              case CameraPreviewFit.contain:
-                final ratio = min(ratioW, ratioH);
-                maxSize = Size(size.width * ratio, size.height * ratio);
-                break;
-            }
-
-            final center = Size(constraints.maxWidth, constraints.maxHeight)
-                .center(Offset.zero);
-            _flutterPreviewSize =
-                PreviewSize(width: maxSize.width, height: maxSize.height);
-            PreviewSize croppedPreviewSize = _flutterPreviewSize!;
-            if (_aspectRatio == CameraAspectRatios.ratio_1_1) {
-              croppedPreviewSize = PreviewSize(
-                width: maxSize.shortestSide,
-                height: maxSize.shortestSide,
-              );
-            }
-
-            final previewTexture = Texture(textureId: _textureId!);
-
-            final preview = SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: ClipRect(
-                child: OverflowBox(
-                  maxWidth: double.infinity,
-                  maxHeight: double.infinity,
-                  child: Center(
-                    child: SizedBox(
-                      width: _flutterPreviewSize?.width,
-                      height: _flutterPreviewSize?.height,
-                      child: AwesomeCameraGestureDetector(
-                        onPreviewTapBuilder: widget.onPreviewTap != null &&
-                                _previewSize != null &&
-                                _flutterPreviewSize != null
-                            ? OnPreviewTapBuilder(
-                                pixelPreviewSizeGetter: () => _previewSize!,
-                                flutterPreviewSizeGetter: () =>
-                                    _flutterPreviewSize!,
-                                onPreviewTap: widget.onPreviewTap!,
-                              )
-                            : null,
-                        onPreviewScale: widget.onPreviewScale,
-                        initialZoom: widget.state.sensorConfig.zoom,
-                        // if there is no filter, just display texture
-                        // to improve a little bit performances
-                        child: StreamBuilder<AwesomeFilter>(
-                            stream: widget.state.filter$,
-                            builder: (context, snapshot) {
-                              return snapshot.hasData &&
-                                      snapshot.data != AwesomeFilter.None
-                                  ? ColorFiltered(
-                                      colorFilter: snapshot.data!.preview,
-                                      child: previewTexture,
-                                    )
-                                  : previewTexture;
-                            }),
-                      ),
-                    ),
+            return Stack(children: [
+              Positioned.fill(
+                child: Center(
+                  child: AwesomeCameraGestureDetector(
+                    onPreviewTapBuilder: widget.onPreviewTap != null &&
+                            _previewSize != null &&
+                            _flutterPreviewSize != null
+                        ? OnPreviewTapBuilder(
+                            pixelPreviewSizeGetter: () => _previewSize!,
+                            flutterPreviewSizeGetter: () =>
+                                _flutterPreviewSize!,
+                            onPreviewTap: widget.onPreviewTap!,
+                          )
+                        : null,
+                    onPreviewScale: widget.onPreviewScale,
+                    initialZoom: widget.state.sensorConfig.zoom,
+                    // if there is no filter, just display texture
+                    // to improve a little bit performances
+                    child: StreamBuilder<AwesomeFilter>(
+                        stream: widget.state.filter$,
+                        builder: (context, snapshot) {
+                          return snapshot.hasData &&
+                                  snapshot.data != AwesomeFilter.None
+                              ? ColorFiltered(
+                                  colorFilter: snapshot.data!.preview,
+                                  child: preview,
+                                )
+                              : preview;
+                        }),
                   ),
                 ),
               ),
-            );
-
-            if ([
-              CameraPreviewFit.fitHeight,
-              CameraPreviewFit.fitWidth,
-              CameraPreviewFit.contain
-            ].contains(widget.previewFit)) {
-              return Stack(children: [
+              if (widget.previewDecoratorBuilder != null)
                 Positioned.fill(
-                  child: Platform.isAndroid
-                      ? ClipPath(
-                          clipper: CenterCropClipper(
-                            isWidthLarger:
-                                constraints.maxWidth > constraints.maxHeight,
-                            aspectRatio: _aspectRatioValue!,
-                          ),
-                          child: preview,
-                        )
-                      : TweenAnimationBuilder<double>(
-                          builder: (context, anim, _) {
-                            return ClipPath(
-                              clipper: CenterCropClipper(
-                                isWidthLarger: constraints.maxWidth >
-                                    constraints.maxHeight,
-                                aspectRatio: anim,
-                              ),
-                              child: preview,
-                            );
-                          },
-                          tween: Tween<double>(
-                            begin: _previousAspectRatioValue,
-                            end: _aspectRatioValue,
-                          ),
-                          duration: const Duration(milliseconds: 700),
-                          curve: Curves.fastLinearToSlowEaseIn,
-                        ),
-                ),
-                if (widget.previewDecoratorBuilder != null)
-                  Positioned.fill(
-                    child: widget.previewDecoratorBuilder!(
-                      widget.state,
-                      _flutterPreviewSize!,
-                      Rect.fromCenter(
-                        center: center,
-                        width: croppedPreviewSize.width,
-                        height: croppedPreviewSize.height,
-                      ),
-                    ),
-                  ),
-                Positioned.fill(
-                  child: widget.interfaceBuilder(
+                  child: widget.previewDecoratorBuilder!(
                     widget.state,
                     _flutterPreviewSize!,
                     Rect.fromCenter(
                       center: center,
-                      width: croppedPreviewSize.width,
-                      height: croppedPreviewSize.height,
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight,
                     ),
                   ),
                 ),
-              ]);
-            } else {
-              return Stack(children: [
-                Positioned.fill(child: preview),
-                if (widget.previewDecoratorBuilder != null)
-                  Positioned.fill(
-                    child: widget.previewDecoratorBuilder!(
-                      widget.state,
-                      _flutterPreviewSize!,
-                      Rect.fromCenter(
-                        center: center,
-                        width: croppedPreviewSize.width,
-                        height: croppedPreviewSize.height,
-                      ),
-                    ),
-                  ),
-                Positioned.fill(
-                  child: widget.interfaceBuilder(
-                    widget.state,
-                    _flutterPreviewSize!,
-                    Rect.fromCenter(
-                      center: center,
-                      width: croppedPreviewSize.width,
-                      height: croppedPreviewSize.height,
-                    ),
+              Positioned.fill(
+                child: widget.interfaceBuilder(
+                  widget.state,
+                  _flutterPreviewSize!,
+                  Rect.fromCenter(
+                    center: center,
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
                   ),
                 ),
-              ]);
-            }
+              ),
+            ]);
           },
         );
       }),
