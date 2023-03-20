@@ -140,7 +140,8 @@ class PigeonSensorTypeDevice {
   static PigeonSensorTypeDevice decode(Object result) {
     result as List<Object?>;
     return PigeonSensorTypeDevice(
-      sensorType: PigeonSensorType.values[result[0]! as int],
+      sensorType: PigeonSensorType.values[result[0]! as int]
+,
       name: result[1]! as String,
       iso: result[2]! as double,
       flashAvailable: result[3]! as bool,

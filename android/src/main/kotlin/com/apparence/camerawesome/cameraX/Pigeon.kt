@@ -63,7 +63,7 @@ enum class CamerAwesomePermission(val raw: Int) {
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class PreviewSize(
+data class PreviewSize (
   val width: Double,
   val height: Double
 
@@ -85,7 +85,7 @@ data class PreviewSize(
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class ExifPreferences(
+data class ExifPreferences (
   val saveGPSLocation: Boolean
 
 ) {
@@ -104,7 +104,7 @@ data class ExifPreferences(
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class VideoOptions(
+data class VideoOptions (
   val fileType: String,
   val codec: String
 
@@ -126,7 +126,7 @@ data class VideoOptions(
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class PigeonSensorTypeDevice(
+data class PigeonSensorTypeDevice (
   val sensorType: PigeonSensorType,
   /** A localized device name for display in the user interface. */
   val name: String,
@@ -184,29 +184,24 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
           PreviewSize.fromList(it)
         }
       }
-
       132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           VideoOptions.fromList(it)
         }
       }
-
       else -> super.readValueOfType(type, buffer)
     }
   }
-
-  override fun writeValue(stream: ByteArrayOutputStream, value: Any?) {
+  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
       is ExifPreferences -> {
         stream.write(128)
         writeValue(stream, value.toList())
       }
-
       is PigeonSensorTypeDevice -> {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-
       is PreviewSize -> {
         stream.write(130)
         writeValue(stream, value.toList())
@@ -226,17 +221,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(
-    sensor: String,
-    aspectRatio: String,
-    zoom: Double,
-    flashMode: String,
-    captureMode: String,
-    enableImageStream: Boolean,
-    exifPreferences: ExifPreferences,
-    callback: (Boolean) -> Unit
-  )
-
+  fun setupCamera(sensor: String, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
   fun checkPermissions(): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -258,6 +243,7 @@ interface CameraInterface {
   fun handleAutoFocus()
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double)
   fun setZoom(zoom: Double)
+  fun setMirrorFrontCamera(mirror: Boolean)
   fun setSensor(sensor: String, deviceId: String?)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
@@ -269,13 +255,7 @@ interface CameraInterface {
   fun setPhotoSize(size: PreviewSize)
   fun setPreviewSize(size: PreviewSize)
   fun setAspectRatio(aspectRatio: String)
-  fun setupImageAnalysisStream(
-    format: String,
-    width: Long,
-    maxFramesPerSecond: Double?,
-    autoStart: Boolean
-  )
-
+  fun setupImageAnalysisStream(format: String, width: Long, maxFramesPerSecond: Double?, autoStart: Boolean)
   fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Boolean) -> Unit)
   fun startAnalysis()
   fun stopAnalysis()
@@ -290,11 +270,7 @@ interface CameraInterface {
     @Suppress("UNCHECKED_CAST")
     fun setUp(binaryMessenger: BinaryMessenger, api: CameraInterface?) {
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setupCamera",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupCamera", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -303,19 +279,12 @@ interface CameraInterface {
               val sensorArg = args[0] as String
               val aspectRatioArg = args[1] as String
               val zoomArg = args[2] as Double
-              val flashModeArg = args[3] as String
-              val captureModeArg = args[4] as String
-              val enableImageStreamArg = args[5] as Boolean
-              val exifPreferencesArg = args[6] as ExifPreferences
-              api.setupCamera(
-                sensorArg,
-                aspectRatioArg,
-                zoomArg,
-                flashModeArg,
-                captureModeArg,
-                enableImageStreamArg,
-                exifPreferencesArg
-              ) {
+              val mirrorFrontCameraArg = args[3] as Boolean
+              val flashModeArg = args[4] as String
+              val captureModeArg = args[5] as String
+              val enableImageStreamArg = args[6] as Boolean
+              val exifPreferencesArg = args[7] as ExifPreferences
+              api.setupCamera(sensorArg, aspectRatioArg, zoomArg, mirrorFrontCameraArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) {
                 reply.reply(wrapResult(it))
               }
             } catch (exception: Error) {
@@ -328,11 +297,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.checkPermissions",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.checkPermissions", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -348,11 +313,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.requestPermissions",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.requestPermissions", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -372,11 +333,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.getPreviewTextureId",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getPreviewTextureId", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -392,11 +349,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.takePhoto",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.takePhoto", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -416,11 +369,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.recordVideo",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.recordVideo", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -441,11 +390,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.pauseVideoRecording",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.pauseVideoRecording", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -462,11 +407,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.resumeVideoRecording",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.resumeVideoRecording", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -483,11 +424,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.receivedImageFromStream",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.receivedImageFromStream", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -504,11 +441,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.stopRecordingVideo",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.stopRecordingVideo", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -526,11 +459,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.getFrontSensors",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getFrontSensors", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -546,11 +475,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.getBackSensors",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getBackSensors", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -566,11 +491,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.start",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.start", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -586,11 +507,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.stop",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.stop", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -606,11 +523,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setFlashMode",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setFlashMode", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -629,11 +542,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.handleAutoFocus",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.handleAutoFocus", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -650,11 +559,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.focusOnPoint",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.focusOnPoint", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -675,11 +580,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setZoom",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setZoom", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -698,11 +599,26 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setSensor",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setMirrorFrontCamera", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            var wrapped = listOf<Any?>()
+            try {
+              val args = message as List<Any?>
+              val mirrorArg = args[0] as Boolean
+              api.setMirrorFrontCamera(mirrorArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Error) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setSensor", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -722,11 +638,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setCorrection",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setCorrection", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -745,11 +657,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.getMaxZoom",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getMaxZoom", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -765,11 +673,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setCaptureMode",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setCaptureMode", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -788,11 +692,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setRecordingAudioMode",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setRecordingAudioMode", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -812,11 +712,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.availableSizes",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.availableSizes", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -832,11 +728,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.refresh",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.refresh", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -853,11 +745,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.getEffectivPreviewSize",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getEffectivPreviewSize", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -873,11 +761,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setPhotoSize",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setPhotoSize", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -896,11 +780,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setPreviewSize",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setPreviewSize", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -919,11 +799,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setAspectRatio",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setAspectRatio", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -942,11 +818,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupImageAnalysisStream", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -968,11 +840,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setExifPreferences",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setExifPreferences", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()
@@ -992,11 +860,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.startAnalysis",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.startAnalysis", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -1013,11 +877,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.stopAnalysis",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.stopAnalysis", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped = listOf<Any?>()
@@ -1034,11 +894,7 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(
-          binaryMessenger,
-          "dev.flutter.pigeon.CameraInterface.setFilter",
-          codec
-        )
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setFilter", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             var wrapped = listOf<Any?>()

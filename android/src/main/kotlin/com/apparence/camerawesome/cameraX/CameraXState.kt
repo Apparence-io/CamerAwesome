@@ -44,6 +44,7 @@ data class CameraXState(
     var rational: Rational = Rational(3, 4),
     var flashMode: FlashMode = FlashMode.NONE,
     val onStreamReady: (state: CameraXState) -> Unit,
+    var mirrorFrontCamera: Boolean = false,
 ) : EventChannel.StreamHandler, SensorOrientation {
 
     var imageAnalysisBuilder: ImageAnalysisBuilder? = null
