@@ -613,13 +613,22 @@ class CameraInterface {
     }
   }
 
-  Future<void> focusOnPoint(
-      PreviewSize arg_previewSize, double arg_x, double arg_y) async {
+  /// Starts auto focus on a point at ([x], [y]).
+  /// The auto focus will be canceled after the given [autoCancelDurationInMillis].
+  /// If [autoCancelDurationInMillis] is equals to 0 (or less), the auto focus
+  /// will **not** be canceled. A manual `focusOnPoint` call will be needed to
+  /// focus on an other point.
+  Future<void> focusOnPoint(PreviewSize arg_previewSize, double arg_x,
+      double arg_y, int arg_autoCancelDurationInMillis) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.focusOnPoint', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-        .send(<Object?>[arg_previewSize, arg_x, arg_y]) as List<Object?>?;
+    final List<Object?>? replyList = await channel.send(<Object?>[
+      arg_previewSize,
+      arg_x,
+      arg_y,
+      arg_autoCancelDurationInMillis
+    ]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

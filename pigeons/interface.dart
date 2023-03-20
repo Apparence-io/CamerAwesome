@@ -177,7 +177,17 @@ abstract class CameraInterface {
 
   void handleAutoFocus();
 
-  void focusOnPoint(PreviewSize previewSize, double x, double y);
+  /// Starts auto focus on a point at ([x], [y]).
+  /// The auto focus will be canceled after the given [autoCancelDurationInMillis].
+  /// If [autoCancelDurationInMillis] is equals to 0 (or less), the auto focus
+  /// will **not** be canceled. A manual `focusOnPoint` call will be needed to
+  /// focus on an other point.
+  void focusOnPoint(
+    PreviewSize previewSize,
+    double x,
+    double y,
+    int autoCancelDurationInMillis,
+  );
 
   void setZoom(double zoom);
 

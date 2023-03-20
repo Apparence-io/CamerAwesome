@@ -256,7 +256,15 @@ interface CameraInterface {
   fun stop(): Boolean
   fun setFlashMode(mode: String)
   fun handleAutoFocus()
-  fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double)
+
+  /**
+   * Starts auto focus on a point at ([x], [y]).
+   * The auto focus will be canceled after the given [autoCancelDurationInMillis].
+   * If [autoCancelDurationInMillis] is equals to 0 (or less), the auto focus
+   * will **not** be canceled. A manual `focusOnPoint` call will be needed to
+   * focus on an other point.
+   */
+  fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, autoCancelDurationInMillis: Long)
   fun setZoom(zoom: Double)
   fun setSensor(sensor: String, deviceId: String?)
   fun setCorrection(brightness: Double)
@@ -663,7 +671,9 @@ interface CameraInterface {
               val previewSizeArg = args[0] as PreviewSize
               val xArg = args[1] as Double
               val yArg = args[2] as Double
-              api.focusOnPoint(previewSizeArg, xArg, yArg)
+              val autoCancelDurationInMillisArg =
+                args[3].let { if (it is Int) it.toLong() else it as Long }
+              api.focusOnPoint(previewSizeArg, xArg, yArg, autoCancelDurationInMillisArg)
               wrapped = listOf<Any?>(null)
             } catch (exception: Error) {
               wrapped = wrapError(exception)

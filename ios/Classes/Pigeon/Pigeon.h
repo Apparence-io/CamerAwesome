@@ -110,7 +110,12 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 - (nullable NSNumber *)stopWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setFlashModeMode:(NSString *)mode error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)handleAutoFocusWithError:(FlutterError *_Nullable *_Nonnull)error;
-- (void)focusOnPointPreviewSize:(PreviewSize *)previewSize x:(NSNumber *)x y:(NSNumber *)y error:(FlutterError *_Nullable *_Nonnull)error;
+/// Starts auto focus on a point at ([x], [y]).
+/// The auto focus will be canceled after the given [autoCancelDurationInMillis].
+/// If [autoCancelDurationInMillis] is equals to 0 (or less), the auto focus
+/// will **not** be canceled. A manual `focusOnPoint` call will be needed to
+/// focus on an other point.
+- (void)focusOnPointPreviewSize:(PreviewSize *)previewSize x:(NSNumber *)x y:(NSNumber *)y autoCancelDurationInMillis:(NSNumber *)autoCancelDurationInMillis error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setZoomZoom:(NSNumber *)zoom error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setSensorSensor:(NSString *)sensor deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCorrectionBrightness:(NSNumber *)brightness error:(FlutterError *_Nullable *_Nonnull)error;

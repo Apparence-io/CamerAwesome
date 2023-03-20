@@ -539,7 +539,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    override fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double) {
+    override fun focusOnPoint(
+        previewSize: PreviewSize,
+        x: Double,
+        y: Double,
+        autoCancelDurationInMillis: Long
+    ) {
         val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
             previewSize.width.toFloat(), previewSize.height.toFloat(),
         )
@@ -547,10 +552,14 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         try {
             cameraState.previewCamera!!.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(
-                    autoFocusPoint, FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE
+                    autoFocusPoint,
+                    FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE or FocusMeteringAction.FLAG_AWB
                 ).apply {
-                    //focus only when the user tap the preview
-                    disableAutoCancel()
+                    if (autoCancelDurationInMillis <= 0) {
+                        disableAutoCancel()
+                    } else {
+                        setAutoCancelDuration(autoCancelDurationInMillis, TimeUnit.MILLISECONDS)
+                    }
                 }.build()
             )
         } catch (e: CameraInfoUnavailableException) {
