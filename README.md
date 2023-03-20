@@ -54,22 +54,23 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                         | Android  |  iOS   |
-| :----------------------------- | :------: | :----: |
-| 🔖 Ask permissions             |    ✅    |   ✅   |
-| 🎥 Record video                |    ✅    |   ✅   |
-| 🔈 Enable/disable audio        |    ✅    |   ✅   |
-| 🎞 Take photos                 |    ✅    |   ✅   |
-| 🌆 Photo live filters          |    ✅    |   ✅   |
-| 🌤 Exposure level              |    ✅    |   ✅   |
-| 📡 Broadcast live image stream |    ✅    |   ✅   |
-| 👁 Zoom                        |    ✅    |   ✅   |
-| 📸 Device flash support        |    ✅    |   ✅   |
-| ⌛️ Auto focus                  |    ✅    |   ✅   |
-| 📲 Live switching camera       |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream      |    ✅    |   ✅   |
-| 🤐 Background auto stop        |    ✅    |   ✅   |
-| 🔀 Sensor type switching       |    ⛔️    |   ✅   |
+| System                                  | Android |  iOS  |
+| :-------------------------------------- | :-----: | :---: |
+| 🔖 Ask permissions                       |    ✅    |   ✅   |
+| 🎥 Record video                          |    ✅    |   ✅   |
+| 🔈 Enable/disable audio                  |    ✅    |   ✅   |
+| 🎞 Take photos                           |    ✅    |   ✅   |
+| 🌆 Photo live filters                    |    ✅    |   ✅   |
+| 🌤 Exposure level                        |    ✅    |   ✅   |
+| 📡 Broadcast live image stream           |    ✅    |   ✅   |
+| 👁 Zoom                                  |    ✅    |   ✅   |
+| 📸 Device flash support                  |    ✅    |   ✅   |
+| ⌛️ Auto focus                            |    ✅    |   ✅   |
+| 📲 Live switching camera                 |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream               |    ✅    |   ✅   |
+| 🤐 Background auto stop                  |    ✅    |   ✅   |
+| 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
+| 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
 
 ---
 
@@ -323,12 +324,12 @@ Through state you can access to a `SensorConfig` class.
 
 <br>
 
-| Function              | Comment                                                    |
-| --------------------- | ---------------------------------------------------------- |
-| setZoom               | changing zoom                                              |
-| setFlashMode          | changing flash between NONE,ON,AUTO,ALWAYS                 |
-| setBrightness         | change brightness level manually (better to let this auto) |
-| setMirrorFrontCamera  | set mirroring for front camera |
+| Function             | Comment                                                    |
+| -------------------- | ---------------------------------------------------------- |
+| setZoom              | changing zoom                                              |
+| setFlashMode         | changing flash between NONE,ON,AUTO,ALWAYS                 |
+| setBrightness        | change brightness level manually (better to let this auto) |
+| setMirrorFrontCamera | set mirroring for front camera                             |
 
 All of this configurations are listenable through a stream so your UI can automatically get updated
 according to the actual configuration.
