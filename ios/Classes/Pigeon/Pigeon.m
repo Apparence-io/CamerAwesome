@@ -247,17 +247,18 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setupCameraSensor:aspectRatio:zoom:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensor:aspectRatio:zoom:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(setupCameraSensor:aspectRatio:zoom:mirrorFrontCamera:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensor:aspectRatio:zoom:mirrorFrontCamera:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
         NSString *arg_aspectRatio = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_zoom = GetNullableObjectAtIndex(args, 2);
-        NSString *arg_flashMode = GetNullableObjectAtIndex(args, 3);
-        NSString *arg_captureMode = GetNullableObjectAtIndex(args, 4);
-        NSNumber *arg_enableImageStream = GetNullableObjectAtIndex(args, 5);
-        ExifPreferences *arg_exifPreferences = GetNullableObjectAtIndex(args, 6);
-        [api setupCameraSensor:arg_sensor aspectRatio:arg_aspectRatio zoom:arg_zoom flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        NSNumber *arg_mirrorFrontCamera = GetNullableObjectAtIndex(args, 3);
+        NSString *arg_flashMode = GetNullableObjectAtIndex(args, 4);
+        NSString *arg_captureMode = GetNullableObjectAtIndex(args, 5);
+        NSNumber *arg_enableImageStream = GetNullableObjectAtIndex(args, 6);
+        ExifPreferences *arg_exifPreferences = GetNullableObjectAtIndex(args, 7);
+        [api setupCameraSensor:arg_sensor aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
@@ -582,6 +583,26 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         NSNumber *arg_zoom = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
         [api setZoomZoom:arg_zoom error:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.CameraInterface.setMirrorFrontCamera"
+        binaryMessenger:binaryMessenger
+        codec:CameraInterfaceGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setMirrorFrontCameraMirror:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setMirrorFrontCameraMirror:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_mirror = GetNullableObjectAtIndex(args, 0);
+        FlutterError *error;
+        [api setMirrorFrontCameraMirror:arg_mirror error:&error];
         callback(wrapResult(nil, error));
       }];
     }

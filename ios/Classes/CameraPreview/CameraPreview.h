@@ -48,6 +48,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) bool saveGPSLocation;
+@property(readonly, nonatomic) bool mirrorFrontCamera;
 @property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
@@ -59,6 +60,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
+                   mirrorFrontCamera:(BOOL)mirrorFrontCamera
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                        dispatchQueue:(dispatch_queue_t)dispatchQueue;
@@ -85,6 +87,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
 - (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
 - (void)setUpCaptureSessionForAudioError:(nonnull void (^)(NSError *))error;

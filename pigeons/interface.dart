@@ -134,6 +134,7 @@ abstract class CameraInterface {
     String sensor,
     String aspectRatio,
     double zoom,
+    bool mirrorFrontCamera,
     String flashMode,
     String captureMode,
     bool enableImageStream,
@@ -180,6 +181,8 @@ abstract class CameraInterface {
   void focusOnPoint(PreviewSize previewSize, double x, double y);
 
   void setZoom(double zoom);
+
+  void setMirrorFrontCamera(bool mirror);
 
   void setSensor(String sensor, String? deviceId);
 

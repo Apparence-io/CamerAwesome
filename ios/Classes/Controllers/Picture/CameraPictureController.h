@@ -21,6 +21,7 @@ typedef void(^OnPictureTaken)(void);
 @interface CameraPictureController : NSObject <AVCapturePhotoCaptureDelegate>
 @property(readonly, nonatomic) NSString *path;
 @property(readonly, nonatomic) bool saveGPSLocation;
+@property(readonly, nonatomic) bool mirrorFrontCamera;
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
 @property(readonly, nonatomic) CameraSensor sensor;
 @property(readonly, nonatomic) float aspectRatio;
@@ -34,6 +35,7 @@ typedef void(^OnPictureTaken)(void);
                  orientation:(NSInteger)orientation
                       sensor:(CameraSensor)sensor
              saveGPSLocation:(bool)saveGPSLocation
+           mirrorFrontCamera:(bool)mirrorFrontCamera
                  aspectRatio:(AspectRatio)aspectRatio
                   completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                     callback:(OnPictureTaken)callback;

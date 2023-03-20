@@ -156,6 +156,7 @@ class CamerawesomePlugin {
           sensorConfig.sensor.name.toUpperCase(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
+          sensorConfig.mirrorFrontCamera,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),
           enableImageStream,
@@ -435,5 +436,9 @@ class CamerawesomePlugin {
 
   static Future<void> setFilter(AwesomeFilter filter) {
     return CameraInterface().setFilter(filter.matrix);
+  }
+
+  static Future<void> setMirrorFrontCamera(bool mirrorFrontCamera) {
+    return CameraInterface().setMirrorFrontCamera(mirrorFrontCamera);
   }
 }
