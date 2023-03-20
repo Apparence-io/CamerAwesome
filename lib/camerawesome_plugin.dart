@@ -9,13 +9,13 @@ import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
+export 'src/orchestrator/analysis/analysis_controller.dart';
+export 'src/orchestrator/models/models.dart';
+export 'src/orchestrator/states/states.dart';
 export 'src/widgets/camera_awesome_builder.dart';
 
 // built in widgets
 export 'src/widgets/widgets.dart';
-export 'src/orchestrator/models/models.dart';
-export 'src/orchestrator/states/states.dart';
-export 'src/orchestrator/analysis/analysis_controller.dart';
 
 // ignore: public_member_api_docs
 enum CameraRunningState { starting, started, stopping, stopped }
@@ -123,10 +123,7 @@ class CamerawesomePlugin {
     required bool autoStart,
   }) async {
     return CameraInterface().setupImageAnalysisStream(
-      format.name,
-      width,
-      maxFramesPerSecond,
-        autoStart);
+        format.name, width, maxFramesPerSecond, autoStart);
   }
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
@@ -254,10 +251,25 @@ class CamerawesomePlugin {
     return CameraInterface().handleAutoFocus();
   }
 
-  static Future<void> focusOnPoint(
-      {required PreviewSize previewSize, required Offset position}) {
-    return CameraInterface()
-        .focusOnPoint(previewSize, position.dx, position.dy);
+  /// Start auto focus on a specific [position] with a given [previewSize].
+  ///
+  /// [autoCancelDurationInMillis] is the time in milliseconds after which the
+  /// auto focus will be canceled. Passive focus will resume after that duration.
+  ///
+  /// If [autoCancelDurationInMillis] <= 0, auto focus is never cancelled and
+  /// passive focus will not resume. After this, if you want to focus on an other
+  /// point, you'll have to call again [focusOnPoint].
+  static Future<void> focusOnPoint({
+    required PreviewSize previewSize,
+    required Offset position,
+    required int autoCancelDurationInMillis,
+  }) {
+    return CameraInterface().focusOnPoint(
+      previewSize,
+      position.dx,
+      position.dy,
+      autoCancelDurationInMillis,
+    );
   }
 
   /// calls zoom from Android / iOS --

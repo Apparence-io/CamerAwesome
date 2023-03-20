@@ -156,10 +156,20 @@ class CameraContext {
     CamerawesomePlugin.startAutoFocus();
   }
 
+  /// Start auto focus on a specific [flutterPosition].
+  /// [pixelPreviewSize] can be retrieved from [].
+  /// [flutterPreviewSize] is the size of the preview widget.
+  /// [autoCancelDurationInMillis] is the time in milliseconds after which the
+  /// auto focus will be canceled. Passive focus will resume after that duration.
+  ///
+  /// If [autoCancelDurationInMillis] <= 0, auto focus is never cancelled and
+  /// passive focus will not resume. After this, if you want to focus on an other
+  /// point, you'll have to call again [focusOnPoint].
   Future<void> focusOnPoint({
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
+    int autoCancelDurationInMillis = 1000,
   }) async {
     if (Platform.isIOS) {
       final xPercentage = flutterPosition.dx / flutterPreviewSize.width;
@@ -168,13 +178,17 @@ class CameraContext {
       return CamerawesomePlugin.focusOnPoint(
         position: Offset(xPercentage, yPercentage),
         previewSize: pixelPreviewSize,
+        autoCancelDurationInMillis: autoCancelDurationInMillis,
       );
     } else {
       final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
       // Transform flutter position to pixel position
       Offset pixelPosition = flutterPosition.scale(ratio, ratio);
       return CamerawesomePlugin.focusOnPoint(
-          position: pixelPosition, previewSize: pixelPreviewSize);
+        position: pixelPosition,
+        previewSize: pixelPreviewSize,
+        autoCancelDurationInMillis: autoCancelDurationInMillis,
+      );
     }
   }
 

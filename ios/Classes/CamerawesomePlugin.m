@@ -99,7 +99,7 @@ FlutterEventSink imageStreamEventSink;
   return permissions;
 }
 
-- (void)focusOnPointPreviewSize:(nonnull PreviewSize *)previewSize x:(nonnull NSNumber *)x y:(nonnull NSNumber *)y error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)focusOnPointPreviewSize:(nonnull PreviewSize *)previewSize x:(nonnull NSNumber *)x y:(nonnull NSNumber *)y autoCancelDurationInMillis:(nonnull NSNumber *)autoCancelDurationInMillis error:(FlutterError *_Nullable __autoreleasing *_Nonnull)error {
   if (previewSize.width <= 0 || previewSize.height <= 0) {
     *error = [FlutterError errorWithCode:@"INVALID_PREVIEW" message:@"preview size width and height must be set" details:nil];
     return;

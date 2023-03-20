@@ -548,21 +548,27 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       [channel setMessageHandler:nil];
     }
   }
-  {
+    /// Starts auto focus on a point at ([x], [y]).
+  /// The auto focus will be canceled after the given [autoCancelDurationInMillis].
+  /// If [autoCancelDurationInMillis] is equals to 0 (or less), the auto focus
+  /// will **not** be canceled. A manual `focusOnPoint` call will be needed to
+  /// focus on an other point.
+{
     FlutterBasicMessageChannel *channel =
       [[FlutterBasicMessageChannel alloc]
         initWithName:@"dev.flutter.pigeon.CameraInterface.focusOnPoint"
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(focusOnPointPreviewSize:x:y:error:)], @"CameraInterface api (%@) doesn't respond to @selector(focusOnPointPreviewSize:x:y:error:)", api);
+      NSCAssert([api respondsToSelector:@selector(focusOnPointPreviewSize:x:y:autoCancelDurationInMillis:error:)], @"CameraInterface api (%@) doesn't respond to @selector(focusOnPointPreviewSize:x:y:autoCancelDurationInMillis:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         PreviewSize *arg_previewSize = GetNullableObjectAtIndex(args, 0);
         NSNumber *arg_x = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_y = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_autoCancelDurationInMillis = GetNullableObjectAtIndex(args, 3);
         FlutterError *error;
-        [api focusOnPointPreviewSize:arg_previewSize x:arg_x y:arg_y error:&error];
+        [api focusOnPointPreviewSize:arg_previewSize x:arg_x y:arg_y autoCancelDurationInMillis:arg_autoCancelDurationInMillis error:&error];
         callback(wrapResult(nil, error));
       }];
     }
