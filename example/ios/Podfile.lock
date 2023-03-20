@@ -4,6 +4,7 @@ PODS:
     - Flutter
   - camerawesome (0.0.1):
     - Flutter
+    - JPSVolumeButtonHandler
   - CGRPCZlib (1.8.0)
   - CNIOAtomics (2.40.0)
   - CNIOBoringSSL (2.19.0)
@@ -76,6 +77,7 @@ PODS:
   - GTMSessionFetcher/Core (1.7.2)
   - integration_test (0.0.1):
     - Flutter
+  - JPSVolumeButtonHandler (1.0.5)
   - Logging (1.4.0)
   - MLImage (1.0.0-beta3)
   - MLKitBarcodeScanning (2.2.0):
@@ -285,6 +287,7 @@ SPEC REPOS:
     - GoogleUtilitiesComponents
     - gRPC-Swift
     - GTMSessionFetcher
+    - JPSVolumeButtonHandler
     - Logging
     - MLImage
     - MLKitBarcodeScanning
@@ -338,7 +341,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   _NIODataStructures: 3d45d8e70a1d17a15b1dc59d102c63dbc0525ffd
   better_open_file: 03cf320415d4d3f46b6e00adc4a567d76c1a399d
-  camerawesome: 0f8628efae993cb064ec4f36322e89c237e1064f
+  camerawesome: 1e06540f60158809bc70f398ed1ac2cf93fe4188
   CGRPCZlib: 298dd3237ba4bd7b3eed109e7080ff3324b7d9c9
   CNIOAtomics: 8edf08644e5e6fa0f021c239be9e8beb1cd9ef18
   CNIOBoringSSL: 2c9c96c2e95f15e83fb8d26b9738d939cc39ae33
@@ -360,6 +363,7 @@ SPEC CHECKSUMS:
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
   GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba
   integration_test: a1e7d09bd98eca2fc37aefd79d4f41ad37bdbbe5
+  JPSVolumeButtonHandler: 53110330c9168ed325def93eabff39f0fe3e8082
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   MLImage: 489dfec109f21da8621b28d476401aaf7a0d4ff4
   MLKitBarcodeScanning: d92fe1911001ec36870162c5a0eb206f612b7169
