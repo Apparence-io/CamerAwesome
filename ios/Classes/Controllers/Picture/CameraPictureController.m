@@ -17,6 +17,7 @@
                  orientation:(NSInteger)orientation
                       sensor:(CameraSensor)sensor
              saveGPSLocation:(bool)saveGPSLocation
+           mirrorFrontCamera:(bool)mirrorFrontCamera
                  aspectRatio:(AspectRatio)aspectRatio
                   completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                     callback:(OnPictureTaken)callback {
@@ -29,6 +30,7 @@
   _sensor = sensor;
   _saveGPSLocation = saveGPSLocation;
   _aspectRatioType = aspectRatio;
+  _mirrorFrontCamera = mirrorFrontCamera;
   
   if (aspectRatio == Ratio4_3) {
     _aspectRatio = 4.0/3.0;
@@ -180,7 +182,11 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
 - (UIImageOrientation)getJpegOrientation {
   switch (_orientation) {
     case UIDeviceOrientationPortrait:
-      return (_sensor == Back) ? UIImageOrientationRight : UIImageOrientationLeftMirrored;
+      if (_sensor == Front && _mirrorFrontCamera) {
+        return UIImageOrientationLeftMirrored;
+      } else {
+        return UIImageOrientationRight;
+      }
     case UIDeviceOrientationLandscapeRight:
       return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
     case UIDeviceOrientationLandscapeLeft:

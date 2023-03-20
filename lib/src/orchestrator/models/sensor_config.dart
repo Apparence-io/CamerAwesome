@@ -11,9 +11,11 @@ class SensorConfig {
 
   late BehaviorSubject<SensorType> _sensorTypeController;
 
+  late BehaviorSubject<bool> _mirrorFrontCameraController;
+
   late Stream<FlashMode> flashMode$;
 
-  late Stream<AwesomeFilter> filter$;
+  late Stream<bool> mirrorFrontCamera$;
 
   late Stream<SensorType> sensorType$;
 
@@ -45,6 +47,7 @@ class SensorConfig {
   SensorConfig({
     required this.sensor,
     FlashMode flash = FlashMode.none,
+    bool mirrorFrontCamera = false,
     SensorType type = SensorType.wideAngle,
     this.captureDeviceId,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
@@ -54,6 +57,9 @@ class SensorConfig {
   }) {
     _flashModeController = BehaviorSubject<FlashMode>.seeded(flash);
     flashMode$ = _flashModeController.stream;
+
+    _mirrorFrontCameraController = BehaviorSubject<bool>.seeded(mirrorFrontCamera);
+    mirrorFrontCamera$ = _mirrorFrontCameraController.stream;
 
     _sensorTypeController = BehaviorSubject<SensorType>.seeded(type);
     sensorType$ = _sensorTypeController.stream;
@@ -80,6 +86,9 @@ class SensorConfig {
   /// Returns the current zoom without stream
   double get zoom => _zoomController.value;
 
+  /// Return the current mirrorFrontCamera without stream
+  bool get mirrorFrontCamera => _mirrorFrontCameraController.value;
+
   /// Set manually the [FlashMode] between
   /// [FlashMode.none] no flash
   /// [FlashMode.on] always flashing when taking photo
@@ -88,6 +97,12 @@ class SensorConfig {
   Future<void> setFlashMode(FlashMode flashMode) async {
     await CamerawesomePlugin.setFlashMode(flashMode);
     _flashModeController.sink.add(flashMode);
+  }
+  
+  /// Set mirroring front camera (for selfie for ex.)
+  Future<void> setMirrorFrontCamera(bool mirrorFrontCamera) async {
+    await CamerawesomePlugin.setMirrorFrontCamera(mirrorFrontCamera);
+    _mirrorFrontCameraController.sink.add(mirrorFrontCamera);
   }
 
   /// Returns the current flash mode without stream
@@ -160,6 +175,7 @@ class SensorConfig {
     _brightnessController.close();
     _sensorTypeController.close();
     _zoomController.close();
+    _mirrorFrontCameraController.close();
     _flashModeController.close();
     _aspectRatioController.close();
   }

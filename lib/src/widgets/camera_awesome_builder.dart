@@ -50,6 +50,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   final FlashMode flashMode;
 
+  final bool mirrorFrontCamera;
+
   /// Must be a value between 0.0 (no zoom) and 1.0 (max zoom)
   final double zoom;
 
@@ -112,6 +114,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.sensor,
     required this.flashMode,
     required this.zoom,
+    required this.mirrorFrontCamera,
     required this.aspectRatio,
     required this.exifPreferences,
     required this.enableAudio,
@@ -159,6 +162,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
+    bool mirrorFrontCamera = false,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
@@ -182,6 +186,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
+          mirrorFrontCamera: mirrorFrontCamera,
           aspectRatio: aspectRatio,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
@@ -216,6 +221,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Sensors sensor = Sensors.back,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
+    bool mirrorFrontCamera = false,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
@@ -235,6 +241,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
+          mirrorFrontCamera: mirrorFrontCamera,
           aspectRatio: aspectRatio,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
@@ -308,6 +315,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         sensor: widget.sensor,
         flash: widget.flashMode,
         currentZoom: widget.zoom,
+        mirrorFrontCamera: widget.mirrorFrontCamera,
         aspectRatio: widget.aspectRatio,
       ),
       filter: widget.filter ?? AwesomeFilter.None,

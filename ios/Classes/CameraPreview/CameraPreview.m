@@ -13,6 +13,7 @@
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
+                   mirrorFrontCamera:(BOOL)mirrorFrontCamera
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                        dispatchQueue:(dispatch_queue_t)dispatchQueue {
@@ -31,6 +32,7 @@
   
   _cameraSensor = sensor;
   _aspectRatio = Ratio4_3;
+  _mirrorFrontCamera = mirrorFrontCamera;
   
   [self initCameraPreview:sensor];
   
@@ -253,6 +255,10 @@
   }
 }
 
+- (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  _mirrorFrontCamera = value;
+}
+
 /// Set flash mode
 - (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (![_captureDevice hasFlash]) {
@@ -409,6 +415,7 @@
                                                                              orientation:_motionController.deviceOrientation
                                                                                   sensor:_cameraSensor
                                                                          saveGPSLocation:_saveGPSLocation
+                                                                       mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio
                                                                               completion:completion
                                                                                 callback:^{

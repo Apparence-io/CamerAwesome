@@ -102,6 +102,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         sensor: String,
         aspectRatio: String,
         zoom: Double,
+        mirrorFrontCamera: Boolean,
         flashMode: String,
         captureMode: String,
         enableImageStream: Boolean,
@@ -121,6 +122,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             textureEntry!!,
             cameraProvider = cameraProvider,
             cameraSelector = cameraSelector,
+            mirrorFrontCamera = mirrorFrontCamera,
             currentCaptureMode = CaptureModes.valueOf(captureMode),
             enableImageStream = enableImageStream,
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
@@ -292,8 +294,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private fun takePhotoWith(
         imageFile: File, callback: (Boolean) -> Unit
     ) {
+        val metadata = ImageCapture.Metadata()
+        if (cameraState.cameraSelector.lensFacing == CameraSelector.LENS_FACING_FRONT) {
+            metadata.isReversedHorizontal = cameraState.mirrorFrontCamera
+        }
         val outputFileOptions =
-            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(ImageCapture.Metadata())
+            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata)
                 .build()
 
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
@@ -637,6 +643,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     override fun setAspectRatio(aspectRatio: String) {
         cameraState.apply {
             this.updateAspectRatio(aspectRatio)
+            updateLifecycle(activity!!)
+        }
+    }
+
+    override fun setMirrorFrontCamera(mirrorFrontCamera: Boolean) {
+        cameraState.apply {
+            this.mirrorFrontCamera = mirrorFrontCamera
             updateLifecycle(activity!!)
         }
     }
