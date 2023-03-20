@@ -5,6 +5,7 @@
 - Ability to set camera preview alignment and padding
 - Ability to set aspect ratio, zoom, flash mode and SensorType when switching between front and back
   camera
+- Enable/disable front camera mirroring
 - Upgrade `image` dependency
 - Fix aspect ratio changes animation
 - Smoother flash mode changes (Android)

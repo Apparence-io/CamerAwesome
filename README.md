@@ -79,7 +79,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ```yaml
 dependencies:
-  camerawesome: ^1.2.0
+  camerawesome: ^1.3.0
   ...
 ```
 
