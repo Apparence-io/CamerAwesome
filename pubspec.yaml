@@ -16,15 +16,15 @@ dependencies:
   colorfilter_generator: ^0.0.8
   flutter:
     sdk: flutter
-  image: ^4.0.13
-  # photofilters:
-    # git: https://github.com/svenopdehipt/photofilters.git
+  image: ^4.0.15
+    # photofilters:
+  # git: https://github.com/svenopdehipt/photofilters.git
   rxdart: ^0.27.7
 dev_dependencies:
   flutter_lints: ^2.0.1
   flutter_test:
     sdk: flutter
-  pigeon: ^7.0.0
+  pigeon: ^9.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

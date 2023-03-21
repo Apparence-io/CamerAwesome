@@ -157,19 +157,17 @@ class CameraContext {
   }
 
   /// Start auto focus on a specific [flutterPosition].
-  /// [pixelPreviewSize] can be retrieved from [].
-  /// [flutterPreviewSize] is the size of the preview widget.
-  /// [autoCancelDurationInMillis] is the time in milliseconds after which the
-  /// auto focus will be canceled. Passive focus will resume after that duration.
+  /// [pixelPreviewSize] can be retrieved from [CameraState.previewSize].
+  /// [flutterPreviewSize] is the size of the preview widget. You can retrieve
+  /// it from the builders of [CameraAwesomeBuilder].
   ///
-  /// If [autoCancelDurationInMillis] <= 0, auto focus is never cancelled and
-  /// passive focus will not resume. After this, if you want to focus on an other
-  /// point, you'll have to call again [focusOnPoint].
+  /// Use [androidFocusSettings] for additional Android focus settings (auto
+  /// focus timeout before going back to passive mode).
   Future<void> focusOnPoint({
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
-    int autoCancelDurationInMillis = 1000,
+    AndroidFocusSettings? androidFocusSettings,
   }) async {
     if (Platform.isIOS) {
       final xPercentage = flutterPosition.dx / flutterPreviewSize.width;
@@ -178,7 +176,7 @@ class CameraContext {
       return CamerawesomePlugin.focusOnPoint(
         position: Offset(xPercentage, yPercentage),
         previewSize: pixelPreviewSize,
-        autoCancelDurationInMillis: autoCancelDurationInMillis,
+        androidFocusSettings: null,
       );
     } else {
       final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
@@ -187,7 +185,8 @@ class CameraContext {
       return CamerawesomePlugin.focusOnPoint(
         position: pixelPosition,
         previewSize: pixelPreviewSize,
-        autoCancelDurationInMillis: autoCancelDurationInMillis,
+        androidFocusSettings: androidFocusSettings ??
+            AndroidFocusSettings(autoCancelDurationInMillis: 5000),
       );
     }
   }
