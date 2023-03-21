@@ -4,11 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.Paint
+import android.graphics.*
 import android.location.Location
 import android.os.CountDownTimer
 import android.os.Handler
@@ -106,7 +102,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         captureMode: String,
         enableImageStream: Boolean,
         exifPreferences: ExifPreferences,
-        callback: (Boolean) -> Unit,
+        callback: (Result<Boolean>) -> Unit,
     ) {
         val future = ProcessCameraProvider.getInstance(
             activity!!
@@ -140,7 +136,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             }, 200)
         }
 
-        callback(true)
+        callback(Result.success(true))
     }
 
     override fun checkPermissions(): List<String> {
@@ -172,7 +168,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     }
 
-    override fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Boolean) -> Unit) {
+    override fun setExifPreferences(
+        exifPreferences: ExifPreferences,
+        callback: (Result<Boolean>) -> Unit
+    ) {
         if (exifPreferences.saveGPSLocation) {
             val permissions = listOf(
                 Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION
@@ -180,7 +179,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             CoroutineScope(Dispatchers.Main).launch {
                 if (cameraPermissions.hasPermission(activity!!, permissions)) {
                     this@CameraAwesomeX.exifPreferences = exifPreferences
-                    callback(true)
+                    callback(Result.success(true))
                 } else {
                     cameraPermissions.requestPermissions(
                         activity!!,
@@ -190,13 +189,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         if (grantedPermissions.isNotEmpty()) {
                             this@CameraAwesomeX.exifPreferences = exifPreferences
                         }
-                        callback(grantedPermissions.isNotEmpty())
+                        callback(Result.success(grantedPermissions.isNotEmpty()))
                     }
                 }
             }
         } else {
             this.exifPreferences = exifPreferences
-            callback(true)
+            callback(Result.success(true))
         }
     }
 
@@ -219,7 +218,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun requestPermissions(
-        saveGpsLocation: Boolean, callback: (List<String>) -> Unit
+        saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit
     ) {
         // On a generic call, don't ask for specific permissions (location, record audio)
         cameraPermissions.requestBasePermissions(
@@ -227,7 +226,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             saveGps = saveGpsLocation,
             recordAudio = false,
         ) { grantedPermissions ->
-            callback(grantedPermissions.mapNotNull {
+            callback(Result.success(grantedPermissions.mapNotNull {
                 when (it) {
                     Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION -> CamerAwesomePermission.LOCATION.name.lowercase()
                     Manifest.permission.CAMERA -> CamerAwesomePermission.CAMERA.name.lowercase()
@@ -235,7 +234,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE -> CamerAwesomePermission.STORAGE.name.lowercase()
                     else -> null
                 }
-            })
+            }))
         }
     }
 
@@ -280,17 +279,16 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    override fun takePhoto(path: String, callback: (Boolean) -> Unit) {
+    override fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit) {
         val imageFile = File(path)
         imageFile.parentFile?.mkdirs()
 
         takePhotoWith(imageFile, callback)
-
     }
 
     @SuppressLint("RestrictedApi")
     private fun takePhotoWith(
-        imageFile: File, callback: (Boolean) -> Unit
+        imageFile: File, callback: (Result<Boolean>) -> Unit
     ) {
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(ImageCapture.Metadata())
@@ -341,22 +339,26 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                             exif.setGpsInfo(it)
                             // We need to actually save the exif data to the file system
                             exif.saveAttributes()
-                            callback(true)
+                            callback(Result.success(true))
                         }
                     } else {
-                        callback(true)
+                        callback(Result.success(true))
                     }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
                     Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
-                    callback(false)
+                    callback(Result.success(false))
                 }
             })
     }
 
     @SuppressLint("RestrictedApi", "MissingPermission")
-    override fun recordVideo(path: String, options: VideoOptions?, callback: () -> Unit) {
+    override fun recordVideo(
+        path: String,
+        options: VideoOptions?,
+        callback: (Result<Unit>) -> Unit
+    ) {
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
             if (cameraState.enableAudioRecording) {
@@ -413,18 +415,18 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 activity!!, FileOutputOptions.Builder(File(path)).build()
             ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
                 .start(cameraState.executor(activity!!), recordingListener)
-            callback()
+            callback(Result.success(Unit))
         }
     }
 
-    override fun stopRecordingVideo(callback: (Boolean) -> Unit) {
+    override fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit) {
         var submitted = false
         val countDownTimer = object : CountDownTimer(5000, 5000) {
             override fun onTick(interval: Long) {}
             override fun onFinish() {
                 if (!submitted) {
                     submitted = true
-                    callback(false)
+                    callback(Result.success(false))
                 }
             }
         }
@@ -434,7 +436,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             countDownTimer.cancel()
             if (!submitted) {
                 submitted = true
-                callback(it)
+                callback(Result.success(it))
             }
         }
     }
@@ -539,15 +541,19 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun focusOnPoint(
         previewSize: PreviewSize,
         x: Double,
         y: Double,
-        autoCancelDurationInMillis: Long
+        androidFocusSettings: AndroidFocusSettings?,
     ) {
+        ♻️
+        val autoCancelDurationInMillis = androidFocusSettings?.autoCancelDurationInMillis ?: 2500L
         val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
             previewSize.width.toFloat(), previewSize.height.toFloat(),
         )
+
         val autoFocusPoint = factory.createPoint(x.toFloat(), y.toFloat())
         try {
             cameraState.previewCamera!!.cameraControl.startFocusAndMetering(
@@ -576,7 +582,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     /// Changing the recording audio mode can't be changed once a recording has starded
-    override fun setRecordingAudioMode(enableAudio: Boolean, callback: (Boolean) -> Unit) {
+    override fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             cameraPermissions.requestPermissions(
                 activity!!,
@@ -589,7 +595,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         // No need to update lifecycle, it will be applied on next recording
                     }
                 }
-                Dispatchers.Main.run { callback(granted.isNotEmpty()) }
+                Dispatchers.Main.run { callback(Result.success(granted.isNotEmpty())) }
             }
         }
     }

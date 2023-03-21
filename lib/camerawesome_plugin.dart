@@ -252,22 +252,24 @@ class CamerawesomePlugin {
 
   /// Start auto focus on a specific [position] with a given [previewSize].
   ///
-  /// [autoCancelDurationInMillis] is the time in milliseconds after which the
-  /// auto focus will be canceled. Passive focus will resume after that duration.
+  /// On Android, you can set [androidFocusSettings].
+  /// It contains a parameter [AndroidFocusSettings.autoCancelDurationInMillis].
+  /// It is the time in milliseconds after which the auto focus will be canceled.
+  /// Passive focus will resume after that duration.
   ///
-  /// If [autoCancelDurationInMillis] <= 0, auto focus is never cancelled and
-  /// passive focus will not resume. After this, if you want to focus on an other
-  /// point, you'll have to call again [focusOnPoint].
+  /// If that duration is equals to or less than 0, auto focus is never
+  /// cancelled and passive focus will not resume. After this, if you want to
+  /// focus on an other point, you'll have to call again [focusOnPoint].
   static Future<void> focusOnPoint({
     required PreviewSize previewSize,
     required Offset position,
-    required int autoCancelDurationInMillis,
+    required AndroidFocusSettings? androidFocusSettings,
   }) {
     return CameraInterface().focusOnPoint(
       previewSize,
       position.dx,
       position.dy,
-      autoCancelDurationInMillis,
+      androidFocusSettings,
     );
   }
 
