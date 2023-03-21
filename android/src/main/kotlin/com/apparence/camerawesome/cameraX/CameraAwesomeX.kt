@@ -554,7 +554,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         y: Double,
         androidFocusSettings: AndroidFocusSettings?,
     ) {
-        ♻️
         val autoCancelDurationInMillis = androidFocusSettings?.autoCancelDurationInMillis ?: 2500L
         val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
             previewSize.width.toFloat(), previewSize.height.toFloat(),
