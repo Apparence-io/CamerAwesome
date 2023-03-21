@@ -615,8 +615,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         [api setMirrorFrontCameraMirror:arg_mirror error:&error];
         callback(wrapResult(nil, error));
       }];
-    }
-    else {
+    } else {
       [channel setMessageHandler:nil];
     }
   }

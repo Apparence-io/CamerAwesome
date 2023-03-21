@@ -234,12 +234,28 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<bool> setupCamera(String arg_sensor, String arg_aspectRatio, double arg_zoom, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
+  Future<bool> setupCamera(
+      String arg_sensor,
+      String arg_aspectRatio,
+      double arg_zoom,
+      bool arg_mirrorFrontCamera,
+      String arg_flashMode,
+      String arg_captureMode,
+      bool arg_enableImageStream,
+      ExifPreferences arg_exifPreferences) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_sensor, arg_aspectRatio, arg_zoom, arg_flashMode, arg_captureMode, arg_enableImageStream, arg_exifPreferences]) as List<Object?>?;
+    final List<Object?>? replyList = await channel.send(<Object?>[
+      arg_sensor,
+      arg_aspectRatio,
+      arg_zoom,
+      arg_mirrorFrontCamera,
+      arg_flashMode,
+      arg_captureMode,
+      arg_enableImageStream,
+      arg_exifPreferences
+    ]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -670,6 +686,28 @@ class CameraInterface {
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
         await channel.send(<Object?>[arg_zoom]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> setMirrorFrontCamera(bool arg_mirror) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.setMirrorFrontCamera', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_mirror]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

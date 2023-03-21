@@ -277,7 +277,18 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensor: String, aspectRatio: String, zoom: Double, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
+  fun setupCamera(
+    sensor: String,
+    aspectRatio: String,
+    zoom: Double,
+    mirrorFrontCamera: Boolean,
+    flashMode: String,
+    captureMode: String,
+    enableImageStream: Boolean,
+    exifPreferences: ExifPreferences,
+    callback: (Result<Boolean>) -> Unit
+  )
+
   fun checkPermissions(): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -305,6 +316,7 @@ interface CameraInterface {
    */
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, androidFocusSettings: AndroidFocusSettings?)
   fun setZoom(zoom: Double)
+  fun setMirrorFrontCamera(mirror: Boolean)
   fun setSensor(sensor: String, deviceId: String?)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
@@ -338,11 +350,21 @@ interface CameraInterface {
             val sensorArg = args[0] as String
             val aspectRatioArg = args[1] as String
             val zoomArg = args[2] as Double
-            val flashModeArg = args[3] as String
-            val captureModeArg = args[4] as String
-            val enableImageStreamArg = args[5] as Boolean
-            val exifPreferencesArg = args[6] as ExifPreferences
-            api.setupCamera(sensorArg, aspectRatioArg, zoomArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) { result: Result<Boolean> ->
+            val mirrorFrontCameraArg = args[3] as Boolean
+            val flashModeArg = args[4] as String
+            val captureModeArg = args[5] as String
+            val enableImageStreamArg = args[6] as Boolean
+            val exifPreferencesArg = args[7] as ExifPreferences
+            api.setupCamera(
+              sensorArg,
+              aspectRatioArg,
+              zoomArg,
+              mirrorFrontCameraArg,
+              flashModeArg,
+              captureModeArg,
+              enableImageStreamArg,
+              exifPreferencesArg
+            ) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -659,7 +681,34 @@ interface CameraInterface {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setSensor", codec)
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.setMirrorFrontCamera",
+          codec
+        )
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val mirrorArg = args[0] as Boolean
+            var wrapped: List<Any?>
+            try {
+              api.setMirrorFrontCamera(mirrorArg)
+              wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(
+          binaryMessenger,
+          "dev.flutter.pigeon.CameraInterface.setSensor",
+          codec
+        )
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
