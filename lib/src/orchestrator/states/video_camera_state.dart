@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 /// When Camera is in Video mode
@@ -74,11 +73,13 @@ class VideoCameraState extends CameraState {
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
+    AndroidFocusSettings? androidFocusSettings,
   }) {
     return cameraContext.focusOnPoint(
       flutterPosition: flutterPosition,
       pixelPreviewSize: pixelPreviewSize,
       flutterPreviewSize: flutterPreviewSize,
+      androidFocusSettings: androidFocusSettings,
     );
   }
 }

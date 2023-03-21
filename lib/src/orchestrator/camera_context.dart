@@ -156,10 +156,18 @@ class CameraContext {
     CamerawesomePlugin.startAutoFocus();
   }
 
+  /// Start auto focus on a specific [flutterPosition].
+  /// [pixelPreviewSize] can be retrieved from [CameraState.previewSize].
+  /// [flutterPreviewSize] is the size of the preview widget. You can retrieve
+  /// it from the builders of [CameraAwesomeBuilder].
+  ///
+  /// Use [androidFocusSettings] for additional Android focus settings (auto
+  /// focus timeout before going back to passive mode).
   Future<void> focusOnPoint({
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
+    AndroidFocusSettings? androidFocusSettings,
   }) async {
     if (Platform.isIOS) {
       final xPercentage = flutterPosition.dx / flutterPreviewSize.width;
@@ -168,13 +176,18 @@ class CameraContext {
       return CamerawesomePlugin.focusOnPoint(
         position: Offset(xPercentage, yPercentage),
         previewSize: pixelPreviewSize,
+        androidFocusSettings: null,
       );
     } else {
       final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
       // Transform flutter position to pixel position
       Offset pixelPosition = flutterPosition.scale(ratio, ratio);
       return CamerawesomePlugin.focusOnPoint(
-          position: pixelPosition, previewSize: pixelPreviewSize);
+        position: pixelPosition,
+        previewSize: pixelPreviewSize,
+        androidFocusSettings: androidFocusSettings ??
+            AndroidFocusSettings(autoCancelDurationInMillis: 5000),
+      );
     }
   }
 

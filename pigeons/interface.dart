@@ -127,6 +127,18 @@ enum CamerAwesomePermission {
   record_audio,
 }
 
+class AndroidFocusSettings {
+  /// The auto focus will be canceled after the given [autoCancelDurationInMillis].
+  /// If [autoCancelDurationInMillis] is equals to 0 (or less), the auto focus
+  /// will **not** be canceled. A manual `focusOnPoint` call will be needed to
+  /// focus on an other point.
+  /// Minimal duration of [autoCancelDurationInMillis] is 1000 ms. If set
+  /// between 0 (exclusive) and 1000 (exclusive), it will be raised to 1000.
+  int autoCancelDurationInMillis;
+
+  AndroidFocusSettings({required this.autoCancelDurationInMillis});
+}
+
 @HostApi()
 abstract class CameraInterface {
   @async
@@ -178,7 +190,16 @@ abstract class CameraInterface {
 
   void handleAutoFocus();
 
-  void focusOnPoint(PreviewSize previewSize, double x, double y);
+  /// Starts auto focus on a point at ([x], [y]).
+  ///
+  /// On Android, you can control after how much time you want to switch back
+  /// to passive focus mode with [androidFocusSettings].
+  void focusOnPoint(
+    PreviewSize previewSize,
+    double x,
+    double y,
+    AndroidFocusSettings? androidFocusSettings,
+  );
 
   void setZoom(double zoom);
 
