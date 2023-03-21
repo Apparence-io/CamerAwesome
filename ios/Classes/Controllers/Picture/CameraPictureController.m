@@ -155,19 +155,25 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
     newCropWidth = (newCropHeight * size.width)/size.height;
   }
   
-  double x = image.size.width/2.0 - newCropWidth/2.0;
-  double y = image.size.height/2.0 - newCropHeight/2.0;
+  double imageHeightDivided = image.size.height/2.0;
+  double imageWidthDivided = image.size.width/2.0;
+  
+  double x = imageWidthDivided - newCropWidth/2.0;
+  double y = imageHeightDivided - newCropHeight/2.0;
   
   CGRect cropRect;
   if (UIDeviceOrientationIsLandscape(_orientation)) {
     cropRect = CGRectMake(x, y, newCropWidth, newCropHeight);
   } else {
-    
     if (_aspectRatioType == Ratio16_9) {
       cropRect = CGRectMake(0, 0, image.size.height, image.size.width);
     } else {
-      // TODO: crop on 4:3 portrait mode not working
-      cropRect = CGRectMake(y, x, newCropWidth, newCropHeight);
+      if (_aspectRatioType == Ratio4_3) {
+        double localX = imageHeightDivided - (imageHeightDivided / _aspectRatio);
+        cropRect = CGRectMake(localX, 0, image.size.height / _aspectRatio, image.size.width);
+      } else {
+        cropRect = CGRectMake(y, x, newCropWidth, newCropHeight);
+      }
     }
   }
   
