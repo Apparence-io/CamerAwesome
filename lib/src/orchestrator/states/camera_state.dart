@@ -50,6 +50,7 @@ abstract class CameraState {
   /// - while saving an image
   /// Accessible from all states
   Stream<MediaCapture?> get captureState$ => cameraContext.captureState$;
+  MediaCapture? get captureState => cameraContext.captureState;
 
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this

@@ -6,6 +6,7 @@
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
 FlutterEventSink imageStreamEventSink;
+FlutterEventSink physicalButtonEventSink;
 
 @interface CamerawesomePlugin () <CameraInterface>
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
@@ -36,8 +37,11 @@ FlutterEventSink imageStreamEventSink;
                                                                       binaryMessenger:[registrar messenger]];
   FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/images"
                                                                       binaryMessenger:[registrar messenger]];
+  FlutterEventChannel *physicalButtonChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/physical_button"
+                                                                      binaryMessenger:[registrar messenger]];
   [orientationChannel setStreamHandler:instance];
   [imageStreamChannel setStreamHandler:instance];
+  [physicalButtonChannel setStreamHandler:instance];
   
   CameraInterfaceSetup(registrar.messenger, instance);
 }
@@ -56,6 +60,12 @@ FlutterEventSink imageStreamEventSink;
     if (self.camera != nil) {
       [self.camera setImageStreamEvent:imageStreamEventSink];
     }
+  } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
+    physicalButtonEventSink = eventSink;
+    
+    if (self.camera != nil) {
+      [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
+    }
   }
   
   return nil;
@@ -73,6 +83,12 @@ FlutterEventSink imageStreamEventSink;
     
     if (self.camera != nil) {
       [self.camera setImageStreamEvent:imageStreamEventSink];
+    }
+  } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
+    physicalButtonEventSink = nil;
+    
+    if (self.camera != nil) {
+      [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
     }
   }
   return nil;
@@ -264,6 +280,12 @@ FlutterEventSink imageStreamEventSink;
   if (sensor == nil || sensor.length <= 0) {
     completion(nil, [FlutterError errorWithCode:@"SENSOR_ERROR" message:@"a sensor FRONT or BACK must be provided" details:nil]);
     return;
+  }
+  
+  // If camera preview exist, dispose it
+  if (self.camera != nil) {
+    [self.camera dispose];
+    self.camera = nil;
   }
   
   AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];

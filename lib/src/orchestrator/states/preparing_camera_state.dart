@@ -6,6 +6,7 @@ import 'package:camerawesome/pigeon.dart';
 
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
+import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 
 /// When is not ready
 class PreparingCameraState extends CameraState {
@@ -38,10 +39,14 @@ class PreparingCameraState extends CameraState {
         break;
     }
     await cameraContext.analysisController?.setup();
+    initPhysicalButton();
   }
 
   /// subscription for permissions
   StreamSubscription? _permissionStreamSub;
+
+  /// subscription for physical button
+  StreamSubscription? _physicalButtonStreamSub;
 
   Future<void> initPermissions(
     SensorConfig sensorConfig, {
@@ -75,6 +80,22 @@ class PreparingCameraState extends CameraState {
       onPermissionsResult!(
           grantedPermissions?.hasRequiredPermissions() == true);
     }
+  }
+
+  void initPhysicalButton() {
+    _physicalButtonStreamSub =
+        CamerawesomePlugin.listenPhysicalButton()!.listen(
+      (res) async {
+        if (res == CameraPhysicalButton.volume_down ||
+            res == CameraPhysicalButton.volume_up) {
+          cameraContext.state.when(
+            onPhotoMode: (pm) => pm.takePhoto(),
+            onVideoMode: (vm) => vm.startRecording(),
+            onVideoRecordingMode: (vrm) => vrm.stopRecording(),
+          );
+        }
+      },
+    );
   }
 
   @override
@@ -122,11 +143,12 @@ class PreparingCameraState extends CameraState {
       exifPreferences: cameraContext.exifPreferences,
     );
     _isReady = true;
-    return true;
+    return _isReady;
   }
 
   @override
   void dispose() {
     _permissionStreamSub?.cancel();
+    _physicalButtonStreamSub?.cancel();
   }
 }

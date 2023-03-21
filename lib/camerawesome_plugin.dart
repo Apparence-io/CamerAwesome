@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
@@ -33,8 +34,13 @@ class CamerawesomePlugin {
 
   static const EventChannel _luminosityChannel =
       EventChannel('camerawesome/luminosity');
+  
+  static const EventChannel _physicalButtonChannel =
+      EventChannel('camerawesome/physical_button');
 
   static Stream<CameraOrientations>? _orientationStream;
+
+  static Stream<CameraPhysicalButton>? _physicalButtonStream;
 
   static Stream<bool>? _permissionsStream;
 
@@ -104,6 +110,26 @@ class CamerawesomePlugin {
       sink.add(newOrientation!);
     }));
     return _orientationStream;
+  }
+
+  static Stream<CameraPhysicalButton>? listenPhysicalButton() {
+    _physicalButtonStream ??= _physicalButtonChannel
+        .receiveBroadcastStream('physicalButtonChannel')
+        .transform(StreamTransformer<dynamic, CameraPhysicalButton>.fromHandlers(
+            handleData: (data, sink) {
+      CameraPhysicalButton? physicalButton;
+      switch (data) {
+        case 'VOLUME_UP':
+          physicalButton = CameraPhysicalButton.volume_up;
+          break;
+        case 'VOLUME_DOWN':
+          physicalButton = CameraPhysicalButton.volume_down;
+          break;
+        default:
+      }
+      sink.add(physicalButton!);
+    }));
+    return _physicalButtonStream;
   }
 
   static Stream<bool>? listenPermissionResult() {

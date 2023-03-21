@@ -47,6 +47,7 @@ class CameraContext {
 
   Stream<MediaCapture?> get captureState$ => mediaCaptureController.stream;
 
+  MediaCapture? get captureState => mediaCaptureController.stream.value;
   CameraState get state => stateController.value;
 
   /// The config associated with a [Sensors].

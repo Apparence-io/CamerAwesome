@@ -24,6 +24,7 @@
 #import "PermissionsController.h"
 #import "AspectRatio.h"
 #import "CameraSensorType.h"
+#import "PhysicalButtonController.h"
 #import "InputAnalysisImageFormat.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -55,6 +56,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) MotionController *motionController;
 @property(readonly, nonatomic) LocationController *locationController;
 @property(readonly, nonatomic) VideoController *videoController;
+@property(readonly, nonatomic) PhysicalButtonController *physicalButtonController;
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
 
@@ -68,6 +70,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
+- (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink;
 - (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCameraPresset:(CGSize)currentPreviewSize;
