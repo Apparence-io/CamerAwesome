@@ -66,14 +66,15 @@ class AwesomeCameraGestureDetector extends StatefulWidget {
 
 class _AwesomeCameraGestureDetector
     extends State<AwesomeCameraGestureDetector> {
-  double _previousZoomScale = 0;
   double _zoomScale = 0;
+  final double _accuracy = 0.01;
+  double? _lastScale;
+
   Offset? _tapPosition;
   Timer? _timer;
 
   @override
   void initState() {
-    _previousZoomScale = widget.initialZoom;
     _zoomScale = widget.initialZoom;
     super.initState();
   }
@@ -87,14 +88,23 @@ class _AwesomeCameraGestureDetector
               GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
             () => ScaleGestureRecognizer()
               ..onStart = (_) {
-                _previousZoomScale = _zoomScale + 1;
+                _lastScale = null;
               }
               ..onUpdate = (ScaleUpdateDetails details) {
-                double result = _previousZoomScale * details.scale - 1;
-                if (result < 1 && result > 0) {
-                  _zoomScale = result;
-                  widget.onPreviewScale!.onScale(_zoomScale);
+                _lastScale ??= details.scale;
+
+                if (details.scale < (_lastScale! + 0.01) &&
+                    details.scale > (_lastScale! - 0.01)) {
+                  return;
+                } else if (_lastScale! < details.scale) {
+                  _zoomScale += _accuracy;
+                } else {
+                  _zoomScale -= _accuracy;
                 }
+
+                _zoomScale = _zoomScale.clamp(0, 1);
+                widget.onPreviewScale!.onScale(_zoomScale);
+                _lastScale = details.scale;
               },
             (instance) {},
           ),
