@@ -150,7 +150,11 @@ class CamerawesomePlugin {
     required bool autoStart,
   }) async {
     return CameraInterface().setupImageAnalysisStream(
-        format.name, width, maxFramesPerSecond, autoStart);
+      format.name,
+      width,
+      maxFramesPerSecond,
+      autoStart,
+    );
   }
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
