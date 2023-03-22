@@ -18,19 +18,23 @@ class ColorFilter extends Filter {
 
   @override
   void apply(Uint8List bytes, int width, int height) {
-    for (int i = 0; i < bytes.length; i += 4) {
+    // Remove alpha channel to support image 4 package
+    // we changed iteration from 4 to 3
+    for (int i = 0; i < bytes.length; i += 3) {
       RGBA color = RGBA(
-          red: bytes[i],
-          green: bytes[i + 1],
-          blue: bytes[i + 2],
-          alpha: bytes[i + 3]);
+        red: bytes[i],
+        green: bytes[i + 1],
+        blue: bytes[i + 2],
+        // alpha: bytes[i + 3],
+        alpha: 255,
+      );
       for (ColorSubFilter subFilter in subFilters) {
         color = subFilter.applyFilter(color);
       }
       bytes[i] = color.red;
       bytes[i + 1] = color.green;
       bytes[i + 2] = color.blue;
-      bytes[i + 3] = color.alpha;
+      // bytes[i + 3] = color.alpha;
     }
   }
 
