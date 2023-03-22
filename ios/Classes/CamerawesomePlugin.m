@@ -158,15 +158,7 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
-  AspectRatio aspectRatioMode;
-  if ([aspectRatio isEqualToString:@"RATIO_4_3"]) {
-    aspectRatioMode = Ratio4_3;
-  } else if ([aspectRatio isEqualToString:@"RATIO_16_9"]) {
-    aspectRatioMode = Ratio16_9;
-  } else {
-    aspectRatioMode = Ratio1_1;
-  }
-  
+  AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
   [self.camera setAspectRatio:aspectRatioMode];
 }
 
@@ -274,11 +266,13 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
+  AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
   CameraSensor cameraSensor = ([sensor isEqualToString:@"FRONT"]) ? Front : Back;
   self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
                                                streamImages:[enableImageStream boolValue]
                                           mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                            aspectRatioMode:aspectRatioMode
                                                 captureMode:captureModeType
                                                  completion:completion
                                               dispatchQueue:dispatch_queue_create("camerawesome.dispatchqueue", NULL)];
@@ -389,6 +383,18 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)setMirrorFrontCameraMirror:(nonnull NSNumber *)mirror error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   [_camera setMirrorFrontCamera:[mirror boolValue] error:error];
+}
+
+- (AspectRatio)convertAspectRatio:(NSString *)aspectRatioStr {
+  AspectRatio aspectRatioMode;
+  if ([aspectRatioStr isEqualToString:@"RATIO_4_3"]) {
+    aspectRatioMode = Ratio4_3;
+  } else if ([aspectRatioStr isEqualToString:@"RATIO_16_9"]) {
+    aspectRatioMode = Ratio16_9;
+  } else {
+    aspectRatioMode = Ratio1_1;
+  }
+  return aspectRatioMode;
 }
 
 
