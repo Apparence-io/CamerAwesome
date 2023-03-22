@@ -58,7 +58,8 @@ class SensorConfig {
     _flashModeController = BehaviorSubject<FlashMode>.seeded(flash);
     flashMode$ = _flashModeController.stream;
 
-    _mirrorFrontCameraController = BehaviorSubject<bool>.seeded(mirrorFrontCamera);
+    _mirrorFrontCameraController =
+        BehaviorSubject<bool>.seeded(mirrorFrontCamera);
     mirrorFrontCamera$ = _mirrorFrontCameraController.stream;
 
     _sensorTypeController = BehaviorSubject<SensorType>.seeded(type);
@@ -98,7 +99,7 @@ class SensorConfig {
     await CamerawesomePlugin.setFlashMode(flashMode);
     _flashModeController.sink.add(flashMode);
   }
-  
+
   /// Set mirroring front camera (for selfie for ex.)
   Future<void> setMirrorFrontCamera(bool mirrorFrontCamera) async {
     await CamerawesomePlugin.setMirrorFrontCamera(mirrorFrontCamera);
