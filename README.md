@@ -189,7 +189,7 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
-![CamerAwesome default UI](/docs/img/base_awesome_ui.jpg)
+![CamerAwesome default UI](docs/img/base_awesome_ui.jpg)
 
 This builder can be customized with various settings:
 
@@ -201,7 +201,8 @@ This builder can be customized with various settings:
 - and more!
 
 Here is an example:
-![Customized UI](/docs/img/custom_awesome_ui.jpg)
+
+![Customized UI](docs/img/custom_awesome_ui.jpg)
 
 Check
 the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui)
@@ -239,10 +240,10 @@ typedef CameraLayoutBuilder = Widget Function(CameraState cameraState, PreviewSi
 <br>
 The only thing you have access to manage the camera is the cameraState.<br>
 Depending on which state is our camera experience you will have access to some different method. <br>
-```previewSize``` and ```previewRect``` might be used to position your UI around or on top of the camera preview.
+`previewSize` and `previewRect` might be used to position your UI around or on top of the camera preview.
 <br>
 
-#### How camerAwesome states works ?
+#### How do CamerAwesome states work ?
 
 Using the state you can do anything you need without having to think about the camera flow<br><br>
 
@@ -271,7 +272,7 @@ state.when(
 
 ## 🔬 Analysis mode
 
-Use this to achieve
+Use this to achieve:
 
 - QR-Code scanning.
 - Facial recognition.
@@ -279,14 +280,14 @@ Use this to achieve
 - Realtime video chats.
   And much more 🤩
 
-![Face AI](/docs/img/face_ai.gif)
+![Face AI](docs/img/face_ai.gif)
 
 You can check examples using MLKit inside the `example` directory.
 The above example is from `ai_analysis_faces.dart`. It detects faces and draw their contours.
 
 It's also possible to use MLKit to read barcodes:
 
-![Barcode scanning](/docs/img/barcode_overlay.gif)
+![Barcode scanning](docs/img/barcode_overlay.gif)
 
 Check `ai_analysis_barcode.dart` and `preview_overlay_example.dart` for examples or
 the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
