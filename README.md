@@ -54,8 +54,8 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                  | Android |  iOS  |
-| :-------------------------------------- | :-----: | :---: |
+| System                                   | Android  |  iOS   |
+| :--------------------------------------- | :------: | :----: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
@@ -67,7 +67,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 📸 Device flash support                  |    ✅    |   ✅   |
 | ⌛️ Auto focus                            |    ✅    |   ✅   |
 | 📲 Live switching camera                 |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream               |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream                |    ✅    |   ✅   |
 | 🤐 Background auto stop                  |    ✅    |   ✅   |
 | 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
 | 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
@@ -113,10 +113,10 @@ If you want to record videos with audio, add this permission to your `AndroidMan
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.yourpackage">
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  package="com.example.yourpackage">
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Other declarations -->
+  <!-- Other declarations -->
 </manifest>
 ```
 
@@ -125,11 +125,11 @@ permissions:
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.yourpackage">
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  package="com.example.yourpackage">
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Other declarations -->
+  <!-- Other declarations -->
 </manifest>
 ```
 
@@ -141,15 +141,15 @@ Change these variables to define which version you want to use:
 
 ```gradle
 buildscript {
-    ext.kotlin_version = '1.7.10'
-    ext {
-        // You can override these variables
-        compileSdkVersion = 33
-        minSdkVersion = 24 // 21 minimum
-        playServicesLocationVersion = "20.0.0"
-        exifInterfaceVersion = "1.3.4"
-    }
-    // ...
+  ext.kotlin_version = '1.7.10'
+  ext {
+    // You can override these variables
+    compileSdkVersion = 33
+    minSdkVersion = 24 // 21 minimum
+    playServicesLocationVersion = "20.0.0"
+    exifInterfaceVersion = "1.3.4"
+  }
+  // ...
 }
 ```
 
@@ -180,12 +180,12 @@ That's all you need to create a complete camera experience within you app.
 
 ```dart
 CameraAwesomeBuilder.awesome(
-    saveConfig: SaveConfig.image(
-        pathBuilder: _path(),
-    ),
-    onMediaTap: (mediaCapture) {
-        OpenFile.open(mediaCapture.filePath);
-    },
+  saveConfig: SaveConfig.image(
+    pathBuilder: _path(),
+  ),
+  onMediaTap: (mediaCapture) {
+    OpenFile.open(mediaCapture.filePath);
+  },
 ),
 ```
 
@@ -220,10 +220,10 @@ The camera preview will be visible behind what you will provide to the builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-    saveConfig: SaveConfig.image(pathBuilder: _path()),
-    builder: (state, previewSize, previewRect) {
-        // create your interface here
-    },
+  saveConfig: SaveConfig.image(pathBuilder: _path()),
+  builder: (state, previewSize, previewRect) {
+    // create your interface here
+  },
 )
 ```
 
@@ -258,9 +258,9 @@ Using the state you can do anything you need without having to think about the c
 
 ```dart
 state.when(
-    onPhotoMode: (photoState) => photoState.start(),
-    onVideoMode: (videoState) => videoState.start(),
-    onVideoRecordingMode: (videoState) => videoState.pause(),
+  onPhotoMode: (photoState) => photoState.start(),
+  onVideoMode: (videoState) => videoState.start(),
+  onVideoRecordingMode: (videoState) => videoState.pause(),
 );
 ```
 

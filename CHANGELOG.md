@@ -1,3 +1,8 @@
+# 1.3.1
+
+- 🐛 Fix video recording overlay image.
+- 📝 Update README.md (change feature showcase image & fix broken links).
+
 # 1.3.0
 
 - ✨ Customize the built-in UI by setting an `AwesomeTheme`.
