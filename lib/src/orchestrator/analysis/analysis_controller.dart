@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/logger.dart';
@@ -42,12 +43,22 @@ class AnalysisController {
       return;
     }
 
-    await CamerawesomePlugin.setupAnalysis(
-      format: conf.outputFormat,
-      width: conf.width,
-      maxFramesPerSecond: conf.maxFramesPerSecond,
-      autoStart: conf.autoStart,
-    );
+    if (Platform.isIOS) {
+      await CamerawesomePlugin.setupAnalysis(
+        format: conf.cupertinoOptions.outputFormat,
+        // TODO Can't set width on iOS
+        width: 0,
+        maxFramesPerSecond: conf.maxFramesPerSecond,
+        autoStart: conf.autoStart,
+      );
+    } else {
+      await CamerawesomePlugin.setupAnalysis(
+        format: conf.androidOptions.outputFormat,
+        width: conf.androidOptions.width,
+        maxFramesPerSecond: conf.maxFramesPerSecond,
+        autoStart: conf.autoStart,
+      );
+    }
 
     if (conf.autoStart) {
       await start();
