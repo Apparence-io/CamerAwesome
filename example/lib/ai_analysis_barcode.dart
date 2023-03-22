@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera_app/utils/file_utils.dart';
+import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -56,8 +55,9 @@ class _MyHomePageState extends State<MyHomePage> {
             SaveConfig.photo(pathBuilder: () => path(CaptureMode.photo)),
         onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
-          outputFormat: InputAnalysisImageFormat.nv21,
-          width: 1024,
+          androidOptions: const AndroidAnalysisOptions.nv21(
+            width: 1024,
+          ),
           maxFramesPerSecond: 5,
           autoStart: false,
         ),
@@ -73,49 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _processImageBarcode(AnalysisImage img) async {
-    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
-
-    final InputImageRotation imageRotation =
-        InputImageRotation.values.byName(img.rotation.name);
-
-    final planeData = img.planes.map(
-      (plane) {
-        return InputImagePlaneMetadata(
-          bytesPerRow: plane.bytesPerRow,
-          height: img.height,
-          width: img.width,
-        );
-      },
-    ).toList();
-
-    final InputImage inputImage;
-    if (Platform.isIOS) {
-      final inputImageData = InputImageData(
-        size: imageSize,
-        imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
-        inputImageFormat: _inputImageFormat(img.format),
-        planeData: planeData,
-      );
-
-      final WriteBuffer allBytes = WriteBuffer();
-      for (final ImagePlane plane in img.planes) {
-        allBytes.putUint8List(plane.bytes);
-      }
-      final bytes = allBytes.done().buffer.asUint8List();
-
-      inputImage =
-          InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-    } else {
-      inputImage = InputImage.fromBytes(
-        bytes: img.nv21Image!,
-        inputImageData: InputImageData(
-          imageRotation: imageRotation,
-          inputImageFormat: InputImageFormat.nv21,
-          planeData: planeData,
-          size: Size(img.width.toDouble(), img.height.toDouble()),
-        ),
-      );
-    }
+    final inputImage = img.toInputImage();
 
     try {
       var recognizedBarCodes = await _barcodeScanner.processImage(inputImage);
@@ -144,17 +102,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     } catch (err) {
       debugPrint("...logging error $err");
-    }
-  }
-
-  InputImageFormat _inputImageFormat(InputAnalysisImageFormat format) {
-    switch (format) {
-      case InputAnalysisImageFormat.bgra8888:
-        return InputImageFormat.bgra8888;
-      case InputAnalysisImageFormat.nv21:
-        return InputImageFormat.nv21;
-      default:
-        return InputImageFormat.yuv420;
     }
   }
 }
