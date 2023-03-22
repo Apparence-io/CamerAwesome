@@ -328,14 +328,13 @@ class _CroppedPreview extends StatelessWidget {
   final Size croppedSize;
   final Alignment alignment;
   final EdgeInsets padding;
-  final Duration animDuration;
+  final Duration animDuration = const Duration(milliseconds: 300);
 
   const _CroppedPreview({
     required this.croppedSize,
     required this.alignment,
     required this.padding,
     required this.child,
-    this.animDuration = const Duration(milliseconds: 300),
   });
 
   @override
