@@ -14,6 +14,7 @@
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
+                     aspectRatioMode:(AspectRatio)aspectRatioMode
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                        dispatchQueue:(dispatch_queue_t)dispatchQueue {
@@ -31,7 +32,7 @@
   [_captureSession addOutputWithNoConnections:_captureVideoOutput];
   
   _cameraSensor = sensor;
-  _aspectRatio = Ratio4_3;
+  _aspectRatio = aspectRatioMode;
   _mirrorFrontCamera = mirrorFrontCamera;
   
   [self initCameraPreview:sensor];
@@ -119,8 +120,6 @@
   // Create connection
   _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
                                                               output:_captureVideoOutput];
-  
-  
   
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
