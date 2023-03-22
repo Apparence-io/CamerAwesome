@@ -1,17 +1,19 @@
 # 1.3.0
 
-- Customize the built-in UI by setting an `AwesomeTheme`
-- Top, middle and bottom parts of `CameraAwesomeBuilder.awesome()` can now be replaced by your own
-- Ability to set camera preview alignment and padding
-- Ability to set aspect ratio, zoom, flash mode and SensorType when switching between front and back
-  camera
-- Enable/disable front camera mirroring
-- Upgrade `image` dependency
-- Fix aspect ratio changes animation
-- Smoother flash mode changes (Android)
-- Fix microphone permission (iOS)
-- Fix recorded video orientation (iOS)
-- Updated documentation and more examples
+- ✨ Customize the built-in UI by setting an `AwesomeTheme`.
+- ✨ Top, middle and bottom parts of `CameraAwesomeBuilder.awesome()` can now be replaced by your own.
+- ✨ Ability to set camera preview alignment and padding.
+- ✨ Ability to set aspect ratio, zoom, flash mode and SensorType when switching between front and back
+  camera.
+- ✨ Enable/disable front camera mirroring.
+- ⬆️ Upgrade `image` dependency.
+- 🐛 Fix aspect ratio changes animation.
+- 🐛 Smoother flash mode changes (Android).
+- 🐛 Fix microphone permission (iOS).
+- 🐛 Fix recorded video orientation (iOS).
+- 🐛 Fix initial aspect ratio not set (iOS).
+- 📝 Updated documentation and more examples.
+- 🎨 Format code.
 
 # 1.2.1
 
