@@ -9,7 +9,8 @@ enum InputAnalysisImageRotation {
 
 InputAnalysisImageFormat inputAnalysisImageFormatParser(String value) {
   switch (value) {
-    case 'yuv420': // android.graphics.ImageFormat.YUV_420_888
+    case 'yuv420':
+    case 'yuv_420_888': // android.graphics.ImageFormat.YUV_420_888
       return InputAnalysisImageFormat.yuv_420;
     case 'bgra8888':
       return InputAnalysisImageFormat.bgra8888;
