@@ -3,7 +3,8 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 extension MLKitUtils on AnalysisImage {
   InputImage toInputImage() {
-    final planeData = planes.map(
+    final planeData =
+        when(nv21: (img) => img.planes, bgra8888: (img) => img.planes)?.map(
       (plane) {
         return InputImagePlaneMetadata(
           bytesPerRow: plane.bytesPerRow,
@@ -36,7 +37,7 @@ extension MLKitUtils on AnalysisImage {
         bytes: image.bytes,
         inputImageData: inputImageData,
       );
-    });
+    })!;
   }
 
   InputImageRotation get inputImageRotation =>
