@@ -271,7 +271,7 @@ FlutterEventSink physicalButtonEventSink;
   return [_camera getSensors:AVCaptureDevicePositionBack];
 }
 
-- (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
@@ -294,6 +294,7 @@ FlutterEventSink physicalButtonEventSink;
   self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
                                                streamImages:[enableImageStream boolValue]
                                           mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                       enablePhysicalButton:[enablePhysicalButton boolValue]
                                             aspectRatioMode:aspectRatioMode
                                                 captureMode:captureModeType
                                                  completion:completion
