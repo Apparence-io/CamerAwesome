@@ -31,6 +31,21 @@ enum CamerAwesomePermission {
   record_audio,
 }
 
+enum AnalysisImageFormat {
+  yuv_420,
+  bgra8888,
+  jpeg,
+  nv21,
+  unknown,
+}
+
+enum AnalysisRotation {
+  rotation0deg,
+  rotation90deg,
+  rotation180deg,
+  rotation270deg,
+}
+
 class PreviewSize {
   PreviewSize({
     required this.width,
@@ -176,8 +191,297 @@ class AndroidFocusSettings {
   }
 }
 
+class PlaneWrapper {
+  PlaneWrapper({
+    required this.bytes,
+    required this.bytesPerRow,
+    required this.bytesPerPixel,
+    this.width,
+    this.height,
+  });
+
+  Uint8List bytes;
+
+  int bytesPerRow;
+
+  int bytesPerPixel;
+
+  int? width;
+
+  int? height;
+
+  Object encode() {
+    return <Object?>[
+      bytes,
+      bytesPerRow,
+      bytesPerPixel,
+      width,
+      height,
+    ];
+  }
+
+  static PlaneWrapper decode(Object result) {
+    result as List<Object?>;
+    return PlaneWrapper(
+      bytes: result[0]! as Uint8List,
+      bytesPerRow: result[1]! as int,
+      bytesPerPixel: result[2]! as int,
+      width: result[3] as int?,
+      height: result[4] as int?,
+    );
+  }
+}
+
+class CropRectWrapper {
+  CropRectWrapper({
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+  });
+
+  int left;
+
+  int top;
+
+  int width;
+
+  int height;
+
+  Object encode() {
+    return <Object?>[
+      left,
+      top,
+      width,
+      height,
+    ];
+  }
+
+  static CropRectWrapper decode(Object result) {
+    result as List<Object?>;
+    return CropRectWrapper(
+      left: result[0]! as int,
+      top: result[1]! as int,
+      width: result[2]! as int,
+      height: result[3]! as int,
+    );
+  }
+}
+
+class AnalysisImageWrapper {
+  AnalysisImageWrapper({
+    required this.format,
+    this.bytes,
+    required this.width,
+    required this.height,
+    this.planes,
+    this.cropRect,
+    this.rotation,
+  });
+
+  AnalysisImageFormat format;
+
+  Uint8List? bytes;
+
+  int width;
+
+  int height;
+
+  List<PlaneWrapper?>? planes;
+
+  CropRectWrapper? cropRect;
+
+  AnalysisRotation? rotation;
+
+  Object encode() {
+    return <Object?>[
+      format.index,
+      bytes,
+      width,
+      height,
+      planes,
+      cropRect?.encode(),
+      rotation?.index,
+    ];
+  }
+
+  static AnalysisImageWrapper decode(Object result) {
+    result as List<Object?>;
+    return AnalysisImageWrapper(
+      format: AnalysisImageFormat.values[result[0]! as int],
+      bytes: result[1] as Uint8List?,
+      width: result[2]! as int,
+      height: result[3]! as int,
+      planes: (result[4] as List<Object?>?)?.cast<PlaneWrapper?>(),
+      cropRect: result[5] != null
+          ? CropRectWrapper.decode(result[5]! as List<Object?>)
+          : null,
+      rotation:
+          result[6] != null ? AnalysisRotation.values[result[6]! as int] : null,
+    );
+  }
+}
+
+class _AnalysisImageUtilsCodec extends StandardMessageCodec {
+  const _AnalysisImageUtilsCodec();
+
+  @override
+  void writeValue(WriteBuffer buffer, Object? value) {
+    if (value is AnalysisImageWrapper) {
+      buffer.putUint8(128);
+      writeValue(buffer, value.encode());
+    } else if (value is CropRectWrapper) {
+      buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else if (value is PlaneWrapper) {
+      buffer.putUint8(130);
+      writeValue(buffer, value.encode());
+    } else {
+      super.writeValue(buffer, value);
+    }
+  }
+
+  @override
+  Object? readValueOfType(int type, ReadBuffer buffer) {
+    switch (type) {
+      case 128:
+        return AnalysisImageWrapper.decode(readValue(buffer)!);
+      case 129:
+        return CropRectWrapper.decode(readValue(buffer)!);
+      case 130:
+        return PlaneWrapper.decode(readValue(buffer)!);
+      default:
+        return super.readValueOfType(type, buffer);
+    }
+  }
+}
+
+class AnalysisImageUtils {
+  /// Constructor for [AnalysisImageUtils].  The [binaryMessenger] named argument is
+  /// available for dependency injection.  If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  AnalysisImageUtils({BinaryMessenger? binaryMessenger})
+      : _binaryMessenger = binaryMessenger;
+  final BinaryMessenger? _binaryMessenger;
+
+  static const MessageCodec<Object?> codec = _AnalysisImageUtilsCodec();
+
+  Future<AnalysisImageWrapper> nv21toJpeg(
+      AnalysisImageWrapper arg_nv21Image, int arg_jpegQuality) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AnalysisImageUtils.nv21toJpeg', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList = await channel
+        .send(<Object?>[arg_nv21Image, arg_jpegQuality]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as AnalysisImageWrapper?)!;
+    }
+  }
+
+  Future<AnalysisImageWrapper> yuv420toJpeg(
+      AnalysisImageWrapper arg_yuvImage, int arg_jpegQuality) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AnalysisImageUtils.yuv420toJpeg', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList = await channel
+        .send(<Object?>[arg_yuvImage, arg_jpegQuality]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as AnalysisImageWrapper?)!;
+    }
+  }
+
+  Future<AnalysisImageWrapper> yuv420toNv21(
+      AnalysisImageWrapper arg_yuvImage) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AnalysisImageUtils.yuv420toNv21', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_yuvImage]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as AnalysisImageWrapper?)!;
+    }
+  }
+
+  Future<AnalysisImageWrapper> bgra8888toJpeg(
+      AnalysisImageWrapper arg_bgra8888image, int arg_jpegQuality) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AnalysisImageUtils.bgra8888toJpeg', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList = await channel
+        .send(<Object?>[arg_bgra8888image, arg_jpegQuality]) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as AnalysisImageWrapper?)!;
+    }
+  }
+}
+
 class _CameraInterfaceCodec extends StandardMessageCodec {
   const _CameraInterfaceCodec();
+
   @override
   void writeValue(WriteBuffer buffer, Object? value) {
     if (value is AndroidFocusSettings) {

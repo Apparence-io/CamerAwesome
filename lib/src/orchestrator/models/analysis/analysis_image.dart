@@ -1,8 +1,11 @@
 import 'dart:ui';
 
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/analysis/image_plane.dart';
 import 'package:camerawesome/src/orchestrator/models/analysis/input_analysis.dart';
 import 'package:flutter/foundation.dart';
+
+part 'analysis_image_ext.dart';
 
 // TODO Rework AnalysisImage
 // Ideas:
@@ -73,14 +76,14 @@ class Bgra8888Image extends AnalysisImage {
 
   Bgra8888Image.from(Map<String, dynamic> map)
       : this(
-    height: map["height"],
-    width: map["width"],
-    planes: (map["planes"] as List<dynamic>)
-        .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
-        .toList(),
-    rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
-    format: inputAnalysisImageFormatParser(map["format"]),
-  );
+          height: map["height"],
+          width: map["width"],
+          planes: (map["planes"] as List<dynamic>)
+              .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
+              .toList(),
+          rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
+          format: inputAnalysisImageFormatParser(map["format"]),
+        );
 
   @override
   Size get croppedSize => Size(width.toDouble(), height.toDouble());
@@ -111,28 +114,28 @@ class Nv21Image extends AnalysisImage {
 
   Nv21Image.from(Map<String, dynamic> map)
       : this(
-    bytes: map["nv21Image"],
-    cropRect: Rect.fromLTRB(
-      map["cropRect"]["left"].toDouble(),
-      map["cropRect"]["top"].toDouble(),
-      map["cropRect"]["right"].toDouble(),
-      map["cropRect"]["bottom"].toDouble(),
-    ),
-    height: map["height"],
-    width: map["width"],
-    planes: (map["planes"] as List<dynamic>)
-        .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
-        .toList(),
-    rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
-    format: inputAnalysisImageFormatParser(map["format"]),
-  );
+          bytes: map["nv21Image"],
+          cropRect: Rect.fromLTRB(
+            map["cropRect"]["left"].toDouble(),
+            map["cropRect"]["top"].toDouble(),
+            map["cropRect"]["right"].toDouble(),
+            map["cropRect"]["bottom"].toDouble(),
+          ),
+          height: map["height"],
+          width: map["width"],
+          planes: (map["planes"] as List<dynamic>)
+              .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
+              .toList(),
+          rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
+          format: inputAnalysisImageFormatParser(map["format"]),
+        );
 
   @override
   Size get croppedSize => Size(
-    // TODO Width and height of cropRect are inverted
-    cropRect.size.height,
-    cropRect.size.width,
-  );
+        // TODO Width and height of cropRect are inverted
+        cropRect.size.height,
+        cropRect.size.width,
+      );
 }
 
 class Yuv420Image extends AnalysisImage {
@@ -150,31 +153,32 @@ class Yuv420Image extends AnalysisImage {
 
   Yuv420Image.from(Map<String, dynamic> map)
       : this(
-    cropRect: Rect.fromLTRB(
-      map["cropRect"]["left"].toDouble(),
-      map["cropRect"]["top"].toDouble(),
-      map["cropRect"]["right"].toDouble(),
-      map["cropRect"]["bottom"].toDouble(),
-    ),
-    height: map["height"],
-    width: map["width"],
-    planes: (map["planes"] as List<dynamic>)
-        .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
-        .toList(),
-    rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
-    format: inputAnalysisImageFormatParser(map["format"]),
-  );
+          cropRect: Rect.fromLTRB(
+            map["cropRect"]["left"].toDouble(),
+            map["cropRect"]["top"].toDouble(),
+            map["cropRect"]["right"].toDouble(),
+            map["cropRect"]["bottom"].toDouble(),
+          ),
+          height: map["height"],
+          width: map["width"],
+          planes: (map["planes"] as List<dynamic>)
+              .map((e) => ImagePlane.from(Map<String, dynamic>.from(e)))
+              .toList(),
+          rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
+          format: inputAnalysisImageFormatParser(map["format"]),
+        );
 
   @override
   Size get croppedSize => Size(
-    // TODO Width and height of cropRect are inverted
-    cropRect.size.height,
-    cropRect.size.width,
-  );
+        // TODO Width and height of cropRect are inverted
+        cropRect.size.height,
+        cropRect.size.width,
+      );
 }
 
 class JpegImage extends AnalysisImage {
   final Uint8List bytes;
+  final Rect? cropRect;
 
   const JpegImage({
     required this.bytes,
@@ -182,17 +186,32 @@ class JpegImage extends AnalysisImage {
     required super.width,
     required super.format,
     required super.rotation,
+    required this.cropRect,
   });
 
   JpegImage.from(Map<String, dynamic> map)
       : this(
-          bytes: map["jpegImage"],
+    bytes: map["jpegImage"],
           height: map["height"],
           width: map["width"],
           rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
           format: inputAnalysisImageFormatParser(map["format"]),
+          cropRect: map["cropRect"] != null
+              ? Rect.fromLTRB(
+                  map["cropRect"]["left"].toDouble(),
+                  map["cropRect"]["top"].toDouble(),
+                  map["cropRect"]["right"].toDouble(),
+                  map["cropRect"]["bottom"].toDouble(),
+                )
+              : null,
         );
 
   @override
-  Size get croppedSize => Size(width.toDouble(), height.toDouble());
+  Size get croppedSize => cropRect != null
+      ? Size(
+          // TODO Width and height of cropRect are inverted
+          cropRect!.size.height,
+          cropRect!.size.width,
+        )
+      : Size(width.toDouble(), height.toDouble());
 }
