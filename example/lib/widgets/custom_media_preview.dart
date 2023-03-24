@@ -52,8 +52,8 @@ class CustomMediaPreview extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Platform.isIOS
-                ? const CupertinoActivityIndicator()
-                : const CircularProgressIndicator(),
+                ? const CupertinoActivityIndicator(color: Colors.white)
+                : const CircularProgressIndicator(color: Colors.white),
           ),
         );
       case MediaCaptureStatus.success:
