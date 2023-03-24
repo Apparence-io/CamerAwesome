@@ -3,6 +3,7 @@
 import 'package:camerawesome/src/orchestrator/analysis/analysis_controller.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AwesomeCaptureButton extends StatefulWidget {
   final CameraState state;
@@ -74,6 +75,7 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
   }
 
   _onTapDown(TapDownDetails details) {
+    HapticFeedback.selectionClick();
     _animationController.forward();
   }
 
