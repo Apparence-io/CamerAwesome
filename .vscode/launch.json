@@ -15,7 +15,12 @@
             "request": "launch",
             "type": "dart",
             "program": "example/lib/subroute_camera.dart",
-            "flutterMode": "profile"
+        },
+        {
+            "name": "Preview modes",
+            "request": "launch",
+            "type": "dart",
+            "program": "example/lib/preview_modes.dart",
         },
         {
             "name": "AI analysis - face detection",
