@@ -33,11 +33,29 @@ typedef NS_ENUM(NSUInteger, CamerAwesomePermission) {
   CamerAwesomePermissionRecord_audio = 3,
 };
 
+typedef NS_ENUM(NSUInteger, AnalysisImageFormat) {
+  AnalysisImageFormatYuv_420 = 0,
+  AnalysisImageFormatBgra8888 = 1,
+  AnalysisImageFormatJpeg = 2,
+  AnalysisImageFormatNv21 = 3,
+  AnalysisImageFormatUnknown = 4,
+};
+
+typedef NS_ENUM(NSUInteger, AnalysisRotation) {
+  AnalysisRotationRotation0deg = 0,
+  AnalysisRotationRotation90deg = 1,
+  AnalysisRotationRotation180deg = 2,
+  AnalysisRotationRotation270deg = 3,
+};
+
 @class PreviewSize;
 @class ExifPreferences;
 @class VideoOptions;
 @class PigeonSensorTypeDevice;
 @class AndroidFocusSettings;
+@class PlaneWrapper;
+@class CropRectWrapper;
+@class AnalysisImageWrapper;
 
 @interface PreviewSize : NSObject
 /// `init` unavailable to enforce nonnull fields, see the `make` class method.
@@ -95,6 +113,65 @@ typedef NS_ENUM(NSUInteger, CamerAwesomePermission) {
 /// between 0 (exclusive) and 1000 (exclusive), it will be raised to 1000.
 @property(nonatomic, strong) NSNumber * autoCancelDurationInMillis;
 @end
+
+@interface PlaneWrapper : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithBytes:(FlutterStandardTypedData *)bytes
+    bytesPerRow:(NSNumber *)bytesPerRow
+    bytesPerPixel:(NSNumber *)bytesPerPixel
+    width:(nullable NSNumber *)width
+    height:(nullable NSNumber *)height;
+@property(nonatomic, strong) FlutterStandardTypedData * bytes;
+@property(nonatomic, strong) NSNumber * bytesPerRow;
+@property(nonatomic, strong) NSNumber * bytesPerPixel;
+@property(nonatomic, strong, nullable) NSNumber * width;
+@property(nonatomic, strong, nullable) NSNumber * height;
+@end
+
+@interface CropRectWrapper : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithLeft:(NSNumber *)left
+    top:(NSNumber *)top
+    width:(NSNumber *)width
+    height:(NSNumber *)height;
+@property(nonatomic, strong) NSNumber * left;
+@property(nonatomic, strong) NSNumber * top;
+@property(nonatomic, strong) NSNumber * width;
+@property(nonatomic, strong) NSNumber * height;
+@end
+
+@interface AnalysisImageWrapper : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithFormat:(AnalysisImageFormat)format
+    bytes:(nullable FlutterStandardTypedData *)bytes
+    width:(NSNumber *)width
+    height:(NSNumber *)height
+    planes:(nullable NSArray<PlaneWrapper *> *)planes
+    cropRect:(nullable CropRectWrapper *)cropRect
+    rotation:(AnalysisRotation)rotation;
+@property(nonatomic, assign) AnalysisImageFormat format;
+@property(nonatomic, strong, nullable) FlutterStandardTypedData * bytes;
+@property(nonatomic, strong) NSNumber * width;
+@property(nonatomic, strong) NSNumber * height;
+@property(nonatomic, strong, nullable) NSArray<PlaneWrapper *> * planes;
+@property(nonatomic, strong, nullable) CropRectWrapper * cropRect;
+@property(nonatomic, assign) AnalysisRotation rotation;
+@end
+
+/// The codec used by AnalysisImageUtils.
+NSObject<FlutterMessageCodec> *AnalysisImageUtilsGetCodec(void);
+
+@protocol AnalysisImageUtils
+- (void)nv21toJpegNv21Image:(AnalysisImageWrapper *)nv21Image jpegQuality:(NSNumber *)jpegQuality completion:(void (^)(AnalysisImageWrapper *_Nullable, FlutterError *_Nullable))completion;
+- (void)yuv420toJpegYuvImage:(AnalysisImageWrapper *)yuvImage jpegQuality:(NSNumber *)jpegQuality completion:(void (^)(AnalysisImageWrapper *_Nullable, FlutterError *_Nullable))completion;
+- (void)yuv420toNv21YuvImage:(AnalysisImageWrapper *)yuvImage completion:(void (^)(AnalysisImageWrapper *_Nullable, FlutterError *_Nullable))completion;
+- (void)bgra8888toJpegBgra8888image:(AnalysisImageWrapper *)bgra8888image jpegQuality:(NSNumber *)jpegQuality completion:(void (^)(AnalysisImageWrapper *_Nullable, FlutterError *_Nullable))completion;
+@end
+
+extern void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<AnalysisImageUtils> *_Nullable api);
 
 /// The codec used by CameraInterface.
 NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);

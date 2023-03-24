@@ -687,6 +687,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         this.binding = binding
         textureRegistry = binding.textureRegistry
         CameraInterface.setUp(binding.binaryMessenger, this)
+        AnalysisImageUtils.setUp(binding.binaryMessenger, AnalysisImageConverter())
         orientationStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/orientation")
         orientationStreamChannel.setStreamHandler(sensorOrientationListener)
         imageStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/images")

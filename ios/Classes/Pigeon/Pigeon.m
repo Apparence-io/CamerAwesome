@@ -51,6 +51,24 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList;
 @end
 
+@interface PlaneWrapper ()
++ (PlaneWrapper *)fromList:(NSArray *)list;
++ (nullable PlaneWrapper *)nullableFromList:(NSArray *)list;
+- (NSArray *)toList;
+@end
+
+@interface CropRectWrapper ()
++ (CropRectWrapper *)fromList:(NSArray *)list;
++ (nullable CropRectWrapper *)nullableFromList:(NSArray *)list;
+- (NSArray *)toList;
+@end
+
+@interface AnalysisImageWrapper ()
++ (AnalysisImageWrapper *)fromList:(NSArray *)list;
++ (nullable AnalysisImageWrapper *)nullableFromList:(NSArray *)list;
+- (NSArray *)toList;
+@end
+
 @implementation PreviewSize
 + (instancetype)makeWithWidth:(NSNumber *)width
     height:(NSNumber *)height {
@@ -190,6 +208,268 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 }
 @end
 
+@implementation PlaneWrapper
++ (instancetype)makeWithBytes:(FlutterStandardTypedData *)bytes
+    bytesPerRow:(NSNumber *)bytesPerRow
+    bytesPerPixel:(NSNumber *)bytesPerPixel
+    width:(nullable NSNumber *)width
+    height:(nullable NSNumber *)height {
+  PlaneWrapper* pigeonResult = [[PlaneWrapper alloc] init];
+  pigeonResult.bytes = bytes;
+  pigeonResult.bytesPerRow = bytesPerRow;
+  pigeonResult.bytesPerPixel = bytesPerPixel;
+  pigeonResult.width = width;
+  pigeonResult.height = height;
+  return pigeonResult;
+}
++ (PlaneWrapper *)fromList:(NSArray *)list {
+  PlaneWrapper *pigeonResult = [[PlaneWrapper alloc] init];
+  pigeonResult.bytes = GetNullableObjectAtIndex(list, 0);
+  NSAssert(pigeonResult.bytes != nil, @"");
+  pigeonResult.bytesPerRow = GetNullableObjectAtIndex(list, 1);
+  NSAssert(pigeonResult.bytesPerRow != nil, @"");
+  pigeonResult.bytesPerPixel = GetNullableObjectAtIndex(list, 2);
+  NSAssert(pigeonResult.bytesPerPixel != nil, @"");
+  pigeonResult.width = GetNullableObjectAtIndex(list, 3);
+  pigeonResult.height = GetNullableObjectAtIndex(list, 4);
+  return pigeonResult;
+}
++ (nullable PlaneWrapper *)nullableFromList:(NSArray *)list {
+  return (list) ? [PlaneWrapper fromList:list] : nil;
+}
+- (NSArray *)toList {
+  return @[
+    (self.bytes ?: [NSNull null]),
+    (self.bytesPerRow ?: [NSNull null]),
+    (self.bytesPerPixel ?: [NSNull null]),
+    (self.width ?: [NSNull null]),
+    (self.height ?: [NSNull null]),
+  ];
+}
+@end
+
+@implementation CropRectWrapper
++ (instancetype)makeWithLeft:(NSNumber *)left
+    top:(NSNumber *)top
+    width:(NSNumber *)width
+    height:(NSNumber *)height {
+  CropRectWrapper* pigeonResult = [[CropRectWrapper alloc] init];
+  pigeonResult.left = left;
+  pigeonResult.top = top;
+  pigeonResult.width = width;
+  pigeonResult.height = height;
+  return pigeonResult;
+}
++ (CropRectWrapper *)fromList:(NSArray *)list {
+  CropRectWrapper *pigeonResult = [[CropRectWrapper alloc] init];
+  pigeonResult.left = GetNullableObjectAtIndex(list, 0);
+  NSAssert(pigeonResult.left != nil, @"");
+  pigeonResult.top = GetNullableObjectAtIndex(list, 1);
+  NSAssert(pigeonResult.top != nil, @"");
+  pigeonResult.width = GetNullableObjectAtIndex(list, 2);
+  NSAssert(pigeonResult.width != nil, @"");
+  pigeonResult.height = GetNullableObjectAtIndex(list, 3);
+  NSAssert(pigeonResult.height != nil, @"");
+  return pigeonResult;
+}
++ (nullable CropRectWrapper *)nullableFromList:(NSArray *)list {
+  return (list) ? [CropRectWrapper fromList:list] : nil;
+}
+- (NSArray *)toList {
+  return @[
+    (self.left ?: [NSNull null]),
+    (self.top ?: [NSNull null]),
+    (self.width ?: [NSNull null]),
+    (self.height ?: [NSNull null]),
+  ];
+}
+@end
+
+@implementation AnalysisImageWrapper
++ (instancetype)makeWithFormat:(AnalysisImageFormat)format
+    bytes:(nullable FlutterStandardTypedData *)bytes
+    width:(NSNumber *)width
+    height:(NSNumber *)height
+    planes:(nullable NSArray<PlaneWrapper *> *)planes
+    cropRect:(nullable CropRectWrapper *)cropRect
+    rotation:(AnalysisRotation)rotation {
+  AnalysisImageWrapper* pigeonResult = [[AnalysisImageWrapper alloc] init];
+  pigeonResult.format = format;
+  pigeonResult.bytes = bytes;
+  pigeonResult.width = width;
+  pigeonResult.height = height;
+  pigeonResult.planes = planes;
+  pigeonResult.cropRect = cropRect;
+  pigeonResult.rotation = rotation;
+  return pigeonResult;
+}
++ (AnalysisImageWrapper *)fromList:(NSArray *)list {
+  AnalysisImageWrapper *pigeonResult = [[AnalysisImageWrapper alloc] init];
+  pigeonResult.format = [GetNullableObjectAtIndex(list, 0) integerValue];
+  pigeonResult.bytes = GetNullableObjectAtIndex(list, 1);
+  pigeonResult.width = GetNullableObjectAtIndex(list, 2);
+  NSAssert(pigeonResult.width != nil, @"");
+  pigeonResult.height = GetNullableObjectAtIndex(list, 3);
+  NSAssert(pigeonResult.height != nil, @"");
+  pigeonResult.planes = GetNullableObjectAtIndex(list, 4);
+  pigeonResult.cropRect = [CropRectWrapper nullableFromList:(GetNullableObjectAtIndex(list, 5))];
+  pigeonResult.rotation = [GetNullableObjectAtIndex(list, 6) integerValue];
+  return pigeonResult;
+}
++ (nullable AnalysisImageWrapper *)nullableFromList:(NSArray *)list {
+  return (list) ? [AnalysisImageWrapper fromList:list] : nil;
+}
+- (NSArray *)toList {
+  return @[
+    @(self.format),
+    (self.bytes ?: [NSNull null]),
+    (self.width ?: [NSNull null]),
+    (self.height ?: [NSNull null]),
+    (self.planes ?: [NSNull null]),
+    (self.cropRect ? [self.cropRect toList] : [NSNull null]),
+    @(self.rotation),
+  ];
+}
+@end
+
+@interface AnalysisImageUtilsCodecReader : FlutterStandardReader
+@end
+@implementation AnalysisImageUtilsCodecReader
+- (nullable id)readValueOfType:(UInt8)type {
+  switch (type) {
+    case 128: 
+      return [AnalysisImageWrapper fromList:[self readValue]];
+    case 129: 
+      return [CropRectWrapper fromList:[self readValue]];
+    case 130: 
+      return [PlaneWrapper fromList:[self readValue]];
+    default:
+      return [super readValueOfType:type];
+  }
+}
+@end
+
+@interface AnalysisImageUtilsCodecWriter : FlutterStandardWriter
+@end
+@implementation AnalysisImageUtilsCodecWriter
+- (void)writeValue:(id)value {
+  if ([value isKindOfClass:[AnalysisImageWrapper class]]) {
+    [self writeByte:128];
+    [self writeValue:[value toList]];
+  } else if ([value isKindOfClass:[CropRectWrapper class]]) {
+    [self writeByte:129];
+    [self writeValue:[value toList]];
+  } else if ([value isKindOfClass:[PlaneWrapper class]]) {
+    [self writeByte:130];
+    [self writeValue:[value toList]];
+  } else {
+    [super writeValue:value];
+  }
+}
+@end
+
+@interface AnalysisImageUtilsCodecReaderWriter : FlutterStandardReaderWriter
+@end
+@implementation AnalysisImageUtilsCodecReaderWriter
+- (FlutterStandardWriter *)writerWithData:(NSMutableData *)data {
+  return [[AnalysisImageUtilsCodecWriter alloc] initWithData:data];
+}
+- (FlutterStandardReader *)readerWithData:(NSData *)data {
+  return [[AnalysisImageUtilsCodecReader alloc] initWithData:data];
+}
+@end
+
+NSObject<FlutterMessageCodec> *AnalysisImageUtilsGetCodec() {
+  static FlutterStandardMessageCodec *sSharedObject = nil;
+  static dispatch_once_t sPred = 0;
+  dispatch_once(&sPred, ^{
+    AnalysisImageUtilsCodecReaderWriter *readerWriter = [[AnalysisImageUtilsCodecReaderWriter alloc] init];
+    sSharedObject = [FlutterStandardMessageCodec codecWithReaderWriter:readerWriter];
+  });
+  return sSharedObject;
+}
+
+void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<AnalysisImageUtils> *api) {
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.AnalysisImageUtils.nv21toJpeg"
+        binaryMessenger:binaryMessenger
+        codec:AnalysisImageUtilsGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(nv21toJpegNv21Image:jpegQuality:completion:)], @"AnalysisImageUtils api (%@) doesn't respond to @selector(nv21toJpegNv21Image:jpegQuality:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        AnalysisImageWrapper *arg_nv21Image = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_jpegQuality = GetNullableObjectAtIndex(args, 1);
+        [api nv21toJpegNv21Image:arg_nv21Image jpegQuality:arg_jpegQuality completion:^(AnalysisImageWrapper *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.AnalysisImageUtils.yuv420toJpeg"
+        binaryMessenger:binaryMessenger
+        codec:AnalysisImageUtilsGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(yuv420toJpegYuvImage:jpegQuality:completion:)], @"AnalysisImageUtils api (%@) doesn't respond to @selector(yuv420toJpegYuvImage:jpegQuality:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        AnalysisImageWrapper *arg_yuvImage = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_jpegQuality = GetNullableObjectAtIndex(args, 1);
+        [api yuv420toJpegYuvImage:arg_yuvImage jpegQuality:arg_jpegQuality completion:^(AnalysisImageWrapper *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.AnalysisImageUtils.yuv420toNv21"
+        binaryMessenger:binaryMessenger
+        codec:AnalysisImageUtilsGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(yuv420toNv21YuvImage:completion:)], @"AnalysisImageUtils api (%@) doesn't respond to @selector(yuv420toNv21YuvImage:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        AnalysisImageWrapper *arg_yuvImage = GetNullableObjectAtIndex(args, 0);
+        [api yuv420toNv21YuvImage:arg_yuvImage completion:^(AnalysisImageWrapper *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.AnalysisImageUtils.bgra8888toJpeg"
+        binaryMessenger:binaryMessenger
+        codec:AnalysisImageUtilsGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(bgra8888toJpegBgra8888image:jpegQuality:completion:)], @"AnalysisImageUtils api (%@) doesn't respond to @selector(bgra8888toJpegBgra8888image:jpegQuality:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        AnalysisImageWrapper *arg_bgra8888image = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_jpegQuality = GetNullableObjectAtIndex(args, 1);
+        [api bgra8888toJpegBgra8888image:arg_bgra8888image jpegQuality:arg_jpegQuality completion:^(AnalysisImageWrapper *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+}
 @interface CameraInterfaceCodecReader : FlutterStandardReader
 @end
 @implementation CameraInterfaceCodecReader
