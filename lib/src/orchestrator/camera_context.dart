@@ -33,6 +33,8 @@ class CameraContext {
   /// this is where we are going to store any photo
   final SaveConfig saveConfig;
 
+  final bool enablePhysicalButton;
+
   /// allows to create dynamic analysis using the current preview
   final AnalysisController? analysisController;
 
@@ -61,6 +63,7 @@ class CameraContext {
     required this.saveConfig,
     required this.exifPreferences,
     required this.filterController,
+    required this.enablePhysicalButton,
     this.onPermissionsResult,
   }) {
     var preparingState = PreparingCameraState(
@@ -81,10 +84,12 @@ class CameraContext {
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,
     required AwesomeFilter filter,
+    required bool enablePhysicalButton,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
           filterController: BehaviorSubject.seeded(filter),
+          enablePhysicalButton: enablePhysicalButton,
           onPermissionsResult: onPermissionsResult,
           saveConfig: saveConfig,
           analysisController: onImageForAnalysis != null

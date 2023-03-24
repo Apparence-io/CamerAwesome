@@ -147,6 +147,7 @@ abstract class CameraInterface {
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
+    bool enablePhysicalButton,
     String flashMode,
     String captureMode,
     bool enableImageStream,

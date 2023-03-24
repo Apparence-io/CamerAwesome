@@ -34,7 +34,7 @@ class CamerawesomePlugin {
 
   static const EventChannel _luminosityChannel =
       EventChannel('camerawesome/luminosity');
-  
+
   static const EventChannel _physicalButtonChannel =
       EventChannel('camerawesome/physical_button');
 
@@ -115,8 +115,9 @@ class CamerawesomePlugin {
   static Stream<CameraPhysicalButton>? listenPhysicalButton() {
     _physicalButtonStream ??= _physicalButtonChannel
         .receiveBroadcastStream('physicalButtonChannel')
-        .transform(StreamTransformer<dynamic, CameraPhysicalButton>.fromHandlers(
-            handleData: (data, sink) {
+        .transform(
+            StreamTransformer<dynamic, CameraPhysicalButton>.fromHandlers(
+                handleData: (data, sink) {
       CameraPhysicalButton? physicalButton;
       switch (data) {
         case 'VOLUME_UP':
@@ -170,7 +171,8 @@ class CamerawesomePlugin {
 
   static Future<bool?> init(
     SensorConfig sensorConfig,
-    bool enableImageStream, {
+    bool enableImageStream,
+    bool enablePhysicalButton, {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
   }) async {
@@ -180,6 +182,7 @@ class CamerawesomePlugin {
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
           sensorConfig.mirrorFrontCamera,
+          enablePhysicalButton,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),
           enableImageStream,
