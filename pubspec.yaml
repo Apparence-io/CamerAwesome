@@ -8,7 +8,7 @@ repository: https://github.com/Apparence-io/camera_awesome
 
 environment:
   sdk: '>=2.17.3 <3.0.0'
-  flutter: ">=1.10.0"
+  flutter: '>=1.10.0'
 
 dependencies:
   carousel_slider: ^4.2.1
@@ -17,7 +17,7 @@ dependencies:
   flutter:
     sdk: flutter
   image: ^4.0.15
-    # photofilters:
+  # photofilters:
   # git: https://github.com/svenopdehipt/photofilters.git
   rxdart: ^0.27.7
 dev_dependencies:

@@ -35,5 +35,3 @@ flutter:
 patrol:
   android:
     package_name: com.example.camera_app
-  ios:
-    bundle_id:
