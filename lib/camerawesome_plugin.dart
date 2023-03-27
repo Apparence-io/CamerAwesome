@@ -340,7 +340,6 @@ class CamerawesomePlugin {
     if (brightness < 0 || brightness > 1) {
       throw "Value must be between [0,1]";
     }
-    // TODO: implement it on iOS
     return CameraInterface().setCorrection(brightness);
   }
 

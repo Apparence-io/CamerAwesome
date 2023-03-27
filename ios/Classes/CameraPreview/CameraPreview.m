@@ -270,6 +270,27 @@
   }
 }
 
+- (void)setBrightness:(NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  NSError *brightnessError = nil;
+  if ([_captureDevice lockForConfiguration:&brightnessError]) {
+    AVCaptureExposureMode exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+    if ([_captureDevice isExposureModeSupported:exposureMode]) {
+      [_captureDevice setExposureMode:exposureMode];
+    }
+    
+    CGFloat minExposureTargetBias = _captureDevice.minExposureTargetBias;
+    CGFloat maxExposureTargetBias = _captureDevice.maxExposureTargetBias;
+    
+    CGFloat exposureTargetBias = minExposureTargetBias + (maxExposureTargetBias - minExposureTargetBias) * [brightness floatValue];
+    exposureTargetBias = MAX(minExposureTargetBias, MIN(maxExposureTargetBias, exposureTargetBias));
+    
+    [_captureDevice setExposureTargetBias:exposureTargetBias completionHandler:nil];
+    [_captureDevice unlockForConfiguration];
+  } else {
+    *error = [FlutterError errorWithCode:@"BRIGHTNESS_NOT_SET" message:@"can't set the brightness value" details:[brightnessError localizedDescription]];
+  }
+}
+
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   _mirrorFrontCamera = value;
 }
