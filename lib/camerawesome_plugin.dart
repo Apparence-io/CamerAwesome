@@ -343,22 +343,6 @@ class CamerawesomePlugin {
     return CameraInterface().setCorrection(brightness);
   }
 
-  // listen for luminosity level
-  static Stream<SensorData>? listenLuminosityLevel() {
-    if (!Platform.isAndroid) {
-      // Not available
-      // TODO Implement it on iOS
-      throw "not available on this OS for now... only Android";
-    }
-    _luminositySensorDataStream ??= _luminosityChannel
-        .receiveBroadcastStream('luminosityChannel')
-        .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
-            handleData: (data, sink) {
-      sink.add(SensorData(data));
-    }));
-    return _luminositySensorDataStream;
-  }
-
   /// returns the max zoom available on device
   static Future<num?> getMaxZoom() {
     return CameraInterface().getMaxZoom();

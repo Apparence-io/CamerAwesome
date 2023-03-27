@@ -167,10 +167,6 @@ class SensorConfig {
   /// Returns the current brightness without stream
   double get brightness => _brightnessController.value;
 
-  /// Only available on Android
-  Stream<SensorData>? get luminosityLevelStream =>
-      CamerawesomePlugin.listenLuminosityLevel();
-
   void dispose() {
     _brightnessSubscription?.cancel();
     _brightnessController.close();
