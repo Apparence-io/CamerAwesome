@@ -66,8 +66,12 @@ class VideoRecordingCameraState extends CameraState {
     if (currentCapture == null) {
       return;
     }
-    await CamerawesomePlugin.stopRecordingVideo();
-    _mediaCapture = MediaCapture.success(filePath: currentCapture.filePath);
+    final result = await CamerawesomePlugin.stopRecordingVideo();
+    if (result) {
+      _mediaCapture = MediaCapture.success(filePath: currentCapture.filePath);
+    } else {
+      _mediaCapture = MediaCapture.failure(filePath: currentCapture.filePath);
+    }
     await CamerawesomePlugin.setCaptureMode(CaptureMode.video);
     cameraContext.changeState(VideoCameraState.from(cameraContext));
   }
