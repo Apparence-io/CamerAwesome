@@ -168,7 +168,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)setCorrectionBrightness:(nonnull NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  // TODO:
+  [_camera setBrightness:brightness error:error];
 }
 - (void)setExifPreferencesExifPreferences:(ExifPreferences *)exifPreferences completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
   [self.camera setExifPreferencesGPSLocation: exifPreferences.saveGPSLocation completion:completion];
