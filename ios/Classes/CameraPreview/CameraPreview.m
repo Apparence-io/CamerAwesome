@@ -175,7 +175,9 @@
 
 // Get max zoom level
 - (CGFloat)getMaxZoom {
-  return _captureDevice.activeFormat.videoMaxZoomFactor;
+  const maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
+  // Not sure why on iPhone 14 Pro, zoom at 90 not working, so let's block to 50 which is very high
+  return maxZoom > 50 ? 50 : maxZoom;
 }
 
 /// Dispose camera inputs & outputs
@@ -242,7 +244,7 @@
 
 /// Set zoom level
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  CGFloat maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
+  CGFloat maxZoom = [self getMaxZoom];
   CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
   
   NSError *zoomError;
