@@ -1,10 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
-import 'package:camerawesome/src/orchestrator/models/models.dart';
-import 'package:camerawesome/src/orchestrator/states/states.dart';
-import 'package:camerawesome/src/widgets/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,6 +72,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Enable audio while video recording
   final bool enableAudio;
 
+  /// Enable physical button (volume +/-) to take photo or record video
+  final bool enablePhysicalButton;
+
   /// Path builders when taking photos or recording videos
   final SaveConfig saveConfig;
 
@@ -115,6 +117,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.flashMode,
     required this.zoom,
     required this.mirrorFrontCamera,
+    required this.enablePhysicalButton,
     required this.aspectRatio,
     required this.exifPreferences,
     required this.enableAudio,
@@ -163,6 +166,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     bool mirrorFrontCamera = false,
+    bool enablePhysicalButton = false,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
@@ -190,6 +194,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           aspectRatio: aspectRatio,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
+          enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
           builder: (cameraModeState, previewSize, previewRect) {
             return AwesomeCameraLayout(
@@ -222,6 +227,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     bool mirrorFrontCamera = false,
+    bool enablePhysicalButton = false,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
@@ -242,6 +248,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,
+          enablePhysicalButton: enablePhysicalButton,
           aspectRatio: aspectRatio,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
@@ -318,6 +325,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
         mirrorFrontCamera: widget.mirrorFrontCamera,
         aspectRatio: widget.aspectRatio,
       ),
+      enablePhysicalButton: widget.enablePhysicalButton,
       filter: widget.filter ?? AwesomeFilter.None,
       initialCaptureMode: widget.saveConfig.initialCaptureMode,
       saveConfig: widget.saveConfig,

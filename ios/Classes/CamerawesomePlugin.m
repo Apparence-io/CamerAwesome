@@ -6,6 +6,7 @@
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
 FlutterEventSink imageStreamEventSink;
+FlutterEventSink physicalButtonEventSink;
 
 @interface CamerawesomePlugin () <CameraInterface>
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
@@ -36,8 +37,11 @@ FlutterEventSink imageStreamEventSink;
                                                                       binaryMessenger:[registrar messenger]];
   FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/images"
                                                                       binaryMessenger:[registrar messenger]];
+  FlutterEventChannel *physicalButtonChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/physical_button"
+                                                                      binaryMessenger:[registrar messenger]];
   [orientationChannel setStreamHandler:instance];
   [imageStreamChannel setStreamHandler:instance];
+  [physicalButtonChannel setStreamHandler:instance];
   
   CameraInterfaceSetup(registrar.messenger, instance);
 }
@@ -56,6 +60,12 @@ FlutterEventSink imageStreamEventSink;
     if (self.camera != nil) {
       [self.camera setImageStreamEvent:imageStreamEventSink];
     }
+  } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
+    physicalButtonEventSink = eventSink;
+    
+    if (self.camera != nil) {
+      [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
+    }
   }
   
   return nil;
@@ -73,6 +83,12 @@ FlutterEventSink imageStreamEventSink;
     
     if (self.camera != nil) {
       [self.camera setImageStreamEvent:imageStreamEventSink];
+    }
+  } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
+    physicalButtonEventSink = nil;
+    
+    if (self.camera != nil) {
+      [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
     }
   }
   return nil;
@@ -255,7 +271,7 @@ FlutterEventSink imageStreamEventSink;
   return [_camera getSensors:AVCaptureDevicePositionBack];
 }
 
-- (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
@@ -266,12 +282,19 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
+  // If camera preview exist, dispose it
+  if (self.camera != nil) {
+    [self.camera dispose];
+    self.camera = nil;
+  }
+  
   AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
   CameraSensor cameraSensor = ([sensor isEqualToString:@"FRONT"]) ? Front : Back;
   self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
                                                streamImages:[enableImageStream boolValue]
                                           mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                       enablePhysicalButton:[enablePhysicalButton boolValue]
                                             aspectRatioMode:aspectRatioMode
                                                 captureMode:captureModeType
                                                  completion:completion

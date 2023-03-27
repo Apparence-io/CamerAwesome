@@ -6,6 +6,7 @@ import 'package:camerawesome/pigeon.dart';
 
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
+import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 
 /// When is not ready
 class PreparingCameraState extends CameraState {
@@ -38,14 +39,23 @@ class PreparingCameraState extends CameraState {
         break;
     }
     await cameraContext.analysisController?.setup();
+
+    if (cameraContext.enablePhysicalButton) {
+      initPhysicalButton();
+    }
   }
 
   /// subscription for permissions
   StreamSubscription? _permissionStreamSub;
 
+  /// subscription for physical button
+  StreamSubscription? _physicalButtonStreamSub;
+
+  // FIXME: Remove enableImageStream & enablePhysicalButton options here
   Future<void> initPermissions(
     SensorConfig sensorConfig, {
     required bool enableImageStream,
+    required bool enablePhysicalButton,
   }) async {
     // wait user accept permissions to init widget completely on android
     if (Platform.isAndroid) {
@@ -53,7 +63,10 @@ class PreparingCameraState extends CameraState {
           CamerawesomePlugin.listenPermissionResult()!.listen(
         (res) {
           if (res && !_isReady) {
-            _init(enableImageStream: enableImageStream);
+            _init(
+              enableImageStream: enableImageStream,
+              enablePhysicalButton: enablePhysicalButton,
+            );
           }
           if (onPermissionsResult != null) {
             onPermissionsResult!(res);
@@ -77,6 +90,23 @@ class PreparingCameraState extends CameraState {
     }
   }
 
+  void initPhysicalButton() {
+    _physicalButtonStreamSub?.cancel();
+    _physicalButtonStreamSub =
+        CamerawesomePlugin.listenPhysicalButton()!.listen(
+      (res) async {
+        if (res == CameraPhysicalButton.volume_down ||
+            res == CameraPhysicalButton.volume_up) {
+          cameraContext.state.when(
+            onPhotoMode: (pm) => pm.takePhoto(),
+            onVideoMode: (vm) => vm.startRecording(),
+            onVideoRecordingMode: (vrm) => vrm.stopRecording(),
+          );
+        }
+          },
+        );
+  }
+
   @override
   void setState(CaptureMode captureMode) {
     throw CameraNotReadyException(
@@ -91,7 +121,10 @@ class PreparingCameraState extends CameraState {
 
   Future _startVideoMode() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
+    await _init(
+      enableImageStream: cameraContext.imageAnalysisEnabled,
+      enablePhysicalButton: cameraContext.enablePhysicalButton,
+    );
     cameraContext.changeState(VideoCameraState.from(cameraContext));
 
     return CamerawesomePlugin.start();
@@ -99,7 +132,10 @@ class PreparingCameraState extends CameraState {
 
   Future _startPhotoMode() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
+    await _init(
+      enableImageStream: cameraContext.imageAnalysisEnabled,
+      enablePhysicalButton: cameraContext.enablePhysicalButton,
+    );
     cameraContext.changeState(PhotoCameraState.from(cameraContext));
 
     return CamerawesomePlugin.start();
@@ -110,23 +146,27 @@ class PreparingCameraState extends CameraState {
   // TODO Refactor this (make it stream providing state)
   Future<bool> _init({
     required bool enableImageStream,
+    required bool enablePhysicalButton,
   }) async {
     initPermissions(
       sensorConfig,
       enableImageStream: enableImageStream,
+      enablePhysicalButton: enablePhysicalButton,
     );
     await CamerawesomePlugin.init(
       sensorConfig,
       enableImageStream,
+      enablePhysicalButton,
       captureMode: nextCaptureMode,
       exifPreferences: cameraContext.exifPreferences,
     );
     _isReady = true;
-    return true;
+    return _isReady;
   }
 
   @override
   void dispose() {
     _permissionStreamSub?.cancel();
+    _physicalButtonStreamSub?.cancel();
   }
 }

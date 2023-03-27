@@ -3,12 +3,14 @@ package com.apparence.camerawesome.cameraX
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.location.Location
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.os.Messenger
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -21,6 +23,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.exifinterface.media.ExifInterface
 import com.apparence.camerawesome.*
+import com.apparence.camerawesome.buttons.PhysicalButtonMessageHandler
+import com.apparence.camerawesome.buttons.PhysicalButtonsHandler
+import com.apparence.camerawesome.buttons.PlayerService
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.CameraSensor
 import com.apparence.camerawesome.sensors.SensorOrientationListener
@@ -51,6 +56,7 @@ enum class CaptureModes {
 }
 
 class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
+    private lateinit var physicalButtonHandler: PhysicalButtonsHandler
     private var binding: FlutterPluginBinding? = null
     private var textureRegistry: TextureRegistry? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
@@ -92,19 +98,30 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         0.0
     )
 
-
     @SuppressLint("RestrictedApi")
     override fun setupCamera(
         sensor: String,
         aspectRatio: String,
         zoom: Double,
         mirrorFrontCamera: Boolean,
+        enablePhysicalButton: Boolean,
         flashMode: String,
         captureMode: String,
         enableImageStream: Boolean,
         exifPreferences: ExifPreferences,
-        callback: (Result<Boolean>) -> Unit,
+        callback: (Result<Boolean>) -> Unit
     ) {
+        if (enablePhysicalButton) {
+            val serviceIntent = Intent(activity!!, PlayerService::class.java)
+            serviceIntent.putExtra(
+                PhysicalButtonsHandler.BROADCAST_VOLUME_BUTTONS,
+                Messenger(PhysicalButtonMessageHandler(physicalButtonHandler))
+            )
+            activity!!.startService(serviceIntent)
+        } else {
+            activity!!.stopService(Intent(activity!!, PlayerService::class.java))
+        }
+
         val future = ProcessCameraProvider.getInstance(
             activity!!
         )
@@ -171,8 +188,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun setExifPreferences(
-        exifPreferences: ExifPreferences,
-        callback: (Result<Boolean>) -> Unit
+        exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit
     ) {
         if (exifPreferences.saveGPSLocation) {
             val permissions = listOf(
@@ -297,8 +313,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             metadata.isReversedHorizontal = cameraState.mirrorFrontCamera
         }
         val outputFileOptions =
-            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata)
-                .build()
+            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
 
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.imageCapture!!.takePicture(outputFileOptions,
@@ -361,9 +376,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        path: String,
-        options: VideoOptions?,
-        callback: (Result<Unit>) -> Unit
+        path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit
     ) {
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
@@ -661,9 +674,9 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    override fun setMirrorFrontCamera(mirrorFrontCamera: Boolean) {
+    override fun setMirrorFrontCamera(mirror: Boolean) {
         cameraState.apply {
-            this.mirrorFrontCamera = mirrorFrontCamera
+            this.mirrorFrontCamera = mirror
             updateLifecycle(activity!!)
         }
     }
@@ -679,6 +692,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         imageStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/images")
         EventChannel(binding.binaryMessenger, "camerawesome/permissions").setStreamHandler(
             cameraPermissions
+        )
+        physicalButtonHandler = PhysicalButtonsHandler()
+        EventChannel(binding.binaryMessenger, "camerawesome/physical_button").setStreamHandler(
+            physicalButtonHandler
         )
     }
 

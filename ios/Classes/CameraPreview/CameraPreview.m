@@ -14,6 +14,7 @@
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
+                enablePhysicalButton:(BOOL)enablePhysicalButton
                      aspectRatioMode:(AspectRatio)aspectRatioMode
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
@@ -53,8 +54,13 @@
   _imageStreamController = [[ImageStreamController alloc] initWithStreamImages:streamImages];
   _motionController = [[MotionController alloc] init];
   _locationController = [[LocationController alloc] init];
+  _physicalButtonController = [[PhysicalButtonController alloc] init];
   
   [_motionController startMotionDetection];
+  
+  if (enablePhysicalButton) {
+    [_physicalButtonController startListening];
+  }
   
   [self setBestPreviewQuality];
   
@@ -76,6 +82,13 @@
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink {
   if (_motionController != nil) {
     [_motionController setOrientationEventSink:orientationEventSink];
+  }
+}
+
+/// Set physical button Flutter sink
+- (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink {
+  if (_physicalButtonController != nil) {
+    [_physicalButtonController setPhysicalButtonEventSink:physicalButtonEventSink];
   }
 }
 
@@ -181,6 +194,7 @@
 /// Dispose camera inputs & outputs
 - (void)dispose {
   [self stop];
+  [self.physicalButtonController stopListening];
   
   for (AVCaptureInput *input in [_captureSession inputs]) {
     [_captureSession removeInput:input];
