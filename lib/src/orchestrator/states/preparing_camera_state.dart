@@ -91,6 +91,7 @@ class PreparingCameraState extends CameraState {
   }
 
   void initPhysicalButton() {
+    _physicalButtonStreamSub?.cancel();
     _physicalButtonStreamSub =
         CamerawesomePlugin.listenPhysicalButton()!.listen(
       (res) async {
@@ -102,8 +103,8 @@ class PreparingCameraState extends CameraState {
             onVideoRecordingMode: (vrm) => vrm.stopRecording(),
           );
         }
-      },
-    );
+          },
+        );
   }
 
   @override

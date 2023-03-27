@@ -118,6 +118,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 Messenger(PhysicalButtonMessageHandler(physicalButtonHandler))
             )
             activity!!.startService(serviceIntent)
+        } else {
+            activity!!.stopService(Intent(activity!!, PlayerService::class.java))
         }
 
         val future = ProcessCameraProvider.getInstance(
@@ -186,8 +188,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun setExifPreferences(
-        exifPreferences: ExifPreferences,
-        callback: (Result<Boolean>) -> Unit
+        exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit
     ) {
         if (exifPreferences.saveGPSLocation) {
             val permissions = listOf(
@@ -312,8 +313,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             metadata.isReversedHorizontal = cameraState.mirrorFrontCamera
         }
         val outputFileOptions =
-            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata)
-                .build()
+            ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
 
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.imageCapture!!.takePicture(outputFileOptions,
@@ -376,9 +376,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        path: String,
-        options: VideoOptions?,
-        callback: (Result<Unit>) -> Unit
+        path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit
     ) {
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
