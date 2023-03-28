@@ -284,7 +284,7 @@ interface CameraInterface {
    * refused but the app should still be able to run.
    */
   fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
-  fun getPreviewTextureId(): Long
+  fun getPreviewTextureId(sensor: String): Long
   fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit)
   fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
   fun pauseVideoRecording()
@@ -398,10 +398,12 @@ interface CameraInterface {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getPreviewTextureId", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val sensorArg = args[0] as String
             var wrapped: List<Any?>
             try {
-              wrapped = listOf<Any?>(api.getPreviewTextureId())
+              wrapped = listOf<Any?>(api.getPreviewTextureId(sensorArg))
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }

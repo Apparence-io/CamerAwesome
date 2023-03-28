@@ -126,8 +126,13 @@ abstract class CameraState {
     return cameraContext.getSensors();
   }
 
-  Future<int?> textureId() {
-    return cameraContext.textureId();
+  // TODO: get textureID from camera ID
+  Future<int?> backPreviewTextureId() {
+    return cameraContext.backPreviewTextureId();
+  }
+
+  Future<int?> frontPreviewTextureId() {
+    return cameraContext.frontPreviewTextureId();
   }
 
   AnalysisController? get analysisController =>

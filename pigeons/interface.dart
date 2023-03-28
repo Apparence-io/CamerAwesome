@@ -141,6 +141,7 @@ class AndroidFocusSettings {
 
 @HostApi()
 abstract class CameraInterface {
+  // TODO: instead of "String sensor", use an object to store sensor
   @async
   bool setupCamera(
     String sensor,
@@ -161,7 +162,7 @@ abstract class CameraInterface {
   @async
   List<String> requestPermissions(bool saveGpsLocation);
 
-  int getPreviewTextureId();
+  int getPreviewTextureId(String sensor);
 
   // TODO async with void return type seems to not work (channel-error)
   @async

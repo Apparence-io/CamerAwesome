@@ -2,6 +2,7 @@
 #import "CameraPreview.h"
 #import "Pigeon/Pigeon.h"
 #import "Permissions.h"
+#import "SensorsController.h"
 
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
@@ -9,9 +10,11 @@ FlutterEventSink imageStreamEventSink;
 FlutterEventSink physicalButtonEventSink;
 
 @interface CamerawesomePlugin () <CameraInterface>
-@property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
-@property int64_t textureId;
+@property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *textureRegistry;
+@property int64_t backPreviewTextureId;
+@property int64_t frontPreviewTextureId;
 @property CameraPreview *camera;
+@property MultiCameraPreview *multiCameraPreview;
 - (instancetype)init:(NSObject<FlutterPluginRegistrar>*)registrar;
 @end
 
@@ -22,7 +25,7 @@ FlutterEventSink physicalButtonEventSink;
 - (instancetype)init:(NSObject<FlutterPluginRegistrar>*)registrar {
   self = [super init];
   
-  _registry = registrar.textures;
+  _textureRegistry = registrar.textures;
   
   if (_dispatchQueue == nil) {
     _dispatchQueue = dispatch_queue_create("camerawesome.dispatchqueue", NULL);
@@ -125,7 +128,16 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable PreviewSize *)getEffectivPreviewSizeWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  CGSize previewSize = [_camera getEffectivPreviewSize];
+  if (self.camera == nil && self.multiCameraPreview == nil) {
+    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
+  }
+  
+  CGSize previewSize;
+  if (self.multiCameraPreview != nil) {
+    previewSize = [_multiCameraPreview getEffectivPreviewSize];
+  } else {
+    previewSize = [_camera getEffectivPreviewSize];
+  }
   
   // height & width are inverted, this is intentionnal, because camera is always on portrait mode
   return [PreviewSize makeWithWidth:@(previewSize.height) height:@(previewSize.width)];
@@ -135,8 +147,13 @@ FlutterEventSink physicalButtonEventSink;
   return @([_camera getMaxZoom]);
 }
 
-- (nullable NSNumber *)getPreviewTextureIdWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  return @(_textureId);
+// TODO: use different enum instead of Sensor
+- (nullable NSNumber *)getPreviewTextureIdSensor:(nonnull NSString *)sensor error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  if ([sensor isEqualToString:@"front"]) {
+    return @(_frontPreviewTextureId);
+  } else {
+    return @(_backPreviewTextureId);
+  }
 }
 
 - (void)handleAutoFocusWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -218,12 +235,13 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  if (self.camera == nil) {
-    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
-    return;
-  }
-  
-  [self.camera setCameraPresset:CGSizeMake([size.width floatValue], [size.height floatValue])];
+  // TODO:
+//  if (self.camera == nil) {
+//    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
+//    return;
+//  }
+//
+//  [self.camera setCameraPresset:CGSizeMake([size.width floatValue], [size.height floatValue])];
 }
 
 - (void)setPreviewSizeSize:(nonnull PreviewSize *)size error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -232,12 +250,16 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  if (self.camera == nil) {
+  if (self.camera == nil && self.multiCameraPreview != nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return;
   }
   
-  [self.camera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
+  if (self.multiCameraPreview != nil) {
+    [self.multiCameraPreview setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
+  } else {
+    [self.camera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
+  }
 }
 
 - (void)setRecordingAudioModeEnableAudio:(NSNumber *)enableAudio completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
@@ -264,11 +286,11 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable NSArray<PigeonSensorTypeDevice *> *)getFrontSensorsWithError:(FlutterError *_Nullable *_Nonnull)error {
-  return [_camera getSensors:AVCaptureDevicePositionFront];
+  return [SensorsController getSensors:AVCaptureDevicePositionFront];
 }
 
 - (nullable NSArray<PigeonSensorTypeDevice *> *)getBackSensorsWithError:(FlutterError *_Nullable *_Nonnull)error {
-  return [_camera getSensors:AVCaptureDevicePositionBack];
+  return [SensorsController getSensors:AVCaptureDevicePositionBack];
 }
 
 - (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
@@ -291,24 +313,45 @@ FlutterEventSink physicalButtonEventSink;
   AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
   CameraSensor cameraSensor = ([sensor isEqualToString:@"FRONT"]) ? Front : Back;
-  self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
-                                               streamImages:[enableImageStream boolValue]
-                                          mirrorFrontCamera:[mirrorFrontCamera boolValue]
-                                       enablePhysicalButton:[enablePhysicalButton boolValue]
-                                            aspectRatioMode:aspectRatioMode
-                                                captureMode:captureModeType
-                                                 completion:completion
-                                              dispatchQueue:dispatch_queue_create("camerawesome.dispatchqueue", NULL)];
-  [self->_registry textureFrameAvailable:self->_textureId];
   
-  __weak typeof(self) weakSelf = self;
-  self.camera.onFrameAvailable = ^{
-    [weakSelf.registry textureFrameAvailable:weakSelf.textureId];
-  };
-  
-  // Assign texture id
-  self->_textureId = [self->_registry registerTexture:self.camera];
-  
+  // TODO: get dual camera parameter enabled or not
+  bool dualCamera = true;
+  if (dualCamera) {
+    self.multiCameraPreview = [[MultiCameraPreview alloc] init];
+    
+    [self->_textureRegistry textureFrameAvailable:self->_frontPreviewTextureId];
+    [self->_textureRegistry textureFrameAvailable:self->_backPreviewTextureId];
+    
+    __weak typeof(self) weakSelf = self;
+    self.multiCameraPreview.onPreviewBackFrameAvailable = ^{
+      [weakSelf.textureRegistry textureFrameAvailable:weakSelf.backPreviewTextureId];
+    };
+    self.multiCameraPreview.onPreviewFrontFrameAvailable = ^{
+      [weakSelf.textureRegistry textureFrameAvailable:weakSelf.frontPreviewTextureId];
+    };
+    
+    self->_backPreviewTextureId = [self->_textureRegistry registerTexture:self.multiCameraPreview.backPreviewTexture];
+    self->_frontPreviewTextureId = [self->_textureRegistry registerTexture:self.multiCameraPreview.frontPreviewTexture];
+  } else {
+    self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
+                                                 streamImages:[enableImageStream boolValue]
+                                            mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                         enablePhysicalButton:[enablePhysicalButton boolValue]
+                                              aspectRatioMode:aspectRatioMode
+                                                  captureMode:captureModeType
+                                                   completion:completion
+                                                dispatchQueue:dispatch_queue_create("camerawesome.dispatchqueue", NULL)];
+    self->_backPreviewTextureId = [self->_textureRegistry registerTexture:self.camera.previewTexture];
+    
+    // TODO:
+    __weak typeof(self) weakSelf = self;
+    self.camera.onPreviewBackFrameAvailable = ^{
+      [weakSelf.textureRegistry textureFrameAvailable:weakSelf.backPreviewTextureId];
+    };
+    
+    [self->_textureRegistry textureFrameAvailable:self->_backPreviewTextureId];
+  }
+
   completion(@(YES), nil);
 }
 
@@ -320,14 +363,21 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable NSNumber *)startWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  if (self.camera == nil) {
+  if (self.camera == nil && self.multiCameraPreview == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return @(NO);
   }
   
-  dispatch_async(_dispatchQueue, ^{
-    [self->_camera start];
-  });
+  // TODO: make a camera preview abstract class
+  if (self.multiCameraPreview != nil) {
+    dispatch_async(_dispatchQueue, ^{
+      [self->_multiCameraPreview start];
+    });
+  } else {
+    dispatch_async(_dispatchQueue, ^{
+      [self->_camera start];
+    });
+  }
   
   return @(YES);
 }
@@ -339,15 +389,24 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable NSNumber *)stopWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  if (self.camera == nil) {
+  if (self.camera == nil && self.multiCameraPreview == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return @(NO);
   }
   
-  dispatch_async(_dispatchQueue, ^{
-    [self->_registry unregisterTexture:self->_textureId]; // Lets try this
-    [self->_camera stop];
-  });
+  // TODO
+  if (self.multiCameraPreview != nil) {
+    dispatch_async(_dispatchQueue, ^{
+      [self->_textureRegistry unregisterTexture:self->_backPreviewTextureId];
+      [self->_textureRegistry unregisterTexture:self->_frontPreviewTextureId];
+    });
+  } else {
+    dispatch_async(_dispatchQueue, ^{
+      [self->_textureRegistry unregisterTexture:self->_backPreviewTextureId];
+      [self->_textureRegistry unregisterTexture:self->_frontPreviewTextureId];
+      [self->_camera stop];
+    });
+  }
   
   return @(YES);
 }

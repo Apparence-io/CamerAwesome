@@ -24,7 +24,13 @@
   _completion = completion;
   _dispatchQueue = dispatchQueue;
   
-  // Creating capture session
+  _previewTexture = [[CameraPreviewTexture alloc] init];
+  
+  _cameraSensor = sensor;
+  _aspectRatio = aspectRatioMode;
+  _mirrorFrontCamera = mirrorFrontCamera;
+  
+   //Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
   _captureVideoOutput = [AVCaptureVideoDataOutput new];
   _captureVideoOutput.videoSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
@@ -32,13 +38,11 @@
   [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
   [_captureSession addOutputWithNoConnections:_captureVideoOutput];
   
-  _cameraSensor = sensor;
-  _aspectRatio = aspectRatioMode;
-  _mirrorFrontCamera = mirrorFrontCamera;
-  
   [self initCameraPreview:sensor];
   
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+  
+//  [self configSession];
   
   _captureMode = captureMode;
   
@@ -63,6 +67,8 @@
   }
   
   [self setBestPreviewQuality];
+  
+  // [self.cameraSession startRunning];
   
   return self;
 }
@@ -92,6 +98,7 @@
   }
 }
 
+// TODO: move this to a QualityController
 /// Assign the default preview qualities
 - (void)setBestPreviewQuality {
   NSArray *qualities = [CameraQualities captureFormatsForDevice:_captureDevice];
@@ -150,9 +157,10 @@
 }
 
 - (void)dealloc {
-  if (_latestPixelBuffer) {
-    CFRelease(_latestPixelBuffer);
-  }
+  // TODO
+  //  if (_latestPixelBuffer) {
+  //    CFRelease(_latestPixelBuffer);
+  //  }
   [_motionController startMotionDetection];
 }
 
@@ -385,40 +393,6 @@
   return nil;
 }
 
-- (NSArray *)getSensors:(AVCaptureDevicePosition)position {
-  NSMutableArray *sensors = [NSMutableArray new];
-  
-  NSArray *sensorsType = @[AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera];
-  
-  AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                                                       discoverySessionWithDeviceTypes:sensorsType
-                                                       mediaType:AVMediaTypeVideo
-                                                       position:AVCaptureDevicePositionUnspecified];
-  
-  for (AVCaptureDevice *device in discoverySession.devices) {
-    PigeonSensorType type;
-    if (device.deviceType == AVCaptureDeviceTypeBuiltInTelephotoCamera) {
-      type = PigeonSensorTypeTelephoto;
-    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInUltraWideCamera) {
-      type = PigeonSensorTypeUltraWideAngle;
-    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInTrueDepthCamera) {
-      type = PigeonSensorTypeTrueDepth;
-    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInWideAngleCamera) {
-      type = PigeonSensorTypeWideAngle;
-    } else {
-      type = PigeonSensorTypeUnknown;
-    }
-    
-    PigeonSensorTypeDevice *sensorType = [PigeonSensorTypeDevice makeWithSensorType:type name:device.localizedName iso:[NSNumber numberWithFloat:device.ISO] flashAvailable:[NSNumber numberWithBool:device.flashAvailable] uid:device.uniqueID];
-    
-    if (device.position == position) {
-      [sensors addObject:sensorType];
-    }
-  }
-  
-  return sensors;
-}
-
 /// Set capture mode between Photo & Video mode
 - (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (_videoController.isRecording) {
@@ -586,17 +560,9 @@
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
   if (output == _captureVideoOutput) {
-    CVPixelBufferRef newBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    CFRetain(newBuffer);
-    CVPixelBufferRef old = atomic_load(&_latestPixelBuffer);
-    while (!atomic_compare_exchange_strong(&_latestPixelBuffer, &old, newBuffer)) {
-      old = atomic_load(&_latestPixelBuffer);
-    }
-    if (old != nil) {
-      CFRelease(old);
-    }
-    if (_onFrameAvailable) {
-      _onFrameAvailable();
+    [self.previewTexture updateBuffer:sampleBuffer];
+    if (_onPreviewBackFrameAvailable) {
+      _onPreviewBackFrameAvailable();
     }
   }
   
@@ -609,18 +575,6 @@
   if (_videoController.isRecording) {
     [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:_captureVideoOutput];
   }
-}
-
-# pragma mark - Data manipulation
-
-/// Used to copy pixels to in-memory buffer
-- (CVPixelBufferRef _Nullable)copyPixelBuffer {
-  CVPixelBufferRef pixelBuffer = atomic_load(&_latestPixelBuffer);
-  while (!atomic_compare_exchange_strong(&_latestPixelBuffer, &pixelBuffer, nil)) {
-    pixelBuffer = atomic_load(&_latestPixelBuffer);
-  }
-  
-  return pixelBuffer;
 }
 
 @end

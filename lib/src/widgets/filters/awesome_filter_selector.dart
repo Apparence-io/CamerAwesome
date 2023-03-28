@@ -38,7 +38,7 @@ class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
 
     _selected = presetsIds.indexOf(widget.state.filter.id);
 
-    widget.state.textureId().then((textureId) {
+    widget.state.backPreviewTextureId().then((textureId) {
       setState(() {
         _textureId = textureId;
       });

@@ -205,8 +205,13 @@ class CameraContext {
     return CamerawesomePlugin.getSensors();
   }
 
-  Future<int?> textureId() {
-    return CamerawesomePlugin.getPreviewTexture()
+  Future<int?> backPreviewTextureId() {
+    return CamerawesomePlugin.getPreviewTexture(Sensors.back)
+        .then(((value) => value?.toInt()));
+  }
+
+  Future<int?> frontPreviewTextureId() {
+    return CamerawesomePlugin.getPreviewTexture(Sensors.front)
         .then(((value) => value?.toInt()));
   }
 }
