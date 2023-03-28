@@ -14,7 +14,7 @@ class VideoCameraState extends CameraState {
   factory VideoCameraState.from(CameraContext cameraContext) =>
       VideoCameraState(
         cameraContext: cameraContext,
-        filePathBuilder: cameraContext.saveConfig.videoPathBuilder!,
+        filePathBuilder: cameraContext.saveConfig!.videoPathBuilder!,
       );
 
   final FilePathBuilder filePathBuilder;

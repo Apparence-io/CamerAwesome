@@ -63,47 +63,52 @@ data class CameraXState(
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
-        // Preview
-        preview = if (aspectRatio != null) {
-            Preview.Builder().setTargetAspectRatio(aspectRatio!!).setCameraSelector(cameraSelector)
-                .build()
-        } else {
-            Preview.Builder().setCameraSelector(cameraSelector).build()
-        }
+        if (currentCaptureMode != CaptureModes.ANALYSIS_ONLY) {
+            // Preview
+            preview = if (aspectRatio != null) {
+                Preview.Builder().setTargetAspectRatio(aspectRatio!!)
+                    .setCameraSelector(cameraSelector)
+                    .build()
+            } else {
+                Preview.Builder().setCameraSelector(cameraSelector).build()
+            }
 
-        preview!!.setSurfaceProvider(
-            surfaceProvider(executor(activity))
-        )
-        if (currentCaptureMode == CaptureModes.PHOTO) {
-            imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
+            preview!!.setSurfaceProvider(
+                surfaceProvider(executor(activity))
+            )
+            if (currentCaptureMode == CaptureModes.PHOTO) {
+                imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
 //                .setJpegQuality(100)
-                .apply {
-                    //photoSize?.let { setTargetResolution(it) }
-                    if (rational.denominator != rational.numerator) {
-                        setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
-                    }
-                    setFlashMode(
-                        when (flashMode) {
-                            FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
-                            FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
-                            else -> ImageCapture.FLASH_MODE_OFF
+                    .apply {
+                        //photoSize?.let { setTargetResolution(it) }
+                        if (rational.denominator != rational.numerator) {
+                            setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
                         }
-                    )
-                }.build()
-        } else {
-            recorder =
-                Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
-            videoCapture = VideoCapture.withOutput(recorder!!)
+                        setFlashMode(
+                            when (flashMode) {
+                                FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
+                                FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
+                                else -> ImageCapture.FLASH_MODE_OFF
+                            }
+                        )
+                    }.build()
+            } else if (currentCaptureMode == CaptureModes.VIDEO) {
+                recorder =
+                    Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+                        .build()
+                videoCapture = VideoCapture.withOutput(recorder!!)
+            }
         }
 
         val useCases = mutableListOf(
-            preview,
+            if (currentCaptureMode == CaptureModes.ANALYSIS_ONLY) null else preview,
             if (currentCaptureMode == CaptureModes.PHOTO) {
                 imageCapture
-            } else {
+            } else null,
+            if (currentCaptureMode == CaptureModes.VIDEO) {
                 videoCapture
-            },
-        ).apply {
+            } else null,
+        ).filterNotNull().toMutableList().apply {
             if (enableImageStream && imageAnalysisBuilder != null) {
                 imageAnalysis = imageAnalysisBuilder!!.build()
                 add(imageAnalysis!!)
@@ -147,16 +152,33 @@ data class CameraXState(
 
     fun setCaptureMode(captureMode: CaptureModes) {
         currentCaptureMode = captureMode
-        if (currentCaptureMode == CaptureModes.PHOTO) {
-            // Release video related stuff
-            videoCapture = null
-            recording?.close()
-            recording = null
-            recorder = null
+        when (currentCaptureMode) {
+            CaptureModes.PHOTO -> {
+                // Release video related stuff
+                videoCapture = null
+                recording?.close()
+                recording = null
+                recorder = null
 
-        } else {
-            // Release photo related stuff
-            imageCapture = null
+            }
+
+            CaptureModes.VIDEO -> {
+                // Release photo related stuff
+                imageCapture = null
+            }
+
+            else -> {
+                // Preview and analysis only modes
+
+                // Release video related stuff
+                videoCapture = null
+                recording?.close()
+                recording = null
+                recorder = null
+
+                // Release photo related stuff
+                imageCapture = null
+            }
         }
     }
 
