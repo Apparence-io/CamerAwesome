@@ -230,7 +230,6 @@ class _MyPreviewDecoratorWidget extends StatefulWidget {
   final Stream<AnalysisImage> analysisImageStream;
 
   const _MyPreviewDecoratorWidget({
-    super.key,
     required this.cameraState,
     required this.analysisImageStream,
     required this.previewSize,
@@ -267,6 +266,7 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
                           angle: 3 / 2 * pi,
                           child: Image.memory(
                             _currentJpeg!,
+                            gaplessPlayback: true,
                           ),
                         ),
                       ),
@@ -431,10 +431,12 @@ class ImageAnalysisPreview extends StatelessWidget {
               if (previousJpeg != null)
                 Image.memory(
                   previousJpeg!,
+                  gaplessPlayback: true,
                   fit: BoxFit.cover,
                 ),
               Image.memory(
                 currentJpeg,
+                gaplessPlayback: true,
                 fit: BoxFit.cover,
               ),
             ],
