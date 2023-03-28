@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
@@ -233,7 +231,6 @@ class _MyPreviewDecoratorWidget extends StatefulWidget {
 
 class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
   Uint8List? _currentJpeg;
-  Uint8List? _previousJpeg;
   ImageFilter _filter = ImageFilter.billboard;
 
   @override
@@ -266,12 +263,10 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
 
                 final img = snapshot.requireData;
                 return img.when(jpeg: (image) {
-                      _previousJpeg = _currentJpeg;
                       _currentJpeg = _applyFilterOnBytes(image.bytes);
 
                       return ImageAnalysisPreview(
                         currentJpeg: _currentJpeg!,
-                        previousJpeg: _previousJpeg,
                         width: image.width.toDouble(),
                         height: image.height.toDouble(),
                       );
@@ -283,13 +278,11 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
                               return const Center(
                                   child: CircularProgressIndicator());
                             } else if (snapshot.data != null) {
-                              _previousJpeg = _currentJpeg;
                               _currentJpeg =
                                   _applyFilterOnBytes(snapshot.data!.bytes);
                             }
                             return ImageAnalysisPreview(
                               currentJpeg: _currentJpeg!,
-                              previousJpeg: _previousJpeg,
                               width: image.width.toDouble(),
                               height: image.height.toDouble(),
                             );
@@ -302,19 +295,16 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
                               return const Center(
                                   child: CircularProgressIndicator());
                             } else if (snapshot.data != null) {
-                              _previousJpeg = _currentJpeg;
                               _currentJpeg =
                                   _applyFilterOnBytes(snapshot.data!.bytes);
                             }
                             return ImageAnalysisPreview(
                               currentJpeg: _currentJpeg!,
-                              previousJpeg: _previousJpeg,
                               width: image.width.toDouble(),
                               height: image.height.toDouble(),
                             );
                           });
                     }, bgra8888: (image) {
-                      _previousJpeg = _currentJpeg;
                       // TODO Native conversion might be more efficient, but it's not implemented yet
                       // image.toJpeg(quality: 70);
                       _currentJpeg = _applyFilterOnImage(
@@ -328,7 +318,6 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
 
                       return ImageAnalysisPreview(
                         currentJpeg: _currentJpeg!,
-                        previousJpeg: _previousJpeg,
                         width: image.width.toDouble(),
                         height: image.height.toDouble(),
                       );
@@ -397,12 +386,10 @@ class ImageAnalysisPreview extends StatelessWidget {
   final double width;
   final double height;
   final Uint8List currentJpeg;
-  final Uint8List? previousJpeg;
 
   const ImageAnalysisPreview({
     super.key,
     required this.currentJpeg,
-    required this.previousJpeg,
     required this.width,
     required this.height,
   });
@@ -415,21 +402,12 @@ class ImageAnalysisPreview extends StatelessWidget {
         scaleX: -1,
         child: Transform.rotate(
           angle: 3 / 2 * pi,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (previousJpeg != null)
-                Image.memory(
-                  previousJpeg!,
-                  gaplessPlayback: true,
-                  fit: BoxFit.cover,
-                ),
-              Image.memory(
-                currentJpeg,
-                gaplessPlayback: true,
-                fit: BoxFit.cover,
-              ),
-            ],
+          child: SizedBox.expand(
+            child: Image.memory(
+              currentJpeg,
+              gaplessPlayback: true,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),
