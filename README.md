@@ -313,9 +313,19 @@ CameraAwesomeBuilder.awesome(
 > For machine learning you don't need full resolution images (720 or lower should be enough and
 > makes computation easier)
 
-Learn more about the image analysis configuration in the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration).
+Learn more about the image analysis configuration in
+the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
+.
 
-Check also detailed explanations on how to use MLKit to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes) and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
+Check also detailed explanations on how to use MLKit
+to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)
+and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
+
+⚠️ On Android, some devices don't support video recording and image analysis at the same time.
+
+- If they don't, image analysis will be ignored.
+- You can check if a device has this capability by
+  using `CameraCharacteristics .isVideoRecordingAndImageAnalysisSupported(Sensors.back)`.
 
 ---
 
