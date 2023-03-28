@@ -1196,4 +1196,23 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       [channel setMessageHandler:nil];
     }
   }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported"
+        binaryMessenger:binaryMessenger
+        codec:CameraInterfaceGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(isVideoRecordingAndImageAnalysisSupportedSensor:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(isVideoRecordingAndImageAnalysisSupportedSensor:completion:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
+        [api isVideoRecordingAndImageAnalysisSupportedSensor:arg_sensor completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+          callback(wrapResult(output, error));
+        }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
