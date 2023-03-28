@@ -26,12 +26,26 @@
 #import "CameraSensorType.h"
 #import "PhysicalButtonController.h"
 #import "InputAnalysisImageFormat.h"
+#import "CameraPreviewTexture.h"
+#import "MultiCameraPreview.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CameraPreview : NSObject<FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate,
+@interface CameraPreview : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate,
 AVCaptureAudioDataOutputSampleBufferDelegate>
 
+//@property (nonatomic, strong) AVCaptureMultiCamSession  *cameraSession;
+//
+//@property (nonatomic, strong) AVCaptureDeviceInput      *frontDeviceInput;
+//@property (nonatomic, strong) AVCaptureVideoDataOutput      *frontVideoDataOutput;
+//@property (nonatomic, strong) AVCaptureVideoPreviewLayer        *frontPreviewLayer;
+//
+//@property (nonatomic, strong) AVCaptureDeviceInput      *backDeviceInput;
+//@property (nonatomic, strong) AVCaptureVideoDataOutput      *backVideoDataOutput;
+//@property (nonatomic, strong) AVCaptureVideoPreviewLayer        *backPreviewLayer;
+//@property (nonatomic, strong) dispatch_queue_t dataOutputQueue;
+
+// TODO: move this to a single camera ?
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
 @property(readonly, nonatomic) AVCaptureInput *captureVideoInput;
@@ -39,6 +53,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) AVCaptureVideoDataOutput *captureVideoOutput;
 @property(readonly, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
 @property(readonly, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
+
 @property(readonly, nonatomic) UIDeviceOrientation deviceOrientation;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
@@ -48,9 +63,10 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
+@property(readonly, nonatomic) CameraPreviewTexture* previewTexture;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
-@property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
+//@property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
@@ -58,7 +74,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) VideoController *videoController;
 @property(readonly, nonatomic) PhysicalButtonController *physicalButtonController;
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
-@property(nonatomic, copy) void (^onFrameAvailable)(void);
+@property(nonatomic, copy) void (^onPreviewBackFrameAvailable)(void);
+@property(nonatomic, copy) void (^onPreviewFrontFrameAvailable)(void);
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
@@ -89,7 +106,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)dispose;
-- (NSArray *)getSensors:(AVCaptureDevicePosition)position;
+// - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
 - (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;

@@ -614,10 +614,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(getPreviewTextureIdWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(getPreviewTextureIdWithError:)", api);
+      NSCAssert([api respondsToSelector:@selector(getPreviewTextureIdSensor:error:)], @"CameraInterface api (%@) doesn't respond to @selector(getPreviewTextureIdSensor:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
-        NSNumber *output = [api getPreviewTextureIdWithError:&error];
+        NSNumber *output = [api getPreviewTextureIdSensor:arg_sensor error:&error];
         callback(wrapResult(output, error));
       }];
     } else {

@@ -184,7 +184,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 /// refused but the app should still be able to run.
 - (void)requestPermissionsSaveGpsLocation:(NSNumber *)saveGpsLocation completion:(void (^)(NSArray<NSString *> *_Nullable, FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
-- (nullable NSNumber *)getPreviewTextureIdWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable NSNumber *)getPreviewTextureIdSensor:(NSString *)sensor error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)takePhotoPath:(NSString *)path completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 - (void)recordVideoPath:(NSString *)path options:(nullable VideoOptions *)options completion:(void (^)(FlutterError *_Nullable))completion;
 - (void)pauseVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;

@@ -204,8 +204,8 @@ class CamerawesomePlugin {
         .toList();
   }
 
-  static Future<num?> getPreviewTexture() {
-    return CameraInterface().getPreviewTextureId();
+  static Future<num?> getPreviewTexture(final Sensors sensor) {
+    return CameraInterface().getPreviewTextureId(sensor.name);
   }
 
   static Future<void> setPreviewSize(int width, int height) {

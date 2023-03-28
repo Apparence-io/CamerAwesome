@@ -616,12 +616,12 @@ class CameraInterface {
     }
   }
 
-  Future<int> getPreviewTextureId() async {
+  Future<int> getPreviewTextureId(String arg_sensor) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.getPreviewTextureId', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
+        await channel.send(<Object?>[arg_sensor]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

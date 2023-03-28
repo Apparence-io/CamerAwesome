@@ -49,7 +49,10 @@ class AwesomeCameraPreview extends StatefulWidget {
 class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _previewSize;
   PreviewSize? _flutterPreviewSize;
-  int? _textureId;
+
+  // TODO: hardcoded for now, get from the plugin
+  int? _backPreviewTextureId;
+  int? _frontPreviewTextureId;
 
   PreviewSize? get pixelPreviewSize => _previewSize;
 
@@ -67,12 +70,14 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     super.initState();
     Future.wait([
       widget.state.previewSize(),
-      widget.state.textureId(),
+      widget.state.backPreviewTextureId(),
+      widget.state.frontPreviewTextureId(),
     ]).then((data) {
       if (mounted) {
         setState(() {
           _previewSize = data[0] as PreviewSize;
-          _textureId = data[1] as int;
+          _backPreviewTextureId = data[1] as int;
+          _frontPreviewTextureId = data[2] as int;
         });
       }
     });
@@ -113,7 +118,10 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   @override
   Widget build(BuildContext context) {
-    if (_textureId == null || _previewSize == null || _aspectRatio == null) {
+    if (_backPreviewTextureId == null ||
+        _frontPreviewTextureId == null ||
+        _previewSize == null ||
+        _aspectRatio == null) {
       return widget.loadingWidget ??
           Center(
             child: Platform.isIOS
@@ -178,7 +186,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             _previousCroppedSize ??=
                 Size(_croppedSize!.width, _croppedSize!.height);
 
-            final previewTexture = Texture(textureId: _textureId!);
+            final backPreviewTexture = Texture(
+              textureId: _backPreviewTextureId!,
+            );
+            final frontPreviewTexture = _frontPreviewTextureId != null
+                ? Texture(textureId: _frontPreviewTextureId!)
+                : null;
 
             final preview = SizedBox(
               width: constrainedSize.width,
@@ -188,6 +201,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   maxWidth: double.infinity,
                   maxHeight: double.infinity,
                   child: Center(
+                    // TODO: this is broken with dual cam
                     child: SizedBox(
                       // Use the max preview size (not the cropped one) and crop it later if needed (ratio 1:1 for example)
                       width: _flutterPreviewSize!.width,
@@ -213,9 +227,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                                       snapshot.data != AwesomeFilter.None
                                   ? ColorFiltered(
                                       colorFilter: snapshot.data!.preview,
-                                      child: previewTexture,
+                                      child: backPreviewTexture,
                                     )
-                                  : previewTexture;
+                                  : backPreviewTexture;
                             }),
                       ),
                     ),
@@ -236,7 +250,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               CameraPreviewFit.contain
             ].contains(widget.previewFit)) {
               return Stack(children: [
-                Positioned.fill(
+                Positioned(
                   child: TweenAnimationBuilder<Size>(
                     builder: (context, anim, _) {
                       return _CroppedPreview(
@@ -276,6 +290,27 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                       height: croppedPreviewSize.height,
                     ),
                   ),
+                ),
+                // TODO: be draggable
+                // TODO: add shadow & border
+                Positioned(
+                  top: 140,
+                  right: 30,
+                  child: frontPreviewTexture != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: SizedBox(
+                            height: 200,
+                            child: Center(
+                              child: AspectRatio(
+                                aspectRatio: 9 / 16,
+                                child: frontPreviewTexture,
+                              ),
+                            ),
+                            // child: frontPreviewTexture,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ]);
             } else {
