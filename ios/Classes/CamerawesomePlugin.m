@@ -42,7 +42,7 @@ FlutterEventSink physicalButtonEventSink;
   [orientationChannel setStreamHandler:instance];
   [imageStreamChannel setStreamHandler:instance];
   [physicalButtonChannel setStreamHandler:instance];
-  
+
   CameraInterfaceSetup(registrar.messenger, instance);
 }
 
@@ -62,7 +62,7 @@ FlutterEventSink physicalButtonEventSink;
     }
   } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
     physicalButtonEventSink = eventSink;
-    
+
     if (self.camera != nil) {
       [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
     }
@@ -86,7 +86,7 @@ FlutterEventSink physicalButtonEventSink;
     }
   } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
     physicalButtonEventSink = nil;
-    
+
     if (self.camera != nil) {
       [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
     }
@@ -287,7 +287,7 @@ FlutterEventSink physicalButtonEventSink;
     [self.camera dispose];
     self.camera = nil;
   }
-  
+
   AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
   CameraSensor cameraSensor = ([sensor isEqualToString:@"FRONT"]) ? Front : Back;
@@ -418,6 +418,10 @@ FlutterEventSink physicalButtonEventSink;
     aspectRatioMode = Ratio1_1;
   }
   return aspectRatioMode;
+}
+
+- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+  completion(@(YES), nil);
 }
 
 - (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
