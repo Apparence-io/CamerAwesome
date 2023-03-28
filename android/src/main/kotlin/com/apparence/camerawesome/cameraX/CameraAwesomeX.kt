@@ -52,7 +52,7 @@ import kotlin.math.roundToInt
 
 
 enum class CaptureModes {
-    PHOTO, VIDEO,
+    PHOTO, VIDEO, PREVIEW, ANALYSIS_ONLY,
 }
 
 class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
@@ -131,12 +131,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         val cameraSelector =
             if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
+        val captureMode = CaptureModes.valueOf(captureMode)
         cameraState = CameraXState(textureRegistry!!,
             textureEntry!!,
             cameraProvider = cameraProvider,
             cameraSelector = cameraSelector,
             mirrorFrontCamera = mirrorFrontCamera,
-            currentCaptureMode = CaptureModes.valueOf(captureMode),
+            currentCaptureMode = captureMode,
             enableImageStream = enableImageStream,
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
             this.updateAspectRatio(aspectRatio)
@@ -146,13 +147,15 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         orientationStreamListener =
             OrientationStreamListener(activity!!, listOf(sensorOrientationListener, cameraState))
         imageStreamChannel.setStreamHandler(cameraState)
-        cameraState.updateLifecycle(activity!!)
-        // Zoom should be set after updateLifeCycle
-        if (zoom > 0) {
-            // TODO Find a better way to set initial zoom than using a postDelayed
-            Handler(Looper.getMainLooper()).postDelayed({
-                cameraState.previewCamera!!.cameraControl.setLinearZoom(zoom.toFloat())
-            }, 200)
+        if (captureMode != CaptureModes.ANALYSIS_ONLY) {
+            cameraState.updateLifecycle(activity!!)
+            // Zoom should be set after updateLifeCycle
+            if (zoom > 0) {
+                // TODO Find a better way to set initial zoom than using a postDelayed
+                Handler(Looper.getMainLooper()).postDelayed({
+                    cameraState.previewCamera!!.cameraControl.setLinearZoom(zoom.toFloat())
+                }, 200)
+            }
         }
 
         callback(Result.success(true))

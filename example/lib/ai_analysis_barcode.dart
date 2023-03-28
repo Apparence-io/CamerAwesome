@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
@@ -50,9 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CameraAwesomeBuilder.custom(
-        saveConfig:
-            SaveConfig.photo(pathBuilder: () => path(CaptureMode.photo)),
+      body: CameraAwesomeBuilder.previewOnly(
         onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(

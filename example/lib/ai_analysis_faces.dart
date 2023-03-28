@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
@@ -66,13 +64,7 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CameraAwesomeBuilder.awesome(
-        saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => path(CaptureMode.photo),
-          videoPathBuilder: () => path(CaptureMode.video),
-          initialCaptureMode: CaptureMode.photo,
-        ),
-        onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
+      body: CameraAwesomeBuilder.previewOnly(
         previewFit: CameraPreviewFit.contain,
         aspectRatio: CameraAspectRatios.ratio_1_1,
         sensor: Sensors.front,
@@ -83,7 +75,7 @@ class _CameraPageState extends State<CameraPage> {
           ),
           maxFramesPerSecond: 30,
         ),
-        previewDecoratorBuilder: (state, previewSize, previewRect) {
+        builder: (state, previewSize, previewRect) {
           return _MyPreviewDecoratorWidget(
             cameraState: state,
             faceDetectionStream: _faceDetectionController,
@@ -221,33 +213,6 @@ class FaceDetectorPainter extends CustomPainter {
           }
       }
     }
-
-    final topLeft = _croppedPosition(
-      const Point(0, 0),
-      croppedSize: croppedSize,
-      painterSize: size,
-      ratio: ratioAnalysisToPreview,
-      flipXY: flipXY,
-    );
-    final bottomRight = _croppedPosition(
-      Point(croppedSize.width.toInt(), croppedSize.height.toInt()),
-      croppedSize: croppedSize,
-      painterSize: size,
-      ratio: ratioAnalysisToPreview,
-      flipXY: flipXY,
-    );
-    final rect =
-        Rect.fromLTRB(topLeft.dx, topLeft.dy, bottomRight.dx, bottomRight.dy);
-    print(
-        "rect: $rect with img analysis: $croppedSize - ${model.absoluteImageSize}");
-    // rect: Rect.fromLTRB(-89.3, 76.4, 303.5, 774.5) with img analysis: Size(198.0, 352.0) - Size(352.0, 288.0)
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..color = Colors.purple
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3,
-    );
 
     for (final Face face in model.faces) {
       Map<FaceContourType, Path> paths = {
