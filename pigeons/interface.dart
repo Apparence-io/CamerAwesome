@@ -315,8 +315,7 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
-    bool autoStart,
-  );
+    bool autoStart,);
 
   @async
   bool setExifPreferences(ExifPreferences exifPreferences);
@@ -326,4 +325,7 @@ abstract class CameraInterface {
   void stopAnalysis();
 
   void setFilter(List<double> matrix);
+
+  @async
+  bool isVideoRecordingAndImageAnalysisSupported(String sensor);
 }

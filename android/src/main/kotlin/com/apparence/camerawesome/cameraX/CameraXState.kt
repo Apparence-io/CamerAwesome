@@ -2,6 +2,8 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.hardware.camera2.CameraCharacteristics
+import android.os.Build
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -9,12 +11,14 @@ import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.SensorOrientation
 import io.flutter.plugin.common.EventChannel
@@ -67,8 +71,7 @@ data class CameraXState(
             // Preview
             preview = if (aspectRatio != null) {
                 Preview.Builder().setTargetAspectRatio(aspectRatio!!)
-                    .setCameraSelector(cameraSelector)
-                    .build()
+                    .setCameraSelector(cameraSelector).build()
             } else {
                 Preview.Builder().setCameraSelector(cameraSelector).build()
             }
@@ -100,7 +103,8 @@ data class CameraXState(
             }
         }
 
-        val useCases = mutableListOf(
+        val addAnalysisUseCase = enableImageStream && imageAnalysisBuilder != null
+        var useCases = mutableListOf(
             if (currentCaptureMode == CaptureModes.ANALYSIS_ONLY) null else preview,
             if (currentCaptureMode == CaptureModes.PHOTO) {
                 imageCapture
@@ -109,7 +113,7 @@ data class CameraXState(
                 videoCapture
             } else null,
         ).filterNotNull().toMutableList().apply {
-            if (enableImageStream && imageAnalysisBuilder != null) {
+            if (addAnalysisUseCase) {
                 imageAnalysis = imageAnalysisBuilder!!.build()
                 add(imageAnalysis!!)
             } else {
@@ -117,12 +121,23 @@ data class CameraXState(
             }
         }
 
+        val cameraLevel = CameraCapabilities.getCameraLevel(
+            cameraSelector, cameraProvider
+        )
         cameraProvider.unbindAll()
+        if (currentCaptureMode == CaptureModes.VIDEO && addAnalysisUseCase && cameraLevel < CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3) {
+            Log.w(
+                CamerawesomePlugin.TAG,
+                "Trying to bind too many use cases for this device (level $cameraLevel), ignoring image analysis"
+            )
+            useCases = useCases.filter { uc -> uc !is ImageAnalysis }.toMutableList()
+        }
+
         previewCamera = cameraProvider.bindToLifecycle(
             activity as LifecycleOwner,
             cameraSelector,
             UseCaseGroup.Builder().apply {
-                for (uc in useCases.filterNotNull()) addUseCase(uc)
+                for (uc in useCases) addUseCase(uc)
             }
                 // TODO Orientation might be wrong, to be verified
                 .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build()).build(),
@@ -271,4 +286,6 @@ data class CameraXState(
             else -> Rational(3, 4)
         }
     }
+
+
 }

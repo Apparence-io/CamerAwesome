@@ -115,14 +115,14 @@ data class PreviewSize(
     val height: Double
 
 ) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): PreviewSize {
-      val width = list[0] as Double
-      val height = list[1] as Double
-      return PreviewSize(width, height)
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): PreviewSize {
+            val width = list[0] as Double
+            val height = list[1] as Double
+            return PreviewSize(width, height)
+        }
     }
-  }
   fun toList(): List<Any?> {
     return listOf<Any?>(
       width,
@@ -220,13 +220,14 @@ data class AndroidFocusSettings (
   val autoCancelDurationInMillis: Long
 
 ) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): AndroidFocusSettings {
-      val autoCancelDurationInMillis = list[0].let { if (it is Int) it.toLong() else it as Long }
-        return AndroidFocusSettings(autoCancelDurationInMillis)
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): AndroidFocusSettings {
+            val autoCancelDurationInMillis =
+                list[0].let { if (it is Int) it.toLong() else it as Long }
+            return AndroidFocusSettings(autoCancelDurationInMillis)
+        }
     }
-  }
 
     fun toList(): List<Any?> {
         return listOf<Any?>(
@@ -347,16 +348,19 @@ private object AnalysisImageUtilsCodec : StandardMessageCodec() {
                     AnalysisImageWrapper.fromList(it)
                 }
             }
+
             129.toByte() -> {
                 return (readValue(buffer) as? List<Any?>)?.let {
                     CropRectWrapper.fromList(it)
                 }
             }
+
             130.toByte() -> {
                 return (readValue(buffer) as? List<Any?>)?.let {
                     PlaneWrapper.fromList(it)
                 }
             }
+
             else -> super.readValueOfType(type, buffer)
         }
     }
@@ -367,14 +371,17 @@ private object AnalysisImageUtilsCodec : StandardMessageCodec() {
                 stream.write(128)
                 writeValue(stream, value.toList())
             }
+
             is CropRectWrapper -> {
                 stream.write(129)
                 writeValue(stream, value.toList())
             }
+
             is PlaneWrapper -> {
                 stream.write(130)
                 writeValue(stream, value.toList())
             }
+
             else -> super.writeValue(stream, value)
         }
     }
@@ -528,7 +535,6 @@ interface AnalysisImageUtils {
         }
     }
 }
-
 @Suppress("UNCHECKED_CAST")
 private object CameraInterfaceCodec : StandardMessageCodec() {
     override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -538,17 +544,20 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
                     AndroidFocusSettings.fromList(it)
                 }
             }
+
             129.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          ExifPreferences.fromList(it)
-        }
-      }
-      130.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          PigeonSensorTypeDevice.fromList(it)
-        }
-      }
-      131.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    ExifPreferences.fromList(it)
+                }
+            }
+
+            130.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    PigeonSensorTypeDevice.fromList(it)
+                }
+            }
+
+            131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           PreviewSize.fromList(it)
         }
@@ -612,16 +621,17 @@ interface CameraInterface {
     )
 
     fun checkPermissions(): List<String>
-  /**
-   * Returns given [CamerAwesomePermission] list (as String). Location permission might be
-   * refused but the app should still be able to run.
-   */
-  fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
-  fun getPreviewTextureId(): Long
-  fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit)
-  fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
-  fun pauseVideoRecording()
-  fun resumeVideoRecording()
+
+    /**
+     * Returns given [CamerAwesomePermission] list (as String). Location permission might be
+     * refused but the app should still be able to run.
+     */
+    fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
+    fun getPreviewTextureId(): Long
+    fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit)
+    fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
+    fun pauseVideoRecording()
+    fun resumeVideoRecording()
   fun receivedImageFromStream()
   fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit)
   fun getFrontSensors(): List<PigeonSensorTypeDevice>
@@ -654,7 +664,11 @@ interface CameraInterface {
   fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
   fun startAnalysis()
   fun stopAnalysis()
-  fun setFilter(matrix: List<Double>)
+    fun setFilter(matrix: List<Double>)
+    fun isVideoRecordingAndImageAnalysisSupported(
+        sensor: String,
+        callback: (Result<Boolean>) -> Unit
+    )
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -668,15 +682,15 @@ interface CameraInterface {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupCamera", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val sensorArg = args[0] as String
-            val aspectRatioArg = args[1] as String
-            val zoomArg = args[2] as Double
-            val mirrorFrontCameraArg = args[3] as Boolean
-            val flashModeArg = args[4] as String
-            val captureModeArg = args[5] as String
-            val enableImageStreamArg = args[6] as Boolean
-            val exifPreferencesArg = args[7] as ExifPreferences
+              val args = message as List<Any?>
+              val sensorArg = args[0] as String
+              val aspectRatioArg = args[1] as String
+              val zoomArg = args[2] as Double
+              val mirrorFrontCameraArg = args[3] as Boolean
+              val flashModeArg = args[4] as String
+              val captureModeArg = args[5] as String
+              val enableImageStreamArg = args[6] as Boolean
+              val exifPreferencesArg = args[7] as ExifPreferences
               api.setupCamera(
                   sensorArg,
                   aspectRatioArg,
@@ -1314,16 +1328,40 @@ interface CameraInterface {
             var wrapped: List<Any?>
             try {
               api.setFilter(matrixArg)
-              wrapped = listOf<Any?>(null)
+                wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
+                wrapped = wrapError(exception)
             }
-            reply.reply(wrapped)
+              reply.reply(wrapped)
           }
         } else {
-          channel.setMessageHandler(null)
+            channel.setMessageHandler(null)
         }
       }
+        run {
+            val channel = BasicMessageChannel<Any?>(
+                binaryMessenger,
+                "dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported",
+                codec
+            )
+            if (api != null) {
+                channel.setMessageHandler { message, reply ->
+                    val args = message as List<Any?>
+                    val sensorArg = args[0] as String
+                    api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
+                        val error = result.exceptionOrNull()
+                        if (error != null) {
+                            reply.reply(wrapError(error))
+                        } else {
+                            val data = result.getOrNull()
+                            reply.reply(wrapResult(data))
+                        }
+                    }
+                }
+            } else {
+                channel.setMessageHandler(null)
+            }
+        }
     }
   }
 }

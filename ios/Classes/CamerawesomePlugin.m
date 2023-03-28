@@ -397,5 +397,9 @@ FlutterEventSink imageStreamEventSink;
   return aspectRatioMode;
 }
 
+- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+  completion(@(YES), nil);
+}
+
 
 @end
