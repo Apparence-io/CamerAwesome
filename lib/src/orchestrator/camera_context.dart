@@ -30,10 +30,11 @@ class CameraContext {
 
   final CaptureMode initialCaptureMode;
 
-  /// this is where we are going to store any photo
-  final SaveConfig saveConfig;
+  /// Configuration holding path builders for taking pictures and recording
+  /// videos. May be null if in [CaptureMode.analysisOnly] or [CaptureMode.preview].
+  final SaveConfig? saveConfig;
 
-  /// allows to create dynamic analysis using the current preview
+  /// Image analysis controller. You may use it to start or stop image analysis.
   final AnalysisController? analysisController;
 
   /// Preferences concerning Exif (photos metadata)
@@ -75,7 +76,7 @@ class CameraContext {
     SensorConfig sensorConfig, {
     required CaptureMode initialCaptureMode,
     OnPermissionsResult? onPermissionsResult,
-    required SaveConfig saveConfig,
+    required SaveConfig? saveConfig,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,

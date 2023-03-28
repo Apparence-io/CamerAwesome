@@ -53,14 +53,7 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CameraAwesomeBuilder.awesome(
-        saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => path(CaptureMode.photo),
-          videoPathBuilder: () => path(CaptureMode.video),
-          initialCaptureMode: CaptureMode.photo,
-        ),
-        onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
-        previewFit: CameraPreviewFit.contain,
+      body: CameraAwesomeBuilder.analysisOnly(
         aspectRatio: CameraAspectRatios.ratio_1_1,
         sensor: Sensors.front,
         onImageForAnalysis: (img) => _analyzeImage(img),
@@ -70,7 +63,7 @@ class _CameraPageState extends State<CameraPage> {
           ),
           maxFramesPerSecond: 30,
         ),
-        previewDecoratorBuilder: (state, previewSize, previewRect) {
+        builder: (state, previewSize, previewRect) {
           return _MyPreviewDecoratorWidget(
             cameraState: state,
             analysisImageStream: _imageStreamController.stream,
@@ -78,9 +71,6 @@ class _CameraPageState extends State<CameraPage> {
             previewRect: previewRect,
           );
         },
-        topActionsBuilder: (_) => const SizedBox.shrink(),
-        middleContentBuilder: (_) => const SizedBox.shrink(),
-        bottomActionsBuilder: (_) => const SizedBox.shrink(),
       ),
     );
   }

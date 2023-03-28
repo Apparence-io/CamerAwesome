@@ -16,14 +16,14 @@ class AwesomeCameraModeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = AwesomeThemeProvider.of(context).theme;
     Widget content;
-    if (state is VideoRecordingCameraState) {
+    if (state is VideoRecordingCameraState || state.saveConfig == null) {
       content = const SizedBox(
         height: 40,
       );
     } else {
       content = CameraModePager(
         initialMode: state.captureMode,
-        availableModes: state.saveConfig.captureModes,
+        availableModes: state.saveConfig!.captureModes,
         onChangeCameraRequest: (mode) {
           state.setState(mode);
         },
