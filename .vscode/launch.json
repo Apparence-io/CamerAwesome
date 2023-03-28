@@ -4,30 +4,36 @@
     // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "Example",
-            "request": "launch",
-            "type": "dart",
-            "program": "example/lib/main.dart"
-        },
-        {
-            "name": "Subroute",
-            "request": "launch",
-            "type": "dart",
-            "program": "example/lib/subroute_camera.dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "AI analysis - face detection",
-          "request": "launch",
-          "type": "dart",
-          "program": "example/lib/ai_analysis_faces.dart"
-        },
+      {
+        "name": "Example",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/main.dart"
+      },
+      {
+        "name": "Subroute",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/subroute_camera.dart",
+        "flutterMode": "profile"
+      },
+      {
+        "name": "AI analysis - face detection",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/ai_analysis_faces.dart"
+      },
       {
         "name": "AI analysis - text/barcode detection",
         "request": "launch",
         "type": "dart",
         "program": "example/lib/ai_analysis_barcode.dart"
+      },
+      {
+        "name": "AI analysis - native conversion",
+        "request": "launch",
+        "type": "dart",
+        "program": "example/lib/analysis_native_conversion.dart"
       },
       {
         "name": "AI Analysis - barcode with overlay",
