@@ -15,7 +15,7 @@
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
-                      sensor:(CameraSensor)sensor
+                      sensor:(SensorPosition)sensor
              saveGPSLocation:(bool)saveGPSLocation
            mirrorFrontCamera:(bool)mirrorFrontCamera
                  aspectRatio:(AspectRatio)aspectRatio
@@ -188,15 +188,15 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
 - (UIImageOrientation)getJpegOrientation {
   switch (_orientation) {
     case UIDeviceOrientationPortrait:
-      if (_sensor == Front && _mirrorFrontCamera) {
+      if (_sensor == SensorPositionFront && _mirrorFrontCamera) {
         return UIImageOrientationLeftMirrored;
       } else {
         return UIImageOrientationRight;
       }
     case UIDeviceOrientationLandscapeRight:
-      return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
+      return (_sensor == SensorPositionBack) ? UIImageOrientationUp : UIImageOrientationDown;
     case UIDeviceOrientationLandscapeLeft:
-      return (_sensor == Back) ? UIImageOrientationDown : UIImageOrientationUp;
+      return (_sensor == SensorPositionBack) ? UIImageOrientationDown : UIImageOrientationUp;
     default:
       return UIImageOrientationLeft;
   }

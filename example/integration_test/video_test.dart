@@ -3,19 +3,20 @@ import 'dart:io';
 
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'common.dart';
 
 // To run it, you have to use `patrol drive` instead of `flutter test`.
 void main() {
-  for (final sensor in Sensors.values) {
+  for (final sensor in SensorPosition.values) {
     patrol(
-      'Record video >  one with ${Sensors.back}',
+      'Record video >  one with ${SensorPosition.back}',
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensor: sensor,
+            sensors: [Sensor(position: sensor)],
             saveConfig: SaveConfig.video(
               pathBuilder: () =>
                   tempPath('record_video_single_${sensor.name}.mp4'),
@@ -39,13 +40,13 @@ void main() {
     );
 
     patrol(
-      'Record video > multiple ${Sensors.back} camera',
+      'Record video > multiple ${SensorPosition.back} camera',
       ($) async {
         int idxVideo = 0;
         const videosToTake = 3;
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensor: sensor,
+            sensors: [Sensor(position: sensor)],
             saveConfig: SaveConfig.video(
               pathBuilder: () =>
                   tempPath('multiple_video_${sensor.name}_$idxVideo.mp4'),
@@ -74,7 +75,7 @@ void main() {
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensor: sensor,
+            sensors: [Sensor(position: sensor)],
             saveConfig: SaveConfig.video(
                 pathBuilder: () => tempPath('pause_resume_video_$sensor.mp4')),
           ),
@@ -109,17 +110,17 @@ void main() {
   }
 
   patrol(
-    'Record video > One with ${Sensors.back} then one with ${Sensors.front}',
+    'Record video > One with ${SensorPosition.back} then one with ${SensorPosition.front}',
     ($) async {
       int idxSensor = 0;
       final sensors = [
-        Sensors.back,
-        Sensors.front,
-        Sensors.back,
+        SensorPosition.back,
+        SensorPosition.front,
+        SensorPosition.back,
       ];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor(position: SensorPosition.back)],
           saveConfig: SaveConfig.video(
             pathBuilder: () async {
               final path = await tempPath(

@@ -316,7 +316,7 @@ class CamerawesomePlugin {
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
-  static Future<void> setSensor(List<Sensors?> sensors, {String? deviceId}) {
+  static Future<void> setSensor(List<Sensor?> sensors, {String? deviceId}) {
     return CameraInterface().setSensor(sensors, deviceId);
   }
 

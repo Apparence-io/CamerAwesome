@@ -274,7 +274,7 @@ FlutterEventSink physicalButtonEventSink;
   [_camera setRecordingAudioMode:[enableAudio boolValue] completion:completion];
 }
 
-- (void)setSensorSensors:(nonnull NSArray<Sensors *> *)sensors deviceId:(nullable NSString *)deviceId error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (void)setSensorSensors:(nonnull NSArray<Sensor *> *)sensors deviceId:(nullable NSString *)deviceId error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   NSString *captureDeviceId;
   
   if (deviceId && ![deviceId isEqual:[NSNull null]]) {
@@ -284,10 +284,8 @@ FlutterEventSink physicalButtonEventSink;
   if (sensors != nil && [sensors count] > 1) {
     // TODO: multi sensors to set
   } else {
-    Sensors *sensor = sensors.firstObject;
-
-    CameraSensor sensorType = sensor.position == PigeonSensorPositionFront ? Front : Back;
-    [_camera setSensor:sensorType deviceId:captureDeviceId];
+    Sensor *sensor = sensors.firstObject;
+    [_camera setSensor:sensor.position deviceId:captureDeviceId];
   }
 }
 
@@ -307,7 +305,7 @@ FlutterEventSink physicalButtonEventSink;
   return [SensorsController getSensors:AVCaptureDevicePositionBack];
 }
 
-- (void)setupCameraSensors:(nonnull NSArray<Sensors *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)setupCameraSensors:(nonnull NSArray<Sensor *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
@@ -352,10 +350,9 @@ FlutterEventSink physicalButtonEventSink;
       [weakSelf.textureRegistry textureFrameAvailable:[textureNumber longLongValue]];
     };
   } else {
-    Sensors *firstSensor = sensors.firstObject;
+    Sensor *firstSensor = sensors.firstObject;
     // TODO: remove duplicate enum
-    CameraSensor cameraSensor = firstSensor.position == PigeonSensorPositionFront ? Front : Back;
-    self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
+    self.camera = [[CameraPreview alloc] initWithCameraSensor:firstSensor.position
                                                  streamImages:[enableImageStream boolValue]
                                             mirrorFrontCamera:[mirrorFrontCamera boolValue]
                                          enablePhysicalButton:[enablePhysicalButton boolValue]

@@ -19,12 +19,12 @@
 //  return self;
 //}
 
-- (instancetype)initWithSensors:(NSArray<Sensors *> *)sensors {
+- (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors {
   if (self = [super init]) {
     _dataOutputQueue = dispatch_queue_create("data.output.queue", NULL);
     _textures = [NSMutableArray new];
     
-    for (Sensors *sensor in sensors) {
+    for (Sensor *sensor in sensors) {
       CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
       [_textures addObject:previewTexture];
     }
@@ -43,7 +43,7 @@
   [self stop];
 }
 
-- (void)configSession:(NSArray<Sensors *> *)sensors {
+- (void)configSession:(NSArray<Sensor *> *)sensors {
   if (AVCaptureMultiCamSession.isMultiCamSupported == NO) {
     NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
     return;

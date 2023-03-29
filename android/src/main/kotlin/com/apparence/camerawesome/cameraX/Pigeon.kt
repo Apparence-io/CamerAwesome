@@ -43,12 +43,12 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
-enum class PigeonSensorPosition(val raw: Int) {
+enum class SensorPosition(val raw: Int) {
   BACK(0),
   FRONT(1);
 
   companion object {
-    fun ofRaw(raw: Int): PigeonSensorPosition? {
+    fun ofRaw(raw: Int): SensorPosition? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -162,23 +162,23 @@ data class ExifPreferences (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class Sensors (
-  val position: PigeonSensorPosition? = null,
+data class Sensor (
+  val position: SensorPosition? = null,
   val type: PigeonSensorType? = null,
   val deviceId: String? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): Sensors {
-      val position: PigeonSensorPosition? = (list[0] as Int?)?.let {
-        PigeonSensorPosition.ofRaw(it)
+    fun fromList(list: List<Any?>): Sensor {
+      val position: SensorPosition? = (list[0] as Int?)?.let {
+        SensorPosition.ofRaw(it)
       }
       val type: PigeonSensorType? = (list[1] as Int?)?.let {
         PigeonSensorType.ofRaw(it)
       }
       val deviceId = list[2] as String?
-      return Sensors(position, type, deviceId)
+      return Sensor(position, type, deviceId)
     }
   }
   fun toList(): List<Any?> {
@@ -547,7 +547,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Sensors.fromList(it)
+          Sensor.fromList(it)
         }
       }
       134.toByte() -> {
@@ -580,7 +580,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is Sensors -> {
+      is Sensor -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
@@ -595,7 +595,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensors: List<Sensors>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
+  fun setupCamera(sensors: List<Sensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
   fun checkPermissions(): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -624,7 +624,7 @@ interface CameraInterface {
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, androidFocusSettings: AndroidFocusSettings?)
   fun setZoom(zoom: Double)
   fun setMirrorFrontCamera(mirror: Boolean)
-  fun setSensor(sensors: List<Sensors>, deviceId: String?)
+  fun setSensor(sensors: List<Sensor>, deviceId: String?)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
@@ -655,7 +655,7 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorsArg = args[0] as List<Sensors>
+            val sensorsArg = args[0] as List<Sensor>
             val aspectRatioArg = args[1] as String
             val zoomArg = args[2] as Double
             val mirrorFrontCameraArg = args[3] as Boolean
@@ -1006,7 +1006,7 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorsArg = args[0] as List<Sensors>
+            val sensorsArg = args[0] as List<Sensor>
             val deviceIdArg = args[1] as String?
             var wrapped: List<Any?>
             try {

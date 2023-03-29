@@ -28,7 +28,7 @@ class SensorConfig {
   late Stream<double> zoom$;
 
   /// [back] or [front] camera
-  final List<Sensors?> sensors;
+  final List<Sensor?> sensors;
 
   final String? captureDeviceId;
 

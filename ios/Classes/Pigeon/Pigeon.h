@@ -10,9 +10,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, PigeonSensorPosition) {
-  PigeonSensorPositionBack = 0,
-  PigeonSensorPositionFront = 1,
+typedef NS_ENUM(NSUInteger, SensorPosition) {
+  SensorPositionBack = 0,
+  SensorPositionFront = 1,
 };
 
 typedef NS_ENUM(NSUInteger, PigeonSensorType) {
@@ -55,7 +55,7 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 
 @class PreviewSize;
 @class ExifPreferences;
-@class Sensors;
+@class Sensor;
 @class VideoOptions;
 @class PigeonSensorTypeDevice;
 @class AndroidFocusSettings;
@@ -79,11 +79,11 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @property(nonatomic, strong) NSNumber * saveGPSLocation;
 @end
 
-@interface Sensors : NSObject
-+ (instancetype)makeWithPosition:(PigeonSensorPosition)position
+@interface Sensor : NSObject
++ (instancetype)makeWithPosition:(SensorPosition)position
     type:(PigeonSensorType)type
     deviceId:(nullable NSString *)deviceId;
-@property(nonatomic, assign) PigeonSensorPosition position;
+@property(nonatomic, assign) SensorPosition position;
 @property(nonatomic, assign) PigeonSensorType type;
 @property(nonatomic, copy, nullable) NSString * deviceId;
 @end
@@ -192,7 +192,7 @@ extern void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, 
 NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 
 @protocol CameraInterface
-- (void)setupCameraSensors:(NSArray<Sensors *> *)sensors aspectRatio:(NSString *)aspectRatio zoom:(NSNumber *)zoom mirrorFrontCamera:(NSNumber *)mirrorFrontCamera enablePhysicalButton:(NSNumber *)enablePhysicalButton flashMode:(NSString *)flashMode captureMode:(NSString *)captureMode enableImageStream:(NSNumber *)enableImageStream exifPreferences:(ExifPreferences *)exifPreferences completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)setupCameraSensors:(NSArray<Sensor *> *)sensors aspectRatio:(NSString *)aspectRatio zoom:(NSNumber *)zoom mirrorFrontCamera:(NSNumber *)mirrorFrontCamera enablePhysicalButton:(NSNumber *)enablePhysicalButton flashMode:(NSString *)flashMode captureMode:(NSString *)captureMode enableImageStream:(NSNumber *)enableImageStream exifPreferences:(ExifPreferences *)exifPreferences completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError *_Nullable *_Nonnull)error;
 /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -223,7 +223,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 - (void)focusOnPointPreviewSize:(PreviewSize *)previewSize x:(NSNumber *)x y:(NSNumber *)y androidFocusSettings:(nullable AndroidFocusSettings *)androidFocusSettings error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setZoomZoom:(NSNumber *)zoom error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setMirrorFrontCameraMirror:(NSNumber *)mirror error:(FlutterError *_Nullable *_Nonnull)error;
-- (void)setSensorSensors:(NSArray<Sensors *> *)sensors deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error;
+- (void)setSensorSensors:(NSArray<Sensor *> *)sensors deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCorrectionBrightness:(NSNumber *)brightness error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getMaxZoomWithError:(FlutterError *_Nullable *_Nonnull)error;
