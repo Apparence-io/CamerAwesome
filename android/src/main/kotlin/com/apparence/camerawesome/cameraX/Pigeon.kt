@@ -355,10 +355,11 @@ interface CameraInterface {
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, androidFocusSettings: AndroidFocusSettings?)
   fun setZoom(zoom: Double)
   fun setMirrorFrontCamera(mirror: Boolean)
-  fun setSensor(sensors: List<Sensor>, deviceId: String?)
+  fun setSensor(sensors: List<Sensor>)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
+  fun isMultiCamSupported(): Boolean
   fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
   fun availableSizes(): List<PreviewSize>
   fun refresh()
@@ -737,10 +738,9 @@ interface CameraInterface {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val sensorsArg = args[0] as List<Sensor>
-            val deviceIdArg = args[1] as String?
             var wrapped: List<Any?>
             try {
-              api.setSensor(sensorsArg, deviceIdArg)
+              api.setSensor(sensorsArg)
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -796,6 +796,22 @@ interface CameraInterface {
             try {
               api.setCaptureMode(modeArg)
               wrapped = listOf<Any?>(null)
+            } catch (exception: Throwable) {
+              wrapped = wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.isMultiCamSupported", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            var wrapped: List<Any?>
+            try {
+              wrapped = listOf<Any?>(api.isMultiCamSupported())
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }

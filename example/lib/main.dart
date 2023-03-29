@@ -35,11 +35,11 @@ class CameraPage extends StatelessWidget {
             initialCaptureMode: CaptureMode.photo,
           ),
           sensors: [
+            // Sensor(
+            //   position: SensorPosition.front,
+            // ),
             Sensor(
               position: SensorPosition.back,
-            ),
-            Sensor(
-              position: SensorPosition.front,
             )
           ],
           enablePhysicalButton: true,

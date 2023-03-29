@@ -669,13 +669,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setSensorSensors:deviceId:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setSensorSensors:deviceId:error:)", api);
+      NSCAssert([api respondsToSelector:@selector(setSensorSensors:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setSensorSensors:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSArray<Sensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
-        NSString *arg_deviceId = GetNullableObjectAtIndex(args, 1);
         FlutterError *error;
-        [api setSensorSensors:arg_sensors deviceId:arg_deviceId error:&error];
+        [api setSensorSensors:arg_sensors error:&error];
         callback(wrapResult(nil, error));
       }];
     } else {
@@ -732,6 +731,23 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         FlutterError *error;
         [api setCaptureModeMode:arg_mode error:&error];
         callback(wrapResult(nil, error));
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.CameraInterface.isMultiCamSupported"
+        binaryMessenger:binaryMessenger
+        codec:CameraInterfaceGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(isMultiCamSupportedWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(isMultiCamSupportedWithError:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        NSNumber *output = [api isMultiCamSupportedWithError:&error];
+        callback(wrapResult(output, error));
       }];
     } else {
       [channel setMessageHandler:nil];

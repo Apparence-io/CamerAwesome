@@ -137,7 +137,6 @@ class CameraContext {
     }
     await CamerawesomePlugin.setSensor(
       newConfig.sensors,
-      deviceId: newConfig.captureDeviceId,
     );
   }
 

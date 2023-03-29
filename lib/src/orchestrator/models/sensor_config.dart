@@ -30,8 +30,6 @@ class SensorConfig {
   /// [back] or [front] camera
   final List<Sensor?> sensors;
 
-  final String? captureDeviceId;
-
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
 
@@ -50,7 +48,6 @@ class SensorConfig {
     FlashMode flash = FlashMode.none,
     bool mirrorFrontCamera = false,
     SensorType type = SensorType.wideAngle,
-    this.captureDeviceId,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
 
     /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)

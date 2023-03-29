@@ -26,7 +26,7 @@
   
   _previewTexture = [[CameraPreviewTexture alloc] init];
   
-  _cameraSensor = sensor;
+  _cameraSensorPosition = sensor;
   _aspectRatio = aspectRatioMode;
   _mirrorFrontCamera = mirrorFrontCamera;
   
@@ -152,7 +152,7 @@
   
   // Mirror the preview only on portrait mode
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  [_captureConnection setVideoMirrored:(_cameraSensor == SensorPositionFront)];
+  [_captureConnection setVideoMirrored:(_cameraSensorPosition == SensorPositionFront)];
   [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
 }
 
@@ -235,7 +235,7 @@
 }
 
 /// Set sensor between Front & Rear camera
-- (void)setSensor:(SensorPosition)sensor deviceId:(NSString *)captureDeviceId {
+- (void)setSensor:(Sensor *)sensor {
   // First remove all input & output
   [_captureSession beginConfiguration];
   
@@ -253,11 +253,11 @@
   [_captureSession removeOutput:_capturePhotoOutput];
   [_captureSession removeConnection:_captureConnection];
   
-  _cameraSensor = sensor;
-  _captureDeviceId = captureDeviceId;
+  _cameraSensorPosition = sensor.position;
+  _captureDeviceId = sensor.deviceId;
   
   // Init the camera preview with the selected sensor
-  [self initCameraPreview:sensor];
+  [self initCameraPreview:sensor.position];
   
   [self setBestPreviewQuality];
   
@@ -310,7 +310,7 @@
     return;
   }
   
-  if (_cameraSensor == SensorPositionFront) {
+  if (_cameraSensorPosition == SensorPositionFront) {
     *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""];
     return;
   }
@@ -423,7 +423,7 @@
   // Instanciate camera picture obj
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
-                                                                                  sensor:_cameraSensor
+                                                                                  sensor:_cameraSensorPosition
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio
@@ -561,8 +561,8 @@
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
   if (output == _captureVideoOutput) {
     [self.previewTexture updateBuffer:sampleBuffer];
-    if (_onPreviewBackFrameAvailable) {
-      _onPreviewBackFrameAvailable();
+    if (_onPreviewFrameAvailable) {
+      _onPreviewFrameAvailable();
     }
   }
   

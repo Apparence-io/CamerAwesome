@@ -10,6 +10,7 @@
 #import "MultiCameraPreview.h"
 #import "CameraPreviewTexture.h"
 #import "CameraQualities.h"
+#import "CameraDeviceInfo.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,14 +20,18 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property (nonatomic, strong) AVCaptureMultiCamSession  *cameraSession;
 
 // TODO: Store all of them in a dict
-@property (nonatomic, strong) AVCaptureDeviceInput *frontDeviceInput;
-@property (nonatomic, strong) AVCaptureVideoDataOutput *frontVideoDataOutput;
-@property (nonatomic, strong) AVCaptureVideoPreviewLayer *frontPreviewLayer;
+@property (nonatomic, strong) NSMutableArray<CameraDeviceInfo *> *devices;
+//@property (nonatomic, strong) NSMutableArray<AVCaptureDeviceInput *> *deviceInputs;
+//@property (nonatomic, strong) NSMutableArray<AVCaptureVideoDataOutput *> *videoDataOutputs;
+//@property (nonatomic, strong) NSMutableArray<AVCaptureVideoPreviewLayer *> *previewLayers;
+//@property (nonatomic, strong) AVCaptureDeviceInput *frontDeviceInput;
+//@property (nonatomic, strong) AVCaptureVideoDataOutput *frontVideoDataOutput;
+//@property (nonatomic, strong) AVCaptureVideoPreviewLayer *frontPreviewLayer;
 
 // TODO: Store all of them in a dict
-@property (nonatomic, strong) AVCaptureDeviceInput *backDeviceInput;
-@property (nonatomic, strong) AVCaptureVideoDataOutput *backVideoDataOutput;
-@property (nonatomic, strong) AVCaptureVideoPreviewLayer *backPreviewLayer;
+//@property (nonatomic, strong) AVCaptureDeviceInput *backDeviceInput;
+//@property (nonatomic, strong) AVCaptureVideoDataOutput *backVideoDataOutput;
+//@property (nonatomic, strong) AVCaptureVideoPreviewLayer *backPreviewLayer;
 @property (nonatomic, strong) dispatch_queue_t dataOutputQueue;
 
 // TODO: Store all of them in a dict
