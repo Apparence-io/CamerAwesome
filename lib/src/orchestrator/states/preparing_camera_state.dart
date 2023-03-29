@@ -112,8 +112,8 @@ class PreparingCameraState extends CameraState {
             onVideoRecordingMode: (vrm) => vrm.stopRecording(),
           );
         }
-          },
-        );
+      },
+    );
   }
 
   @override
@@ -152,7 +152,10 @@ class PreparingCameraState extends CameraState {
 
   Future _startPreviewMode() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
+    await _init(
+      enableImageStream: cameraContext.imageAnalysisEnabled,
+      enablePhysicalButton: cameraContext.enablePhysicalButton,
+    );
     cameraContext.changeState(PreviewCameraState.from(cameraContext));
 
     return CamerawesomePlugin.start();
@@ -160,7 +163,10 @@ class PreparingCameraState extends CameraState {
 
   Future _startAnalysisMode() async {
     await Future.delayed(const Duration(milliseconds: 500));
-    await _init(enableImageStream: cameraContext.imageAnalysisEnabled);
+    await _init(
+      enableImageStream: cameraContext.imageAnalysisEnabled,
+      enablePhysicalButton: cameraContext.enablePhysicalButton,
+    );
   }
 
   bool _isReady = false;

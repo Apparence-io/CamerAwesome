@@ -123,12 +123,13 @@ data class PreviewSize(
             return PreviewSize(width, height)
         }
     }
-  fun toList(): List<Any?> {
-    return listOf<Any?>(
-      width,
-      height,
-    )
-  }
+
+    fun toList(): List<Any?> {
+        return listOf<Any?>(
+            width,
+            height,
+        )
+    }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
@@ -558,16 +559,18 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
             }
 
             131.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          PreviewSize.fromList(it)
-        }
-      }
-      132.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          PreviewSize.fromList(it)
-        }
-      }
-      133.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    PreviewSize.fromList(it)
+                }
+            }
+
+            132.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    PreviewSize.fromList(it)
+                }
+            }
+
+            133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           VideoOptions.fromList(it)
         }
@@ -613,6 +616,7 @@ interface CameraInterface {
         aspectRatio: String,
         zoom: Double,
         mirrorFrontCamera: Boolean,
+        enablePhysicalButton: Boolean,
         flashMode: String,
         captureMode: String,
         enableImageStream: Boolean,
@@ -632,16 +636,17 @@ interface CameraInterface {
     fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
     fun pauseVideoRecording()
     fun resumeVideoRecording()
-  fun receivedImageFromStream()
-  fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit)
-  fun getFrontSensors(): List<PigeonSensorTypeDevice>
-  fun getBackSensors(): List<PigeonSensorTypeDevice>
-  fun start(): Boolean
-  fun stop(): Boolean
-  fun setFlashMode(mode: String)
-  fun handleAutoFocus()
-  /**
-   * Starts auto focus on a point at ([x], [y]).
+    fun receivedImageFromStream()
+    fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit)
+    fun getFrontSensors(): List<PigeonSensorTypeDevice>
+    fun getBackSensors(): List<PigeonSensorTypeDevice>
+    fun start(): Boolean
+    fun stop(): Boolean
+    fun setFlashMode(mode: String)
+    fun handleAutoFocus()
+
+    /**
+     * Starts auto focus on a point at ([x], [y]).
    *
    * On Android, you can control after how much time you want to switch back
    * to passive focus mode with [androidFocusSettings].
@@ -654,31 +659,38 @@ interface CameraInterface {
   fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
   fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
-  fun availableSizes(): List<PreviewSize>
-  fun refresh()
-  fun getEffectivPreviewSize(): PreviewSize?
-  fun setPhotoSize(size: PreviewSize)
-  fun setPreviewSize(size: PreviewSize)
-  fun setAspectRatio(aspectRatio: String)
-  fun setupImageAnalysisStream(format: String, width: Long, maxFramesPerSecond: Double?, autoStart: Boolean)
-  fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
-  fun startAnalysis()
-  fun stopAnalysis()
+    fun availableSizes(): List<PreviewSize>
+    fun refresh()
+    fun getEffectivPreviewSize(): PreviewSize?
+    fun setPhotoSize(size: PreviewSize)
+    fun setPreviewSize(size: PreviewSize)
+    fun setAspectRatio(aspectRatio: String)
+    fun setupImageAnalysisStream(
+        format: String,
+        width: Long,
+        maxFramesPerSecond: Double?,
+        autoStart: Boolean
+    )
+
+    fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
+    fun startAnalysis()
+    fun stopAnalysis()
     fun setFilter(matrix: List<Double>)
     fun isVideoRecordingAndImageAnalysisSupported(
         sensor: String,
         callback: (Result<Boolean>) -> Unit
     )
 
-  companion object {
-    /** The codec used by CameraInterface. */
-    val codec: MessageCodec<Any?> by lazy {
-      CameraInterfaceCodec
-    }
-    /** Sets up an instance of `CameraInterface` to handle messages through the `binaryMessenger`. */
-    @Suppress("UNCHECKED_CAST")
-    fun setUp(binaryMessenger: BinaryMessenger, api: CameraInterface?) {
-      run {
+    companion object {
+        /** The codec used by CameraInterface. */
+        val codec: MessageCodec<Any?> by lazy {
+            CameraInterfaceCodec
+        }
+
+        /** Sets up an instance of `CameraInterface` to handle messages through the `binaryMessenger`. */
+        @Suppress("UNCHECKED_CAST")
+        fun setUp(binaryMessenger: BinaryMessenger, api: CameraInterface?) {
+            run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupCamera", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
@@ -687,15 +699,17 @@ interface CameraInterface {
               val aspectRatioArg = args[1] as String
               val zoomArg = args[2] as Double
               val mirrorFrontCameraArg = args[3] as Boolean
-              val flashModeArg = args[4] as String
-              val captureModeArg = args[5] as String
-              val enableImageStreamArg = args[6] as Boolean
-              val exifPreferencesArg = args[7] as ExifPreferences
+              val enablePhysicalButtonArg = args[4] as Boolean
+              val flashModeArg = args[5] as String
+              val captureModeArg = args[6] as String
+              val enableImageStreamArg = args[7] as Boolean
+              val exifPreferencesArg = args[8] as ExifPreferences
               api.setupCamera(
                   sensorArg,
                   aspectRatioArg,
                   zoomArg,
                   mirrorFrontCameraArg,
+                  enablePhysicalButtonArg,
                   flashModeArg,
                   captureModeArg,
                   enableImageStreamArg,
@@ -1338,30 +1352,30 @@ interface CameraInterface {
             channel.setMessageHandler(null)
         }
       }
-        run {
-            val channel = BasicMessageChannel<Any?>(
-                binaryMessenger,
-                "dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported",
-                codec
-            )
-            if (api != null) {
-                channel.setMessageHandler { message, reply ->
-                    val args = message as List<Any?>
-                    val sensorArg = args[0] as String
-                    api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
-                        val error = result.exceptionOrNull()
-                        if (error != null) {
-                            reply.reply(wrapError(error))
-                        } else {
-                            val data = result.getOrNull()
-                            reply.reply(wrapResult(data))
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { message, reply ->
+                        val args = message as List<Any?>
+                        val sensorArg = args[0] as String
+                        api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
                         }
                     }
+                } else {
+                    channel.setMessageHandler(null)
                 }
-            } else {
-                channel.setMessageHandler(null)
             }
         }
-    }
   }
 }

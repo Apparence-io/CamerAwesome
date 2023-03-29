@@ -23,6 +23,7 @@ class CameraPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const sensor = Sensors.back;
     return Scaffold(
       body: Container(
         color: Colors.white,
@@ -43,11 +44,12 @@ class CameraPage extends StatelessWidget {
             ),
             maxFramesPerSecond: 3,
           ),
+          sensor: sensor,
           previewDecoratorBuilder: (state, _, __) {
             return Center(
               child: FutureBuilder<bool>(
                   future: CameraCharacteristics
-                      .isVideoRecordingAndImageAnalysisSupported(Sensors.back),
+                      .isVideoRecordingAndImageAnalysisSupported(sensor),
                   builder: (_, snapshot) {
                     print("___---___--- received result ${snapshot.data}");
                     if (snapshot.data == null) {
@@ -56,7 +58,7 @@ class CameraPage extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.all(20),
                       child: Text(
-                        'Video recording AND image analysis at the same time ${snapshot.data! ? 'IS' : 'IS NOT'} supported on ${Sensors.back.name} sensor',
+                        'Video recording AND image analysis at the same time ${snapshot.data! ? 'IS' : 'IS NOT'} supported on ${sensor.name} sensor',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
