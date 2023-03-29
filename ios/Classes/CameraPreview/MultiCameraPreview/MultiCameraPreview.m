@@ -9,27 +9,50 @@
 
 @implementation MultiCameraPreview
 
-- (instancetype)init {
+//- (instancetype)init {
+//  if (self = [super init]) {
+//    _dataOutputQueue = dispatch_queue_create("data.output.queue", NULL);
+//
+//    [self configSession];
+//  }
+//
+//  return self;
+//}
+
+- (instancetype)initWithSensors:(NSArray<Sensors *> *)sensors {
   if (self = [super init]) {
     _dataOutputQueue = dispatch_queue_create("data.output.queue", NULL);
+    _textures = [NSMutableArray new];
     
-    [self configSession];
+    for (Sensors *sensor in sensors) {
+      CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
+      [_textures addObject:previewTexture];
+    }
+    
+    [self configSession:sensors];
   }
   
   return self;
 }
 
-- (void)configSession {
+- (void)stop {
+  [_cameraSession stopRunning];
+}
+
+- (void)dispose {
+  [self stop];
+}
+
+- (void)configSession:(NSArray<Sensors *> *)sensors {
   if (AVCaptureMultiCamSession.isMultiCamSupported == NO) {
     NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
     return;
   }
   
-  self.backPreviewTexture = [[CameraPreviewTexture alloc] init];
-  self.frontPreviewTexture = [[CameraPreviewTexture alloc] init];
-  
   self.cameraSession = [[AVCaptureMultiCamSession alloc] init];
   [self.cameraSession beginConfiguration];
+  
+  // TODO:
   
   if ([self configBackCamera] == NO) {
     NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
@@ -172,17 +195,18 @@
 }
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+  // TODO:
   if (output == self.frontVideoDataOutput) {
     CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    [_frontPreviewTexture updateBuffer:sampleBuffer];
-    if (_onPreviewFrontFrameAvailable) {
-      _onPreviewFrontFrameAvailable();
+    [_textures[0] updateBuffer:sampleBuffer];
+    if (_onPreviewFrameAvailable) {
+      _onPreviewFrameAvailable(@(0));
     }
   } else if (output == self.backVideoDataOutput) {
-    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);    
-    [_backPreviewTexture updateBuffer:sampleBuffer];
-    if (_onPreviewBackFrameAvailable) {
-      _onPreviewBackFrameAvailable();
+    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    [_textures[1] updateBuffer:sampleBuffer];
+    if (_onPreviewFrameAvailable) {
+      _onPreviewFrameAvailable(@(1));
     }
   }
 }

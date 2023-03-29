@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -27,7 +28,7 @@ class SensorConfig {
   late Stream<double> zoom$;
 
   /// [back] or [front] camera
-  final Sensors sensor;
+  final List<Sensors?> sensors;
 
   final String? captureDeviceId;
 
@@ -45,7 +46,7 @@ class SensorConfig {
   StreamSubscription? _brightnessSubscription;
 
   SensorConfig({
-    required this.sensor,
+    required this.sensors,
     FlashMode flash = FlashMode.none,
     bool mirrorFrontCamera = false,
     SensorType type = SensorType.wideAngle,

@@ -18,6 +18,18 @@ class ExifPreferences {
   ExifPreferences({required this.saveGPSLocation});
 }
 
+class Sensors {
+  final PigeonSensorPosition? position;
+  final PigeonSensorType? type;
+  final String? deviceId;
+  
+  Sensors({
+    this.position = PigeonSensorPosition.back,
+    this.type,
+    this.deviceId,
+  });
+}
+
 class VideoOptions {
   String fileType;
   String codec;
@@ -29,6 +41,11 @@ class VideoOptions {
     required this.fileType,
     required this.codec,
   });
+}
+
+enum PigeonSensorPosition {
+  back,
+  front,
 }
 
 enum PigeonSensorType {
@@ -224,10 +241,10 @@ abstract class AnalysisImageUtils {
 
 @HostApi()
 abstract class CameraInterface {
-  // TODO: instead of "String sensor", use an object to store sensor
+  // return a list of textureIDs
   @async
   bool setupCamera(
-    String sensor,
+    List<Sensors> sensors,
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
@@ -245,7 +262,7 @@ abstract class CameraInterface {
   @async
   List<String> requestPermissions(bool saveGpsLocation);
 
-  int getPreviewTextureId(String sensor);
+  int getPreviewTextureId(int cameraPosition);
 
   // TODO async with void return type seems to not work (channel-error)
   @async
@@ -290,7 +307,8 @@ abstract class CameraInterface {
 
   void setMirrorFrontCamera(bool mirror);
 
-  void setSensor(String sensor, String? deviceId);
+  // TODO: specify the position of the sensor
+  void setSensor(List<Sensors> sensors, String? deviceId);
 
   void setCorrection(double brightness);
 

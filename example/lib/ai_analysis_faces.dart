@@ -67,7 +67,7 @@ class _CameraPageState extends State<CameraPage> {
       body: CameraAwesomeBuilder.previewOnly(
         previewFit: CameraPreviewFit.contain,
         aspectRatio: CameraAspectRatios.ratio_1_1,
-        sensor: Sensors.front,
+        sensors: [Sensors(position: PigeonSensorPosition.front)],
         onImageForAnalysis: (img) => _analyzeImage(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(
@@ -138,7 +138,9 @@ class _MyPreviewDecoratorWidget extends StatelessWidget {
                     model: faceModelSnapshot.requireData,
                     previewSize: previewSize,
                     previewRect: previewRect,
-                    isBackCamera: snapshot.requireData.sensor == Sensors.back,
+                    isBackCamera:
+                        snapshot.requireData.sensors.first?.position ==
+                            PigeonSensorPosition.back,
                   ),
                 );
               },

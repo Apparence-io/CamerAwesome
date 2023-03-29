@@ -33,6 +33,12 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList;
 @end
 
+@interface Sensors ()
++ (Sensors *)fromList:(NSArray *)list;
++ (nullable Sensors *)nullableFromList:(NSArray *)list;
+- (NSArray *)toList;
+@end
+
 @interface VideoOptions ()
 + (VideoOptions *)fromList:(NSArray *)list;
 + (nullable VideoOptions *)nullableFromList:(NSArray *)list;
@@ -114,6 +120,35 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList {
   return @[
     (self.saveGPSLocation ?: [NSNull null]),
+  ];
+}
+@end
+
+@implementation Sensors
++ (instancetype)makeWithPosition:(PigeonSensorPosition)position
+    type:(PigeonSensorType)type
+    deviceId:(nullable NSString *)deviceId {
+  Sensors* pigeonResult = [[Sensors alloc] init];
+  pigeonResult.position = position;
+  pigeonResult.type = type;
+  pigeonResult.deviceId = deviceId;
+  return pigeonResult;
+}
++ (Sensors *)fromList:(NSArray *)list {
+  Sensors *pigeonResult = [[Sensors alloc] init];
+  pigeonResult.position = [GetNullableObjectAtIndex(list, 0) integerValue];
+  pigeonResult.type = [GetNullableObjectAtIndex(list, 1) integerValue];
+  pigeonResult.deviceId = GetNullableObjectAtIndex(list, 2);
+  return pigeonResult;
+}
++ (nullable Sensors *)nullableFromList:(NSArray *)list {
+  return (list) ? [Sensors fromList:list] : nil;
+}
+- (NSArray *)toList {
+  return @[
+    @(self.position),
+    @(self.type),
+    (self.deviceId ?: [NSNull null]),
   ];
 }
 @end
@@ -485,6 +520,8 @@ void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObjec
     case 132: 
       return [PreviewSize fromList:[self readValue]];
     case 133: 
+      return [Sensors fromList:[self readValue]];
+    case 134: 
       return [VideoOptions fromList:[self readValue]];
     default:
       return [super readValueOfType:type];
@@ -511,8 +548,11 @@ void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObjec
   } else if ([value isKindOfClass:[PreviewSize class]]) {
     [self writeByte:132];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[VideoOptions class]]) {
+  } else if ([value isKindOfClass:[Sensors class]]) {
     [self writeByte:133];
+    [self writeValue:[value toList]];
+  } else if ([value isKindOfClass:[VideoOptions class]]) {
+    [self writeByte:134];
     [self writeValue:[value toList]];
   } else {
     [super writeValue:value];
@@ -549,10 +589,10 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setupCameraSensor:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensor:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
+        NSArray<Sensors *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
         NSString *arg_aspectRatio = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_zoom = GetNullableObjectAtIndex(args, 2);
         NSNumber *arg_mirrorFrontCamera = GetNullableObjectAtIndex(args, 3);
@@ -561,7 +601,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         NSString *arg_captureMode = GetNullableObjectAtIndex(args, 6);
         NSNumber *arg_enableImageStream = GetNullableObjectAtIndex(args, 7);
         ExifPreferences *arg_exifPreferences = GetNullableObjectAtIndex(args, 8);
-        [api setupCameraSensor:arg_sensor aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera enablePhysicalButton:arg_enablePhysicalButton flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        [api setupCameraSensors:arg_sensors aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera enablePhysicalButton:arg_enablePhysicalButton flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
@@ -614,12 +654,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(getPreviewTextureIdSensor:error:)], @"CameraInterface api (%@) doesn't respond to @selector(getPreviewTextureIdSensor:error:)", api);
+      NSCAssert([api respondsToSelector:@selector(getPreviewTextureIdCameraPosition:error:)], @"CameraInterface api (%@) doesn't respond to @selector(getPreviewTextureIdCameraPosition:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_cameraPosition = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
-        NSNumber *output = [api getPreviewTextureIdSensor:arg_sensor error:&error];
+        NSNumber *output = [api getPreviewTextureIdCameraPosition:arg_cameraPosition error:&error];
         callback(wrapResult(output, error));
       }];
     } else {
@@ -908,13 +948,13 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setSensorSensor:deviceId:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setSensorSensor:deviceId:error:)", api);
+      NSCAssert([api respondsToSelector:@selector(setSensorSensors:deviceId:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setSensorSensors:deviceId:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
+        NSArray<Sensors *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
         NSString *arg_deviceId = GetNullableObjectAtIndex(args, 1);
         FlutterError *error;
-        [api setSensorSensor:arg_sensor deviceId:arg_deviceId error:&error];
+        [api setSensorSensors:arg_sensors deviceId:arg_deviceId error:&error];
         callback(wrapResult(nil, error));
       }];
     } else {

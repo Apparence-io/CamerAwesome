@@ -1,4 +1,4 @@
-enum Sensors {
+enum SensorPosition {
   back,
   front,
 }

@@ -67,14 +67,44 @@ abstract class CameraState {
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
   Future<void> switchCameraSensor({
+    int cameraPosition = 0,
     CameraAspectRatios? aspectRatio,
     double? zoom,
     FlashMode? flash,
     SensorType? type,
   }) async {
     final previous = cameraContext.sensorConfig;
+    int sensorIndex = 0;
     final next = SensorConfig(
-      sensor: previous.sensor == Sensors.back ? Sensors.front : Sensors.back,
+      sensors: previous.sensors.map((sensor) {
+        if (sensorIndex == cameraPosition && sensor != null) {
+          if (sensor.position == PigeonSensorPosition.back) {
+            sensor.position = PigeonSensorPosition.front;
+          } else {
+            sensor.position = PigeonSensorPosition.back;
+          }
+
+          // TODO: move to method
+          switch (sensor.type) {
+            case PigeonSensorType.wideAngle:
+              sensor.type = PigeonSensorType.wideAngle;
+              break;
+            case PigeonSensorType.telephoto:
+              sensor.type = PigeonSensorType.telephoto;
+              break;
+            case PigeonSensorType.trueDepth:
+              sensor.type = PigeonSensorType.trueDepth;
+              break;
+            case PigeonSensorType.ultraWideAngle:
+              sensor.type = PigeonSensorType.ultraWideAngle;
+              break;
+            default:
+          }
+        }
+
+        sensorIndex++;
+        return sensor;
+      }).toList(),
       type: type ?? SensorType.wideAngle,
     );
     await cameraContext.setSensorConfig(next);
@@ -90,11 +120,40 @@ abstract class CameraState {
     }
   }
 
-  void setSensorType(SensorType type, String deviceId) {
+  void setSensorType(int cameraPosition, SensorType type, String deviceId) {
+    final previous = cameraContext.sensorConfig;
+    int sensorIndex = 0;
     final next = SensorConfig(
       captureDeviceId: deviceId,
-      sensor: type == SensorType.trueDepth ? Sensors.front : Sensors.back,
-      type: type,
+      sensors: previous.sensors.map((sensor) {
+        if (sensorIndex == cameraPosition && sensor != null) {
+          if (sensor.type == PigeonSensorType.trueDepth) {
+            sensor.position = PigeonSensorPosition.front;
+          } else {
+            sensor.position = PigeonSensorPosition.back;
+          }
+
+          // TODO: move to method
+          switch (sensor.type) {
+            case PigeonSensorType.wideAngle:
+              sensor.type = PigeonSensorType.wideAngle;
+              break;
+            case PigeonSensorType.telephoto:
+              sensor.type = PigeonSensorType.telephoto;
+              break;
+            case PigeonSensorType.trueDepth:
+              sensor.type = PigeonSensorType.trueDepth;
+              break;
+            case PigeonSensorType.ultraWideAngle:
+              sensor.type = PigeonSensorType.ultraWideAngle;
+              break;
+            default:
+          }
+        }
+
+        sensorIndex++;
+        return sensor;
+      }).toList(),
     );
     cameraContext.setSensorConfig(next);
   }
@@ -138,14 +197,9 @@ abstract class CameraState {
     return cameraContext.getSensors();
   }
 
-  // TODO: get textureID from camera ID
-  Future<int?> backPreviewTextureId() {
-    return cameraContext.backPreviewTextureId();
-  }
-
-  Future<int?> frontPreviewTextureId() {
-    return cameraContext.frontPreviewTextureId();
-  }
+  Future<int?> previewTextureId(int cameraPosition) {
+    return cameraContext.previewTextureId(cameraPosition);
+  } 
 
   AnalysisController? get analysisController =>
       cameraContext.analysisController;

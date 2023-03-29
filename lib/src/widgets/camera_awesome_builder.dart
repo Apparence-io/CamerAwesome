@@ -45,7 +45,7 @@ typedef OnImageForAnalysis = Future Function(AnalysisImage image);
 /// with the awesome factory
 class CameraAwesomeBuilder extends StatefulWidget {
   /// [front] or [back] camera
-  final Sensors sensor;
+  final List<Sensors> sensors;
 
   final FlashMode flashMode;
 
@@ -117,7 +117,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   final bool showPreview;
 
   const CameraAwesomeBuilder._({
-    required this.sensor,
+    required this.sensors,
     required this.flashMode,
     required this.zoom,
     required this.mirrorFrontCamera,
@@ -148,7 +148,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// photos, videos or both and where to save them.
   ///
   /// You can initiate the camera with a few parameters:
-  /// - which [sensor] to use ([front] or [back])
+  /// - which [sensors] to use ([front] or [back])
   /// - which [flashMode] to use
   /// - how much zoom you want (0.0 = no zoom, 1.0 = max zoom)
   /// - [enableAudio] when recording a video or not
@@ -167,7 +167,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// [imageAnaysisConfig] and listen to the stream of images with
   /// [onImageForAnalysis].
   CameraAwesomeBuilder.awesome({
-    Sensors sensor = Sensors.back,
+    List<Sensors>? sensors,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     bool mirrorFrontCamera = false,
@@ -192,7 +192,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensor: sensor,
+          sensors: sensors ?? [Sensors(position: PigeonSensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,
@@ -228,7 +228,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   ///
   /// Documentation on its way, API might change
   CameraAwesomeBuilder.custom({
-    Sensors sensor = Sensors.back,
+    List<Sensors>? sensors,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     bool mirrorFrontCamera = false,
@@ -249,7 +249,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensor: sensor,
+          sensors: sensors ?? [Sensors(position: PigeonSensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,
@@ -408,7 +408,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
 
     _cameraContext = CameraContext.create(
       SensorConfig(
-        sensor: widget.sensor,
+        sensors: widget.sensors,
         flash: widget.flashMode,
         currentZoom: widget.zoom,
         mirrorFrontCamera: widget.mirrorFrontCamera,

@@ -183,7 +183,7 @@ class CamerawesomePlugin {
   }) async {
     return CameraInterface()
         .setupCamera(
-          sensorConfig.sensor.name.toUpperCase(),
+          sensorConfig.sensors,
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
           sensorConfig.mirrorFrontCamera,
@@ -204,8 +204,8 @@ class CamerawesomePlugin {
         .toList();
   }
 
-  static Future<num?> getPreviewTexture(final Sensors sensor) {
-    return CameraInterface().getPreviewTextureId(sensor.name);
+  static Future<num?> getPreviewTexture(final int cameraPosition) {
+    return CameraInterface().getPreviewTextureId(cameraPosition);
   }
 
   static Future<void> setPreviewSize(int width, int height) {
@@ -316,8 +316,8 @@ class CamerawesomePlugin {
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
-  static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
-    return CameraInterface().setSensor(sensor.name.toUpperCase(), deviceId);
+  static Future<void> setSensor(List<Sensors?> sensors, {String? deviceId}) {
+    return CameraInterface().setSensor(sensors, deviceId);
   }
 
   /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]

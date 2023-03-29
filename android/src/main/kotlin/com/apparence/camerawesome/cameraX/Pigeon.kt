@@ -43,6 +43,17 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
+enum class PigeonSensorPosition(val raw: Int) {
+  BACK(0),
+  FRONT(1);
+
+  companion object {
+    fun ofRaw(raw: Int): PigeonSensorPosition? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 enum class PigeonSensorType(val raw: Int) {
   /**
    * A built-in wide-angle camera.
@@ -146,6 +157,35 @@ data class ExifPreferences (
   fun toList(): List<Any?> {
     return listOf<Any?>(
       saveGPSLocation,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class Sensors (
+  val position: PigeonSensorPosition? = null,
+  val type: PigeonSensorType? = null,
+  val deviceId: String? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): Sensors {
+      val position: PigeonSensorPosition? = (list[0] as Int?)?.let {
+        PigeonSensorPosition.ofRaw(it)
+      }
+      val type: PigeonSensorType? = (list[1] as Int?)?.let {
+        PigeonSensorType.ofRaw(it)
+      }
+      val deviceId = list[2] as String?
+      return Sensors(position, type, deviceId)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      position?.raw,
+      type?.raw,
+      deviceId,
     )
   }
 }
@@ -507,6 +547,11 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          Sensors.fromList(it)
+        }
+      }
+      134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           VideoOptions.fromList(it)
         }
       }
@@ -535,8 +580,12 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is VideoOptions -> {
+      is Sensors -> {
         stream.write(133)
+        writeValue(stream, value.toList())
+      }
+      is VideoOptions -> {
+        stream.write(134)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -546,14 +595,14 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensor: String, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
+  fun setupCamera(sensors: List<Sensors>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
   fun checkPermissions(): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
    * refused but the app should still be able to run.
    */
   fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
-  fun getPreviewTextureId(sensor: String): Long
+  fun getPreviewTextureId(cameraPosition: Long): Long
   fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit)
   fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
   fun pauseVideoRecording()
@@ -575,7 +624,7 @@ interface CameraInterface {
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, androidFocusSettings: AndroidFocusSettings?)
   fun setZoom(zoom: Double)
   fun setMirrorFrontCamera(mirror: Boolean)
-  fun setSensor(sensor: String, deviceId: String?)
+  fun setSensor(sensors: List<Sensors>, deviceId: String?)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
@@ -606,7 +655,7 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorArg = args[0] as String
+            val sensorsArg = args[0] as List<Sensors>
             val aspectRatioArg = args[1] as String
             val zoomArg = args[2] as Double
             val mirrorFrontCameraArg = args[3] as Boolean
@@ -615,7 +664,7 @@ interface CameraInterface {
             val captureModeArg = args[6] as String
             val enableImageStreamArg = args[7] as Boolean
             val exifPreferencesArg = args[8] as ExifPreferences
-            api.setupCamera(sensorArg, aspectRatioArg, zoomArg, mirrorFrontCameraArg, enablePhysicalButtonArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) { result: Result<Boolean> ->
+            api.setupCamera(sensorsArg, aspectRatioArg, zoomArg, mirrorFrontCameraArg, enablePhysicalButtonArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))
@@ -670,10 +719,10 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorArg = args[0] as String
+            val cameraPositionArg = args[0].let { if (it is Int) it.toLong() else it as Long }
             var wrapped: List<Any?>
             try {
-              wrapped = listOf<Any?>(api.getPreviewTextureId(sensorArg))
+              wrapped = listOf<Any?>(api.getPreviewTextureId(cameraPositionArg))
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }
@@ -957,11 +1006,11 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorArg = args[0] as String
+            val sensorsArg = args[0] as List<Sensors>
             val deviceIdArg = args[1] as String?
             var wrapped: List<Any?>
             try {
-              api.setSensor(sensorArg, deviceIdArg)
+              api.setSensor(sensorsArg, deviceIdArg)
               wrapped = listOf<Any?>(null)
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
