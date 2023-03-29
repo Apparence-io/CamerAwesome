@@ -45,7 +45,7 @@ typedef OnImageForAnalysis = Future Function(AnalysisImage image);
 /// with the awesome factory
 class CameraAwesomeBuilder extends StatefulWidget {
   /// [front] or [back] camera
-  final List<Sensors> sensors;
+  final List<Sensor> sensors;
 
   final FlashMode flashMode;
 
@@ -162,7 +162,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// [imageAnaysisConfig] and listen to the stream of images with
   /// [onImageForAnalysis].
   CameraAwesomeBuilder.awesome({
-    List<Sensors>? sensors,
+    List<Sensor>? sensors,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     bool mirrorFrontCamera = false,
@@ -187,7 +187,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensors: sensors ?? [Sensors(position: PigeonSensorPosition.back)],
+          sensors: sensors ?? [Sensor(position: SensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,
@@ -223,7 +223,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   ///
   /// Documentation on its way, API might change
   CameraAwesomeBuilder.custom({
-    List<Sensors>? sensors,
+    List<Sensor>? sensors,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     bool mirrorFrontCamera = false,
@@ -244,7 +244,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensors: sensors ?? [Sensors(position: PigeonSensorPosition.back)],
+          sensors: sensors ?? [Sensor(position: SensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,

@@ -1,8 +1,3 @@
-enum SensorPosition {
-  back,
-  front,
-}
-
 enum CameraAspectRatios {
   ratio_16_9,
   ratio_4_3,

@@ -11,7 +11,7 @@
   dispatch_queue_t _dispatchQueue;
 }
 
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor
+- (instancetype)initWithCameraSensor:(SensorPosition)sensor
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -124,7 +124,7 @@
 }
 
 /// Init camera preview with Front or Rear sensor
-- (void)initCameraPreview:(CameraSensor)sensor {
+- (void)initCameraPreview:(SensorPosition)sensor {
   // Here we set a preset which wont crash the device before switching to front or back
   [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
   
@@ -152,7 +152,7 @@
   
   // Mirror the preview only on portrait mode
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  [_captureConnection setVideoMirrored:(_cameraSensor == Front)];
+  [_captureConnection setVideoMirrored:(_cameraSensor == SensorPositionFront)];
   [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
 }
 
@@ -235,7 +235,7 @@
 }
 
 /// Set sensor between Front & Rear camera
-- (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId {
+- (void)setSensor:(SensorPosition)sensor deviceId:(NSString *)captureDeviceId {
   // First remove all input & output
   [_captureSession beginConfiguration];
   
@@ -310,7 +310,7 @@
     return;
   }
   
-  if (_cameraSensor == Front) {
+  if (_cameraSensor == SensorPositionFront) {
     *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""];
     return;
   }
@@ -371,7 +371,7 @@
 }
 
 /// Get the first available camera on device (front or rear)
-- (NSString *)selectAvailableCamera:(CameraSensor)sensor {
+- (NSString *)selectAvailableCamera:(SensorPosition)sensor {
   if (_captureDeviceId != nil) {
     return _captureDeviceId;
   }
@@ -384,7 +384,7 @@
                                                        position:AVCaptureDevicePositionUnspecified];
   devices = discoverySession.devices;
   
-  NSInteger cameraType = (sensor == Front) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
+  NSInteger cameraType = (sensor == SensorPositionFront) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
   for (AVCaptureDevice *device in devices) {
     if ([device position] == cameraType) {
       return [device uniqueID];

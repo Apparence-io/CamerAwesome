@@ -33,9 +33,9 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList;
 @end
 
-@interface Sensors ()
-+ (Sensors *)fromList:(NSArray *)list;
-+ (nullable Sensors *)nullableFromList:(NSArray *)list;
+@interface Sensor ()
++ (Sensor *)fromList:(NSArray *)list;
++ (nullable Sensor *)nullableFromList:(NSArray *)list;
 - (NSArray *)toList;
 @end
 
@@ -106,25 +106,25 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 }
 @end
 
-@implementation Sensors
-+ (instancetype)makeWithPosition:(PigeonSensorPosition)position
+@implementation Sensor
++ (instancetype)makeWithPosition:(SensorPosition)position
     type:(PigeonSensorType)type
     deviceId:(nullable NSString *)deviceId {
-  Sensors* pigeonResult = [[Sensors alloc] init];
+  Sensor* pigeonResult = [[Sensor alloc] init];
   pigeonResult.position = position;
   pigeonResult.type = type;
   pigeonResult.deviceId = deviceId;
   return pigeonResult;
 }
-+ (Sensors *)fromList:(NSArray *)list {
-  Sensors *pigeonResult = [[Sensors alloc] init];
++ (Sensor *)fromList:(NSArray *)list {
+  Sensor *pigeonResult = [[Sensor alloc] init];
   pigeonResult.position = [GetNullableObjectAtIndex(list, 0) integerValue];
   pigeonResult.type = [GetNullableObjectAtIndex(list, 1) integerValue];
   pigeonResult.deviceId = GetNullableObjectAtIndex(list, 2);
   return pigeonResult;
 }
-+ (nullable Sensors *)nullableFromList:(NSArray *)list {
-  return (list) ? [Sensors fromList:list] : nil;
++ (nullable Sensor *)nullableFromList:(NSArray *)list {
+  return (list) ? [Sensor fromList:list] : nil;
 }
 - (NSArray *)toList {
   return @[
@@ -241,7 +241,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
     case 132: 
       return [PreviewSize fromList:[self readValue]];
     case 133: 
-      return [Sensors fromList:[self readValue]];
+      return [Sensor fromList:[self readValue]];
     case 134: 
       return [VideoOptions fromList:[self readValue]];
     default:
@@ -269,7 +269,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   } else if ([value isKindOfClass:[PreviewSize class]]) {
     [self writeByte:132];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[Sensors class]]) {
+  } else if ([value isKindOfClass:[Sensor class]]) {
     [self writeByte:133];
     [self writeValue:[value toList]];
   } else if ([value isKindOfClass:[VideoOptions class]]) {
@@ -313,7 +313,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSArray<Sensors *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
+        NSArray<Sensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
         NSString *arg_aspectRatio = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_zoom = GetNullableObjectAtIndex(args, 2);
         NSNumber *arg_mirrorFrontCamera = GetNullableObjectAtIndex(args, 3);
@@ -672,7 +672,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       NSCAssert([api respondsToSelector:@selector(setSensorSensors:deviceId:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setSensorSensors:deviceId:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSArray<Sensors *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
+        NSArray<Sensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
         NSString *arg_deviceId = GetNullableObjectAtIndex(args, 1);
         FlutterError *error;
         [api setSensorSensors:arg_sensors deviceId:arg_deviceId error:&error];

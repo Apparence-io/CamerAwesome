@@ -35,8 +35,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 // TODO: Send an ID
 @property(nonatomic, copy) void (^onPreviewFrameAvailable)(NSNumber * _Nullable);
 
-- (instancetype)initWithSensors:(NSArray<Sensors *> *)sensors;
-- (void)configSession:(NSArray<Sensors *> *)sensors;
+- (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors;
+- (void)configSession:(NSArray<Sensor *> *)sensors;
 - (void)start;
 - (void)stop;
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;

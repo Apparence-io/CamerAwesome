@@ -18,13 +18,13 @@ class ExifPreferences {
   ExifPreferences({required this.saveGPSLocation});
 }
 
-class Sensors {
-  final PigeonSensorPosition? position;
+class Sensor {
+  final SensorPosition? position;
   final PigeonSensorType? type;
   final String? deviceId;
   
-  Sensors({
-    this.position = PigeonSensorPosition.back,
+  Sensor({
+    this.position = SensorPosition.back,
     this.type,
     this.deviceId,
   });
@@ -43,7 +43,7 @@ class VideoOptions {
   });
 }
 
-enum PigeonSensorPosition {
+enum SensorPosition {
   back,
   front,
 }
@@ -161,7 +161,7 @@ abstract class CameraInterface {
   // return a list of textureIDs
   @async
   bool setupCamera(
-    List<Sensors> sensors,
+    List<Sensor> sensors,
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
@@ -225,7 +225,7 @@ abstract class CameraInterface {
   void setMirrorFrontCamera(bool mirror);
 
   // TODO: specify the position of the sensor
-  void setSensor(List<Sensors> sensors, String? deviceId);
+  void setSensor(List<Sensor> sensors, String? deviceId);
 
   void setCorrection(double brightness);
 

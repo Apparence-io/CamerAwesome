@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class DrivableCamera extends StatelessWidget {
   final SaveConfig saveConfig;
-  final List<Sensors> sensors;
+  final List<Sensor> sensors;
   final ExifPreferences? exifPreferences;
 
   const DrivableCamera({

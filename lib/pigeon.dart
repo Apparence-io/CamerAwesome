@@ -8,7 +8,7 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
-enum PigeonSensorPosition {
+enum SensorPosition {
   back,
   front,
 }
@@ -83,14 +83,14 @@ class ExifPreferences {
   }
 }
 
-class Sensors {
-  Sensors({
+class Sensor {
+  Sensor({
     this.position,
     this.type,
     this.deviceId,
   });
 
-  PigeonSensorPosition? position;
+  SensorPosition? position;
 
   PigeonSensorType? type;
 
@@ -104,11 +104,11 @@ class Sensors {
     ];
   }
 
-  static Sensors decode(Object result) {
+  static Sensor decode(Object result) {
     result as List<Object?>;
-    return Sensors(
+    return Sensor(
       position: result[0] != null
-          ? PigeonSensorPosition.values[result[0]! as int]
+          ? SensorPosition.values[result[0]! as int]
           : null,
       type: result[1] != null
           ? PigeonSensorType.values[result[1]! as int]
@@ -235,7 +235,7 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
     } else if (value is PreviewSize) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is Sensors) {
+    } else if (value is Sensor) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
     } else if (value is VideoOptions) {
@@ -260,7 +260,7 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
       case 132: 
         return PreviewSize.decode(readValue(buffer)!);
       case 133: 
-        return Sensors.decode(readValue(buffer)!);
+        return Sensor.decode(readValue(buffer)!);
       case 134: 
         return VideoOptions.decode(readValue(buffer)!);
       default:
@@ -279,7 +279,7 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<bool> setupCamera(List<Sensors?> arg_sensors, String arg_aspectRatio, double arg_zoom, bool arg_mirrorFrontCamera, bool arg_enablePhysicalButton, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
+  Future<bool> setupCamera(List<Sensor?> arg_sensors, String arg_aspectRatio, double arg_zoom, bool arg_mirrorFrontCamera, bool arg_enablePhysicalButton, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec,
         binaryMessenger: _binaryMessenger);
@@ -753,7 +753,7 @@ class CameraInterface {
     }
   }
 
-  Future<void> setSensor(List<Sensors?> arg_sensors, String? arg_deviceId) async {
+  Future<void> setSensor(List<Sensor?> arg_sensors, String? arg_deviceId) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setSensor', codec,
         binaryMessenger: _binaryMessenger);
