@@ -17,7 +17,7 @@ FlutterEventSink physicalButtonEventSink;
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *textureRegistry;
 @property NSMutableArray<NSNumber *> *texturesIds;
 @property CameraPreview *camera;
-@property MultiCameraPreview *multiCameraPreview;
+@property MultiCameraPreview *multiCamera;
 - (instancetype)init:(NSObject<FlutterPluginRegistrar>*)registrar;
 @end
 
@@ -137,15 +137,15 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable PreviewSize *)getEffectivPreviewSizeWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  if (self.camera == nil && self.multiCameraPreview == nil) {
+  if (self.camera == nil && self.multiCamera == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
   }
-
+  
   CGSize previewSize;
-  if (self.multiCameraPreview != nil) {
-    previewSize = [_multiCameraPreview getEffectivPreviewSize];
+  if (self.multiCamera != nil) {
+    previewSize = [self.multiCamera getEffectivPreviewSize];
   } else {
-    previewSize = [_camera getEffectivPreviewSize];
+    previewSize = [self.camera getEffectivPreviewSize];
   }
   
   // height & width are inverted, this is intentionnal, because camera is always on portrait mode
@@ -158,11 +158,11 @@ FlutterEventSink physicalButtonEventSink;
 
 - (nullable NSNumber *)getPreviewTextureIdCameraPosition:(nonnull NSNumber *)cameraPosition error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   int cameraIndex = [cameraPosition intValue];
-
+  
   if (_texturesIds != nil && [_texturesIds count] >= cameraIndex) {
     return [_texturesIds objectAtIndex:cameraIndex];
   }
-
+  
   return nil;
 }
 
@@ -249,13 +249,13 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  if (self.camera == nil && self.multiCameraPreview != nil) {
+  if (self.camera == nil && self.multiCamera != nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return;
   }
   
-  if (self.multiCameraPreview != nil) {
-    [self.multiCameraPreview setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
+  if (self.multiCamera != nil) {
+    [self.multiCamera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
   } else {
     [self.camera setPreviewSize:CGSizeMake([size.width floatValue], [size.height floatValue]) error:error];
   }
@@ -266,13 +266,13 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (void)setSensorSensors:(nonnull NSArray<Sensor *> *)sensors error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  if (self.camera == nil && self.multiCameraPreview == nil) {
+  if (self.camera == nil && self.multiCamera == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return;
   }
   
-  if (sensors != nil && [sensors count] > 1 && self.multiCameraPreview != nil) {
-    [self.multiCameraPreview configSession:sensors];
+  if (sensors != nil && [sensors count] > 1 && self.multiCamera != nil) {
+    [self.multiCamera configSession:sensors];
   } else {
     [self.camera setSensor:sensors.firstObject];
   }
@@ -310,16 +310,16 @@ FlutterEventSink physicalButtonEventSink;
     [self.camera dispose];
     self.camera = nil;
   }
-  if (self.multiCameraPreview != nil) {
-    [self.multiCameraPreview dispose];
-    self.multiCameraPreview = nil;
+  if (self.multiCamera != nil) {
+    [self.multiCamera dispose];
+    self.multiCamera = nil;
   }
-
+  
   _texturesIds = [NSMutableArray new];
-
+  
   AspectRatio aspectRatioMode = [AspectRatioUtils convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
-
+  
   bool multiSensors = [sensors count] > 1;
   if (multiSensors) {
     if (![MultiCameraController isMultiCamSupported]) {
@@ -327,22 +327,24 @@ FlutterEventSink physicalButtonEventSink;
       return;
     }
 
-    self.multiCameraPreview = [[MultiCameraPreview alloc] initWithSensors:sensors
-                                                        mirrorFrontCamera:[mirrorFrontCamera boolValue]
-                                                     enablePhysicalButton:[enablePhysicalButton boolValue]
-                                                          aspectRatioMode:aspectRatioMode
-                                                              captureMode:captureModeType];
+    self.multiCamera = [[MultiCameraPreview alloc] initWithSensors:sensors
+                                                 mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                              enablePhysicalButton:[enablePhysicalButton boolValue]
+                                                   aspectRatioMode:aspectRatioMode
+                                                       captureMode:captureModeType
+                                                     dispatchQueue:_dispatchQueue];
     
     for (int i = 0; i < [sensors count]; i++) {
-      int64_t textureId = [self->_textureRegistry registerTexture:self.multiCameraPreview.textures[i]];
+      int64_t textureId = [self->_textureRegistry registerTexture:self.multiCamera.textures[i]];
       [_texturesIds addObject:[NSNumber numberWithLongLong:textureId]];
     }
+    
     __weak typeof(self) weakSelf = self;
-    self.multiCameraPreview.onPreviewFrameAvailable = ^(NSNumber * _Nullable i) {
+    self.multiCamera.onPreviewFrameAvailable = ^(NSNumber * _Nullable i) {
       if (i == nil) {
         return;
       }
-
+      
       NSNumber *textureNumber = weakSelf.texturesIds[[i intValue]];
       [weakSelf.textureRegistry textureFrameAvailable:[textureNumber longLongValue]];
     };
@@ -356,16 +358,16 @@ FlutterEventSink physicalButtonEventSink;
                                                   captureMode:captureModeType
                                                    completion:completion
                                                 dispatchQueue:dispatch_queue_create("camerawesome.dispatchqueue", NULL)];
-
+    
     int64_t textureId = [self->_textureRegistry registerTexture:self.camera.previewTexture];
-
+    
     __weak typeof(self) weakSelf = self;
     self.camera.onPreviewFrameAvailable = ^{
       [weakSelf.textureRegistry textureFrameAvailable:textureId];
     };
-
+    
     [self->_textureRegistry textureFrameAvailable:textureId];
-
+    
     [_texturesIds addObject:[NSNumber numberWithLongLong:textureId]];
   }
   
@@ -380,15 +382,14 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable NSNumber *)startWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  if (self.camera == nil && self.multiCameraPreview == nil) {
+  if (self.camera == nil && self.multiCamera == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return @(NO);
   }
-  
-  // TODO: make a camera preview abstract class
+
   dispatch_async(_dispatchQueue, ^{
-    if (self.multiCameraPreview != nil) {
-      [self->_multiCameraPreview start];
+    if (self.multiCamera != nil) {
+      [self->_multiCamera start];
     } else {
       [self->_camera start];
     }
@@ -404,7 +405,7 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (nullable NSNumber *)stopWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  if (self.camera == nil && self.multiCameraPreview == nil) {
+  if (self.camera == nil && self.multiCamera == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return @(NO);
   }
@@ -412,8 +413,8 @@ FlutterEventSink physicalButtonEventSink;
   for (NSNumber *textureId in self->_texturesIds) {
     [self->_textureRegistry unregisterTexture:[textureId longLongValue]];
     dispatch_async(_dispatchQueue, ^{
-      if (self.multiCameraPreview != nil) {
-        [self->_multiCameraPreview stop];
+      if (self.multiCamera != nil) {
+        [self->_multiCamera stop];
       } else {
         [self->_camera stop];
       }
@@ -424,7 +425,7 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (void)takePhotoPath:(nonnull NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
-  if (self.camera == nil && self.multiCameraPreview == nil) {
+  if (self.camera == nil && self.multiCamera == nil) {
     completion(nil, [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil]);
     return;
   }
@@ -435,9 +436,8 @@ FlutterEventSink physicalButtonEventSink;
   }
   
   dispatch_async(_dispatchQueue, ^{
-    if (self.multiCameraPreview != nil) {
-      // TODO:
-      [self->_multiCameraPreview takePictureAtPath:path completion:completion];
+    if (self.multiCamera != nil) {
+      [self->_multiCamera takePictureAtPath:path completion:completion];
     } else {
       [self->_camera takePictureAtPath:path completion:completion];
     }

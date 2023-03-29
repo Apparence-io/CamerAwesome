@@ -29,8 +29,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 
 @property (nonatomic, strong) NSArray<Sensor *> *sensors;
 @property (nonatomic, strong) NSMutableArray<CameraDeviceInfo *> *devices;
-@property (nonatomic, strong) dispatch_queue_t dataOutputQueue;
-@property(readonly, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
+@property (nonatomic, strong) dispatch_queue_t dispatchQueue;
+@property(nonatomic, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) LocationController *locationController;
 @property(readonly, nonatomic) MotionController *motionController;
@@ -43,7 +43,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
            enablePhysicalButton:(BOOL)enablePhysicalButton
                 aspectRatioMode:(AspectRatio)aspectRatioMode
-                    captureMode:(CaptureModes)captureMode;
+                    captureMode:(CaptureModes)captureMode
+                  dispatchQueue:(dispatch_queue_t)dispatchQueue;
 - (void)configSession:(NSArray<Sensor *> *)sensors;
 - (void)start;
 - (void)stop;

@@ -12,9 +12,10 @@
 - (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
            enablePhysicalButton:(BOOL)enablePhysicalButton
                 aspectRatioMode:(AspectRatio)aspectRatioMode
-                    captureMode:(CaptureModes)captureMode {
+                    captureMode:(CaptureModes)captureMode
+                  dispatchQueue:(dispatch_queue_t)dispatchQueue {
   if (self = [super init]) {
-    _dataOutputQueue = dispatch_queue_create("data.output.queue", NULL);
+    _dispatchQueue = dispatchQueue;
     
     _textures = [NSMutableArray new];
     _devices = [NSMutableArray new];
@@ -62,41 +63,25 @@
   
   _sensors = sensors;
   
-  for (int i = 0; i < [sensors count]; i++) {
-    CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
-    [_textures addObject:previewTexture];
-  }
-  
   self.cameraSession = [[AVCaptureMultiCamSession alloc] init];
   [self.cameraSession beginConfiguration];
   
-  // Creating photo output
-  _capturePhotoOutput = [AVCapturePhotoOutput new];
-  [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
-  [_cameraSession addOutput:_capturePhotoOutput];
-  
-  int index = 0;
-  for (Sensor *sensor in sensors) {
-    [self addSensor:sensor withIndex:index];
+  for (int i = 0; i < [sensors count]; i++) {
+    Sensor *sensor = sensors[i];
+    
+    CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
+    [_textures addObject:previewTexture];
+    
+    [self addSensor:sensor withIndex:i];
     [self.cameraSession commitConfiguration];
-    index++;
   }
   
-  // TODO:
+  // Creating photo output
+  self.capturePhotoOutput = [AVCapturePhotoOutput new];
+  [self.capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+  [self.cameraSession addOutput:self.capturePhotoOutput];
   
-  //  if ([self configBackCamera] == NO) {
-  //    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-  //    [self.cameraSession commitConfiguration];
-  //    return;
-  //  }
-  //
-  //  if ([self configFrontCamera] == NO) {
-  //    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-  //    [self.cameraSession commitConfiguration];
-  //    return;
-  //  }
-  //
-  //  [self.cameraSession commitConfiguration];
+  [self.cameraSession commitConfiguration];
 }
 
 - (void)start {
@@ -127,7 +112,7 @@
   
   cameraDevice.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
   cameraDevice.videoDataOutput.videoSettings = @{(__bridge NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
-  [cameraDevice.videoDataOutput setSampleBufferDelegate:self queue:self.dataOutputQueue];
+  [cameraDevice.videoDataOutput setSampleBufferDelegate:self queue:self.dispatchQueue];
   
   if (![self.cameraSession canAddOutput:cameraDevice.videoDataOutput]) {
     return NO;
@@ -200,10 +185,9 @@
 }
 
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
-  // Instanciate camera picture obj
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
-                                                                                  sensor:_sensors.firstObject.position
+                                                                                  sensorPosition:_sensors[1].position
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio
@@ -215,14 +199,10 @@
   // Create settings instance
   AVCapturePhotoSettings *settings = [AVCapturePhotoSettings photoSettings];
   [settings setHighResolutionPhotoEnabled:YES];
+  [self.capturePhotoOutput setPhotoSettingsForSceneMonitoring:settings];
   
   [_capturePhotoOutput capturePhotoWithSettings:settings
                                        delegate:cameraPicture];
-}
-
-// TODO: move this to SensorsController
-+ (AVCaptureDevice *)getCaptureDeviceWithPosition:(AVCaptureDevicePosition)position {
-  return [AVCaptureDevice defaultDeviceWithDeviceType:AVCaptureDeviceTypeBuiltInWideAngleCamera mediaType:AVMediaTypeVideo position:position];
 }
 
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
