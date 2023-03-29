@@ -9,27 +9,43 @@
 
 @implementation MultiCameraPreview
 
-//- (instancetype)init {
-//  if (self = [super init]) {
-//    _dataOutputQueue = dispatch_queue_create("data.output.queue", NULL);
-//
-//    [self configSession];
-//  }
-//
-//  return self;
-//}
-
-- (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors {
+- (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
+           enablePhysicalButton:(BOOL)enablePhysicalButton
+                aspectRatioMode:(AspectRatio)aspectRatioMode
+                    captureMode:(CaptureModes)captureMode {
   if (self = [super init]) {
     _dataOutputQueue = dispatch_queue_create("data.output.queue", NULL);
     
     _textures = [NSMutableArray new];
     _devices = [NSMutableArray new];
     
+    _motionController = [[MotionController alloc] init];
+    _physicalButtonController = [[PhysicalButtonController alloc] init];
+    
+    if (enablePhysicalButton) {
+      [_physicalButtonController startListening];
+    }
+    
+    [_motionController startMotionDetection];
+    
     [self configSession:sensors];
   }
   
   return self;
+}
+
+/// Set orientation stream Flutter sink
+- (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink {
+  if (_motionController != nil) {
+    [_motionController setOrientationEventSink:orientationEventSink];
+  }
+}
+
+/// Set physical button Flutter sink
+- (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink {
+  if (_physicalButtonController != nil) {
+    [_physicalButtonController setPhysicalButtonEventSink:physicalButtonEventSink];
+  }
 }
 
 - (void)dispose {
@@ -44,6 +60,8 @@
   [_textures removeAllObjects];
   [_devices removeAllObjects];
   
+  _sensors = sensors;
+  
   for (int i = 0; i < [sensors count]; i++) {
     CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
     [_textures addObject:previewTexture];
@@ -51,6 +69,11 @@
   
   self.cameraSession = [[AVCaptureMultiCamSession alloc] init];
   [self.cameraSession beginConfiguration];
+  
+  // Creating photo output
+  _capturePhotoOutput = [AVCapturePhotoOutput new];
+  [_capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+  [_cameraSession addOutput:_capturePhotoOutput];
   
   int index = 0;
   for (Sensor *sensor in sensors) {
@@ -158,113 +181,44 @@
   return nil;
 }
 
-//
-//- (BOOL)configFrontCamera {
-//  AVCaptureDevice *frontCamera = [self.class getCaptureDeviceWithPosition:AVCaptureDevicePositionFront];
-//  if (frontCamera == nil) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//
-//  NSError *error = nil;
-//  self.frontDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:frontCamera error:&error];
-//  if (![self.cameraSession canAddInput:self.frontDeviceInput]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//  [self.cameraSession addInputWithNoConnections:self.frontDeviceInput];
-//
-//  self.frontVideoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
-//  self.frontVideoDataOutput.videoSettings = @{(__bridge NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
-//  [self.frontVideoDataOutput setSampleBufferDelegate:self queue:self.dataOutputQueue];
-//
-//  if (![self.cameraSession canAddOutput:self.frontVideoDataOutput]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//  [self.cameraSession addOutputWithNoConnections:self.frontVideoDataOutput];
-//
-//  AVCaptureInputPort *port = [[self.frontDeviceInput portsWithMediaType:AVMediaTypeVideo
-//                                                       sourceDeviceType:frontCamera.deviceType
-//                                                   sourceDevicePosition:frontCamera.position] firstObject];
-//  AVCaptureConnection *frontConnection = [[AVCaptureConnection alloc] initWithInputPorts:@[port] output:self.frontVideoDataOutput];
-//
-//  if (![self.cameraSession canAddConnection:frontConnection]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//  [self.cameraSession addConnection:frontConnection];
-//  [frontConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-//  [frontConnection setAutomaticallyAdjustsVideoMirroring:NO];
-//  [frontConnection setVideoMirrored:YES];
-//
-//  self.frontPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSessionWithNoConnection:self.cameraSession];
-//  AVCaptureConnection *frontPreviewLayerConnection = [[AVCaptureConnection alloc] initWithInputPort:port videoPreviewLayer:self.frontPreviewLayer];
-//  [frontPreviewLayerConnection setAutomaticallyAdjustsVideoMirroring:NO];
-//  [frontPreviewLayerConnection setVideoMirrored:YES];
-//  self.frontPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-//  if (![self.cameraSession canAddConnection:frontPreviewLayerConnection]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//
-//  return YES;
-//}
-//
-//- (BOOL)configBackCamera {
-//  AVCaptureDevice *backCamera = [self.class getCaptureDeviceWithPosition:AVCaptureDevicePositionBack];
-//  if (backCamera == nil) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//
-//  NSError *error = nil;
-//  self.backDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:backCamera error:&error];
-//  if (![self.cameraSession canAddInput:self.backDeviceInput]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//  [self.cameraSession addInputWithNoConnections:self.backDeviceInput];
-//
-//  self.backVideoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
-//  self.backVideoDataOutput.videoSettings = @{(__bridge NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
-//  [self.backVideoDataOutput setSampleBufferDelegate:self queue:self.dataOutputQueue];
-//
-//  if (![self.cameraSession canAddOutput:self.backVideoDataOutput]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//  [self.cameraSession addOutputWithNoConnections:self.backVideoDataOutput];
-//
-//  AVCaptureInputPort *port = [[self.backDeviceInput portsWithMediaType:AVMediaTypeVideo
-//                                                      sourceDeviceType:backCamera.deviceType
-//                                                  sourceDevicePosition:backCamera.position] firstObject];
-//  AVCaptureConnection *backConnection = [[AVCaptureConnection alloc] initWithInputPorts:@[port] output:self.backVideoDataOutput];
-//
-//  if (![self.cameraSession canAddConnection:backConnection]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//  [self.cameraSession addConnection:backConnection];
-//  [backConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-//  [backConnection setAutomaticallyAdjustsVideoMirroring:NO];
-//  [backConnection setVideoMirrored:NO];
-//
-//  self.backPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSessionWithNoConnection:self.cameraSession];
-//  AVCaptureConnection *backPreviewLayerConnection = [[AVCaptureConnection alloc] initWithInputPort:port videoPreviewLayer:self.backPreviewLayer];
-//  //    [backPreviewLayerConnection setAutomaticallyAdjustsVideoMirroring:YES];
-//  //    [backPreviewLayerConnection setVideoMirrored:NO];
-//  self.backPreviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-//  self.backPreviewLayer.frame = [[UIScreen mainScreen] bounds];
-//  if (![self.cameraSession canAddConnection:backPreviewLayerConnection]) {
-//    NSLog(@"%s, %d", __PRETTY_FUNCTION__, __LINE__);
-//    return NO;
-//  }
-//
-//  [self.cameraSession addConnection:backPreviewLayerConnection];
-//
-//  return YES;
-//}
+- (void)setExifPreferencesGPSLocation:(bool)gpsLocation completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
+  _saveGPSLocation = gpsLocation;
+  
+  if (_saveGPSLocation) {
+    [_locationController requestWhenInUseAuthorizationOnGranted:^{
+      completion(@(YES), nil);
+    } declined:^{
+      completion(@(NO), nil);
+    }];
+  } else {
+    completion(@(YES), nil);
+  }
+}
+
+- (void)setAspectRatio:(AspectRatio)ratio {
+  _aspectRatio = ratio;
+}
+
+- (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+  // Instanciate camera picture obj
+  CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
+                                                                             orientation:_motionController.deviceOrientation
+                                                                                  sensor:_sensors.firstObject.position
+                                                                         saveGPSLocation:_saveGPSLocation
+                                                                       mirrorFrontCamera:_mirrorFrontCamera
+                                                                             aspectRatio:_aspectRatio
+                                                                              completion:completion
+                                                                                callback:^{
+    completion(@(YES), nil);
+  }];
+  
+  // Create settings instance
+  AVCapturePhotoSettings *settings = [AVCapturePhotoSettings photoSettings];
+  [settings setHighResolutionPhotoEnabled:YES];
+  
+  [_capturePhotoOutput capturePhotoWithSettings:settings
+                                       delegate:cameraPicture];
+}
 
 // TODO: move this to SensorsController
 + (AVCaptureDevice *)getCaptureDeviceWithPosition:(AVCaptureDevicePosition)position {
@@ -276,11 +230,9 @@
 }
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
-  // TODO:
   int index = 0;
   for (CameraDeviceInfo *device in _devices) {
     if (device.videoDataOutput == output) {
-      //CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
       [_textures[index] updateBuffer:sampleBuffer];
       if (_onPreviewFrameAvailable) {
         _onPreviewFrameAvailable(@(index));
@@ -289,20 +241,6 @@
     
     index++;
   }
-  
-  //  if (output == self.frontVideoDataOutput) {
-  //    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-  //    [_textures[0] updateBuffer:sampleBuffer];
-  //    if (_onPreviewFrameAvailable) {
-  //      _onPreviewFrameAvailable(@(0));
-  //    }
-  //  } else if (output == self.backVideoDataOutput) {
-  //    CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-  //    [_textures[1] updateBuffer:sampleBuffer];
-  //    if (_onPreviewFrameAvailable) {
-  //      _onPreviewFrameAvailable(@(1));
-  //    }
-  //  }
 }
 
 @end

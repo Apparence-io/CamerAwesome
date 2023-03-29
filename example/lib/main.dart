@@ -35,9 +35,9 @@ class CameraPage extends StatelessWidget {
             initialCaptureMode: CaptureMode.photo,
           ),
           sensors: [
-            // Sensor(
-            //   position: SensorPosition.front,
-            // ),
+            Sensor(
+              position: SensorPosition.front,
+            ),
             Sensor(
               position: SensorPosition.back,
             )
