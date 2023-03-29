@@ -423,7 +423,7 @@
   // Instanciate camera picture obj
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
-                                                                                  sensor:_cameraSensorPosition
+                                                                          sensorPosition:_cameraSensorPosition
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio

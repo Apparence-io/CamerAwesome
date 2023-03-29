@@ -50,9 +50,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _previewSize;
   PreviewSize? _flutterPreviewSize;
 
-  // TODO: hardcoded for now, get from the plugin
-  // int? _backPreviewTextureId;
-  // int? _frontPreviewTextureId;
   final List<int> _textureIds = [];
 
   PreviewSize? get pixelPreviewSize => _previewSize;
@@ -209,7 +206,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   maxWidth: double.infinity,
                   maxHeight: double.infinity,
                   child: Center(
-                    // TODO: this is broken with dual cam
                     child: SizedBox(
                       // Use the max preview size (not the cropped one) and crop it later if needed (ratio 1:1 for example)
                       width: _flutterPreviewSize!.width,

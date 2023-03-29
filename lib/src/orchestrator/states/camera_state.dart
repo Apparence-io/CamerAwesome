@@ -72,21 +72,8 @@ abstract class CameraState {
             sensor.position = SensorPosition.back;
           }
 
-          // TODO: move to method
-          switch (sensor.type) {
-            case PigeonSensorType.wideAngle:
-              sensor.type = PigeonSensorType.wideAngle;
-              break;
-            case PigeonSensorType.telephoto:
-              sensor.type = PigeonSensorType.telephoto;
-              break;
-            case PigeonSensorType.trueDepth:
-              sensor.type = PigeonSensorType.trueDepth;
-              break;
-            case PigeonSensorType.ultraWideAngle:
-              sensor.type = PigeonSensorType.ultraWideAngle;
-              break;
-            default:
+          if (type != null) {
+            sensor.type = _sensorTypeFromPigeon(type);
           }
         }
 
@@ -121,23 +108,7 @@ abstract class CameraState {
           }
 
           sensor.deviceId = deviceId;
-
-          // TODO: move to method
-          switch (sensor.type) {
-            case PigeonSensorType.wideAngle:
-              sensor.type = PigeonSensorType.wideAngle;
-              break;
-            case PigeonSensorType.telephoto:
-              sensor.type = PigeonSensorType.telephoto;
-              break;
-            case PigeonSensorType.trueDepth:
-              sensor.type = PigeonSensorType.trueDepth;
-              break;
-            case PigeonSensorType.ultraWideAngle:
-              sensor.type = PigeonSensorType.ultraWideAngle;
-              break;
-            default:
-          }
+          sensor.type = _sensorTypeFromPigeon(type);
         }
 
         sensorIndex++;
@@ -145,6 +116,21 @@ abstract class CameraState {
       }).toList(),
     );
     cameraContext.setSensorConfig(next);
+  }
+
+  PigeonSensorType? _sensorTypeFromPigeon(SensorType type) {
+    switch (type) {
+      case SensorType.wideAngle:
+        return PigeonSensorType.wideAngle;
+      case SensorType.telephoto:
+        return PigeonSensorType.telephoto;
+      case SensorType.trueDepth:
+        return PigeonSensorType.trueDepth;
+      case SensorType.ultraWideAngle:
+        return PigeonSensorType.ultraWideAngle;
+      default:
+        return null;
+    }
   }
 
   void toggleFilterSelector() {
@@ -188,7 +174,7 @@ abstract class CameraState {
 
   Future<int?> previewTextureId(int cameraPosition) {
     return cameraContext.previewTextureId(cameraPosition);
-  } 
+  }
 
   AnalysisController? get analysisController =>
       cameraContext.analysisController;

@@ -24,7 +24,7 @@ typedef void(^OnPictureTaken)(void);
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
-@property(readonly, nonatomic) SensorPosition sensor;
+@property(readonly, nonatomic) SensorPosition sensorPosition;
 @property(readonly, nonatomic) float aspectRatio;
 @property(readonly, nonatomic) AspectRatio aspectRatioType;
 @property NSInteger orientation;
@@ -34,7 +34,7 @@ typedef void(^OnPictureTaken)(void);
 
 - (instancetype)initWithPath:(NSString *)path
                  orientation:(NSInteger)orientation
-                      sensor:(SensorPosition)sensor
+              sensorPosition:(SensorPosition)sensorPosition
              saveGPSLocation:(bool)saveGPSLocation
            mirrorFrontCamera:(bool)mirrorFrontCamera
                  aspectRatio:(AspectRatio)aspectRatio
