@@ -322,8 +322,17 @@ FlutterEventSink physicalButtonEventSink;
 
   bool multiSensors = [sensors count] > 1;
   if (multiSensors) {
-    self.multiCameraPreview = [[MultiCameraPreview alloc] initWithSensors:sensors];
+    if (![MultiCameraController isMultiCamSupported]) {
+      completion(nil, [FlutterError errorWithCode:@"MULTI_CAM_NOT_SUPPORTED" message:@"multi camera feature is not supported" details:nil]);
+      return;
+    }
 
+    self.multiCameraPreview = [[MultiCameraPreview alloc] initWithSensors:sensors
+                                                        mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                                     enablePhysicalButton:[enablePhysicalButton boolValue]
+                                                          aspectRatioMode:aspectRatioMode
+                                                              captureMode:captureModeType];
+    
     for (int i = 0; i < [sensors count]; i++) {
       int64_t textureId = [self->_textureRegistry registerTexture:self.multiCameraPreview.textures[i]];
       [_texturesIds addObject:[NSNumber numberWithLongLong:textureId]];
@@ -428,6 +437,7 @@ FlutterEventSink physicalButtonEventSink;
   dispatch_async(_dispatchQueue, ^{
     if (self.multiCameraPreview != nil) {
       // TODO:
+      [self->_multiCameraPreview takePictureAtPath:path completion:completion];
     } else {
       [self->_camera takePictureAtPath:path completion:completion];
     }

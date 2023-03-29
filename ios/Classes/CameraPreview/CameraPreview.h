@@ -34,17 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CameraPreview : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate,
 AVCaptureAudioDataOutputSampleBufferDelegate>
 
-//@property (nonatomic, strong) AVCaptureMultiCamSession  *cameraSession;
-//
-//@property (nonatomic, strong) AVCaptureDeviceInput      *frontDeviceInput;
-//@property (nonatomic, strong) AVCaptureVideoDataOutput      *frontVideoDataOutput;
-//@property (nonatomic, strong) AVCaptureVideoPreviewLayer        *frontPreviewLayer;
-//
-//@property (nonatomic, strong) AVCaptureDeviceInput      *backDeviceInput;
-//@property (nonatomic, strong) AVCaptureVideoDataOutput      *backVideoDataOutput;
-//@property (nonatomic, strong) AVCaptureVideoPreviewLayer        *backPreviewLayer;
-//@property (nonatomic, strong) dispatch_queue_t dataOutputQueue;
-
 // TODO: move this to a single camera ?
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
@@ -66,7 +55,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CameraPreviewTexture* previewTexture;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
-//@property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
