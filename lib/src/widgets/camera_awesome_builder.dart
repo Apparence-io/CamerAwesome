@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
@@ -7,6 +6,7 @@ import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 /// This is the builder for your camera interface
 /// Using the [state] you can do anything you need without having to think about the camera flow
@@ -406,7 +406,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
               snapshot.requireData is PreparingCameraState) {
             return widget.progressIndicator ??
                 Center(
-                  child: Platform.isIOS
+                  child: UniversalPlatform.isIOS
                       ? const CupertinoActivityIndicator()
                       : const CircularProgressIndicator(),
                 );

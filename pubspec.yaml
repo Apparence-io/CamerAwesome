@@ -17,11 +17,16 @@ dependencies:
   cross_file: ^0.3.3+4
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   image: ^4.0.15
+  universal_io: ^2.2.0
     # photofilters:
   # git: https://github.com/svenopdehipt/photofilters.git
   path_provider: ^2.0.14
   rxdart: ^0.27.7
+  plugin_platform_interface: ^2.1.4
+  universal_platform: ^1.0.0+1
 dev_dependencies:
   flutter_lints: ^2.0.1
   flutter_test:
@@ -40,6 +45,9 @@ flutter:
     - assets/icons/minimized.png
   plugin:
     platforms:
+      web: 
+        pluginClass: CamerawesomeWeb
+        fileName: src/web/camerawesome_web.dart
       android:
         package: com.apparence.camerawesome.cameraX
         pluginClass: CameraAwesomeX

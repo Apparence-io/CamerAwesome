@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/file/content/file_content.dart';
 import 'package:image/image.dart' as img;
-import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 class FilterHandler {
   Isolate? photoFilterIsolate;
@@ -13,7 +13,7 @@ class FilterHandler {
     required CaptureRequest captureRequest,
     required AwesomeFilter filter,
   }) async {
-    if (Platform.isIOS && filter.id != AwesomeFilter.None.id) {
+    if (UniversalPlatform.isIOS && filter.id != AwesomeFilter.None.id) {
       photoFilterIsolate?.kill(priority: Isolate.immediate);
 
       ReceivePort port = ReceivePort();

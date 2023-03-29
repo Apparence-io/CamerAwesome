@@ -1,12 +1,11 @@
 // ignore_for_file: avoid_print
-import 'dart:io';
-
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:universal_io/io.dart';
 
 import 'common.dart';
 

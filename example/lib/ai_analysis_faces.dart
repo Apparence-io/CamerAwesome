@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:camera_app/utils/mlkit_utils.dart';
@@ -8,6 +7,7 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 /// This is an example using machine learning with the camera image
 /// This is still in progress and some changes are about to come
@@ -174,7 +174,7 @@ class FaceDetectorPainter extends CustomPainter {
     final ratioAnalysisToPreview = previewSize.width / croppedSize.width;
 
     bool flipXY = false;
-    if (Platform.isAndroid) {
+    if (UniversalPlatform.isAndroid) {
       // Symmetry for Android since native image analysis is not mirrored but preview is
       // It also handles device rotation
       switch (model.imageRotation) {
@@ -282,7 +282,7 @@ class FaceDetectorPainter extends CustomPainter {
   }) {
     num imageDiffX;
     num imageDiffY;
-    if (Platform.isIOS) {
+    if (UniversalPlatform.isIOS) {
       imageDiffX = model.absoluteImageSize.width - croppedSize.width;
       imageDiffY = model.absoluteImageSize.height - croppedSize.height;
     } else {

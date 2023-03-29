@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:universal_io/io.dart';
 
 // this example is based on the camerawesome issue
 // check if memory increase when showing and hiding the camera multiple times

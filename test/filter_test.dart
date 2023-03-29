@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:camerawesome/src/photofilters/filters/preset_filters.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart';
+import 'package:universal_io/io.dart';
 
 void main() {
   const src = 'test/res/bird.jpg';

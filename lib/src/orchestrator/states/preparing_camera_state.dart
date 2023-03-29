@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 /// When is not ready
 class PreparingCameraState extends CameraState {
@@ -67,7 +67,7 @@ class PreparingCameraState extends CameraState {
     required bool enablePhysicalButton,
   }) async {
     // wait user accept permissions to init widget completely on android
-    if (Platform.isAndroid) {
+    if (UniversalPlatform.isAndroid) {
       _permissionStreamSub =
           CamerawesomePlugin.listenPermissionResult()!.listen(
         (res) {
@@ -170,7 +170,7 @@ class PreparingCameraState extends CameraState {
 
     // On iOS, we need to start the camera to get the first frame because there
     // is no "AnalysisMode" at all.
-    if (Platform.isIOS) {
+    if (UniversalPlatform.isIOS) {
       return CamerawesomePlugin.start();
     }
   }

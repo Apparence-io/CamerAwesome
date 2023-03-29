@@ -1,10 +1,10 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 class BarcodePreviewOverlay extends StatefulWidget {
   final CameraState state;
@@ -149,7 +149,7 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
       bool flipXY = false;
       _canvasScale = null;
       _canvasTranslate = null;
-      if (Platform.isAndroid) {
+      if (UniversalPlatform.isAndroid) {
         // Symmetry for Android since native image analysis is not mirrored but preview is
         // It also handles device rotation
         switch (InputImageRotation.values.byName(img.rotation.name)) {
@@ -268,7 +268,7 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
     // Determine how much the image is cropped
     num imageDiffX;
     num imageDiffY;
-    if (Platform.isIOS) {
+    if (UniversalPlatform.isIOS) {
       imageDiffX = analysisImageSize.width - croppedSize.width;
       imageDiffY = analysisImageSize.height - croppedSize.height;
     } else {

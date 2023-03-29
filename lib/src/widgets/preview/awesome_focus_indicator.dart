@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 class AwesomeFocusIndicator extends StatelessWidget {
   final Offset position;
@@ -39,7 +38,7 @@ class AwesomeFocusPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final isIOS = Platform.isIOS;
+    final isIOS = UniversalPlatform.isIOS;
 
     final baseX = tapPosition.dx - rectSize / 2;
     final baseY = tapPosition.dy - rectSize / 2;
