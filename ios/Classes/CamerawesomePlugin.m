@@ -110,18 +110,18 @@ FlutterEventSink physicalButtonEventSink;
 
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   NSMutableArray *permissions = [NSMutableArray new];
-
+  
   bool cameraPermission = [CameraPermissionsController checkPermission];
   bool microphonePermission = [MicrophonePermissionsController checkPermission];
-
+  
   if (cameraPermission) {
     [permissions addObject:@"camera"];
   }
-
+  
   if (microphonePermission) {
     [permissions addObject:@"record_audio"];
   }
-
+  
   return permissions;
 }
 
@@ -243,12 +243,12 @@ FlutterEventSink physicalButtonEventSink;
   }
   
   // TODO:
-//  if (self.camera == nil) {
-//    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
-//    return;
-//  }
-//
-//  [self.camera setCameraPresset:CGSizeMake([size.width floatValue], [size.height floatValue])];
+  //  if (self.camera == nil) {
+  //    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
+  //    return;
+  //  }
+  //
+  //  [self.camera setCameraPresset:CGSizeMake([size.width floatValue], [size.height floatValue])];
 }
 
 - (void)setPreviewSizeSize:(nonnull PreviewSize *)size error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -358,7 +358,7 @@ FlutterEventSink physicalButtonEventSink;
 
     [self->_textureRegistry textureFrameAvailable:self->_backPreviewTextureId];
   }
-
+  
   completion(@(YES), nil);
 }
 
@@ -376,15 +376,13 @@ FlutterEventSink physicalButtonEventSink;
   }
   
   // TODO: make a camera preview abstract class
-  if (self.multiCameraPreview != nil) {
-    dispatch_async(_dispatchQueue, ^{
+  dispatch_async(_dispatchQueue, ^{
+    if (self.multiCameraPreview != nil) {
       [self->_multiCameraPreview start];
-    });
-  } else {
-    dispatch_async(_dispatchQueue, ^{
+    } else {
       [self->_camera start];
-    });
-  }
+    }
+  });
   
   return @(YES);
 }
@@ -402,47 +400,54 @@ FlutterEventSink physicalButtonEventSink;
   }
   
   // TODO
-  if (self.multiCameraPreview != nil) {
-    dispatch_async(_dispatchQueue, ^{
+  dispatch_async(_dispatchQueue, ^{
+    if (self.multiCameraPreview != nil) {
       [self->_textureRegistry unregisterTexture:self->_backPreviewTextureId];
       [self->_textureRegistry unregisterTexture:self->_frontPreviewTextureId];
-    });
-  } else {
-    dispatch_async(_dispatchQueue, ^{
+    } else {
       [self->_textureRegistry unregisterTexture:self->_backPreviewTextureId];
       [self->_textureRegistry unregisterTexture:self->_frontPreviewTextureId];
       [self->_camera stop];
-    });
-  }
+    }
+  });
   
   return @(YES);
 }
 
 - (void)takePhotoPath:(nonnull NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+  if (self.camera == nil && self.multiCameraPreview == nil) {
+    completion(nil, [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil]);
+    return;
+  }
+  
   if (path == nil || path.length <= 0) {
     completion(nil, [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
     return;
   }
   
   dispatch_async(_dispatchQueue, ^{
-    [self->_camera takePictureAtPath:path completion:completion];
+    if (self.multiCameraPreview != nil) {
+      // TODO:
+    } else {
+      [self->_camera takePictureAtPath:path completion:completion];
+    }
   });
 }
 
 - (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
   NSMutableArray *permissions = [NSMutableArray new];
-
+  
   const Boolean cameraGranted = [CameraPermissionsController checkAndRequestPermission];
   if (cameraGranted) {
     [permissions addObject:@"camera"];
   }
-
+  
   bool needToSaveGPSLocation = [saveGpsLocation boolValue];
   if (needToSaveGPSLocation) {
     // TODO: move this to permissions object
     [self.camera.locationController requestWhenInUseAuthorizationOnGranted:^{
       [permissions addObject:@"location"];
-
+      
       completion(permissions, nil);
     } declined:^{
       completion(permissions, nil);
@@ -456,7 +461,7 @@ FlutterEventSink physicalButtonEventSink;
     *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't start image stream because video is recording" details:@""];
     return;
   }
-
+  
   [self.camera.imageStreamController setStreamImages:true];
 }
 
