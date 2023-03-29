@@ -1,6 +1,7 @@
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -33,6 +34,14 @@ class CameraPage extends StatelessWidget {
             videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.photo,
           ),
+          sensors: [
+            Sensors(
+              position: PigeonSensorPosition.back,
+            ),
+            Sensors(
+              position: PigeonSensorPosition.front,
+            )
+          ],
           enablePhysicalButton: true,
           filter: AwesomeFilter.AddictiveRed,
           flashMode: FlashMode.auto,

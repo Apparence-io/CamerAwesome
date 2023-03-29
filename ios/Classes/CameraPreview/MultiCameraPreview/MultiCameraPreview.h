@@ -30,17 +30,18 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property (nonatomic, strong) dispatch_queue_t dataOutputQueue;
 
 // TODO: Store all of them in a dict
-@property(nonatomic, nonatomic) CameraPreviewTexture *backPreviewTexture;
-@property(nonatomic, nonatomic) CameraPreviewTexture *frontPreviewTexture;
+@property(nonatomic, nonatomic) NSMutableArray<CameraPreviewTexture *> *textures;
 
 // TODO: Send an ID
-@property(nonatomic, copy) void (^onPreviewBackFrameAvailable)(void);
-@property(nonatomic, copy) void (^onPreviewFrontFrameAvailable)(void);
+@property(nonatomic, copy) void (^onPreviewFrameAvailable)(NSNumber * _Nullable);
 
-- (void)configSession;
+- (instancetype)initWithSensors:(NSArray<Sensors *> *)sensors;
+- (void)configSession:(NSArray<Sensors *> *)sensors;
 - (void)start;
+- (void)stop;
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGSize)getEffectivPreviewSize;
+- (void)dispose;
 
 @end
 

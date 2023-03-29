@@ -51,8 +51,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _flutterPreviewSize;
 
   // TODO: hardcoded for now, get from the plugin
-  int? _backPreviewTextureId;
-  int? _frontPreviewTextureId;
+  // int? _backPreviewTextureId;
+  // int? _frontPreviewTextureId;
+  final List<int> _textureIds = [];
 
   PreviewSize? get pixelPreviewSize => _previewSize;
 
@@ -70,14 +71,11 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     super.initState();
     Future.wait([
       widget.state.previewSize(),
-      widget.state.backPreviewTextureId(),
-      widget.state.frontPreviewTextureId(),
+      loadTextures(),
     ]).then((data) {
       if (mounted) {
         setState(() {
-          _previewSize = data[0] as PreviewSize;
-          _backPreviewTextureId = data[1] as int;
-          _frontPreviewTextureId = data[2] as int;
+          _previewSize = data[0];
         });
       }
     });
@@ -109,6 +107,17 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     });
   }
 
+  Future loadTextures() async {
+    final sensors = widget.state.cameraContext.sensorConfig.sensors.length;
+
+    for (int i = 0; i < sensors; i++) {
+      final textureId = await widget.state.previewTextureId(i);
+      if (textureId != null) {
+        _textureIds.add(textureId);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _sensorConfigSubscription?.cancel();
@@ -118,10 +127,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   @override
   Widget build(BuildContext context) {
-    if (_backPreviewTextureId == null ||
-        _frontPreviewTextureId == null ||
-        _previewSize == null ||
-        _aspectRatio == null) {
+    if (_textureIds.isEmpty || _previewSize == null || _aspectRatio == null) {
       return widget.loadingWidget ??
           Center(
             child: Platform.isIOS
@@ -186,11 +192,13 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             _previousCroppedSize ??=
                 Size(_croppedSize!.width, _croppedSize!.height);
 
-            final backPreviewTexture = Texture(
-              textureId: _backPreviewTextureId!,
+            // TODO: change this to support multiple sensors
+            // like in grid for example
+            final mainPreviewTexture = Texture(
+              textureId: _textureIds.first,
             );
-            final frontPreviewTexture = _frontPreviewTextureId != null
-                ? Texture(textureId: _frontPreviewTextureId!)
+            final secondaryPreviewTexture = _textureIds.length > 1
+                ? Texture(textureId: _textureIds[1])
                 : null;
 
             final preview = SizedBox(
@@ -227,9 +235,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                                       snapshot.data != AwesomeFilter.None
                                   ? ColorFiltered(
                                       colorFilter: snapshot.data!.preview,
-                                      child: backPreviewTexture,
+                                      child: mainPreviewTexture,
                                     )
-                                  : backPreviewTexture;
+                                  : mainPreviewTexture;
                             }),
                       ),
                     ),
@@ -296,7 +304,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 Positioned(
                   top: 140,
                   right: 30,
-                  child: frontPreviewTexture != null
+                  child: secondaryPreviewTexture != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: SizedBox(
@@ -304,7 +312,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                             child: Center(
                               child: AspectRatio(
                                 aspectRatio: 9 / 16,
-                                child: frontPreviewTexture,
+                                child: secondaryPreviewTexture,
                               ),
                             ),
                             // child: frontPreviewTexture,
