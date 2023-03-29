@@ -124,7 +124,6 @@ abstract class CameraState {
     final previous = cameraContext.sensorConfig;
     int sensorIndex = 0;
     final next = SensorConfig(
-      captureDeviceId: deviceId,
       sensors: previous.sensors.map((sensor) {
         if (sensorIndex == cameraPosition && sensor != null) {
           if (sensor.type == PigeonSensorType.trueDepth) {
@@ -132,6 +131,8 @@ abstract class CameraState {
           } else {
             sensor.position = SensorPosition.back;
           }
+
+          sensor.deviceId = deviceId;
 
           // TODO: move to method
           switch (sensor.type) {

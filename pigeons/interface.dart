@@ -308,13 +308,15 @@ abstract class CameraInterface {
   void setMirrorFrontCamera(bool mirror);
 
   // TODO: specify the position of the sensor
-  void setSensor(List<Sensor> sensors, String? deviceId);
+  void setSensor(List<Sensor> sensors);
 
   void setCorrection(double brightness);
 
   double getMaxZoom();
 
   void setCaptureMode(String mode);
+
+  bool isMultiCamSupported();
 
   @async
   bool setRecordingAudioMode(bool enableAudio);

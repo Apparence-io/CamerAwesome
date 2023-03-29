@@ -3,6 +3,9 @@
 #import "Pigeon/Pigeon.h"
 #import "Permissions.h"
 #import "SensorsController.h"
+#import "MultiCameraController.h"
+#import "AspectRatioUtils.h"
+#import "FlashModeUtils.h"
 #import "AnalysisController.h"
 
 FlutterEventSink orientationEventSink;
@@ -153,7 +156,6 @@ FlutterEventSink physicalButtonEventSink;
   return @([_camera getMaxZoom]);
 }
 
-// TODO: use different enum instead of Sensor
 - (nullable NSNumber *)getPreviewTextureIdCameraPosition:(nonnull NSNumber *)cameraPosition error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   int cameraIndex = [cameraPosition intValue];
 
@@ -199,7 +201,7 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
+  AspectRatio aspectRatioMode = [AspectRatioUtils convertAspectRatio:aspectRatio];
   [self.camera setAspectRatio:aspectRatioMode];
 }
 
@@ -211,6 +213,7 @@ FlutterEventSink physicalButtonEventSink;
 - (void)setCorrectionBrightness:(nonnull NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   [_camera setBrightness:brightness error:error];
 }
+
 - (void)setExifPreferencesExifPreferences:(ExifPreferences *)exifPreferences completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
   [self.camera setExifPreferencesGPSLocation: exifPreferences.saveGPSLocation completion:completion];
 }
@@ -221,19 +224,7 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  CameraFlashMode flash;
-  if ([mode isEqualToString:@"NONE"]) {
-    flash = None;
-  } else if ([mode isEqualToString:@"ON"]) {
-    flash = On;
-  } else if ([mode isEqualToString:@"AUTO"]) {
-    flash = Auto;
-  } else if ([mode isEqualToString:@"ALWAYS"]) {
-    flash = Always;
-  } else {
-    flash = None;
-  }
-  
+  CameraFlashMode flash = [FlashModeUtils flashFromString:mode];
   [_camera setFlashMode:flash error:error];
 }
 
@@ -274,23 +265,21 @@ FlutterEventSink physicalButtonEventSink;
   [_camera setRecordingAudioMode:[enableAudio boolValue] completion:completion];
 }
 
-- (void)setSensorSensors:(nonnull NSArray<Sensor *> *)sensors deviceId:(nullable NSString *)deviceId error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  NSString *captureDeviceId;
-  
-  if (deviceId && ![deviceId isEqual:[NSNull null]]) {
-    captureDeviceId = deviceId;
+- (void)setSensorSensors:(nonnull NSArray<Sensor *> *)sensors error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  if (self.camera == nil && self.multiCameraPreview == nil) {
+    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
+    return;
   }
   
-  if (sensors != nil && [sensors count] > 1) {
-    // TODO: multi sensors to set
+  if (sensors != nil && [sensors count] > 1 && self.multiCameraPreview != nil) {
+    [self.multiCameraPreview configSession:sensors];
   } else {
-    Sensor *sensor = sensors.firstObject;
-    [_camera setSensor:sensor.position deviceId:captureDeviceId];
+    [self.camera setSensor:sensors.firstObject];
   }
 }
 
 - (void)setZoomZoom:(nonnull NSNumber *)zoom error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  [_camera setZoom:[zoom floatValue] error:error];
+  [self.camera setZoom:[zoom floatValue] error:error];
 }
 
 - (void)receivedImageFromStreamWithError:(FlutterError *_Nullable *_Nonnull)error {
@@ -328,10 +317,9 @@ FlutterEventSink physicalButtonEventSink;
 
   _texturesIds = [NSMutableArray new];
 
-  AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
+  AspectRatio aspectRatioMode = [AspectRatioUtils convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
 
-  // TODO: get dual camera parameter enabled or not
   bool multiSensors = [sensors count] > 1;
   if (multiSensors) {
     self.multiCameraPreview = [[MultiCameraPreview alloc] initWithSensors:sensors];
@@ -351,7 +339,6 @@ FlutterEventSink physicalButtonEventSink;
     };
   } else {
     Sensor *firstSensor = sensors.firstObject;
-    // TODO: remove duplicate enum
     self.camera = [[CameraPreview alloc] initWithCameraSensor:firstSensor.position
                                                  streamImages:[enableImageStream boolValue]
                                             mirrorFrontCamera:[mirrorFrontCamera boolValue]
@@ -362,9 +349,9 @@ FlutterEventSink physicalButtonEventSink;
                                                 dispatchQueue:dispatch_queue_create("camerawesome.dispatchqueue", NULL)];
 
     int64_t textureId = [self->_textureRegistry registerTexture:self.camera.previewTexture];
-    // TODO:
+
     __weak typeof(self) weakSelf = self;
-    self.camera.onPreviewBackFrameAvailable = ^{
+    self.camera.onPreviewFrameAvailable = ^{
       [weakSelf.textureRegistry textureFrameAvailable:textureId];
     };
 
@@ -492,16 +479,8 @@ FlutterEventSink physicalButtonEventSink;
   [_camera setMirrorFrontCamera:[mirror boolValue] error:error];
 }
 
-- (AspectRatio)convertAspectRatio:(NSString *)aspectRatioStr {
-  AspectRatio aspectRatioMode;
-  if ([aspectRatioStr isEqualToString:@"RATIO_4_3"]) {
-    aspectRatioMode = Ratio4_3;
-  } else if ([aspectRatioStr isEqualToString:@"RATIO_16_9"]) {
-    aspectRatioMode = Ratio16_9;
-  } else {
-    aspectRatioMode = Ratio1_1;
-  }
-  return aspectRatioMode;
+- (nullable NSNumber *)isMultiCamSupportedWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  return [NSNumber numberWithBool: [MultiCameraController isMultiCamSupported]];
 }
 
 - (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{

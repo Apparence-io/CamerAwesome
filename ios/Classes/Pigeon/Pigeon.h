@@ -223,11 +223,13 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 - (void)focusOnPointPreviewSize:(PreviewSize *)previewSize x:(NSNumber *)x y:(NSNumber *)y androidFocusSettings:(nullable AndroidFocusSettings *)androidFocusSettings error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setZoomZoom:(NSNumber *)zoom error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setMirrorFrontCameraMirror:(NSNumber *)mirror error:(FlutterError *_Nullable *_Nonnull)error;
-- (void)setSensorSensors:(NSArray<Sensor *> *)sensors deviceId:(nullable NSString *)deviceId error:(FlutterError *_Nullable *_Nonnull)error;
+- (void)setSensorSensors:(NSArray<Sensor *> *)sensors error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCorrectionBrightness:(NSNumber *)brightness error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getMaxZoomWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCaptureModeMode:(NSString *)mode error:(FlutterError *_Nullable *_Nonnull)error;
+/// @return `nil` only when `error != nil`.
+- (nullable NSNumber *)isMultiCamSupportedWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setRecordingAudioModeEnableAudio:(NSNumber *)enableAudio completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
 - (nullable NSArray<PreviewSize *> *)availableSizesWithError:(FlutterError *_Nullable *_Nonnull)error;
