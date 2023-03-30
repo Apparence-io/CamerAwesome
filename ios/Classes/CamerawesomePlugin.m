@@ -194,8 +194,17 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
+  if (self.camera == nil && self.multiCamera == nil) {
+    *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
+    return;
+  }
+  
   AspectRatio aspectRatioMode = [AspectRatioUtils convertAspectRatio:aspectRatio];
-  [self.camera setAspectRatio:aspectRatioMode];
+  if (self.multiCamera != nil) {
+    [self.multiCamera setAspectRatio:aspectRatioMode];
+  } else {
+    [self.camera setAspectRatio:aspectRatioMode];
+  }
 }
 
 - (void)setCaptureModeMode:(nonnull NSString *)mode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -242,7 +251,7 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  if (self.camera == nil && self.multiCamera != nil) {
+  if (self.camera == nil && self.multiCamera == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
     return;
   }
@@ -326,7 +335,7 @@ FlutterEventSink physicalButtonEventSink;
                                               enablePhysicalButton:[enablePhysicalButton boolValue]
                                                    aspectRatioMode:aspectRatioMode
                                                        captureMode:captureModeType
-                                                     dispatchQueue:_dispatchQueue];
+                                                     dispatchQueue:dispatch_queue_create("camerawesome.multi_preview.dispatchqueue", NULL)];
     
     for (int i = 0; i < [sensors count]; i++) {
       int64_t textureId = [self->_textureRegistry registerTexture:self.multiCamera.textures[i]];
@@ -351,7 +360,7 @@ FlutterEventSink physicalButtonEventSink;
                                               aspectRatioMode:aspectRatioMode
                                                   captureMode:captureModeType
                                                    completion:completion
-                                                dispatchQueue:dispatch_queue_create("camerawesome.dispatchqueue", NULL)];
+                                                dispatchQueue:dispatch_queue_create("camerawesome.single_preview.dispatchqueue", NULL)];
     
     int64_t textureId = [self->_textureRegistry registerTexture:self.camera.previewTexture];
     

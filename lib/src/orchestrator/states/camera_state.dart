@@ -79,7 +79,6 @@ abstract class CameraState {
         sensorIndex++;
         return sensor;
       }).toList(),
-      type: type ?? SensorType.wideAngle,
     );
     await cameraContext.setSensorConfig(next);
 
