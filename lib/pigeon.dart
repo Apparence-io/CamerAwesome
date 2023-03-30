@@ -8,9 +8,10 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
-enum SensorPosition {
+enum PigeonSensorPosition {
   back,
   front,
+  unknown,
 }
 
 enum PigeonSensorType {
@@ -98,14 +99,14 @@ class ExifPreferences {
   }
 }
 
-class Sensor {
-  Sensor({
+class PigeonSensor {
+  PigeonSensor({
     this.position,
     this.type,
     this.deviceId,
   });
 
-  SensorPosition? position;
+  PigeonSensorPosition? position;
 
   PigeonSensorType? type;
 
@@ -119,11 +120,11 @@ class Sensor {
     ];
   }
 
-  static Sensor decode(Object result) {
+  static PigeonSensor decode(Object result) {
     result as List<Object?>;
-    return Sensor(
+    return PigeonSensor(
       position: result[0] != null
-          ? SensorPosition.values[result[0]! as int]
+          ? PigeonSensorPosition.values[result[0]! as int]
           : null,
       type: result[1] != null
           ? PigeonSensorType.values[result[1]! as int]
@@ -525,16 +526,16 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
     } else if (value is ExifPreferences) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is PigeonSensorTypeDevice) {
+    } else if (value is PigeonSensor) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is PreviewSize) {
+    } else if (value is PigeonSensorTypeDevice) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else if (value is PreviewSize) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is Sensor) {
+    } else if (value is PreviewSize) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
     } else if (value is VideoOptions) {
@@ -553,13 +554,13 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
       case 129: 
         return ExifPreferences.decode(readValue(buffer)!);
       case 130: 
-        return PigeonSensorTypeDevice.decode(readValue(buffer)!);
+        return PigeonSensor.decode(readValue(buffer)!);
       case 131: 
-        return PreviewSize.decode(readValue(buffer)!);
+        return PigeonSensorTypeDevice.decode(readValue(buffer)!);
       case 132: 
         return PreviewSize.decode(readValue(buffer)!);
       case 133: 
-        return Sensor.decode(readValue(buffer)!);
+        return PreviewSize.decode(readValue(buffer)!);
       case 134: 
         return VideoOptions.decode(readValue(buffer)!);
       default:
@@ -578,7 +579,7 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<bool> setupCamera(List<Sensor?> arg_sensors, String arg_aspectRatio, double arg_zoom, bool arg_mirrorFrontCamera, bool arg_enablePhysicalButton, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
+  Future<bool> setupCamera(List<PigeonSensor?> arg_sensors, String arg_aspectRatio, double arg_zoom, bool arg_mirrorFrontCamera, bool arg_enablePhysicalButton, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec,
         binaryMessenger: _binaryMessenger);
@@ -1052,7 +1053,7 @@ class CameraInterface {
     }
   }
 
-  Future<void> setSensor(List<Sensor?> arg_sensors) async {
+  Future<void> setSensor(List<PigeonSensor?> arg_sensors) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setSensor', codec,
         binaryMessenger: _binaryMessenger);

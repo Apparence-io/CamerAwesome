@@ -67,7 +67,7 @@ class _CameraPageState extends State<CameraPage> {
       body: CameraAwesomeBuilder.previewOnly(
         previewFit: CameraPreviewFit.contain,
         aspectRatio: CameraAspectRatios.ratio_1_1,
-        sensors: [Sensor(position: SensorPosition.front)],
+        sensors: [Sensor.position(SensorPosition.front)],
         onImageForAnalysis: (img) => _analyzeImage(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(

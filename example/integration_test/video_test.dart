@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'common.dart';
@@ -16,7 +15,7 @@ void main() {
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensors: [Sensor(position: sensor)],
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.video(
               pathBuilder: () =>
                   tempPath('record_video_single_${sensor.name}.mp4'),
@@ -46,7 +45,7 @@ void main() {
         const videosToTake = 3;
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensors: [Sensor(position: sensor)],
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.video(
               pathBuilder: () =>
                   tempPath('multiple_video_${sensor.name}_$idxVideo.mp4'),
@@ -75,7 +74,7 @@ void main() {
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensors: [Sensor(position: sensor)],
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.video(
                 pathBuilder: () => tempPath('pause_resume_video_$sensor.mp4')),
           ),
@@ -120,7 +119,7 @@ void main() {
       ];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensors: [Sensor(position: SensorPosition.back)],
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.video(
             pathBuilder: () async {
               final path = await tempPath(

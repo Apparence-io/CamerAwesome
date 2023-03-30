@@ -18,6 +18,12 @@
       "flutterMode": "profile"
     },
     {
+      "name": "Multi camera example",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/multi_camera.dart"
+    },
+    {
       "name": "AI analysis - face detection",
       "request": "launch",
       "type": "dart",

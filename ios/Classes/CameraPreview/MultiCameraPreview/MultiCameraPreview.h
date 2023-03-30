@@ -19,6 +19,7 @@
 #import "LocationController.h"
 #import "CameraFlash.h"
 #import "CaptureModes.h"
+#import "SensorUtils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,7 +28,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 
 @property (nonatomic, strong) AVCaptureMultiCamSession  *cameraSession;
 
-@property (nonatomic, strong) NSArray<Sensor *> *sensors;
+@property (nonatomic, strong) NSArray<PigeonSensor *> *sensors;
 @property (nonatomic, strong) NSMutableArray<CameraDeviceInfo *> *devices;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 @property(nonatomic, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
@@ -40,12 +41,12 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(nonatomic, nonatomic) NSMutableArray<CameraPreviewTexture *> *textures;
 @property(nonatomic, copy) void (^onPreviewFrameAvailable)(NSNumber * _Nullable);
 
-- (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
+- (instancetype)initWithSensors:(NSArray<PigeonSensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
            enablePhysicalButton:(BOOL)enablePhysicalButton
                 aspectRatioMode:(AspectRatio)aspectRatioMode
                     captureMode:(CaptureModes)captureMode
                   dispatchQueue:(dispatch_queue_t)dispatchQueue;
-- (void)configSession:(NSArray<Sensor *> *)sensors;
+- (void)configSession:(NSArray<PigeonSensor *> *)sensors;
 - (void)start;
 - (void)stop;
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;

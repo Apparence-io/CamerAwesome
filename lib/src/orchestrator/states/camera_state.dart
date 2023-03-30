@@ -1,8 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/camera_context.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
+
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
@@ -85,7 +85,7 @@ abstract class CameraState {
           }
 
           if (type != null) {
-            sensor.type = _sensorTypeFromPigeon(type);
+            sensor.type = type;
           }
         }
 
@@ -120,7 +120,7 @@ abstract class CameraState {
           }
 
           sensor.deviceId = deviceId;
-          sensor.type = _sensorTypeFromPigeon(type);
+          sensor.type = type;
         }
 
         sensorIndex++;
@@ -130,20 +130,20 @@ abstract class CameraState {
     cameraContext.setSensorConfig(next);
   }
 
-  PigeonSensorType? _sensorTypeFromPigeon(SensorType type) {
-    switch (type) {
-      case SensorType.wideAngle:
-        return PigeonSensorType.wideAngle;
-      case SensorType.telephoto:
-        return PigeonSensorType.telephoto;
-      case SensorType.trueDepth:
-        return PigeonSensorType.trueDepth;
-      case SensorType.ultraWideAngle:
-        return PigeonSensorType.ultraWideAngle;
-      default:
-        return null;
-    }
-  }
+  // PigeonSensorType? _sensorTypeFromPigeon(SensorType type) {
+  //   switch (type) {
+  //     case SensorType.wideAngle:
+  //       return PigeonSensorType.wideAngle;
+  //     case SensorType.telephoto:
+  //       return PigeonSensorType.telephoto;
+  //     case SensorType.trueDepth:
+  //       return PigeonSensorType.trueDepth;
+  //     case SensorType.ultraWideAngle:
+  //       return PigeonSensorType.ultraWideAngle;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   void toggleFilterSelector() {
     cameraContext.toggleFilterSelector();

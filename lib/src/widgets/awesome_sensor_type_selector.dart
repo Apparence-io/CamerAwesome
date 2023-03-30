@@ -1,9 +1,4 @@
-import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_config.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
-import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_bouncing_widget.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_oriented_widget.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeSensorTypeSelector extends StatefulWidget {

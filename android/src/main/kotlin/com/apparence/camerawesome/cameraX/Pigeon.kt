@@ -43,12 +43,13 @@ class FlutterError (
   val details: Any? = null
 ) : Throwable()
 
-enum class SensorPosition(val raw: Int) {
+enum class PigeonSensorPosition(val raw: Int) {
   BACK(0),
-  FRONT(1);
+  FRONT(1),
+  UNKNOWN(2);
 
   companion object {
-    fun ofRaw(raw: Int): SensorPosition? {
+    fun ofRaw(raw: Int): PigeonSensorPosition? {
       return values().firstOrNull { it.raw == raw }
     }
   }
@@ -162,23 +163,23 @@ data class ExifPreferences (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class Sensor (
-  val position: SensorPosition? = null,
+data class PigeonSensor (
+  val position: PigeonSensorPosition? = null,
   val type: PigeonSensorType? = null,
   val deviceId: String? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): Sensor {
-      val position: SensorPosition? = (list[0] as Int?)?.let {
-        SensorPosition.ofRaw(it)
+    fun fromList(list: List<Any?>): PigeonSensor {
+      val position: PigeonSensorPosition? = (list[0] as Int?)?.let {
+        PigeonSensorPosition.ofRaw(it)
       }
       val type: PigeonSensorType? = (list[1] as Int?)?.let {
         PigeonSensorType.ofRaw(it)
       }
       val deviceId = list[2] as String?
-      return Sensor(position, type, deviceId)
+      return PigeonSensor(position, type, deviceId)
     }
   }
   fun toList(): List<Any?> {
@@ -532,12 +533,12 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PigeonSensorTypeDevice.fromList(it)
+          PigeonSensor.fromList(it)
         }
       }
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          PreviewSize.fromList(it)
+          PigeonSensorTypeDevice.fromList(it)
         }
       }
       132.toByte() -> {
@@ -547,7 +548,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
       }
       133.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          Sensor.fromList(it)
+          PreviewSize.fromList(it)
         }
       }
       134.toByte() -> {
@@ -568,11 +569,11 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is PigeonSensorTypeDevice -> {
+      is PigeonSensor -> {
         stream.write(130)
         writeValue(stream, value.toList())
       }
-      is PreviewSize -> {
+      is PigeonSensorTypeDevice -> {
         stream.write(131)
         writeValue(stream, value.toList())
       }
@@ -580,7 +581,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
-      is Sensor -> {
+      is PreviewSize -> {
         stream.write(133)
         writeValue(stream, value.toList())
       }
@@ -595,7 +596,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensors: List<Sensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
+  fun setupCamera(sensors: List<PigeonSensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
   fun checkPermissions(): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -624,7 +625,7 @@ interface CameraInterface {
   fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, androidFocusSettings: AndroidFocusSettings?)
   fun setZoom(zoom: Double)
   fun setMirrorFrontCamera(mirror: Boolean)
-  fun setSensor(sensors: List<Sensor>)
+  fun setSensor(sensors: List<PigeonSensor>)
   fun setCorrection(brightness: Double)
   fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
@@ -656,7 +657,7 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorsArg = args[0] as List<Sensor>
+            val sensorsArg = args[0] as List<PigeonSensor>
             val aspectRatioArg = args[1] as String
             val zoomArg = args[2] as Double
             val mirrorFrontCameraArg = args[3] as Boolean
@@ -1007,7 +1008,7 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val sensorsArg = args[0] as List<Sensor>
+            val sensorsArg = args[0] as List<PigeonSensor>
             var wrapped: List<Any?>
             try {
               api.setSensor(sensorsArg)

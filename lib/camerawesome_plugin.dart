@@ -5,7 +5,6 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +14,8 @@ export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
 export 'src/widgets/camera_awesome_builder.dart';
+export 'src/orchestrator/models/sensor_type.dart';
+export 'src/orchestrator/models/sensors.dart';
 
 // built in widgets
 export 'src/widgets/widgets.dart';
@@ -183,7 +184,17 @@ class CamerawesomePlugin {
   }) async {
     return CameraInterface()
         .setupCamera(
-          sensorConfig.sensors,
+          sensorConfig.sensors.map((e) {
+            return PigeonSensor(
+              position: e?.position?.name != null
+                  ? PigeonSensorPosition.values.byName(e!.position!.name)
+                  : PigeonSensorPosition.unknown,
+              deviceId: e?.deviceId,
+              type: e?.type?.name != null
+                  ? PigeonSensorType.values.byName(e!.type!.name)
+                  : PigeonSensorType.unknown,
+            );
+          }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
           sensorConfig.mirrorFrontCamera,
@@ -317,7 +328,19 @@ class CamerawesomePlugin {
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
   static Future<void> setSensor(List<Sensor?> sensors) {
-    return CameraInterface().setSensor(sensors);
+    return CameraInterface().setSensor(
+      sensors.map((e) {
+        return PigeonSensor(
+          position: e?.position?.name != null
+              ? PigeonSensorPosition.values.byName(e!.position!.name)
+              : PigeonSensorPosition.unknown,
+          deviceId: e?.deviceId,
+          type: e?.type?.name != null
+              ? PigeonSensorType.values.byName(e!.position!.name)
+              : PigeonSensorType.unknown,
+        );
+      }).toList(),
+    );
   }
 
   /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]

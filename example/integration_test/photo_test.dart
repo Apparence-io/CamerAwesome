@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'common.dart';
@@ -20,7 +19,7 @@ void photoTests() {
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensors: [Sensor(position: sensor)],
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.photo(
               pathBuilder: () => tempPath('single_photo_back.jpg'),
             ),
@@ -45,7 +44,7 @@ void photoTests() {
         const picturesToTake = 3;
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensors: [Sensor(position: sensor)],
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.photo(
               pathBuilder: () async {
                 final path = await tempPath(
@@ -82,7 +81,7 @@ void photoTests() {
       ];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensors: [Sensor(position: SensorPosition.back)],
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () async {
               final path = await tempPath(
