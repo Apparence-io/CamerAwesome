@@ -1,5 +1,6 @@
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/cameraweb_service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -26,9 +27,15 @@ abstract class ACamerawesomeWeb extends PlatformInterface
 
 class CamerawesomeWeb extends ACamerawesomeWeb {
   late final CameraWebService _cameraWebService;
+  int _textureCounter = 1;
+  static final CamerawesomeWeb _instance = CamerawesomeWeb._();
 
-  CamerawesomeWeb() {
+  CamerawesomeWeb._() {
     _cameraWebService = CameraWebService();
+  }
+
+  factory CamerawesomeWeb() {
+    return _instance;
   }
 
   static void registerWith(Registrar registrar) {
@@ -47,8 +54,16 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
     String captureMode,
     bool enableImageStream,
     ExifPreferences exifPreferences,
-  ) {
-    return Future.value(false);
+  ) async {
+    final int textureId = _textureCounter++;
+    await _cameraWebService.setupCamera(textureId);
+    return Future.value(true);
+  }
+
+  @override
+  Future<bool> start() async {
+    await _cameraWebService.start();
+    return Future.value(true);
   }
 
   @override
@@ -68,7 +83,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<List<PreviewSize?>> availableSizes() {
-    return Future.value([]);
+    return Future.value([PreviewSize(width: 4096, height: 2160)]);
   }
 
   @override
@@ -84,7 +99,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<PreviewSize?> getEffectivPreviewSize() {
-    return Future.value(null);
+    return Future.value(PreviewSize(width: 4096, height: 2160));
   }
 
   @override
@@ -94,14 +109,12 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<double> getMaxZoom() {
-    // TODO: implement getMaxZoom
-    throw UnimplementedError();
+    return Future.value(0.0);
   }
 
   @override
   Future<int> getPreviewTextureId() {
-    // TODO: implement getPreviewTextureId
-    throw UnimplementedError();
+    return Future.value(_cameraWebService.camera.textureId);
   }
 
   @override
@@ -201,11 +214,6 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<bool> start() {
-    return Future.value(false);
-  }
-
-  @override
   Future<void> startAnalysis() {
     return Future.value();
   }
@@ -226,8 +234,14 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<bool> isVideoRecordingAndImageAnalysisSupported(String arg_sensor) {
+  Future<bool> isVideoRecordingAndImageAnalysisSupported(String argSensor) {
     // TODO: implement isVideoRecordingAndImageAnalysisSupported
     throw UnimplementedError();
+  }
+
+  Widget buildPreview() {
+    return HtmlElementView(
+      viewType: _cameraWebService.camera.getViewType(),
+    );
   }
 }

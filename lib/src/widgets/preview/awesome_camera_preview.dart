@@ -195,6 +195,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             _previousCroppedSize ??=
                 Size(_croppedSize!.width, _croppedSize!.height);
 
+            final previewTexture =
+                CamerawesomePlugin.buildPreview(_textures.first.textureId);
+
             final preview = SizedBox(
               width: constrainedSize.width,
               height: constrainedSize.height,
@@ -230,7 +233,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                                       colorFilter: snapshot.data!.preview,
                                       child: _textures.first,
                                     )
-                                  : _textures.first;
+                                  : previewTexture;
                             }),
                       ),
                     ),

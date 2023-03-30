@@ -3,6 +3,7 @@ import 'dart:html' as html;
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/expections_handler.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
+import 'package:camerawesome/src/web/src/models/camera_web.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +12,11 @@ class CameraWebService {
   html.Window? get window => html.window;
   html.MediaDevices? get mediaDevices => html.window.navigator.mediaDevices;
 
-  Future<html.MediaStream> getVideoStream(
+  late final CameraWeb _camera;
+
+  CameraWeb get camera => _camera;
+
+  Future<html.MediaStream> _getVideoStream(
       final CameraOptions cameraOptions) async {
     // Throw a not supported exception if the current browser window
     // does not support any media devices.
@@ -71,7 +76,7 @@ class CameraWebService {
         video: VideoConstraints(deviceId: videoInputDevice.deviceId),
       );
 
-      final html.MediaStream videoStream = await getVideoStream(cameraOptions);
+      final html.MediaStream videoStream = await _getVideoStream(cameraOptions);
 
       // Get all video tracks in the video stream
       // to later extract the lens direction from the first track.
@@ -120,7 +125,7 @@ class CameraWebService {
     const cameraOptions = CameraOptions(
       audio: AudioConstraints(enabled: true),
     );
-    final html.MediaStream cameraStream = await getVideoStream(cameraOptions);
+    final html.MediaStream cameraStream = await _getVideoStream(cameraOptions);
 
     // Release the camera stream used to request video and audio permissions.
     cameraStream.getVideoTracks().forEach((videoTrack) => videoTrack.stop());
@@ -128,5 +133,34 @@ class CameraWebService {
       CamerAwesomePermission.camera.name,
       CamerAwesomePermission.record_audio.name
     ];
+  }
+
+  Future<void> setupCamera(final int textureId) async {
+    final camerasIds = await availableCameras();
+    const videoSize = Size(4096, 2160);
+    _camera = CameraWeb(
+      textureId: textureId,
+      options: CameraOptions(
+        audio: const AudioConstraints(enabled: true),
+        video: VideoConstraints(
+          facingMode: FacingModeConstraint(CameraType.user),
+          width: VideoSizeConstraint(
+            ideal: videoSize.width.toInt(),
+          ),
+          height: VideoSizeConstraint(
+            ideal: videoSize.height.toInt(),
+          ),
+          deviceId: camerasIds.first,
+        ),
+      ),
+    );
+    final stream = await _getVideoStream(
+      _camera.options,
+    );
+    await _camera.initialize(stream);
+  }
+
+  Future<void> start() async {
+    return _camera.play();
   }
 }
