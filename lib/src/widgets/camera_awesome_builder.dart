@@ -187,7 +187,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensors: sensors ?? [Sensor(position: SensorPosition.back)],
+          sensors: sensors ?? [Sensor.position(SensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,
@@ -244,7 +244,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensors: sensors ?? [Sensor(position: SensorPosition.back)],
+          sensors: sensors ?? [Sensor.position(SensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: mirrorFrontCamera,

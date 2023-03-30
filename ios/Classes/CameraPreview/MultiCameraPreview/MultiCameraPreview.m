@@ -9,7 +9,7 @@
 
 @implementation MultiCameraPreview
 
-- (instancetype)initWithSensors:(NSArray<Sensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
+- (instancetype)initWithSensors:(NSArray<PigeonSensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
            enablePhysicalButton:(BOOL)enablePhysicalButton
                 aspectRatioMode:(AspectRatio)aspectRatioMode
                     captureMode:(CaptureModes)captureMode
@@ -51,15 +51,34 @@
 
 - (void)dispose {
   [self stop];
+  [self cleanSession];
 }
 
 - (void)stop {
-  [_cameraSession stopRunning];
+  [self.cameraSession stopRunning];
 }
 
-- (void)configSession:(NSArray<Sensor *> *)sensors {
-  [_textures removeAllObjects];
-  [_devices removeAllObjects];
+- (void)cleanSession {
+  for (AVCaptureInput *input in [_cameraSession inputs]) {
+    [self.cameraSession removeInput:input];
+  }
+  
+  for (AVCaptureOutput *output in [_cameraSession outputs]) {
+    [self.cameraSession removeOutput:output];
+  }
+  
+  for (AVCaptureConnection *connection in [_cameraSession connections]) {
+    [self.cameraSession removeConnection:connection];
+  }
+  
+  [self.textures removeAllObjects];
+  [self.devices removeAllObjects];
+  
+  _cameraSession = nil;
+}
+
+- (void)configSession:(NSArray<PigeonSensor *> *)sensors {
+  [self cleanSession];
   
   _sensors = sensors;
   
@@ -67,7 +86,7 @@
   [self.cameraSession beginConfiguration];
   
   for (int i = 0; i < [sensors count]; i++) {
-    Sensor *sensor = sensors[i];
+    PigeonSensor *sensor = sensors[i];
     
     CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
     [_textures addObject:previewTexture];
@@ -93,7 +112,7 @@
   return CGSizeMake(1920, 1080);
 }
 
-- (BOOL)addSensor:(Sensor *)sensor withIndex:(int)index {
+- (BOOL)addSensor:(PigeonSensor *)sensor withIndex:(int)index {
   AVCaptureDevice *device = [self selectAvailableCamera:sensor];;
   
   if (device == nil) {
@@ -131,7 +150,7 @@
   
   [connection setVideoOrientation:AVCaptureVideoOrientationPortrait];
   [connection setAutomaticallyAdjustsVideoMirroring:NO];
-  [connection setVideoMirrored:sensor.position == SensorPositionFront];
+  [connection setVideoMirrored:sensor.position == PigeonSensorPositionFront];
   
   cameraDevice.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSessionWithNoConnection:self.cameraSession];
   AVCaptureConnection *frontPreviewLayerConnection = [[AVCaptureConnection alloc] initWithInputPort:port videoPreviewLayer:cameraDevice.previewLayer];
@@ -148,19 +167,30 @@
 }
 
 /// Get the first available camera on device (front or rear)
-- (AVCaptureDevice *)selectAvailableCamera:(Sensor *)sensor {
+- (AVCaptureDevice *)selectAvailableCamera:(PigeonSensor *)sensor {
+  if (sensor.deviceId != nil) {
+    return [AVCaptureDevice deviceWithUniqueID:sensor.deviceId];
+  }
+  
   // TODO: add dual & triple camera
   NSArray<AVCaptureDevice *> *devices = [[NSArray alloc] init];
   AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                                                       discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera, ]
+                                                       discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, ]
                                                        mediaType:AVMediaTypeVideo
                                                        position:AVCaptureDevicePositionUnspecified];
   devices = discoverySession.devices;
   
-  NSInteger cameraType = (sensor.position == SensorPositionFront) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
   for (AVCaptureDevice *device in devices) {
-    if ([device position] == cameraType) {
-      return [AVCaptureDevice deviceWithUniqueID:[device uniqueID]];
+    if (sensor.type != PigeonSensorTypeUnknown) {
+      AVCaptureDeviceType deviceType = [SensorUtils deviceTypeFromSensorType:sensor.type];
+      if ([device deviceType] == deviceType) {
+        return [AVCaptureDevice deviceWithUniqueID:[device uniqueID]];
+      }
+    } else if (sensor.position != PigeonSensorPositionUnknown) {
+      NSInteger cameraType = (sensor.position == PigeonSensorPositionFront) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
+      if ([device position] == cameraType) {
+        return [AVCaptureDevice deviceWithUniqueID:[device uniqueID]];
+      }
     }
   }
   return nil;
@@ -187,7 +217,7 @@
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
-                                                                                  sensorPosition:_sensors[1].position
+                                                                          sensorPosition:_sensors[1].position
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio

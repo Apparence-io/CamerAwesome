@@ -50,7 +50,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _previewSize;
   PreviewSize? _flutterPreviewSize;
 
-  final List<int> _textureIds = [];
+  // final List<int> _textureIds = [];
+  final List<Texture> _textures = [];
 
   PreviewSize? get pixelPreviewSize => _previewSize;
 
@@ -68,7 +69,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     super.initState();
     Future.wait([
       widget.state.previewSize(),
-      loadTextures(),
+      _loadTextures(),
     ]).then((data) {
       if (mounted) {
         setState(() {
@@ -104,13 +105,15 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     });
   }
 
-  Future loadTextures() async {
+  Future _loadTextures() async {
     final sensors = widget.state.cameraContext.sensorConfig.sensors.length;
 
     for (int i = 0; i < sensors; i++) {
       final textureId = await widget.state.previewTextureId(i);
       if (textureId != null) {
-        _textureIds.add(textureId);
+        _textures.add(
+          Texture(textureId: textureId),
+        );
       }
     }
   }
@@ -124,7 +127,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   @override
   Widget build(BuildContext context) {
-    if (_textureIds.isEmpty || _previewSize == null || _aspectRatio == null) {
+    if (_textures.isEmpty || _previewSize == null || _aspectRatio == null) {
       return widget.loadingWidget ??
           Center(
             child: Platform.isIOS
@@ -189,15 +192,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             _previousCroppedSize ??=
                 Size(_croppedSize!.width, _croppedSize!.height);
 
-            // TODO: change this to support multiple sensors
-            // like in grid for example
-            final mainPreviewTexture = Texture(
-              textureId: _textureIds.first,
-            );
-            final secondaryPreviewTexture = _textureIds.length > 1
-                ? Texture(textureId: _textureIds[1])
-                : null;
-
             final preview = SizedBox(
               width: constrainedSize.width,
               height: constrainedSize.height,
@@ -231,9 +225,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                                       snapshot.data != AwesomeFilter.None
                                   ? ColorFiltered(
                                       colorFilter: snapshot.data!.preview,
-                                      child: mainPreviewTexture,
+                                      child: _textures.first,
                                     )
-                                  : mainPreviewTexture;
+                                  : _textures.first;
                             }),
                       ),
                     ),
@@ -297,25 +291,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 ),
                 // TODO: be draggable
                 // TODO: add shadow & border
-                Positioned(
-                  top: 140,
-                  right: 30,
-                  child: secondaryPreviewTexture != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: SizedBox(
-                            height: 200,
-                            child: Center(
-                              child: AspectRatio(
-                                aspectRatio: 9 / 16,
-                                child: secondaryPreviewTexture,
-                              ),
-                            ),
-                            // child: frontPreviewTexture,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                ..._buildPreviewTextures(),
               ]);
             } else {
               return Stack(children: [
@@ -359,6 +335,39 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     double width = isWidthLarger ? otherSide : side;
     double height = isWidthLarger ? side : otherSide;
     return PreviewSize(width: width, height: height);
+  }
+
+  List<Widget> _buildPreviewTextures() {
+    final previewFrames = <Widget>[];
+
+    if (_textures.length < 2) {
+      return previewFrames;
+    }
+
+    for (int i = 1; i < _textures.length; i++) {
+      final texture = _textures[i];
+
+      final frame = Positioned(
+        top: 140 + (i - 1) * 20,
+        right: 30 + (i - 1) * 20,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: SizedBox(
+            height: 200,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: 9 / 16,
+                child: texture,
+              ),
+            ),
+            // child: frontPreviewTexture,
+          ),
+        ),
+      );
+      previewFrames.add(frame);
+    }
+
+    return previewFrames;
   }
 }
 

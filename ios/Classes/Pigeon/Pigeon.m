@@ -33,9 +33,9 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList;
 @end
 
-@interface Sensor ()
-+ (Sensor *)fromList:(NSArray *)list;
-+ (nullable Sensor *)nullableFromList:(NSArray *)list;
+@interface PigeonSensor ()
++ (PigeonSensor *)fromList:(NSArray *)list;
++ (nullable PigeonSensor *)nullableFromList:(NSArray *)list;
 - (NSArray *)toList;
 @end
 
@@ -106,25 +106,25 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 }
 @end
 
-@implementation Sensor
-+ (instancetype)makeWithPosition:(SensorPosition)position
+@implementation PigeonSensor
++ (instancetype)makeWithPosition:(PigeonSensorPosition)position
     type:(PigeonSensorType)type
     deviceId:(nullable NSString *)deviceId {
-  Sensor* pigeonResult = [[Sensor alloc] init];
+  PigeonSensor* pigeonResult = [[PigeonSensor alloc] init];
   pigeonResult.position = position;
   pigeonResult.type = type;
   pigeonResult.deviceId = deviceId;
   return pigeonResult;
 }
-+ (Sensor *)fromList:(NSArray *)list {
-  Sensor *pigeonResult = [[Sensor alloc] init];
++ (PigeonSensor *)fromList:(NSArray *)list {
+  PigeonSensor *pigeonResult = [[PigeonSensor alloc] init];
   pigeonResult.position = [GetNullableObjectAtIndex(list, 0) integerValue];
   pigeonResult.type = [GetNullableObjectAtIndex(list, 1) integerValue];
   pigeonResult.deviceId = GetNullableObjectAtIndex(list, 2);
   return pigeonResult;
 }
-+ (nullable Sensor *)nullableFromList:(NSArray *)list {
-  return (list) ? [Sensor fromList:list] : nil;
++ (nullable PigeonSensor *)nullableFromList:(NSArray *)list {
+  return (list) ? [PigeonSensor fromList:list] : nil;
 }
 - (NSArray *)toList {
   return @[
@@ -235,13 +235,13 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
     case 129: 
       return [ExifPreferences fromList:[self readValue]];
     case 130: 
-      return [PigeonSensorTypeDevice fromList:[self readValue]];
+      return [PigeonSensor fromList:[self readValue]];
     case 131: 
-      return [PreviewSize fromList:[self readValue]];
+      return [PigeonSensorTypeDevice fromList:[self readValue]];
     case 132: 
       return [PreviewSize fromList:[self readValue]];
     case 133: 
-      return [Sensor fromList:[self readValue]];
+      return [PreviewSize fromList:[self readValue]];
     case 134: 
       return [VideoOptions fromList:[self readValue]];
     default:
@@ -260,16 +260,16 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   } else if ([value isKindOfClass:[ExifPreferences class]]) {
     [self writeByte:129];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[PigeonSensorTypeDevice class]]) {
+  } else if ([value isKindOfClass:[PigeonSensor class]]) {
     [self writeByte:130];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[PreviewSize class]]) {
+  } else if ([value isKindOfClass:[PigeonSensorTypeDevice class]]) {
     [self writeByte:131];
     [self writeValue:[value toList]];
   } else if ([value isKindOfClass:[PreviewSize class]]) {
     [self writeByte:132];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[Sensor class]]) {
+  } else if ([value isKindOfClass:[PreviewSize class]]) {
     [self writeByte:133];
     [self writeValue:[value toList]];
   } else if ([value isKindOfClass:[VideoOptions class]]) {
@@ -313,7 +313,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSArray<Sensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
+        NSArray<PigeonSensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
         NSString *arg_aspectRatio = GetNullableObjectAtIndex(args, 1);
         NSNumber *arg_zoom = GetNullableObjectAtIndex(args, 2);
         NSNumber *arg_mirrorFrontCamera = GetNullableObjectAtIndex(args, 3);
@@ -672,7 +672,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       NSCAssert([api respondsToSelector:@selector(setSensorSensors:error:)], @"CameraInterface api (%@) doesn't respond to @selector(setSensorSensors:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSArray<Sensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
+        NSArray<PigeonSensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
         [api setSensorSensors:arg_sensors error:&error];
         callback(wrapResult(nil, error));

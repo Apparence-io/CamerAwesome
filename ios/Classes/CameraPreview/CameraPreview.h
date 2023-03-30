@@ -47,7 +47,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
-@property(readonly, nonatomic) SensorPosition cameraSensorPosition;
+@property(readonly, nonatomic) PigeonSensorPosition cameraSensorPosition;
 @property(readonly, nonatomic) NSString *captureDeviceId;
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) NSString *currentPresset;
@@ -64,7 +64,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
 @property(nonatomic, copy) void (^onPreviewFrameAvailable)(void);
 
-- (instancetype)initWithCameraSensor:(SensorPosition)sensor
+- (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -94,7 +94,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)dispose;
 // - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
-- (void)setSensor:(Sensor *)sensor;
+- (void)setSensor:(PigeonSensor *)sensor;
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGFloat)getMaxZoom;

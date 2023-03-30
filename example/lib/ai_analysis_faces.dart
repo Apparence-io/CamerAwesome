@@ -75,7 +75,7 @@ class _CameraPageState extends State<CameraPage> {
         onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
         previewFit: CameraPreviewFit.contain,
         aspectRatio: CameraAspectRatios.ratio_1_1,
-        sensors: [Sensor(position: SensorPosition.front)],
+        sensors: [Sensor.position(SensorPosition.front)],
         onImageForAnalysis: (img) => _analyzeImage(img),
         imageAnalysisConfig: AnalysisConfig(
           outputFormat: InputAnalysisImageFormat.nv21,
