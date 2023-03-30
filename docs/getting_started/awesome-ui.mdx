@@ -348,9 +348,10 @@ CameraAwesomeBuilder.awesome(
   previewFit: CameraPreviewFit.fitWidth,
   // Image analysis configuration
   imageAnalysisConfig: AnalysisConfig(
-    outputFormat: InputAnalysisImageFormat.nv21,
-    width: 1024,
-    autoStart: true,
+        androidOptions: const AndroidAnalysisOptions.nv21(
+            width: 1024,
+        ),
+        autoStart: true,
   ),
   // Handle image analysis
   onImageForAnalysis: (analysisImage) {
@@ -494,8 +495,15 @@ CameraAwesomeBuilder.awesome(
 | **topActionsBuilder**       | A widget builder used to show buttons on the top of the preview.<br/>`AwesomeTopActions` by default.                                                  |
 | **zoom**                    | A value between 0.0 (no zoom) and 1.0 (max zoom)                                                                                                      |
 
-## 🔨 Need more customization ?
+## 🔨 Need more customization? Other use cases?
 
 If the separation between top, middle and bottom content doesn't suit your needs, you can also provide your own UI using `CameraAwesomeBuilder.custom()` builder.
 
-See `CameraAwesomeBuilder.custom()` [docs](/getting_started/custom-ui).
+See [🎨 Creating a custom UI](/getting_started/custom-ui) documentation.
+
+If you only want to display the preview and not taking pictures or videos, you can also use `CameraAwesomeBuilder.previewOnly()` constructor.
+You can check [Reading barcodes](image_analysis/reading_barcodes) and [Detecting faces](image_analysis/detecting_faces) examples to see how to use it.
+
+If you are only interested in image analysis, you can also use `CameraAwesomeBuilder.analysisOnly()` which will **not** provide a camera preview behind your `builder`.
+In `analysis_image_filter.dart` and `analysis_image_filter_picker.dart`, this constructor is used to draw a camera preview with filter effects applied to each image (image distortion, greyscale, etc...).
+You can find more about this example in the [Image analysis formats and conversions documentation](/image_analysis/image_format/conversions).

@@ -6,19 +6,23 @@ import 'package:camerawesome/src/orchestrator/models/analysis/input_analysis.dar
 import 'package:flutter/foundation.dart';
 
 part 'analysis_image_ext.dart';
-
-// TODO Rework AnalysisImage
-// Ideas:
-// - possibility to add the jpeg in addition to other formats (to display it)
-// - Make AnalysisImage abstract and extend it to have Nv21Image and Bgra8888Image for either Android or iOS
 abstract class AnalysisImage {
+  /// The height of the image in pixels.
   final int height;
+
+  /// The width of the image in pixels.
   final int width;
+
+  /// The format of the image.
   final InputAnalysisImageFormat format;
+
+  /// The rotation of the image.
   final InputAnalysisImageRotation rotation;
 
+  /// Full size of the analysis image.
   Size get size => Size(width.toDouble(), height.toDouble());
 
+  /// Cropped size of the analysis image corresponding to what is seen on the preview.
   Size get croppedSize;
 
   const AnalysisImage({
@@ -43,6 +47,7 @@ abstract class AnalysisImage {
     }
   }
 
+  /// Helper function to decide what to do depending on the AnalysisImage format with type safe checks.
   T? when<T>({
     T Function(Nv21Image image)? nv21,
     T Function(Bgra8888Image image)? bgra8888,

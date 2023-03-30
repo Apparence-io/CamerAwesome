@@ -54,8 +54,8 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                   | Android  |  iOS   |
-| :--------------------------------------- | :------: | :----: |
+| System                                  | Android |  iOS  |
+| :-------------------------------------- | :-----: | :---: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
@@ -67,7 +67,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 📸 Device flash support                  |    ✅    |   ✅   |
 | ⌛️ Auto focus                            |    ✅    |   ✅   |
 | 📲 Live switching camera                 |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream                |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream               |    ✅    |   ✅   |
 | 🤐 Background auto stop                  |    ✅    |   ✅   |
 | 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
 | 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
@@ -92,13 +92,14 @@ Add these on `ios/Runner/Info.plist`:
 
 ```xml
 
-<key>NSCameraUsageDescription</key><string>Your own description</string>
+<key>NSCameraUsageDescription</key>
+<string>Your own description</string>
 
-<key>NSMicrophoneUsageDescription</key><string>To enable microphone access when recording video
-</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>To enable microphone access when recording video</string>
 
-<key>NSLocationWhenInUseUsageDescription</key><string>To enable GPS location access for Exif data
-</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>To enable GPS location access for Exif data</string>
 ```
 
 - **Android**
@@ -301,11 +302,16 @@ CameraAwesomeBuilder.awesome(
   ),
   onImageForAnalysis: analyzeImage,
   imageAnalysisConfig: AnalysisConfig(
-    outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
-    width: 720,
-    maxFramesPerSecond: 20,
-  ),
-),
+        // Android specific options
+        androidOptions: const AndroidAnalysisOptions.nv21(
+            // Target width (CameraX will chose the closest resolution to this width)
+            width: 250,
+        ),
+        // Wether to start automatically the analysis (true by default)
+        autoStart: true,
+        // Max frames per second, null for no limit (default)
+        maxFramesPerSecond: 20,
+    ),
 ```
 
 > MLkit recommands to use nv21 format for Android. <br>

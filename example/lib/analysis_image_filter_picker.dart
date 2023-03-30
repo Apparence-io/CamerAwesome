@@ -1,21 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as imglib;
-import 'package:rxdart/rxdart.dart';
 
-/// This is an example using machine learning with the camera image
-/// This is still in progress and some changes are about to come
-/// - a provided canvas to draw over the camera
-/// - scale and position points on the canvas easily (without calculating rotation, scale...)
-/// ---------------------------
-/// This use Google ML Kit plugin to process images on firebase
-/// for more informations check
-/// https://github.com/bharat-biradar/Google-Ml-Kit-plugin
 void main() {
   runApp(const CameraAwesomeApp());
 }
@@ -26,7 +17,7 @@ class CameraAwesomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'CamerAwesome App - Native Conversions',
+      title: 'CamerAwesome App - Filter picker example',
       home: CameraPage(),
     );
   }
@@ -40,7 +31,7 @@ class CameraPage extends StatefulWidget {
 }
 
 class _CameraPageState extends State<CameraPage> {
-  final _imageStreamController = BehaviorSubject<AnalysisImage>();
+  final _imageStreamController = StreamController<AnalysisImage>();
 
   @override
   void dispose() {
@@ -54,7 +45,7 @@ class _CameraPageState extends State<CameraPage> {
       body: CameraAwesomeBuilder.analysisOnly(
         aspectRatio: CameraAspectRatios.ratio_1_1,
         sensor: Sensors.front,
-        onImageForAnalysis: (img) => _analyzeImage(img),
+        onImageForAnalysis: (img) async => _imageStreamController.add(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.yuv420(
             width: 150,
@@ -63,23 +54,11 @@ class _CameraPageState extends State<CameraPage> {
         ),
         builder: (state, previewSize, previewRect) {
           return _MyPreviewDecoratorWidget(
-            cameraState: state,
             analysisImageStream: _imageStreamController.stream,
-            previewSize: previewSize,
-            previewRect: previewRect,
           );
         },
       ),
     );
-  }
-
-  Future _analyzeImage(AnalysisImage img) async {
-    try {
-      _imageStreamController.add(img);
-      // debugPrint("...sending image resulted with : ${faces?.length} faces");
-    } catch (error) {
-      debugPrint("...sending image resulted error $error");
-    }
   }
 }
 
@@ -212,16 +191,10 @@ enum ImageFilter {
 }
 
 class _MyPreviewDecoratorWidget extends StatefulWidget {
-  final CameraState cameraState;
-  final PreviewSize previewSize;
-  final Rect previewRect;
   final Stream<AnalysisImage> analysisImageStream;
 
   const _MyPreviewDecoratorWidget({
-    required this.cameraState,
     required this.analysisImageStream,
-    required this.previewSize,
-    required this.previewRect,
   });
 
   @override
@@ -238,98 +211,79 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
     return Column(
       children: [
         Expanded(
-          child: IgnorePointer(
-            child: StreamBuilder<AnalysisImage>(
-              stream: widget.analysisImageStream,
-              builder: (_, snapshot) {
-                if (!snapshot.hasData) {
-                  if (_currentJpeg == null) {
-                    return const SizedBox.shrink();
-                  } else {
-                    return Center(
-                      child: Transform.scale(
-                        scaleX: -1,
-                        child: Transform.rotate(
-                          angle: 3 / 2 * pi,
-                          child: Image.memory(
-                            _currentJpeg!,
-                            gaplessPlayback: true,
-                          ),
-                        ),
+          child: StreamBuilder<AnalysisImage>(
+            stream: widget.analysisImageStream,
+            builder: (_, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox.shrink();
+              }
+
+              final img = snapshot.requireData;
+              return img.when(jpeg: (image) {
+                    _currentJpeg = _applyFilterOnBytes(image.bytes);
+
+                    return ImageAnalysisPreview(
+                      currentJpeg: _currentJpeg!,
+                      width: image.width.toDouble(),
+                      height: image.height.toDouble(),
+                    );
+                  }, yuv420: (image) {
+                    return FutureBuilder<JpegImage>(
+                        future: image.toJpeg(),
+                        builder: (_, snapshot) {
+                          if (snapshot.data == null && _currentJpeg == null) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (snapshot.data != null) {
+                            _currentJpeg =
+                                _applyFilterOnBytes(snapshot.data!.bytes);
+                          }
+                          return ImageAnalysisPreview(
+                            currentJpeg: _currentJpeg!,
+                            width: image.width.toDouble(),
+                            height: image.height.toDouble(),
+                          );
+                        });
+                  }, nv21: (image) {
+                    return FutureBuilder<JpegImage>(
+                        future: image.toJpeg(),
+                        builder: (_, snapshot) {
+                          if (snapshot.data == null && _currentJpeg == null) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (snapshot.data != null) {
+                            _currentJpeg =
+                                _applyFilterOnBytes(snapshot.data!.bytes);
+                          }
+                          return ImageAnalysisPreview(
+                            currentJpeg: _currentJpeg!,
+                            width: image.width.toDouble(),
+                            height: image.height.toDouble(),
+                          );
+                        });
+                  }, bgra8888: (image) {
+                    _currentJpeg = _applyFilterOnImage(
+                      imglib.Image.fromBytes(
+                        width: image.width,
+                        height: image.height,
+                        bytes: image.planes[0].bytes.buffer,
+                        order: imglib.ChannelOrder.bgra,
                       ),
                     );
-                  }
-                }
 
-                final img = snapshot.requireData;
-                return img.when(jpeg: (image) {
-                      _currentJpeg = _applyFilterOnBytes(image.bytes);
-
-                      return ImageAnalysisPreview(
-                        currentJpeg: _currentJpeg!,
-                        width: image.width.toDouble(),
-                        height: image.height.toDouble(),
-                      );
-                    }, yuv420: (image) {
-                      return FutureBuilder<JpegImage>(
-                          future: image.toJpeg(),
-                          builder: (_, snapshot) {
-                            if (snapshot.data == null && _currentJpeg == null) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (snapshot.data != null) {
-                              _currentJpeg =
-                                  _applyFilterOnBytes(snapshot.data!.bytes);
-                            }
-                            return ImageAnalysisPreview(
-                              currentJpeg: _currentJpeg!,
-                              width: image.width.toDouble(),
-                              height: image.height.toDouble(),
-                            );
-                          });
-                    }, nv21: (image) {
-                      return FutureBuilder<JpegImage>(
-                          future: image.toJpeg(),
-                          builder: (_, snapshot) {
-                            if (snapshot.data == null && _currentJpeg == null) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            } else if (snapshot.data != null) {
-                              _currentJpeg =
-                                  _applyFilterOnBytes(snapshot.data!.bytes);
-                            }
-                            return ImageAnalysisPreview(
-                              currentJpeg: _currentJpeg!,
-                              width: image.width.toDouble(),
-                              height: image.height.toDouble(),
-                            );
-                          });
-                    }, bgra8888: (image) {
-                      // TODO Native conversion might be more efficient, but it's not implemented yet
-                      // image.toJpeg(quality: 70);
-                      _currentJpeg = _applyFilterOnImage(
-                        imglib.Image.fromBytes(
-                          width: image.width,
-                          height: image.height,
-                          bytes: image.planes[0].bytes.buffer,
-                          order: imglib.ChannelOrder.bgra,
-                        ),
-                      );
-
-                      return ImageAnalysisPreview(
-                        currentJpeg: _currentJpeg!,
-                        width: image.width.toDouble(),
-                        height: image.height.toDouble(),
-                      );
-                    }) ??
-                    Container(
-                      color: Colors.red,
-                      child: const Center(
-                        child: Text("Format unsupported or conversion failed"),
-                      ),
+                    return ImageAnalysisPreview(
+                      currentJpeg: _currentJpeg!,
+                      width: image.width.toDouble(),
+                      height: image.height.toDouble(),
                     );
-              },
-            ),
+                  }) ??
+                  Container(
+                    color: Colors.red,
+                    child: const Center(
+                      child: Text("Format unsupported or conversion failed"),
+                    ),
+                  );
+            },
           ),
         ),
         SizedBox(
@@ -367,11 +321,8 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
     );
   }
 
-  Uint8List? _applyFilterOnBytes(Uint8List bytes) {
-    return imglib.encodeJpg(
-      _filter.applyFilter(imglib.decodeJpg(bytes)!),
-      quality: 70,
-    );
+  Uint8List _applyFilterOnBytes(Uint8List bytes) {
+    return _applyFilterOnImage(imglib.decodeJpg(bytes)!);
   }
 
   Uint8List _applyFilterOnImage(imglib.Image image) {
@@ -399,7 +350,7 @@ class ImageAnalysisPreview extends StatelessWidget {
     return Container(
       color: Colors.black,
       child: Transform.scale(
-        scaleX: -1,
+        scaleX: Platform.isAndroid ? -1 : null,
         child: Transform.rotate(
           angle: 3 / 2 * pi,
           child: SizedBox.expand(

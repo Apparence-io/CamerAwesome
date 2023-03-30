@@ -28,29 +28,22 @@ MLKit is now ready, let's setup CamerAwesome.
 
 ``` dart
 // 1.
-CameraAwesomeBuilder.awesome(
+CameraAwesomeBuilder.previewOnly(
   // 2.
-  saveConfig: SaveConfig.photoAndVideo(
-    photoPathBuilder: () => _path(CaptureMode.photo),
-    videoPathBuilder: () => _path(CaptureMode.video),
-    initialCaptureMode: CaptureMode.photo,
-  ),
-  // 3.
-  onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
-  // 4.
   previewFit: CameraPreviewFit.contain,
   aspectRatio: CameraAspectRatios.ratio_1_1,
   sensor: Sensors.front,
-  // 5.
-  onImageForAnalysis: (AnalysisImage img) => _analyzeImage(img),
-  // 6.
+  // 3.
+  onImageForAnalysis: (img) => _analyzeImage(img),
+  // 4.
   imageAnalysisConfig: AnalysisConfig(
-    outputFormat: InputAnalysisImageFormat.nv21,
-    width: 250,
-    maxFramesPerSecond: 12,
+    androidOptions: const AndroidAnalysisOptions.nv21(
+      width: 250,
+    ),
+    maxFramesPerSecond: 20,
   ),
-  // 7.
-  previewDecoratorBuilder: (state, previewSize, previewRect) {
+  // 5.
+  builder: (state, previewSize, previewRect) {
     return _MyPreviewDecoratorWidget(
       cameraState: state,
       faceDetectionStream: _faceDetectionController,
@@ -61,15 +54,11 @@ CameraAwesomeBuilder.awesome(
 )
 ```
 
-1. In the barcodes scanner example, we used the `custom()` constructor of `CameraAwesomeBuilder` because we wanted a special UI.
-Here, we just wanted to draw face contours above the preview and keep the built-in UI of CamerAwesome, so we used `awesome()` instead.
-2. `CameraAwesomeBuilder` always needs a `SaveConfig` to determine where to save pictures and videos.
-3. When using `awesome()` constructor, you must tell how to react to taps on the last media's preview. Here, we just open the file.
-4. (Optional) Next arguments determine that we want an aspect ratio of 1:1 that is contained in the screen (CameraPreviewFit.contain) and that the starting sensor is the front one.
-5. ```onImageForAnalysis``` is called whenever a new ImageAnalysis is available. That's where you might want to try to detect faces.
-6. Provide your ```AnalysisConfig```. You don't need an high resolution to detect faces and will be much faster with a low resolution. For good performances, we also set maxFramesPerSecond to 12.
-7. Draw your UI on top of the camera preview thanks to `previewDecoratorBuilder`. If you want to draw above the preview, `previewSize` and `previewRect` will be useful.
-> Note that with `CameraAwesomeBuilder.custom()` you don't have a `previewDecoratorBuilder`. Use the `builder` property instead.
+1. In this example, we just want to draw face contours above the preview. There is no need for other elements in the UI, so we use the `previewOnly()` constructor.
+2. (Optional) Next arguments determine that we want an aspect ratio of 1:1 that is contained in the screen (CameraPreviewFit.contain) and that the starting sensor is the front one.
+3. ```onImageForAnalysis``` is called whenever a new `AnalysisImage` is available. That's where you might want to try to detect faces.
+4. Provide your ```AnalysisConfig```. You don't need an high resolution to detect faces and it will be much faster with a low resolution. For good performances, we also set maxFramesPerSecond to 20.
+7. Draw your UI in the `builder`. If you want to draw above the preview, `previewSize` and `previewRect` will be useful.
 
 Now let's see how the face detection is done.
 
@@ -77,67 +66,93 @@ Now let's see how the face detection is done.
 ### Detecting faces in an AnalysisImage
 
 Most complicated part of the detection is to convert an `AnalysisImage` to an `InputImage`.
-Let's see how it's done in the face detection example:
+To do that, we've created an extension function in the example project:
+```dart
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
+extension MLKitUtils on AnalysisImage {
+  InputImage toInputImage() {
+    // 1.
+    final planeData =
+        when(nv21: (img) => img.planes, bgra8888: (img) => img.planes)?.map(
+      (plane) {
+        return InputImagePlaneMetadata(
+          bytesPerRow: plane.bytesPerRow,
+          height: height,
+          width: width,
+        );
+      },
+    ).toList();
+
+    // 2.
+    return when(nv21: (image) {
+      // 3.
+      return InputImage.fromBytes(
+        bytes: image.bytes,
+        inputImageData: InputImageData(
+          imageRotation: inputImageRotation,
+          inputImageFormat: InputImageFormat.nv21,
+          planeData: planeData,
+          size: image.size,
+        ),
+      );
+    }, bgra8888: (image) {
+      // 4. 
+      final inputImageData = InputImageData(
+        size: size,
+        imageRotation: inputImageRotation,
+        inputImageFormat: inputImageFormat,
+        planeData: planeData,
+      );
+
+      // 5.
+      return InputImage.fromBytes(
+        bytes: image.bytes,
+        inputImageData: inputImageData,
+      );
+    })!;
+  }
+
+  InputImageRotation get inputImageRotation =>
+      InputImageRotation.values.byName(rotation.name);
+
+  InputImageFormat get inputImageFormat {
+    switch (format) {
+      case InputAnalysisImageFormat.bgra8888:
+        return InputImageFormat.bgra8888;
+      case InputAnalysisImageFormat.nv21:
+        return InputImageFormat.nv21;
+      default:
+        return InputImageFormat.yuv420;
+    }
+  }
+}
+```
+
+Let's break down the above code:
+1. Get the planes from the `AnalysisImage` and map them to `InputImagePlaneMetadata`.
+2. Use the `when()` function to handle both Android and iOS cases.
+3. Convert the `Nv21Image` to MLKit's `InputImage`
+4. Define the `InputImageData` for the `InputImage` on iOS.
+5. Convert the `Bgra8888Image` to MLKit's `InputImage` thanks to `InputImageData`.
+
+
+Thanks to this extension function, we can now easily convert an `AnalysisImage` to an `InputImage` and use it to detect faces:
 ``` dart
 Future _analyzeImage(AnalysisImage img) async {
   // 1.
-  final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
-
-  final InputImageRotation imageRotation =
-      InputImageRotation.values.byName(img.rotation.name);
-
-  final planeData = img.planes.map(
-    (ImagePlane plane) {
-      return InputImagePlaneMetadata(
-        bytesPerRow: plane.bytesPerRow,
-        height: plane.height,
-        width: plane.width,
-      );
-    },
-  ).toList();
-
-  final InputImage inputImage;
-  // 2.
-  if (Platform.isIOS) {
-    final inputImageData = InputImageData(
-      size: imageSize,
-      imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
-      inputImageFormat: inputImageFormat(img.format),
-      planeData: planeData,
-    );
-
-    // 3.
-    final WriteBuffer allBytes = WriteBuffer();
-    for (final ImagePlane plane in img.planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
-    final bytes = allBytes.done().buffer.asUint8List();
-
-    inputImage =
-        InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-  } else {
-    // 4.
-    inputImage = InputImage.fromBytes(
-      bytes: img.nv21Image!,
-      inputImageData: InputImageData(
-        imageRotation: imageRotation,
-        inputImageFormat: InputImageFormat.nv21,
-        planeData: planeData,
-        size: Size(img.width.toDouble(), img.height.toDouble()),
-      ),
-    );
-  }
+  final inputImage = img.toInputImage();
 
   try {
-    // 5.
+    // 2.
     _faceDetectionController.add(
       FaceDetectionModel(
         faces: await faceDetector.processImage(inputImage),
         absoluteImageSize: inputImage.inputImageData!.size,
         rotation: 0,
-        imageRotation: imageRotation,
-        cropRect: img.cropRect,
+        imageRotation: img.inputImageRotation,
+        croppedSize: img.croppedSize,
       ),
     );
   } catch (error) {
@@ -145,14 +160,12 @@ Future _analyzeImage(AnalysisImage img) async {
   }
 }
 ```
-Let's break down above method:
-1. Get image size, rotation and planes.
-2. Obtain an `InputImage`. Note that the way to do it depends on which platform you are since image formats are not the same.
-3. **iOS** - Combine the planes to bytes to get your `InputImage`.
-4. **Android** - Directly use the `nv21Image` bytes to get an `InputImage`.
-5. Now that you have an `InputImage`, give it to MLKit's `FaceDetector` to eventually detect faces. Next, wrap these in a model that is added to a stream.
 
-The result of the face detection will be handled by a StreamBuilder: each time a new result is emitted, the UI will be updated with this result.
+This code snippet is quite short:
+1. Use our extension function to convert `AnalysisImage` to `InputImage`.
+2. Give the `InputImage` to MLKit's `FaceDetector` to eventually detect faces. Next, wrap these in a model that is added to a stream.
+
+The result of the face detection will be handled by a `StreamBuilder`: each time a new result is emitted, the UI will be updated with this result.
 
 
 ### Drawing face contours

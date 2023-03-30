@@ -1,0 +1,82 @@
+# Image analysis configuration
+
+CamerAwesome providess a stream of images that you can use to make image analysis.
+
+The stream differ slightly between depending on the platform:
+
+- on **Android**, it is provided by the imageAnalysis use case of CameraX. It may be different that what you see on the camera preview (lower resolution, different aspect ratio, image not mirrored for front camera).
+- on **iOS**, the image analysis stream and the preview come from the same source. In order to not struggle too much with performance, this mode will reduce preview resolution to be able to make analysis on each image.
+
+Image analysis implies a lot of calculations, even if you make them with a package like MLKit.
+Most of the time, your analysis can be done with a low resolution image and it will be much easier to do.
+
+Note also that trying to analyze too much images at the same time might have unexpected behaviours.
+
+In order to deal with these issues, you can provide your own `AnalysisConfig`:
+
+```dart
+CameraAwesomeBuilder.awesome(
+    // Other parameters...
+    onImageForAnalysis: (AnalysisImage img) {
+        // Handle image analysis
+    },
+    imageAnalysisConfig: AnalysisConfig(
+        // 1.
+        androidOptions: const AndroidAnalysisOptions.nv21(
+            width: 250,
+        ),
+        // 2.
+        autoStart: true,
+        // 3.
+        cupertinoOptions: const CupertinoAnalysisOptions.bgra8888(),
+        // 4.
+        maxFramesPerSecond: 20,
+    ),
+)
+```
+
+Here is an explanation of the above settings:
+
+1. `androidOptions` is the Android specific configuration used for image analysis, with a given format (as its `nv21()` constructor suggests) and a target `width`.
+2. `autoStart` is a boolean that tells if the image analysis should start immediately or not. If it is `false`, you will have to start it manually by calling `analysisController.start()` (see below).
+3. `cupertinoOptions`is the iOS specific configuration for image analysis. It only supports BGRA_8888 and the resolution is not configurable.
+4. `maxFramesPerSecond` is the maximum number of images sent for analysis per second. If you set it to `null`, it will send as much images as possible.
+
+This configuration is done to detect faces. `width` and `maxFramesPerSecond` are quite low to get good performances.
+
+## Doing video recording and image analysis at the same time
+
+⚠️ On Android, some devices don't support video recording and image analysis at the same time.
+
+- If they don't, image analysis will be ignored.
+- You can check if a device has this capability by using `CameraCharacteristics .isVideoRecordingAndImageAnalysisSupported(Sensors.back)`.
+
+You can find more details about this in the [official documentation](https://developer.android.com/training/camerax/architecture) of CameraX.
+
+## Starting and stopping image analysis manually
+
+You can access the `analysisController` from a `CameraState`.
+
+| AnalysisController method and parameters | Description                                                                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| enabled                                  | Toggle to determine if image analysis is enabled or not. An image analysis must have been set or it will return false |
+| start()                                  | Start image analysis. Your callback will be called with the new images provided for analysis.                         |
+| stop()                                   | Stop image analysis.                                                                                                  |
+
+You can `start()` and `stop()` image analysis as many times as you want.
+
+> An alternative way to stop doing image analysis is to do nothing in your callback when you don't want to analyze anymore.
+> However, images are still retrieved on the native side, converted and transferred to Dart, making it very inefficient.
+> We recommend you to stop analysis if you don't want to analyze anything by calling `analysisController.stop()`.
+
+After having configured your image analysis, you can start making the actual analysis thanks to `onImageForAnalysis`.
+
+The `example` folder contains three examples using MLKit:
+
+- `ai_analysis_barcode.dart` reads barcodes, with ability to pause and resume image analysis
+- `preview_overlay_example.dart` draws a rect around the detected barcode and detects if it's within an area
+- `ai_analysis_faces.dart` detects if there is a face on the camera feed and draws its contours when there is one
+
+A detailed explanation of each example is available in [Reading barcodes](/image_analysis/reading_barcodes) and [Detecting faces](/image_analysis/detecting_faces).
+
+See also details on the [AnalysisImage format and conversions](/image_analysis/image_format_conversions).
