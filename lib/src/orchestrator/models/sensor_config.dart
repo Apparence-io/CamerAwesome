@@ -3,8 +3,6 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
 class SensorConfig {
@@ -47,7 +45,6 @@ class SensorConfig {
     required this.sensors,
     FlashMode flash = FlashMode.none,
     bool mirrorFrontCamera = false,
-    SensorType type = SensorType.wideAngle,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
 
     /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)
@@ -60,7 +57,8 @@ class SensorConfig {
         BehaviorSubject<bool>.seeded(mirrorFrontCamera);
     mirrorFrontCamera$ = _mirrorFrontCameraController.stream;
 
-    _sensorTypeController = BehaviorSubject<SensorType>.seeded(type);
+    _sensorTypeController = BehaviorSubject<SensorType>.seeded(
+        sensors.first?.type ?? SensorType.wideAngle);
     sensorType$ = _sensorTypeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);

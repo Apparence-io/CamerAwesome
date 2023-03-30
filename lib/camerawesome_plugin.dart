@@ -336,7 +336,7 @@ class CamerawesomePlugin {
               : PigeonSensorPosition.unknown,
           deviceId: e?.deviceId,
           type: e?.type?.name != null
-              ? PigeonSensorType.values.byName(e!.position!.name)
+              ? PigeonSensorType.values.byName(e!.type!.name)
               : PigeonSensorType.unknown,
         );
       }).toList(),

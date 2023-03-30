@@ -141,16 +141,16 @@
   AVCaptureInputPort *port = [[cameraDevice.deviceInput portsWithMediaType:AVMediaTypeVideo
                                                           sourceDeviceType:device.deviceType
                                                       sourceDevicePosition:device.position] firstObject];
-  AVCaptureConnection *connection = [[AVCaptureConnection alloc] initWithInputPorts:@[port] output:cameraDevice.videoDataOutput];
+  cameraDevice.captureConnection = [[AVCaptureConnection alloc] initWithInputPorts:@[port] output:cameraDevice.videoDataOutput];
   
-  if (![self.cameraSession canAddConnection:connection]) {
+  if (![self.cameraSession canAddConnection:cameraDevice.captureConnection]) {
     return NO;
   }
-  [self.cameraSession addConnection:connection];
+  [self.cameraSession addConnection:cameraDevice.captureConnection];
   
-  [connection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-  [connection setAutomaticallyAdjustsVideoMirroring:NO];
-  [connection setVideoMirrored:sensor.position == PigeonSensorPositionFront];
+  [cameraDevice.captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+  [cameraDevice.captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+  [cameraDevice.captureConnection setVideoMirrored:sensor.position == PigeonSensorPositionFront];
   
   cameraDevice.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSessionWithNoConnection:self.cameraSession];
   AVCaptureConnection *frontPreviewLayerConnection = [[AVCaptureConnection alloc] initWithInputPort:port videoPreviewLayer:cameraDevice.previewLayer];

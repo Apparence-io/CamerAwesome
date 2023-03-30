@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/widgets/preview/awesome_camera_floating_preview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -63,6 +64,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   Size? _previousCroppedSize;
   Size? _croppedSize;
+
+  // TODO: fetch this value from the native side
+  final int kMaximumSupportedFloatingPreview = 3;
 
   @override
   void initState() {
@@ -340,29 +344,21 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   List<Widget> _buildPreviewTextures() {
     final previewFrames = <Widget>[];
 
-    if (_textures.length < 2) {
+    // if there is only one texture
+    if (_textures.length <= 1) {
       return previewFrames;
     }
 
     for (int i = 1; i < _textures.length; i++) {
+      if (i >= kMaximumSupportedFloatingPreview) {
+        break;
+      }
+
       final texture = _textures[i];
 
-      final frame = Positioned(
-        top: 140 + (i - 1) * 20,
-        right: 30 + (i - 1) * 20,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: SizedBox(
-            height: 200,
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 9 / 16,
-                child: texture,
-              ),
-            ),
-            // child: frontPreviewTexture,
-          ),
-        ),
+      final frame = AwesomeCameraFloatingPreview(
+        index: i,
+        texture: texture,
       );
       previewFrames.add(frame);
     }
