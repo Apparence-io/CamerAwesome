@@ -54,32 +54,42 @@ abstract class CameraState {
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
   Future<void> switchCameraSensor({
-    int cameraPosition = 0,
     CameraAspectRatios? aspectRatio,
     double? zoom,
     FlashMode? flash,
     SensorType? type,
   }) async {
     final previous = cameraContext.sensorConfig;
-    int sensorIndex = 0;
-    final next = SensorConfig(
-      sensors: previous.sensors.map((sensor) {
-        if (sensorIndex == cameraPosition && sensor != null) {
-          if (sensor.position == SensorPosition.back) {
-            sensor.position = SensorPosition.front;
-          } else {
-            sensor.position = SensorPosition.back;
+
+    SensorConfig next;
+    if (previous.sensors.length <= 1) {
+      next = SensorConfig(
+        sensors: previous.sensors.map((sensor) {
+          // find the correct sensor according the position
+          if (sensor != null) {
+            if (sensor.position == SensorPosition.back) {
+              sensor.position = SensorPosition.front;
+            } else {
+              sensor.position = SensorPosition.back;
+            }
+
+            sensor.type = null;
+            sensor.deviceId = null;
           }
 
-          if (type != null) {
-            sensor.type = type;
-          }
-        }
-
-        sensorIndex++;
-        return sensor;
-      }).toList(),
-    );
+          return sensor;
+        }).toList(),
+      );
+    } else {
+      // switch all camera position in array by one like this:
+      // old: [front, telephoto, wide]
+      // new : [wide, front, telephoto]
+      final newSensorsCopy = [...previous.sensors];
+      next = SensorConfig(
+        sensors: newSensorsCopy
+          ..insert(0, newSensorsCopy.removeAt(newSensorsCopy.length - 1)),
+      );
+    }
     await cameraContext.setSensorConfig(next);
 
     if (aspectRatio != null) {

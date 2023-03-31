@@ -53,15 +53,15 @@ class _CameraPageState extends State<CameraPage> {
                   videoPathBuilder: () => path(CaptureMode.video),
                   initialCaptureMode: CaptureMode.photo,
                 ),
-                sensors: [
-                  Sensor.position(SensorPosition.front),
-                  Sensor.position(SensorPosition.back),
-                  Sensor.type(SensorType.telephoto),
-                  Sensor.type(SensorType.ultraWideAngle),
-                ],
-                // sensors: sensorDeviceData!.sensors
-                //     .map((e) => Sensor.id(e!.uid))
-                //     .toList(),
+                // sensors: [
+                //   Sensor.position(SensorPosition.front),
+                //   Sensor.position(SensorPosition.back),
+                //   Sensor.type(SensorType.telephoto),
+                //   // Sensor.type(SensorType.ultraWideAngle),
+                // ],
+                sensors: sensorDeviceData!.availableSensors
+                    .map((e) => Sensor.id(e.uid))
+                    .toList(),
                 flashMode: FlashMode.auto,
                 aspectRatio: CameraAspectRatios.ratio_16_9,
                 previewFit: CameraPreviewFit.fitWidth,
