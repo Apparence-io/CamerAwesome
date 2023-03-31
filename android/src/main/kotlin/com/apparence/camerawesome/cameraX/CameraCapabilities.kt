@@ -15,12 +15,6 @@ class CameraCapabilities {
             cameraSelector: CameraSelector,
             cameraProvider: ProcessCameraProvider
         ): Int {
-            Log.d("___---___---_", "getCameraLevel: ${
-                cameraSelector.filter(cameraProvider.availableCameraInfos).firstOrNull()
-                    ?.let { Camera2CameraInfo.from(it) }
-                    ?.getCameraCharacteristic(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL)
-                    ?: CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED
-            }")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 return cameraSelector.filter(cameraProvider.availableCameraInfos).firstOrNull()
                     ?.let { Camera2CameraInfo.from(it) }

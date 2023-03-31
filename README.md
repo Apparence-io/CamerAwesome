@@ -110,11 +110,19 @@ Change the minimum SDK version to 21 (or higher) in `android/app/build.gradle`:
 minSdkVersion 21
 ```
 
+In order to be able to take pictures or record videos, you may need additional permissions depending
+on the Android version and where you want to save them.
+Read more about it in
+the [official documentation](https://developer.android.com/training/data-storage).
+> `WRITE_EXTERNAL_STORAGE` is not included in the plugin starting with version 1.4.0.
+
+
 If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ```xml
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.example.yourpackage">
+        package="com.example.yourpackage">
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
   <!-- Other declarations -->

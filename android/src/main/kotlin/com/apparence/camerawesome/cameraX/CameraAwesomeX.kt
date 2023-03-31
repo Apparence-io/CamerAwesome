@@ -232,7 +232,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     ) {
         val cameraSelector =
             if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
-        Log.d("CameraAwesomeX", "isVideoRecordingAndImageAnalysisSupported: ${cameraSelector}")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val cameraProvider = ProcessCameraProvider.getInstance(
@@ -247,10 +246,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 )
             )
         } else {
-            Log.d(
-                "CameraAwesomeX",
-                "isVideoRecordingAndImageAnalysisSupported: not supported (SDK < 24)"
-            )
             callback(Result.success(false))
         }
 
@@ -349,17 +344,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
-
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.imageCapture!!.takePicture(outputFileOptions,
             ContextCompat.getMainExecutor(activity!!),
             object : ImageCapture.OnImageSavedCallback {
 
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Log.d(
-                        CamerawesomePlugin.TAG,
-                        "Success capturing picture ${outputFileResults.savedUri}, with location: ${exifPreferences.saveGPSLocation}"
-                    )
                     if (colorMatrix != null && noneFilter != colorMatrix) {
                         val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
 
