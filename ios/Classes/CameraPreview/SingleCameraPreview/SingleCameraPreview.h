@@ -31,7 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CameraPreview : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate,
+@interface SingleCameraPreview : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate,
 AVCaptureAudioDataOutputSampleBufferDelegate>
 
 // TODO: move this to a single camera ?
@@ -72,10 +72,10 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                        dispatchQueue:(dispatch_queue_t)dispatchQueue;
-- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
 - (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink;
+- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCameraPresset:(CGSize)currentPreviewSize;
@@ -93,7 +93,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)dispose;
-// - (NSArray *)getSensors:(AVCaptureDevicePosition)position;
 - (void)setSensor:(PigeonSensor *)sensor;
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
