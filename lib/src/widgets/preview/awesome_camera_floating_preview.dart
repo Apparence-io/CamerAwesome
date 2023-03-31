@@ -18,7 +18,7 @@ class AwesomeCameraFloatingPreview extends StatefulWidget {
 class _AwesomeCameraFloatingPreviewState
     extends State<AwesomeCameraFloatingPreview> {
   Offset? _position;
-  
+
   @override
   void initState() {
     super.initState();
