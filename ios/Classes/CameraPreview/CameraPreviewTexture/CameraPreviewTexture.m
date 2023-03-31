@@ -40,4 +40,10 @@
   return pixelBuffer;
 }
 
+- (void)dealloc {
+  if (self.latestPixelBuffer) {
+    CFRelease(self.latestPixelBuffer);
+  }
+}
+
 @end

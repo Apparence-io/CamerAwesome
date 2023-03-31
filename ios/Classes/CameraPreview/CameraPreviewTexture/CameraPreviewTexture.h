@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 - (void)updateBuffer:(CMSampleBufferRef)sampleBuffer;
+- (void)dealloc;
 
 @property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
 
