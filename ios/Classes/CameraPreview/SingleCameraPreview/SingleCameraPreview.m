@@ -5,9 +5,9 @@
 //  Created by Dimitri Dessus on 23/07/2020.
 //
 
-#import "CameraPreview.h"
+#import "SingleCameraPreview.h"
 
-@implementation CameraPreview {
+@implementation SingleCameraPreview {
   dispatch_queue_t _dispatchQueue;
 }
 
@@ -157,11 +157,7 @@
 }
 
 - (void)dealloc {
-  // TODO
-  //  if (_latestPixelBuffer) {
-  //    CFRelease(_latestPixelBuffer);
-  //  }
-  [_motionController startMotionDetection];
+  [self.motionController startMotionDetection];
 }
 
 /// Set camera preview size
