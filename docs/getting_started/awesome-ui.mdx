@@ -336,6 +336,10 @@ CameraAwesomeBuilder.awesome(
   ),
   // Enable audio when recording a video
   enableAudio: true,
+  // Clicking on volume buttons will capture photo/video depending on the current mode
+  enablePhysicalButton: true,
+  // Don't mirror the front camera
+  mirrorFrontCamera: false,
   // Show a progress indicator while loading the camera
   progressIndicator: const Center(
     child: SizedBox(
@@ -474,6 +478,7 @@ CameraAwesomeBuilder.awesome(
 | **aspectRatio**             | Initial aspect ratio of photos and videos taken                                                                                                       |
 | **bottomActionsBuilder**    | A widget builder used to show buttons on the bottom of the preview.<br/>`AwesomeBottomActions` by default.                                            |
 | **enableAudio**             | Activate audio by default (only for video mode)                                                                                                       |
+| **enablePhysicalButton**    | When set to true, volume buttons will capture pictures/videos depending on the current mode.                                                          |
 | **exifPreferences**         | Activate or deactivate location in photo exif                                                                                                         |
 | **filter**                  | Initial preview filter which will be applied to the photo                                                                                             |
 | **flashMode**               | The initial flash mode                                                                                                                                |
