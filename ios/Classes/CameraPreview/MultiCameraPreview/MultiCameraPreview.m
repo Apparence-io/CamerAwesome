@@ -9,7 +9,8 @@
 
 @implementation MultiCameraPreview
 
-- (instancetype)initWithSensors:(NSArray<PigeonSensor *> *)sensors mirrorFrontCamera:(BOOL)mirrorFrontCamera
+- (instancetype)initWithSensors:(NSArray<PigeonSensor *> *)sensors
+              mirrorFrontCamera:(BOOL)mirrorFrontCamera
            enablePhysicalButton:(BOOL)enablePhysicalButton
                 aspectRatioMode:(AspectRatio)aspectRatioMode
                     captureMode:(CaptureModes)captureMode
@@ -20,7 +21,11 @@
     _textures = [NSMutableArray new];
     _devices = [NSMutableArray new];
     
+    _aspectRatio = aspectRatioMode;
+    _mirrorFrontCamera = mirrorFrontCamera;
+    
     _motionController = [[MotionController alloc] init];
+    _locationController = [[LocationController alloc] init];
     _physicalButtonController = [[PhysicalButtonController alloc] init];
     
     if (enablePhysicalButton) {
@@ -29,7 +34,7 @@
     
     [_motionController startMotionDetection];
     
-    [self configSession:sensors];
+    [self configInitialSession:sensors];
   }
   
   return self;
@@ -59,40 +64,174 @@
 }
 
 - (void)cleanSession {
-  for (AVCaptureInput *input in [_cameraSession inputs]) {
-    [self.cameraSession removeInput:input];
+  [self.cameraSession beginConfiguration];
+  
+  for (CameraDeviceInfo *camera in self.devices) {
+    [self.cameraSession removeConnection:camera.captureConnection];
+    [self.cameraSession removeInput:camera.deviceInput];
+    [self.cameraSession removeOutput:camera.videoDataOutput];
   }
   
-  for (AVCaptureOutput *output in [_cameraSession outputs]) {
-    [self.cameraSession removeOutput:output];
-  }
-  
-  for (AVCaptureConnection *connection in [_cameraSession connections]) {
-    [self.cameraSession removeConnection:connection];
-  }
-  
-  [self.textures removeAllObjects];
   [self.devices removeAllObjects];
-  
-  _cameraSession = nil;
 }
 
-- (void)configSession:(NSArray<PigeonSensor *> *)sensors {
+// Get max zoom level
+- (CGFloat)getMaxZoom {
+  CGFloat maxZoom = self.devices.firstObject.device.activeFormat.videoMaxZoomFactor;
+  // Not sure why on iPhone 14 Pro, zoom at 90 not working, so let's block to 50 which is very high
+  return maxZoom > 50.0 ? 50.0 : maxZoom;
+}
+
+/// Set zoom level
+- (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  AVCaptureDevice *mainDevice = self.devices.firstObject.device;
+  
+  CGFloat maxZoom = [self getMaxZoom];
+  CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
+  
+  NSError *zoomError;
+  if ([mainDevice lockForConfiguration:&zoomError]) {
+    mainDevice.videoZoomFactor = scaledZoom;
+    [mainDevice unlockForConfiguration];
+  } else {
+    *error = [FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[zoomError localizedDescription]];
+  }
+}
+
+- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  AVCaptureDevice *mainDevice = self.devices.firstObject.device;
+  NSError *lockError;
+  if ([mainDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] && [mainDevice isFocusPointOfInterestSupported]) {
+    if ([mainDevice lockForConfiguration:&lockError]) {
+      if (lockError != nil) {
+        *error = [FlutterError errorWithCode:@"FOCUS_ERROR" message:@"impossible to set focus point" details:@""];
+        return;
+      }
+      
+      [mainDevice setFocusPointOfInterest:position];
+      [mainDevice setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
+      
+      [mainDevice unlockForConfiguration];
+    }
+  }
+}
+
+- (void)setExifPreferencesGPSLocation:(bool)gpsLocation completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
+  _saveGPSLocation = gpsLocation;
+  
+  if (_saveGPSLocation) {
+    [_locationController requestWhenInUseAuthorizationOnGranted:^{
+      completion(@(YES), nil);
+    } declined:^{
+      completion(@(NO), nil);
+    }];
+  } else {
+    completion(@(YES), nil);
+  }
+}
+
+- (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  _mirrorFrontCamera = value;
+}
+
+- (void)setBrightness:(NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  AVCaptureDevice *mainDevice = self.devices.firstObject.device;
+  NSError *brightnessError = nil;
+  if ([mainDevice lockForConfiguration:&brightnessError]) {
+    AVCaptureExposureMode exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+    if ([mainDevice isExposureModeSupported:exposureMode]) {
+      [mainDevice setExposureMode:exposureMode];
+    }
+    
+    CGFloat minExposureTargetBias = mainDevice.minExposureTargetBias;
+    CGFloat maxExposureTargetBias = mainDevice.maxExposureTargetBias;
+    
+    CGFloat exposureTargetBias = minExposureTargetBias + (maxExposureTargetBias - minExposureTargetBias) * [brightness floatValue];
+    exposureTargetBias = MAX(minExposureTargetBias, MIN(maxExposureTargetBias, exposureTargetBias));
+    
+    [mainDevice setExposureTargetBias:exposureTargetBias completionHandler:nil];
+    [mainDevice unlockForConfiguration];
+  } else {
+    *error = [FlutterError errorWithCode:@"BRIGHTNESS_NOT_SET" message:@"can't set the brightness value" details:[brightnessError localizedDescription]];
+  }
+}
+
+/// Set flash mode
+- (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  AVCaptureDevice *mainDevice = self.devices.firstObject.device;
+  
+  if (![mainDevice hasFlash]) {
+    *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"flash is not supported on this device" details:@""];
+    return;
+  }
+  
+  if (mainDevice.position == AVCaptureDevicePositionFront) {
+    *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""];
+    return;
+  }
+  
+  NSError *lockError;
+  [self.devices.firstObject.device lockForConfiguration:&lockError];
+  if (lockError != nil) {
+    *error = [FlutterError errorWithCode:@"FLASH_ERROR" message:@"impossible to change configuration" details:@""];
+    return;
+  }
+  
+  switch (flashMode) {
+    case None:
+      _torchMode = AVCaptureTorchModeOff;
+      _flashMode = AVCaptureFlashModeOff;
+      break;
+    case On:
+      _torchMode = AVCaptureTorchModeOff;
+      _flashMode = AVCaptureFlashModeOn;
+      break;
+    case Auto:
+      _torchMode = AVCaptureTorchModeAuto;
+      _flashMode = AVCaptureFlashModeAuto;
+      break;
+    case Always:
+      _torchMode = AVCaptureTorchModeOn;
+      _flashMode = AVCaptureFlashModeOn;
+      break;
+    default:
+      _torchMode = AVCaptureTorchModeAuto;
+      _flashMode = AVCaptureFlashModeAuto;
+      break;
+  }
+  
+  [mainDevice setTorchMode:_torchMode];
+  [mainDevice unlockForConfiguration];
+}
+
+- (void)refresh {
+  if ([self.cameraSession isRunning]) {
+    [self.cameraSession stopRunning];
+  }
+  [self.cameraSession startRunning];
+}
+
+- (void)configInitialSession:(NSArray<PigeonSensor *> *)sensors {  
+  self.cameraSession = [[AVCaptureMultiCamSession alloc] init];
+  
+  for (int i = 0; i < [sensors count]; i++) {
+    CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
+    [self.textures addObject:previewTexture];
+  }
+  
+  [self setSensors:sensors];
+  
+  [self.cameraSession commitConfiguration];
+}
+
+- (void)setSensors:(NSArray<PigeonSensor *> *)sensors {
   [self cleanSession];
   
   _sensors = sensors;
   
-  self.cameraSession = [[AVCaptureMultiCamSession alloc] init];
-  [self.cameraSession beginConfiguration];
-  
   for (int i = 0; i < [sensors count]; i++) {
     PigeonSensor *sensor = sensors[i];
-    
-    CameraPreviewTexture *previewTexture = [[CameraPreviewTexture alloc] init];
-    [_textures addObject:previewTexture];
-    
     [self addSensor:sensor withIndex:i];
-    [self.cameraSession commitConfiguration];
   }
   
   // Creating photo output
@@ -104,7 +243,7 @@
 }
 
 - (void)start {
-  [_cameraSession startRunning];
+  [self.cameraSession startRunning];
 }
 
 - (CGSize)getEffectivPreviewSize {
@@ -119,47 +258,42 @@
     return NO;
   }
   
+  NSError *error = nil;
+  AVCaptureDeviceInput *deviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
+  if (![self.cameraSession canAddInput:deviceInput]) {
+    return NO;
+  }
+  [self.cameraSession addInputWithNoConnections:deviceInput];
+  
+  AVCaptureVideoDataOutput *videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
+  videoDataOutput.videoSettings = @{(__bridge NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
+  [videoDataOutput setSampleBufferDelegate:self queue:self.dispatchQueue];
+  
+  if (![self.cameraSession canAddOutput:videoDataOutput]) {
+    return NO;
+  }
+  [self.cameraSession addOutputWithNoConnections:videoDataOutput];
+  
+  AVCaptureInputPort *port = [[deviceInput portsWithMediaType:AVMediaTypeVideo
+                                             sourceDeviceType:device.deviceType
+                                         sourceDevicePosition:device.position] firstObject];
+  AVCaptureConnection *captureConnection = [[AVCaptureConnection alloc] initWithInputPorts:@[port] output:videoDataOutput];
+  
+  if (![self.cameraSession canAddConnection:captureConnection]) {
+    return NO;
+  }
+  [self.cameraSession addConnection:captureConnection];
+  
+  [captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+  [captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+  [captureConnection setVideoMirrored:sensor.position == PigeonSensorPositionFront];
+  
   // move this all this in the cameradevice object
   CameraDeviceInfo *cameraDevice = [[CameraDeviceInfo alloc] init];
-  
-  NSError *error = nil;
-  cameraDevice.deviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:device error:&error];
-  if (![self.cameraSession canAddInput:cameraDevice.deviceInput]) {
-    return NO;
-  }
-  [self.cameraSession addInputWithNoConnections:cameraDevice.deviceInput];
-  
-  cameraDevice.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
-  cameraDevice.videoDataOutput.videoSettings = @{(__bridge NSString *)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)};
-  [cameraDevice.videoDataOutput setSampleBufferDelegate:self queue:self.dispatchQueue];
-  
-  if (![self.cameraSession canAddOutput:cameraDevice.videoDataOutput]) {
-    return NO;
-  }
-  [self.cameraSession addOutputWithNoConnections:cameraDevice.videoDataOutput];
-  
-  AVCaptureInputPort *port = [[cameraDevice.deviceInput portsWithMediaType:AVMediaTypeVideo
-                                                          sourceDeviceType:device.deviceType
-                                                      sourceDevicePosition:device.position] firstObject];
-  cameraDevice.captureConnection = [[AVCaptureConnection alloc] initWithInputPorts:@[port] output:cameraDevice.videoDataOutput];
-  
-  if (![self.cameraSession canAddConnection:cameraDevice.captureConnection]) {
-    return NO;
-  }
-  [self.cameraSession addConnection:cameraDevice.captureConnection];
-  
-  [cameraDevice.captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
-  [cameraDevice.captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  [cameraDevice.captureConnection setVideoMirrored:sensor.position == PigeonSensorPositionFront];
-  
-  cameraDevice.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSessionWithNoConnection:self.cameraSession];
-  AVCaptureConnection *frontPreviewLayerConnection = [[AVCaptureConnection alloc] initWithInputPort:port videoPreviewLayer:cameraDevice.previewLayer];
-  [frontPreviewLayerConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  [frontPreviewLayerConnection setVideoMirrored:YES];
-  cameraDevice.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-  if (![self.cameraSession canAddConnection:frontPreviewLayerConnection]) {
-    return NO;
-  }
+  cameraDevice.captureConnection = captureConnection;
+  cameraDevice.deviceInput = deviceInput;
+  cameraDevice.videoDataOutput = videoDataOutput;
+  cameraDevice.device = device;
   
   [_devices addObject:cameraDevice];
   
@@ -174,10 +308,9 @@
   
   // TODO: add dual & triple camera
   NSArray<AVCaptureDevice *> *devices = [[NSArray alloc] init];
-  AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                                                       discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, ]
-                                                       mediaType:AVMediaTypeVideo
-                                                       position:AVCaptureDevicePositionUnspecified];
+  AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:@[ AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, ]
+                                                                                                             mediaType:AVMediaTypeVideo
+                                                                                                              position:AVCaptureDevicePositionUnspecified];
   devices = discoverySession.devices;
   
   for (AVCaptureDevice *device in devices) {
@@ -196,22 +329,12 @@
   return nil;
 }
 
-- (void)setExifPreferencesGPSLocation:(bool)gpsLocation completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
-  _saveGPSLocation = gpsLocation;
-  
-  if (_saveGPSLocation) {
-    [_locationController requestWhenInUseAuthorizationOnGranted:^{
-      completion(@(YES), nil);
-    } declined:^{
-      completion(@(NO), nil);
-    }];
-  } else {
-    completion(@(YES), nil);
-  }
-}
-
 - (void)setAspectRatio:(AspectRatio)ratio {
   _aspectRatio = ratio;
+}
+
+- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  // TODO:
 }
 
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
@@ -233,10 +356,6 @@
   
   [_capturePhotoOutput capturePhotoWithSettings:settings
                                        delegate:cameraPicture];
-}
-
-- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  // TODO:
 }
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {

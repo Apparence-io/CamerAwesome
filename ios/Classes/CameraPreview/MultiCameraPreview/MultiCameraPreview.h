@@ -32,6 +32,8 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property (nonatomic, strong) NSMutableArray<CameraDeviceInfo *> *devices;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
 @property(nonatomic, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
+@property(readonly, nonatomic) AVCaptureFlashMode flashMode;
+@property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) LocationController *locationController;
 @property(readonly, nonatomic) MotionController *motionController;
@@ -46,9 +48,17 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                 aspectRatioMode:(AspectRatio)aspectRatioMode
                     captureMode:(CaptureModes)captureMode
                   dispatchQueue:(dispatch_queue_t)dispatchQueue;
-- (void)configSession:(NSArray<PigeonSensor *> *)sensors;
+- (void)configInitialSession:(NSArray<PigeonSensor *> *)sensors;
+- (void)setSensors:(NSArray<PigeonSensor *> *)sensors;
+- (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)setBrightness:(NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
+- (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)start;
 - (void)stop;
+- (void)refresh;
+- (CGFloat)getMaxZoom;
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGSize)getEffectivPreviewSize;
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
