@@ -1,4 +1,6 @@
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
+import 'package:camerawesome/src/orchestrator/models/models.dart';
 
 typedef FilePathBuilder = Future<String> Function();
 
@@ -7,12 +9,14 @@ class SaveConfig {
   final FilePathBuilder? videoPathBuilder;
   final List<CaptureMode> captureModes;
   final CaptureMode initialCaptureMode;
+  final VideoOptions? videoOptions;
 
   SaveConfig._({
     this.photoPathBuilder,
     this.videoPathBuilder,
     required this.captureModes,
     required this.initialCaptureMode,
+    this.videoOptions,
   });
 
   /// You only want to take photos
@@ -24,11 +28,14 @@ class SaveConfig {
         );
 
   /// You only want to take videos
-  SaveConfig.video({required FilePathBuilder pathBuilder})
-      : this._(
+  SaveConfig.video({
+    required FilePathBuilder pathBuilder,
+    VideoOptions? videoOptions,
+  }) : this._(
           videoPathBuilder: pathBuilder,
           captureModes: [CaptureMode.video],
           initialCaptureMode: CaptureMode.video,
+          videoOptions: videoOptions,
         );
 
   /// You want to be able to take both photos and videos
@@ -36,18 +43,12 @@ class SaveConfig {
     required FilePathBuilder photoPathBuilder,
     required FilePathBuilder videoPathBuilder,
     CaptureMode initialCaptureMode = CaptureMode.photo,
+    VideoOptions? videoOptions,
   }) : this._(
-          photoPathBuilder: photoPathBuilder,
+    photoPathBuilder: photoPathBuilder,
           videoPathBuilder: videoPathBuilder,
           captureModes: [CaptureMode.photo, CaptureMode.video],
           initialCaptureMode: initialCaptureMode,
+          videoOptions: videoOptions,
         );
-
-  /// If you only want to show Camera preview and/or use image analysis
-  /// TODO: Not yet supported
-// SaveConfig.noCaptures()
-//     : this._(
-//         captureModes: [],
-//         initialCaptureMode: CaptureModes.PHOTO,
-//       );
 }
