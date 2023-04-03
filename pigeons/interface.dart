@@ -18,16 +18,64 @@ class ExifPreferences {
   ExifPreferences({required this.saveGPSLocation});
 }
 
-class VideoOptions {
-  String fileType;
-  String codec;
+/// Video recording quality, from [sd] to [uhd], with [highest] and [lowest] to
+/// let the device choose the best/worst quality available.
+/// [highest] is the default quality.
+///
+/// Qualities are defined like this:
+/// [sd] < [hd] < [fhd] < [uhd]
+enum VideoRecordingQuality {
+  lowest,
+  sd,
+  hd,
+  fhd,
+  uhd,
+  highest,
+}
 
-  // TODO might add the framerate as well https://stackoverflow.com/questions/57485050/how-to-increase-frame-rate-with-android-camerax-imageanalysis
-  // TODO Add video quality
+/// If the specified [VideoRecordingQuality] is not available on the device,
+/// the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
+/// [higher] is the default fallback strategy.
+enum QualityFallbackStrategy {
+  higher,
+  lower,
+}
 
-  VideoOptions({
+class AndroidVideoOptions {
+  /// The bitrate of the video recording. Only set it if a custom bitrate is
+  /// desired.
+  final int? bitrate;
+
+  /// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
+  final VideoRecordingQuality? quality;
+
+  final QualityFallbackStrategy? fallbackStrategy;
+
+  AndroidVideoOptions({
+    required this.bitrate,
+    required this.quality,
+    required this.fallbackStrategy,
+  });
+}
+
+class CupertinoVideoOptions {
+  final String fileType;
+  final String codec;
+
+  CupertinoVideoOptions({
     required this.fileType,
     required this.codec,
+  });
+}
+
+class VideoOptions {
+  // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
+  final AndroidVideoOptions? android;
+  final CupertinoVideoOptions? ios;
+
+  VideoOptions({
+    required this.android,
+    required this.ios,
   });
 }
 
@@ -235,6 +283,7 @@ abstract class CameraInterface {
     String captureMode,
     bool enableImageStream,
     ExifPreferences exifPreferences,
+    VideoOptions? videoOptions,
   );
 
   List<String> checkPermissions();
@@ -251,7 +300,7 @@ abstract class CameraInterface {
   bool takePhoto(String path);
 
   @async
-  void recordVideo(String path, VideoOptions? options);
+  void recordVideo(String path);
 
   void pauseVideoRecording();
 
@@ -316,7 +365,8 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
-    bool autoStart,);
+    bool autoStart,
+  );
 
   @async
   bool setExifPreferences(ExifPreferences exifPreferences);

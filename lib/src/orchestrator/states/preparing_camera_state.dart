@@ -187,6 +187,7 @@ class PreparingCameraState extends CameraState {
       enablePhysicalButton,
       captureMode: nextCaptureMode,
       exifPreferences: cameraContext.exifPreferences,
+      videoOptions: saveConfig?.videoOptions,
     );
     _isReady = true;
     return _isReady;

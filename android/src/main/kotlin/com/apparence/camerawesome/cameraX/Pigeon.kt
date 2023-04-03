@@ -37,21 +37,79 @@ private fun wrapError(exception: Throwable): List<Any?> {
  * @property message The error message.
  * @property details The error details. Must be a datatype supported by the api codec.
  */
-class FlutterError (
-  val code: String,
-  override val message: String? = null,
-  val details: Any? = null
+class FlutterError(
+    val code: String,
+    override val message: String? = null,
+    val details: Any? = null
 ) : Throwable()
 
+/**
+ * Video recording quality, from [sd] to [uhd], with [highest] and [lowest] to
+ * let the device choose the best/worst quality available.
+ * [highest] is the default quality.
+ *
+ * Qualities are defined like this:
+ * [sd] < [hd] < [fhd] < [uhd]
+ */
+enum class VideoRecordingQuality(val raw: Int) {
+    LOWEST(0),
+    SD(1),
+    HD(2),
+    FHD(3),
+    UHD(4),
+    HIGHEST(5);
+
+    companion object {
+        fun ofRaw(raw: Int): VideoRecordingQuality? {
+            return values().firstOrNull { it.raw == raw }
+        }
+    }
+}
+
+/**
+ * Video recording aspect ratio.
+ * If the specified [VideoRecordingAspectRatio] is not available on the device
+ * for the given [VideoRecordingQuality], an exception will be thrown.
+ * You can set [VideoRecordingAspectRatio.any] to avoir this exception.
+ */
+enum class VideoRecordingAspectRatio(val raw: Int) {
+    RATIO_4_3(0),
+    RATIO_16_9(1),
+    ANY(2);
+
+    companion object {
+        fun ofRaw(raw: Int): VideoRecordingAspectRatio? {
+            return values().firstOrNull { it.raw == raw }
+        }
+    }
+}
+
+/**
+ * If the specified [VideoRecordingQuality] is not available on the device,
+ * the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
+ * [higher] is the default fallback strategy.
+ */
+enum class QualityFallbackStrategy(val raw: Int) {
+    HIGHER(0),
+    LOWER(1);
+
+    companion object {
+        fun ofRaw(raw: Int): QualityFallbackStrategy? {
+            return values().firstOrNull { it.raw == raw }
+        }
+    }
+}
+
 enum class PigeonSensorType(val raw: Int) {
-  /**
-   * A built-in wide-angle camera.
-   *
-   * The wide angle sensor is the default sensor for iOS
-   */
-  WIDEANGLE(0),
-  /** A built-in camera with a shorter focal length than that of the wide-angle camera. */
-  ULTRAWIDEANGLE(1),
+    /**
+     * A built-in wide-angle camera.
+     *
+     * The wide angle sensor is the default sensor for iOS
+     */
+    WIDEANGLE(0),
+
+    /** A built-in camera with a shorter focal length than that of the wide-angle camera. */
+    ULTRAWIDEANGLE(1),
   /** A built-in camera device with a longer focal length than the wide-angle camera. */
   TELEPHOTO(2),
   /**
@@ -144,44 +202,108 @@ data class ExifPreferences (
       return ExifPreferences(saveGPSLocation)
     }
   }
-  fun toList(): List<Any?> {
-    return listOf<Any?>(
-      saveGPSLocation,
-    )
-  }
+
+    fun toList(): List<Any?> {
+        return listOf<Any?>(
+            saveGPSLocation,
+        )
+    }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class VideoOptions (
-  val fileType: String,
-  val codec: String
+data class AndroidVideoOptions(
+    /**
+     * The bitrate of the video recording. Only set it if a custom bitrate is
+     * desired.
+     */
+    val bitrate: Long? = null,
+    /** The quality of the video recording, defaults to [VideoRecordingQuality.highest]. */
+    val quality: VideoRecordingQuality? = null,
+    val fallbackStrategy: QualityFallbackStrategy? = null
 
 ) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): VideoOptions {
-      val fileType = list[0] as String
-      val codec = list[1] as String
-      return VideoOptions(fileType, codec)
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): AndroidVideoOptions {
+            val bitrate = list[0].let { if (it is Int) it.toLong() else it as Long? }
+            val quality: VideoRecordingQuality? = (list[1] as Int?)?.let {
+                VideoRecordingQuality.ofRaw(it)
+            }
+            val fallbackStrategy: QualityFallbackStrategy? = (list[2] as Int?)?.let {
+                QualityFallbackStrategy.ofRaw(it)
+            }
+            return AndroidVideoOptions(bitrate, quality, fallbackStrategy)
+        }
     }
-  }
-  fun toList(): List<Any?> {
-    return listOf<Any?>(
-      fileType,
-      codec,
-    )
-  }
+
+    fun toList(): List<Any?> {
+        return listOf<Any?>(
+            bitrate,
+            quality?.raw,
+            fallbackStrategy?.raw,
+        )
+    }
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
-data class PigeonSensorTypeDevice (
-  val sensorType: PigeonSensorType,
-  /** A localized device name for display in the user interface. */
-  val name: String,
-  /** The current exposure ISO value. */
-  val iso: Double,
-  /** A Boolean value that indicates whether the flash is currently available for use. */
-  val flashAvailable: Boolean,
+data class CupertinoVideoOptions(
+    val fileType: String,
+    val codec: String
+
+) {
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): CupertinoVideoOptions {
+            val fileType = list[0] as String
+            val codec = list[1] as String
+            return CupertinoVideoOptions(fileType, codec)
+        }
+    }
+
+    fun toList(): List<Any?> {
+        return listOf<Any?>(
+            fileType,
+            codec,
+        )
+    }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class VideoOptions(
+    val android: AndroidVideoOptions? = null,
+    val ios: CupertinoVideoOptions? = null
+
+) {
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): VideoOptions {
+            val android: AndroidVideoOptions? = (list[0] as List<Any?>?)?.let {
+                AndroidVideoOptions.fromList(it)
+            }
+            val ios: CupertinoVideoOptions? = (list[1] as List<Any?>?)?.let {
+                CupertinoVideoOptions.fromList(it)
+            }
+            return VideoOptions(android, ios)
+        }
+    }
+
+    fun toList(): List<Any?> {
+        return listOf<Any?>(
+            android?.toList(),
+            ios?.toList(),
+        )
+    }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PigeonSensorTypeDevice(
+    val sensorType: PigeonSensorType,
+    /** A localized device name for display in the user interface. */
+    val name: String,
+    /** The current exposure ISO value. */
+    val iso: Double,
+    /** A Boolean value that indicates whether the flash is currently available for use. */
+    val flashAvailable: Boolean,
   /** An identifier that uniquely identifies the device. */
   val uid: String
 
@@ -349,19 +471,16 @@ private object AnalysisImageUtilsCodec : StandardMessageCodec() {
                     AnalysisImageWrapper.fromList(it)
                 }
             }
-
             129.toByte() -> {
                 return (readValue(buffer) as? List<Any?>)?.let {
                     CropRectWrapper.fromList(it)
                 }
             }
-
             130.toByte() -> {
                 return (readValue(buffer) as? List<Any?>)?.let {
                     PlaneWrapper.fromList(it)
                 }
             }
-
             else -> super.readValueOfType(type, buffer)
         }
     }
@@ -372,17 +491,14 @@ private object AnalysisImageUtilsCodec : StandardMessageCodec() {
                 stream.write(128)
                 writeValue(stream, value.toList())
             }
-
             is CropRectWrapper -> {
                 stream.write(129)
                 writeValue(stream, value.toList())
             }
-
             is PlaneWrapper -> {
                 stream.write(130)
                 writeValue(stream, value.toList())
             }
-
             else -> super.writeValue(stream, value)
         }
     }
@@ -545,63 +661,77 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
                     AndroidFocusSettings.fromList(it)
                 }
             }
-
             129.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    AndroidVideoOptions.fromList(it)
+                }
+            }
+            130.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    CupertinoVideoOptions.fromList(it)
+                }
+            }
+            131.toByte() -> {
                 return (readValue(buffer) as? List<Any?>)?.let {
                     ExifPreferences.fromList(it)
                 }
             }
-
-            130.toByte() -> {
+            132.toByte() -> {
                 return (readValue(buffer) as? List<Any?>)?.let {
                     PigeonSensorTypeDevice.fromList(it)
                 }
             }
-
-            131.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    PreviewSize.fromList(it)
-                }
-            }
-
-            132.toByte() -> {
-                return (readValue(buffer) as? List<Any?>)?.let {
-                    PreviewSize.fromList(it)
-                }
-            }
-
             133.toByte() -> {
-        return (readValue(buffer) as? List<Any?>)?.let {
-          VideoOptions.fromList(it)
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    PreviewSize.fromList(it)
+                }
+            }
+            134.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    PreviewSize.fromList(it)
+                }
+            }
+            135.toByte() -> {
+                return (readValue(buffer) as? List<Any?>)?.let {
+                    VideoOptions.fromList(it)
+                }
+            }
+            else -> super.readValueOfType(type, buffer)
         }
-      }
-      else -> super.readValueOfType(type, buffer)
     }
-  }
-  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
-    when (value) {
-      is AndroidFocusSettings -> {
-        stream.write(128)
-        writeValue(stream, value.toList())
-      }
-      is ExifPreferences -> {
-        stream.write(129)
-        writeValue(stream, value.toList())
-      }
-      is PigeonSensorTypeDevice -> {
-        stream.write(130)
+
+    override fun writeValue(stream: ByteArrayOutputStream, value: Any?) {
+        when (value) {
+            is AndroidFocusSettings -> {
+                stream.write(128)
+                writeValue(stream, value.toList())
+            }
+            is AndroidVideoOptions -> {
+                stream.write(129)
+                writeValue(stream, value.toList())
+            }
+            is CupertinoVideoOptions -> {
+                stream.write(130)
+                writeValue(stream, value.toList())
+            }
+            is ExifPreferences -> {
+                stream.write(131)
+                writeValue(stream, value.toList())
+            }
+            is PigeonSensorTypeDevice -> {
+                stream.write(132)
+                writeValue(stream, value.toList())
+            }
+            is PreviewSize -> {
+                stream.write(133)
         writeValue(stream, value.toList())
       }
       is PreviewSize -> {
-        stream.write(131)
-        writeValue(stream, value.toList())
-      }
-      is PreviewSize -> {
-        stream.write(132)
+          stream.write(134)
         writeValue(stream, value.toList())
       }
       is VideoOptions -> {
-        stream.write(133)
+          stream.write(135)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -621,6 +751,7 @@ interface CameraInterface {
         captureMode: String,
         enableImageStream: Boolean,
         exifPreferences: ExifPreferences,
+        videoOptions: VideoOptions?,
         callback: (Result<Boolean>) -> Unit
     )
 
@@ -633,7 +764,7 @@ interface CameraInterface {
     fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
     fun getPreviewTextureId(): Long
     fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit)
-    fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
+    fun recordVideo(path: String, callback: (Result<Unit>) -> Unit)
     fun pauseVideoRecording()
     fun resumeVideoRecording()
     fun receivedImageFromStream()
@@ -647,18 +778,24 @@ interface CameraInterface {
 
     /**
      * Starts auto focus on a point at ([x], [y]).
-   *
-   * On Android, you can control after how much time you want to switch back
-   * to passive focus mode with [androidFocusSettings].
-   */
-  fun focusOnPoint(previewSize: PreviewSize, x: Double, y: Double, androidFocusSettings: AndroidFocusSettings?)
-  fun setZoom(zoom: Double)
-  fun setMirrorFrontCamera(mirror: Boolean)
-  fun setSensor(sensor: String, deviceId: String?)
-  fun setCorrection(brightness: Double)
-  fun getMaxZoom(): Double
-  fun setCaptureMode(mode: String)
-  fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
+     *
+     * On Android, you can control after how much time you want to switch back
+     * to passive focus mode with [androidFocusSettings].
+     */
+    fun focusOnPoint(
+        previewSize: PreviewSize,
+        x: Double,
+        y: Double,
+        androidFocusSettings: AndroidFocusSettings?
+    )
+
+    fun setZoom(zoom: Double)
+    fun setMirrorFrontCamera(mirror: Boolean)
+    fun setSensor(sensor: String, deviceId: String?)
+    fun setCorrection(brightness: Double)
+    fun getMaxZoom(): Double
+    fun setCaptureMode(mode: String)
+    fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
     fun availableSizes(): List<PreviewSize>
     fun refresh()
     fun getEffectivPreviewSize(): PreviewSize?
@@ -691,39 +828,45 @@ interface CameraInterface {
         @Suppress("UNCHECKED_CAST")
         fun setUp(binaryMessenger: BinaryMessenger, api: CameraInterface?) {
             run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setupCamera", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-              val args = message as List<Any?>
-              val sensorArg = args[0] as String
-              val aspectRatioArg = args[1] as String
-              val zoomArg = args[2] as Double
-              val mirrorFrontCameraArg = args[3] as Boolean
-              val enablePhysicalButtonArg = args[4] as Boolean
-              val flashModeArg = args[5] as String
-              val captureModeArg = args[6] as String
-              val enableImageStreamArg = args[7] as Boolean
-              val exifPreferencesArg = args[8] as ExifPreferences
-              api.setupCamera(
-                  sensorArg,
-                  aspectRatioArg,
-                  zoomArg,
-                  mirrorFrontCameraArg,
-                  enablePhysicalButtonArg,
-                  flashModeArg,
-                  captureModeArg,
-                  enableImageStreamArg,
-                  exifPreferencesArg
-              ) { result: Result<Boolean> ->
-                  val error = result.exceptionOrNull()
-                  if (error != null) {
-                      reply.reply(wrapError(error))
-                  } else {
-                      val data = result.getOrNull()
-                      reply.reply(wrapResult(data))
-                  }
-              }
-          }
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.CameraInterface.setupCamera",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { message, reply ->
+                        val args = message as List<Any?>
+                        val sensorArg = args[0] as String
+                        val aspectRatioArg = args[1] as String
+                        val zoomArg = args[2] as Double
+                        val mirrorFrontCameraArg = args[3] as Boolean
+                        val enablePhysicalButtonArg = args[4] as Boolean
+                        val flashModeArg = args[5] as String
+                        val captureModeArg = args[6] as String
+                        val enableImageStreamArg = args[7] as Boolean
+                        val exifPreferencesArg = args[8] as ExifPreferences
+                        val videoOptionsArg = args[9] as VideoOptions?
+                        api.setupCamera(
+                            sensorArg,
+                            aspectRatioArg,
+                            zoomArg,
+                            mirrorFrontCameraArg,
+                            enablePhysicalButtonArg,
+                            flashModeArg,
+                            captureModeArg,
+                            enableImageStreamArg,
+                            exifPreferencesArg,
+                            videoOptionsArg
+                        ) { result: Result<Boolean> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
         } else {
           channel.setMessageHandler(null)
         }
@@ -806,15 +949,14 @@ interface CameraInterface {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val pathArg = args[0] as String
-            val optionsArg = args[1] as VideoOptions?
-            api.recordVideo(pathArg, optionsArg) { result: Result<Unit> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(wrapError(error))
-              } else {
-                reply.reply(wrapResult(null))
+              api.recordVideo(pathArg) { result: Result<Unit> ->
+                  val error = result.exceptionOrNull()
+                  if (error != null) {
+                      reply.reply(wrapError(error))
+                  } else {
+                      reply.reply(wrapResult(null))
+                  }
               }
-            }
           }
         } else {
           channel.setMessageHandler(null)

@@ -6,7 +6,6 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
-import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
@@ -180,10 +179,11 @@ class CamerawesomePlugin {
     bool enablePhysicalButton, {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
+    required VideoOptions? videoOptions,
   }) async {
     return CameraInterface()
         .setupCamera(
-          sensorConfig.sensor.name.toUpperCase(),
+      sensorConfig.sensor.name.toUpperCase(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
           sensorConfig.mirrorFrontCamera,
@@ -192,6 +192,7 @@ class CamerawesomePlugin {
           captureMode.name.toUpperCase(),
           enableImageStream,
           exifPreferences,
+          videoOptions,
         )
         .then((value) => true);
   }
@@ -244,24 +245,8 @@ class CamerawesomePlugin {
     return CameraInterface().takePhoto(path);
   }
 
-  static Future<void> recordVideo(
-    String path, {
-    CupertinoVideoOptions? cupertinoVideoOptions,
-  }) {
-    if (Platform.isAndroid) {
-      // TODO: add video options for Android
-      return CameraInterface().recordVideo(path, null);
-    } else {
-      return CameraInterface().recordVideo(
-        path,
-        cupertinoVideoOptions != null
-            ? VideoOptions(
-                fileType: cupertinoVideoOptions.fileType.name,
-                codec: cupertinoVideoOptions.codec.name,
-              )
-            : null,
-      );
-    }
+  static Future<void> recordVideo(String path) {
+    return CameraInterface().recordVideo(path);
   }
 
   static pauseVideoRecording() {
