@@ -53,12 +53,7 @@ class _CameraPageState extends State<CameraPage> {
                   videoPathBuilder: () => path(CaptureMode.video),
                   initialCaptureMode: CaptureMode.photo,
                 ),
-                // sensors: [
-                //   Sensor.position(SensorPosition.front),
-                //   Sensor.position(SensorPosition.back),
-                //   Sensor.type(SensorType.telephoto),
-                //   // Sensor.type(SensorType.ultraWideAngle),
-                // ],
+                // TODO: create factory for multi cam & single
                 sensors: sensorDeviceData!.availableSensors
                     .map((e) => Sensor.id(e.uid))
                     .toList(),
@@ -66,6 +61,7 @@ class _CameraPageState extends State<CameraPage> {
                 aspectRatio: CameraAspectRatios.ratio_16_9,
                 previewFit: CameraPreviewFit.fitWidth,
                 onMediaTap: (mediaCapture) {
+                  // TODO: multiple files
                   OpenFile.open(mediaCapture.filePath);
                 },
               )
