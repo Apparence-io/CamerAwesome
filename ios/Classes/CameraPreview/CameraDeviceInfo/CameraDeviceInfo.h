@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) AVCaptureDeviceInput *deviceInput;
 @property (nonatomic, strong) AVCaptureVideoDataOutput *videoDataOutput;
 @property (nonatomic, strong) AVCaptureConnection *captureConnection;
+@property (nonatomic, strong) AVCapturePhotoOutput *capturePhotoOutput;
 
 @end
 

@@ -51,7 +51,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _previewSize;
   PreviewSize? _flutterPreviewSize;
 
-  // final List<int> _textureIds = [];
   final List<Texture> _textures = [];
 
   PreviewSize? get pixelPreviewSize => _previewSize;
@@ -350,6 +349,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     }
 
     for (int i = 1; i < _textures.length; i++) {
+      // TODO: add a way to retrive how camera can be added ("budget" on iOS ?)
       if (i >= kMaximumSupportedFloatingPreview) {
         break;
       }

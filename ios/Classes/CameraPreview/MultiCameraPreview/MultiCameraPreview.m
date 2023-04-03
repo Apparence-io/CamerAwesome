@@ -234,11 +234,6 @@
     [self addSensor:sensor withIndex:i];
   }
   
-  // Creating photo output
-  self.capturePhotoOutput = [AVCapturePhotoOutput new];
-  [self.capturePhotoOutput setHighResolutionCaptureEnabled:YES];
-  [self.cameraSession addOutput:self.capturePhotoOutput];
-  
   [self.cameraSession commitConfiguration];
 }
 
@@ -288,12 +283,18 @@
   [captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
   [captureConnection setVideoMirrored:sensor.position == PigeonSensorPositionFront];
   
+  // Creating photo output
+  AVCapturePhotoOutput *capturePhotoOutput = [AVCapturePhotoOutput new];
+  [capturePhotoOutput setHighResolutionCaptureEnabled:YES];
+  [self.cameraSession addOutput:capturePhotoOutput];
+  
   // move this all this in the cameradevice object
   CameraDeviceInfo *cameraDevice = [[CameraDeviceInfo alloc] init];
   cameraDevice.captureConnection = captureConnection;
   cameraDevice.deviceInput = deviceInput;
   cameraDevice.videoDataOutput = videoDataOutput;
   cameraDevice.device = device;
+  cameraDevice.capturePhotoOutput = capturePhotoOutput;
   
   [_devices addObject:cameraDevice];
   
@@ -338,23 +339,31 @@
 }
 
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+  // TODO: take pictures for each sensors
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
-                                                                          sensorPosition:_sensors[1].position
+                                                                          sensorPosition:_sensors[0].position
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio
                                                                               completion:completion
                                                                                 callback:^{
+    // If flash mode is always on, restore it back after photo is taken
+    if (self->_torchMode == AVCaptureTorchModeOn) {
+      [self->_devices.firstObject.device lockForConfiguration:nil];
+      [self->_devices.firstObject.device setTorchMode:AVCaptureTorchModeOn];
+      [self->_devices.firstObject.device unlockForConfiguration];
+    }
+    
     completion(@(YES), nil);
   }];
   
   // Create settings instance
   AVCapturePhotoSettings *settings = [AVCapturePhotoSettings photoSettings];
   [settings setHighResolutionPhotoEnabled:YES];
-  [self.capturePhotoOutput setPhotoSettingsForSceneMonitoring:settings];
+  [self.devices[0].capturePhotoOutput setPhotoSettingsForSceneMonitoring:settings];
   
-  [_capturePhotoOutput capturePhotoWithSettings:settings
+  [self.devices[0].capturePhotoOutput capturePhotoWithSettings:settings
                                        delegate:cameraPicture];
 }
 

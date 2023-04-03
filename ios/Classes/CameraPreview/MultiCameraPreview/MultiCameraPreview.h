@@ -31,7 +31,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property (nonatomic, strong) NSArray<PigeonSensor *> *sensors;
 @property (nonatomic, strong) NSMutableArray<CameraDeviceInfo *> *devices;
 @property (nonatomic, strong) dispatch_queue_t dispatchQueue;
-@property(nonatomic, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) AspectRatio aspectRatio;

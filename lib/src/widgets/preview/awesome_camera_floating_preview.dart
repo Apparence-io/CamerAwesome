@@ -23,6 +23,7 @@ class _AwesomeCameraFloatingPreviewState
   void initState() {
     super.initState();
 
+    // TODO: set position in config
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _position = Offset(
@@ -66,6 +67,7 @@ class _AwesomeCameraFloatingPreviewState
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: SizedBox(
+                      // TODO: set size in config
                       height: 200,
                       child: Center(
                         child: AspectRatio(
