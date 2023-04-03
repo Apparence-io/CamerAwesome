@@ -3,13 +3,13 @@ import 'dart:html' as html;
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/shims/dart_ui.dart' as ui;
 
-String _getViewType(int cameraId) => 'plugins.flutter.io/camera_$cameraId';
+String _getViewType(int cameraId) => 'camera_$cameraId';
 
-class CameraWeb {
+class CameraState {
   /// Creates a new instance of [Camera]
   /// with the given [textureId] and optional
   /// [options] and [window].
-  CameraWeb({
+  CameraState({
     required this.textureId,
     this.options = const CameraOptions(),
   });

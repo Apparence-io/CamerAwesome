@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/cameraweb_service.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +44,6 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
     ACamerawesomeWeb.instance = CamerawesomeWeb();
   }
 
-  // @override
   @override
   Future<bool> setupCamera(
     String sensor,

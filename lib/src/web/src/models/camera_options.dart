@@ -38,6 +38,16 @@ class CameraOptions {
 
   @override
   int get hashCode => Object.hash(audio, video);
+
+  CameraOptions copyWith({
+    AudioConstraints? audio,
+    VideoConstraints? video,
+  }) {
+    return CameraOptions(
+      audio: audio ?? this.audio,
+      video: video ?? this.video,
+    );
+  }
 }
 
 /// Indicates whether the audio track is requested.
@@ -127,6 +137,20 @@ class VideoConstraints {
 
   @override
   int get hashCode => Object.hash(facingMode, width, height, deviceId);
+
+  VideoConstraints copyWith({
+    FacingModeConstraint? facingMode,
+    VideoSizeConstraint? width,
+    VideoSizeConstraint? height,
+    String? deviceId,
+  }) {
+    return VideoConstraints(
+      facingMode: facingMode ?? this.facingMode,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      deviceId: deviceId ?? this.deviceId,
+    );
+  }
 }
 
 /// The camera type used in [FacingModeConstraint].

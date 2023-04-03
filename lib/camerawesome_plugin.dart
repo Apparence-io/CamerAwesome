@@ -7,7 +7,6 @@ import 'package:camerawesome/src/orchestrator/adapters/pigeon_sensor_adapter.dar
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 import 'package:camerawesome/src/web/camerawesome_web.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:universal_platform/universal_platform.dart';

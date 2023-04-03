@@ -1,20 +1,21 @@
+import 'dart:async';
 import 'dart:html' as html;
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/expections_handler.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
-import 'package:camerawesome/src/web/src/models/camera_web.dart';
+import 'package:camerawesome/src/web/src/models/camera_state.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 class CameraWebService {
   html.Window? get window => html.window;
   html.MediaDevices? get mediaDevices => html.window.navigator.mediaDevices;
 
-  late final CameraWeb _camera;
-
-  CameraWeb get camera => _camera;
+  late final CameraState _camera;
+  CameraState get camera => _camera;
 
   Future<html.MediaStream> _getVideoStream(
       final CameraOptions cameraOptions) async {
@@ -129,16 +130,15 @@ class CameraWebService {
 
     // Release the camera stream used to request video and audio permissions.
     cameraStream.getVideoTracks().forEach((videoTrack) => videoTrack.stop());
-    return [
-      CamerAwesomePermission.camera.name,
-      CamerAwesomePermission.record_audio.name
-    ];
+
+    final permissions = await checkPermissions();
+    return permissions;
   }
 
   Future<void> setupCamera(final int textureId) async {
     final camerasIds = await availableCameras();
     const videoSize = Size(4096, 2160);
-    _camera = CameraWeb(
+    _camera = CameraState(
       textureId: textureId,
       options: CameraOptions(
         audio: const AudioConstraints(enabled: true),
@@ -150,7 +150,7 @@ class CameraWebService {
           height: VideoSizeConstraint(
             ideal: videoSize.height.toInt(),
           ),
-          deviceId: camerasIds.first,
+          deviceId: camerasIds.firstOrNull,
         ),
       ),
     );
