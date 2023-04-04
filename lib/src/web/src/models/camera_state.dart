@@ -4,7 +4,7 @@ import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/utils/dart_ui.dart' as ui;
 
 class CameraState {
-  /// Creates a new instance of [Camera]
+  /// Creates a new instance of [CameraState]
   /// with the given [textureId] and optional
   /// [options]
   CameraState({

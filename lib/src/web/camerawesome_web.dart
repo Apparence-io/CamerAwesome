@@ -28,12 +28,12 @@ abstract class ACamerawesomeWeb extends PlatformInterface
 }
 
 class CamerawesomeWeb extends ACamerawesomeWeb {
-  late final CameraWebController _cameraWebService;
+  late final CameraWebController _cameraWebController;
   int _textureCounter = 1;
   static final CamerawesomeWeb _instance = CamerawesomeWeb._();
 
   CamerawesomeWeb._() {
-    _cameraWebService = CameraWebController();
+    _cameraWebController = CameraWebController();
   }
 
   factory CamerawesomeWeb() {
@@ -57,29 +57,29 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
     ExifPreferences exifPreferences,
   ) async {
     final int textureId = _textureCounter++;
-    await _cameraWebService.setupCamera(textureId);
+    await _cameraWebController.setupCamera(textureId);
     return Future.value(true);
   }
 
   @override
   Future<bool> start() async {
-    await _cameraWebService.start();
+    await _cameraWebController.start();
     return Future.value(true);
   }
 
   @override
   Future<List<String>> requestPermissions(bool saveGpsLocation) async {
-    return _cameraWebService.requestPermissions();
+    return _cameraWebController.requestPermissions();
   }
 
   @override
   Future<List<String>> checkPermissions() async {
-    return _cameraWebService.checkPermissions();
+    return _cameraWebController.checkPermissions();
   }
 
   @override
   Future<bool> takePhoto(String path) async {
-    return _cameraWebService.takePhoto(path);
+    return _cameraWebController.takePhoto(path);
   }
 
   @override
@@ -115,7 +115,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<int> getPreviewTextureId() {
-    return Future.value(_cameraWebService.camera.textureId);
+    return Future.value(_cameraWebController.cameraState.textureId);
   }
 
   @override
@@ -242,7 +242,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   Widget buildPreview() {
     return HtmlElementView(
-      viewType: _cameraWebService.camera.getViewType(),
+      viewType: _cameraWebController.cameraState.getViewType(),
     );
   }
 }

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:html' as html;
 
-import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/web/src/expections_handler.dart';
+import 'package:camerawesome/src/web/src/handlers/expections_handler.dart';
+import 'package:camerawesome/src/web/src/handlers/permissions_handler.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/camera_state.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
@@ -11,11 +11,14 @@ import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 class CameraWebController {
+  late final CameraState cameraState;
+
+  final PermissionsHandler _permissionsHandler;
+
+  CameraWebController() : _permissionsHandler = PermissionsHandler();
+
   html.Window? get window => html.window;
   html.MediaDevices? get mediaDevices => html.window.navigator.mediaDevices;
-
-  late final CameraState _camera;
-  CameraState get camera => _camera;
 
   ///https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/enumerateDevices
   Future<List<String>> availableCameras() async {
@@ -53,7 +56,8 @@ class CameraWebController {
         video: VideoConstraints(deviceId: videoInputDevice.deviceId),
       );
 
-      final html.MediaStream videoStream = await _getVideoStream(cameraOptions);
+      final html.MediaStream videoStream =
+          await _getCameraStream(cameraOptions);
 
       // Get all video tracks in the video stream
       // to later extract the lens direction from the first track.
@@ -78,45 +82,16 @@ class CameraWebController {
   ///
   /// PERMISSIONS
   ///
-  ///https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query
-  Future<List<String>> checkPermissions() async {
-    html.PermissionStatus? cameraStatus =
-        await window?.navigator.permissions?.query({
-      'name': "camera",
-    });
-    html.PermissionStatus? microphoneStatus =
-        await window?.navigator.permissions?.query({
-      'name': "microphone",
-    });
-    final permissions = <String>[];
-    if (cameraStatus?.state == 'granted') {
-      permissions.add(CamerAwesomePermission.camera.name);
-    }
+  Future<List<String>> checkPermissions() =>
+      _permissionsHandler.checkPermissions();
 
-    if (microphoneStatus?.state == 'granted') {
-      permissions.add(CamerAwesomePermission.record_audio.name);
-    }
-    return permissions;
-  }
-
-  /// https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-  Future<List<String>> requestPermissions() async {
-    const cameraOptions = CameraOptions(
-      audio: AudioConstraints(enabled: true),
-    );
-    final html.MediaStream cameraStream = await _getVideoStream(cameraOptions);
-
-    // Release the camera stream used to request video and audio permissions.
-    cameraStream.getVideoTracks().forEach((videoTrack) => videoTrack.stop());
-
-    final permissions = await checkPermissions();
-    return permissions;
-  }
+  Future<List<String>> requestPermissions() =>
+      _permissionsHandler.requestPermissions();
 
   Future<void> setupCamera(final int textureId) async {
     final camerasIds = await availableCameras();
     const videoSize = Size(4096, 2160);
-    _camera = CameraState(
+    cameraState = CameraState(
       textureId: textureId,
       options: CameraOptions(
         audio: const AudioConstraints(enabled: true),
@@ -132,16 +107,16 @@ class CameraWebController {
         ),
       ),
     );
-    final stream = await _getVideoStream(
-      _camera.options,
+    final stream = await _getCameraStream(
+      cameraState.options,
     );
-    await _camera.initialize(stream);
+    await cameraState.initialize(stream);
   }
 
-  Future<void> start() => _camera.start();
+  Future<void> start() => cameraState.start();
 
   Future<bool> takePhoto(final String path) async {
-    final blob = await _camera.takePhoto();
+    final blob = await cameraState.takePhoto();
     html.FileSystem filesystem =
         await window!.requestFileSystem(1024 * 1024, persistent: false);
     html.FileEntry fileEntry =
@@ -151,7 +126,7 @@ class CameraWebController {
     return true;
   }
 
-  Future<html.MediaStream> _getVideoStream(
+  Future<html.MediaStream> _getCameraStream(
       final CameraOptions cameraOptions) async {
     // Throw a not supported exception if the current browser window
     // does not support any media devices.
@@ -166,10 +141,9 @@ class CameraWebController {
           await mediaDevices!.getUserMedia(cameraOptions.toJson());
       return cameraStream;
     } on html.DomException catch (e) {
-      throw handleDomException(e);
+      throw ExceptionsHandler.handleDomException(e);
     } catch (_) {
       throw CameraWebException(
-        0,
         CameraErrorCode.unknown,
         'An unknown error occured when fetching the camera stream.',
       );
