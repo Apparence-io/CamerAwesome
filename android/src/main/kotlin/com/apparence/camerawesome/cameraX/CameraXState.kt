@@ -96,7 +96,7 @@ data class CameraXState(
 //                    })
 //                    .build()
                 val cameraSelector =
-                    if (isFirst) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+                    if (isFirst) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
                 cameraSelectors.add(cameraSelector)
 
 
