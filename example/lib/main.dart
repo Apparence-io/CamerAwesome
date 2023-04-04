@@ -33,8 +33,12 @@ class CameraPage extends StatelessWidget {
             videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.photo,
           ),
+          sensors: [
+            Sensor.position(SensorPosition.back),
+            Sensor.position(SensorPosition.front),
+          ],
           enablePhysicalButton: true,
-          filter: AwesomeFilter.AddictiveRed,
+          // filter: AwesomeFilter.AddictiveRed,
           flashMode: FlashMode.auto,
           aspectRatio: CameraAspectRatios.ratio_16_9,
           previewFit: CameraPreviewFit.fitWidth,

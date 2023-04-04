@@ -5,6 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=2.18.2 <3.0.0'
+  flutter: '>=3.3.0'
 
 dependencies:
   flutter:
@@ -17,6 +18,7 @@ dependencies:
   google_mlkit_barcode_scanning: ^0.5.0
   google_mlkit_text_recognition: ^0.5.0
   image: ^4.0.15
+  meta: ^1.8.0
   rxdart: ^0.27.7
   video_player: ^2.5.0
 
@@ -24,7 +26,7 @@ dev_dependencies:
   exif: ^3.1.2
   flutter_test:
     sdk: flutter
-  patrol: ^1.0.3
+  patrol: ^1.0.8
   flutter_lints: ^2.0.1
 
 flutter:

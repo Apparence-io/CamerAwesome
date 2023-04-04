@@ -76,7 +76,7 @@ class ImageAnalysisBuilder private constructor(
                         imageProxy,
                         Rect(0, 0, imageProxy.width, imageProxy.height),
                         80,
-//                        imageProxy.imageInfo.rotationDegrees
+                        imageProxy.imageInfo.rotationDegrees
                     )
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage

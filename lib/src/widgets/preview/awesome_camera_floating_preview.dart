@@ -54,6 +54,7 @@ class _AwesomeCameraFloatingPreviewState
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.transparent,
+                    border: Border.all(color: Colors.green, width: 2),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
