@@ -1,14 +1,12 @@
 import 'dart:html' as html;
 
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
-import 'package:camerawesome/src/web/src/shims/dart_ui.dart' as ui;
-
-String _getViewType(int cameraId) => 'camera_$cameraId';
+import 'package:camerawesome/src/web/src/utils/dart_ui.dart' as ui;
 
 class CameraState {
   /// Creates a new instance of [Camera]
   /// with the given [textureId] and optional
-  /// [options] and [window].
+  /// [options]
   CameraState({
     required this.textureId,
     this.options = const CameraOptions(),
@@ -30,12 +28,11 @@ class CameraState {
   late final html.DivElement divElement;
 
   /// The camera stream displayed in the [videoElement].
-  /// Initialized in [initialize] and [play], reset in [stop].
+  /// Initialized in [initialize] and [start]
   html.MediaStream? stream;
 
   /// Initializes the camera stream displayed in the [videoElement].
-  /// Registers the camera view with [textureId] under [_getViewType] type.
-  /// Emits the camera default video track on the [onEnded] stream when it ends.
+  /// Registers the camera view with [textureId] under [getViewType] type.
   Future<void> initialize(final html.MediaStream mediaStream) async {
     stream = mediaStream;
     videoElement = html.VideoElement();
@@ -45,7 +42,7 @@ class CameraState {
       ..append(videoElement);
 
     ui.platformViewRegistry.registerViewFactory(
-      _getViewType(textureId),
+      getViewType(),
       (_) => divElement,
     );
 
@@ -58,26 +55,9 @@ class CameraState {
     _applyDefaultVideoStyles(videoElement);
   }
 
-  /// Applies default styles to the video [element].
-  void _applyDefaultVideoStyles(html.VideoElement element) {
-    // final bool isBackCamera = getLensDirection() == CameraLensDirection.back;
+  String getViewType() => 'camerawesome_$textureId';
 
-    // // Flip the video horizontally if it is not taken from a back camera.
-    // if (!isBackCamera) {
-    //   element.style.transform = 'scaleX(-1)';
-    // }
-
-    element.style
-      ..transformOrigin = 'center'
-      ..pointerEvents = 'none'
-      ..width = '100%'
-      ..height = '100%'
-      ..objectFit = 'cover';
-  }
-
-  String getViewType() => _getViewType(textureId);
-
-  Future<void> play() {
+  Future<void> start() {
     return videoElement.play();
   }
 
@@ -92,5 +72,15 @@ class CameraState {
         .drawImageScaled(videoElement, 0, 0, videoWidth, videoHeight);
 
     return canvas.toBlob('image/jpeg');
+  }
+
+  /// Applies default styles to the video [element].
+  void _applyDefaultVideoStyles(html.VideoElement element) {
+    element.style
+      ..transformOrigin = 'center'
+      ..pointerEvents = 'none'
+      ..width = '100%'
+      ..height = '100%'
+      ..objectFit = 'cover';
   }
 }

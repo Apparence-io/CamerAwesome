@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/web/src/cameraweb_service.dart';
+import 'package:camerawesome/src/web/src/cameraweb_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -28,12 +28,12 @@ abstract class ACamerawesomeWeb extends PlatformInterface
 }
 
 class CamerawesomeWeb extends ACamerawesomeWeb {
-  late final CameraWebService _cameraWebService;
+  late final CameraWebController _cameraWebService;
   int _textureCounter = 1;
   static final CamerawesomeWeb _instance = CamerawesomeWeb._();
 
   CamerawesomeWeb._() {
-    _cameraWebService = CameraWebService();
+    _cameraWebService = CameraWebController();
   }
 
   factory CamerawesomeWeb() {

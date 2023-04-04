@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:html' as html;
-import 'dart:html';
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/expections_handler.dart';
@@ -11,38 +10,14 @@ import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
-class CameraWebService {
+class CameraWebController {
   html.Window? get window => html.window;
   html.MediaDevices? get mediaDevices => html.window.navigator.mediaDevices;
 
   late final CameraState _camera;
   CameraState get camera => _camera;
 
-  Future<html.MediaStream> _getVideoStream(
-      final CameraOptions cameraOptions) async {
-    // Throw a not supported exception if the current browser window
-    // does not support any media devices.
-    if (mediaDevices == null) {
-      throw PlatformException(
-        code: CameraErrorCode.notSupported.code,
-        message: 'The camera is not supported on this device.',
-      );
-    }
-    try {
-      final html.MediaStream cameraStream =
-          await mediaDevices!.getUserMedia(cameraOptions.toJson());
-      return cameraStream;
-    } on html.DomException catch (e) {
-      throw handleDomException(e);
-    } catch (_) {
-      throw CameraWebException(
-        0,
-        CameraErrorCode.unknown,
-        'An unknown error occured when fetching the camera stream.',
-      );
-    }
-  }
-
+  ///https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/enumerateDevices
   Future<List<String>> availableCameras() async {
     final List<String> camerasIds = <String>[];
     // Throw a not supported exception if the current browser window
@@ -103,6 +78,7 @@ class CameraWebService {
   ///
   /// PERMISSIONS
   ///
+  ///https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query
   Future<List<String>> checkPermissions() async {
     html.PermissionStatus? cameraStatus =
         await window?.navigator.permissions?.query({
@@ -123,6 +99,7 @@ class CameraWebService {
     return permissions;
   }
 
+  /// https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
   Future<List<String>> requestPermissions() async {
     const cameraOptions = CameraOptions(
       audio: AudioConstraints(enabled: true),
@@ -161,17 +138,41 @@ class CameraWebService {
     await _camera.initialize(stream);
   }
 
-  Future<void> start() async {
-    return _camera.play();
-  }
+  Future<void> start() => _camera.start();
 
   Future<bool> takePhoto(final String path) async {
     final blob = await _camera.takePhoto();
-    FileSystem filesystem =
+    html.FileSystem filesystem =
         await window!.requestFileSystem(1024 * 1024, persistent: false);
-    FileEntry fileEntry = await filesystem.root?.createFile(path) as FileEntry;
-    FileWriter fw = await fileEntry.createWriter();
+    html.FileEntry fileEntry =
+        await filesystem.root?.createFile(path) as html.FileEntry;
+    html.FileWriter fw = await fileEntry.createWriter();
     fw.write(blob);
     return true;
+  }
+
+  Future<html.MediaStream> _getVideoStream(
+      final CameraOptions cameraOptions) async {
+    // Throw a not supported exception if the current browser window
+    // does not support any media devices.
+    if (mediaDevices == null) {
+      throw PlatformException(
+        code: CameraErrorCode.notSupported.code,
+        message: 'The camera is not supported on this device.',
+      );
+    }
+    try {
+      final html.MediaStream cameraStream =
+          await mediaDevices!.getUserMedia(cameraOptions.toJson());
+      return cameraStream;
+    } on html.DomException catch (e) {
+      throw handleDomException(e);
+    } catch (_) {
+      throw CameraWebException(
+        0,
+        CameraErrorCode.unknown,
+        'An unknown error occured when fetching the camera stream.',
+      );
+    }
   }
 }
