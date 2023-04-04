@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/cameraweb_controller.dart';
+import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -83,9 +84,8 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<List<PreviewSize?>> availableSizes() {
-    return Future.value([PreviewSize(width: 4096, height: 2160)]);
-  }
+  Future<List<PreviewSize?>> availableSizes() =>
+      Future.value(_cameraWebController.availableVideoSizes);
 
   @override
   Future<void> focusOnPoint(PreviewSize argPreviewsize, double argX,
@@ -174,8 +174,8 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<void> setFlashMode(String argMode) {
-    return Future.value();
+  Future<void> setFlashMode(String flashMode) async {
+    return _cameraWebController.setFlashMode(FlashMode.fromString(flashMode));
   }
 
   @override

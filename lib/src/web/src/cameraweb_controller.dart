@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'dart:html' as html;
 
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/handlers/expections_handler.dart';
 import 'package:camerawesome/src/web/src/handlers/permissions_handler.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/camera_state.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
+import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 class CameraWebController {
-  late final CameraState cameraState;
+  late final CameraWebState cameraState;
 
   final PermissionsHandler _permissionsHandler;
 
@@ -19,6 +21,8 @@ class CameraWebController {
 
   html.Window? get window => html.window;
   html.MediaDevices? get mediaDevices => html.window.navigator.mediaDevices;
+
+  List<PreviewSize?> get availableVideoSizes => cameraState.availableVideoSizes;
 
   ///https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/enumerateDevices
   Future<List<String>> availableCameras() async {
@@ -91,7 +95,7 @@ class CameraWebController {
   Future<void> setupCamera(final int textureId) async {
     final camerasIds = await availableCameras();
     const videoSize = Size(4096, 2160);
-    cameraState = CameraState(
+    cameraState = CameraWebState(
       textureId: textureId,
       options: CameraOptions(
         audio: const AudioConstraints(enabled: true),
@@ -124,6 +128,20 @@ class CameraWebController {
     html.FileWriter fw = await fileEntry.createWriter();
     fw.write(blob);
     return true;
+  }
+
+  void setFlashMode(final FlashMode flashMode) {
+    final Map<dynamic, dynamic>? supportedConstraints =
+        mediaDevices?.getSupportedConstraints();
+    final bool torchModeSupported =
+        supportedConstraints?[torchModeKey] as bool? ?? false;
+    if (!torchModeSupported) {
+      throw CameraWebException(
+        CameraErrorCode.torchModeNotSupported,
+        'The torch mode is not supported in the current browser.',
+      );
+    }
+    return cameraState.setFlashMode(flashMode);
   }
 
   Future<html.MediaStream> _getCameraStream(

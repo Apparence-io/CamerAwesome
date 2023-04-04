@@ -1,13 +1,19 @@
 import 'dart:html' as html;
 
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
+import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
+import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
+import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:camerawesome/src/web/src/utils/dart_ui.dart' as ui;
 
-class CameraState {
-  /// Creates a new instance of [CameraState]
+const String torchModeKey = 'torch';
+
+class CameraWebState {
+  /// Creates a new instance of [CameraWebState]
   /// with the given [textureId] and optional
   /// [options]
-  CameraState({
+  CameraWebState({
     required this.textureId,
     this.options = const CameraOptions(),
   });
@@ -30,6 +36,11 @@ class CameraState {
   /// The camera stream displayed in the [videoElement].
   /// Initialized in [initialize] and [start]
   html.MediaStream? stream;
+
+  /// The camera flash mode.
+  FlashMode? flashMode;
+
+  String getViewType() => 'camerawesome_$textureId';
 
   /// Initializes the camera stream displayed in the [videoElement].
   /// Registers the camera view with [textureId] under [getViewType] type.
@@ -55,14 +66,18 @@ class CameraState {
     _applyDefaultVideoStyles(videoElement);
   }
 
-  String getViewType() => 'camerawesome_$textureId';
-
-  Future<void> start() {
-    return videoElement.play();
-  }
+  Future<void> start() => videoElement.play();
 
   // Captures a picture and returns the saved file in a JPEG format.
+  /// Enables the camera flash (torch mode) for a period of taking a picture
+  /// if the flash mode is either [FlashMode.auto] or [FlashMode.on].
   Future<html.Blob> takePhoto() async {
+    final bool shouldEnableTorchMode =
+        flashMode == FlashMode.auto || flashMode == FlashMode.on;
+
+    if (shouldEnableTorchMode) {
+      _setTorchMode(enabled: true);
+    }
     final int videoWidth = videoElement.videoWidth;
     final int videoHeight = videoElement.videoHeight;
     final html.CanvasElement canvas =
@@ -71,7 +86,94 @@ class CameraState {
     canvas.context2D
         .drawImageScaled(videoElement, 0, 0, videoWidth, videoHeight);
 
+    if (shouldEnableTorchMode) {
+      _setTorchMode(enabled: false);
+    }
+
     return canvas.toBlob('image/jpeg');
+  }
+
+  /// Returns a list of size of the camera video based on its videos tracks size.
+  List<PreviewSize?> get availableVideoSizes {
+    final List<html.MediaStreamTrack> videoTracks =
+        videoElement.srcObject?.getVideoTracks() ?? [];
+
+    if (videoTracks.isEmpty) {
+      return [];
+    }
+    final List<PreviewSize> sizes = [];
+    for (final html.MediaStreamTrack videoTrack in videoTracks) {
+      if (videoTrack.enabled == false) {
+        continue;
+      }
+      final Map<dynamic, dynamic> defaultVideoTrackSettings =
+          videoTrack.getSettings();
+
+      final double? width = defaultVideoTrackSettings['width'] as double?;
+      final double? height = defaultVideoTrackSettings['height'] as double?;
+
+      if (width != null && height != null) {
+        sizes.add(PreviewSize(width: width, height: height));
+      }
+    }
+    return sizes;
+  }
+
+  /// Sets the camera flash mode to [mode] by modifying the camera
+  /// torch mode constraint.
+  ///
+  /// The torch mode is enabled for [FlashMode.always] and
+  /// disabled for [FlashMode.none].
+  ///
+  /// For [FlashMode.auto] and [FlashMode.always] the torch mode is enabled
+  /// only for a period of taking a picture in [takePhoto].
+  ///
+  /// Throws a [CameraWebException] if the torch mode is not supported
+  /// or the camera has not been initialized or started.
+  void setFlashMode(
+    final FlashMode mode,
+  ) {
+    // Save the updated flash mode to be used later when taking a picture.
+    flashMode = mode;
+    // Enable the torch mode only if the flash mode is always.
+    _setTorchMode(enabled: mode == FlashMode.always);
+  }
+
+  ///
+  ///PRIVATES
+  ///
+
+  /// Sets the camera torch mode constraint to [enabled].
+  ///
+  /// Throws a [CameraWebException] if the torch mode is not supported
+  /// or the camera has not been initialized or started.
+  void _setTorchMode({required bool enabled}) {
+    final List<html.MediaStreamTrack> videoTracks =
+        stream?.getVideoTracks() ?? <html.MediaStreamTrack>[];
+    if (videoTracks.isEmpty) {
+      throw CameraWebException(
+        CameraErrorCode.notStarted,
+        'The camera has not been initialized or started.',
+      );
+    }
+
+    final html.MediaStreamTrack defaultVideoTrack = videoTracks.first;
+
+    final bool canEnableTorchMode =
+        defaultVideoTrack.getCapabilities()[torchModeKey] as bool? ?? false;
+    if (!canEnableTorchMode) {
+      throw CameraWebException(
+        CameraErrorCode.torchModeNotSupported,
+        'The torch mode is not supported by the current camera.',
+      );
+    }
+    defaultVideoTrack.applyConstraints(<String, Object>{
+      'advanced': <Object>[
+        <String, Object>{
+          torchModeKey: enabled,
+        }
+      ]
+    });
   }
 
   /// Applies default styles to the video [element].
