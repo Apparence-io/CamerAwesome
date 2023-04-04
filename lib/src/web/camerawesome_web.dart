@@ -79,7 +79,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<bool> takePhoto(String path) async {
-    return Future.value(false);
+    return _cameraWebService.takePhoto(path);
   }
 
   @override

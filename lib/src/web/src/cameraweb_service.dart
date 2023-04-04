@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:html';
 
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/expections_handler.dart';
@@ -162,5 +163,15 @@ class CameraWebService {
 
   Future<void> start() async {
     return _camera.play();
+  }
+
+  Future<bool> takePhoto(final String path) async {
+    final blob = await _camera.takePhoto();
+    FileSystem filesystem =
+        await window!.requestFileSystem(1024 * 1024, persistent: false);
+    FileEntry fileEntry = await filesystem.root?.createFile(path) as FileEntry;
+    FileWriter fw = await fileEntry.createWriter();
+    fw.write(blob);
+    return true;
   }
 }

@@ -80,4 +80,17 @@ class CameraState {
   Future<void> play() {
     return videoElement.play();
   }
+
+  // Captures a picture and returns the saved file in a JPEG format.
+  Future<html.Blob> takePhoto() async {
+    final int videoWidth = videoElement.videoWidth;
+    final int videoHeight = videoElement.videoHeight;
+    final html.CanvasElement canvas =
+        html.CanvasElement(width: videoWidth, height: videoHeight);
+
+    canvas.context2D
+        .drawImageScaled(videoElement, 0, 0, videoWidth, videoHeight);
+
+    return canvas.toBlob('image/jpeg');
+  }
 }
