@@ -322,6 +322,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                     ),
                   ),
                 ),
+                ..._buildPreviewTextures(),
               ]);
             }
           },
