@@ -1452,12 +1452,14 @@ class CameraInterface {
     }
   }
 
-  Future<bool> isVideoRecordingAndImageAnalysisSupported(String arg_sensor) async {
+  Future<bool> isVideoRecordingAndImageAnalysisSupported(
+      PigeonSensorPosition arg_sensor) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported', codec,
+        'dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported',
+        codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_sensor]) as List<Object?>?;
+        await channel.send(<Object?>[arg_sensor.index]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

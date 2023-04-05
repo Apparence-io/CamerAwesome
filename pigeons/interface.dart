@@ -350,5 +350,5 @@ abstract class CameraInterface {
   void setFilter(List<double> matrix);
 
   @async
-  bool isVideoRecordingAndImageAnalysisSupported(String sensor);
+  bool isVideoRecordingAndImageAnalysisSupported(PigeonSensorPosition sensor);
 }

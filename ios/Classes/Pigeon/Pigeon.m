@@ -1263,7 +1263,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
       NSCAssert([api respondsToSelector:@selector(isVideoRecordingAndImageAnalysisSupportedSensor:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(isVideoRecordingAndImageAnalysisSupportedSensor:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_sensor = GetNullableObjectAtIndex(args, 0);
+        PigeonSensorPosition arg_sensor = [GetNullableObjectAtIndex(args, 0) integerValue];
         [api isVideoRecordingAndImageAnalysisSupportedSensor:arg_sensor completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];

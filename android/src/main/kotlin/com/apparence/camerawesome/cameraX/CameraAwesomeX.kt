@@ -8,11 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.camera2.CameraCharacteristics
 import android.location.Location
-import android.os.Build
-import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
-import android.os.Messenger
+import android.os.*
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -159,7 +155,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 // TODO Find a better way to set initial zoom than using a postDelayed
                 Handler(Looper.getMainLooper()).postDelayed({
                     (cameraState.concurrentCamera?.cameras?.firstOrNull()
-                    ?: cameraState.previewCamera)?.cameraControl?.setLinearZoom(zoom.toFloat())
+                        ?: cameraState.previewCamera)?.cameraControl?.setLinearZoom(zoom.toFloat())
                 }, 200)
             }
         }
@@ -231,11 +227,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun isVideoRecordingAndImageAnalysisSupported(
-        sensor: String,
+        sensorPosition: PigeonSensorPosition,
         callback: (Result<Boolean>) -> Unit
     ) {
         val cameraSelector =
-            if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+            if (sensorPosition == PigeonSensorPosition.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val cameraProvider = ProcessCameraProvider.getInstance(

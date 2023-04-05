@@ -276,7 +276,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Use this constructor when you don't want to take pictures or record videos.
   /// You can still do image analysis.
   CameraAwesomeBuilder.previewOnly({
-    Sensors sensor = Sensors.back,
+    List<Sensor>? sensors,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
@@ -291,7 +291,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
   }) : this._(
-          sensor: sensor,
+    sensors: sensors ?? [Sensor.position(SensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: false,
@@ -323,7 +323,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// You may still show the image from the analysis by converting it to JPEG
   /// and  displaying that JPEG image.
   CameraAwesomeBuilder.analysisOnly({
-    Sensors sensor = Sensors.back,
+    List<Sensor>? sensors,
     FlashMode flashMode = FlashMode.none,
     double zoom = 0.0,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
@@ -332,7 +332,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required OnImageForAnalysis onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
   }) : this._(
-    sensor: sensor,
+    sensors: sensors ?? [Sensor.position(SensorPosition.back)],
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: false,

@@ -24,13 +24,18 @@ class Sensor {
     this.deviceId,
   });
 
-  factory Sensor.position(SensorPosition position) => Sensor._(
-        position: position,
-      );
-  factory Sensor.type(SensorType type) => Sensor._(
-        type: type,
-      );
-  factory Sensor.id(String deviceId) => Sensor._(
-        deviceId: deviceId,
-      );
+  Sensor.position(SensorPosition position)
+      : this._(
+          position: position,
+        );
+
+  Sensor.type(SensorType type)
+      : this._(
+          type: type,
+        );
+
+  Sensor.id(String deviceId)
+      : this._(
+          deviceId: deviceId,
+        );
 }

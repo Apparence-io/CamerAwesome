@@ -7,6 +7,10 @@ import android.util.Log
 import android.util.Rational
 import android.util.Size
 import android.view.Surface
+import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
+import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.core.concurrent.ConcurrentCamera
 import androidx.camera.core.concurrent.ConcurrentCameraConfig
@@ -178,11 +182,12 @@ data class CameraXState(
                         Preview.Builder().setCameraSelector(cameraSelector).build()
                     }
                 )
+
+                previews!!.first().setSurfaceProvider(
+                    surfaceProvider(executor(activity), sensors.first().deviceId ?: "0")
+                )
             }
 
-            previews!!.first().setSurfaceProvider(
-                surfaceProvider(executor(activity), sensors.first().deviceId ?: "0")
-            )
             if (currentCaptureMode == CaptureModes.PHOTO) {
                 imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
 //                .setJpegQuality(100)
@@ -205,51 +210,52 @@ data class CameraXState(
                         .build()
                 videoCapture = VideoCapture.withOutput(recorder!!)
             }
-        }
 
-        val addAnalysisUseCase = enableImageStream && imageAnalysisBuilder != null
-        var useCases = mutableListOf(
-            if (currentCaptureMode == CaptureModes.ANALYSIS_ONLY) null else previews!!.first(),
-            if (currentCaptureMode == CaptureModes.PHOTO) {
-                imageCapture
-            } else null,
-            if (currentCaptureMode == CaptureModes.VIDEO) {
-                videoCapture
-            } else null,
-        ).filterNotNull().toMutableList().apply {
-            if (addAnalysisUseCase) {
-                imageAnalysis = imageAnalysisBuilder!!.build()
-                add(imageAnalysis!!)
-            } else {
-                imageAnalysis = null
+
+            val addAnalysisUseCase = enableImageStream && imageAnalysisBuilder != null
+            var useCases = mutableListOf(
+                if (currentCaptureMode == CaptureModes.ANALYSIS_ONLY) null else previews!!.first(),
+                if (currentCaptureMode == CaptureModes.PHOTO) {
+                    imageCapture
+                } else null,
+                if (currentCaptureMode == CaptureModes.VIDEO) {
+                    videoCapture
+                } else null,
+            ).filterNotNull().toMutableList().apply {
+                if (addAnalysisUseCase) {
+                    imageAnalysis = imageAnalysisBuilder!!.build()
+                    add(imageAnalysis!!)
+                } else {
+                    imageAnalysis = null
+                }
             }
-        }
 
-        val cameraLevel = CameraCapabilities.getCameraLevel(
-            cameraSelector, cameraProvider
-        )
-        cameraProvider.unbindAll()
-        if (currentCaptureMode == CaptureModes.VIDEO && addAnalysisUseCase && cameraLevel < CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3) {
-            Log.w(
-                CamerawesomePlugin.TAG,
-                "Trying to bind too many use cases for this device (level $cameraLevel), ignoring image analysis"
+            val cameraLevel = CameraCapabilities.getCameraLevel(
+                cameraSelector, cameraProvider
             )
-            useCases = useCases.filter { uc -> uc !is ImageAnalysis }.toMutableList()
-        }
+            cameraProvider.unbindAll()
+            if (currentCaptureMode == CaptureModes.VIDEO && addAnalysisUseCase && cameraLevel < CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3) {
+                Log.w(
+                    CamerawesomePlugin.TAG,
+                    "Trying to bind too many use cases for this device (level $cameraLevel), ignoring image analysis"
+                )
+                useCases = useCases.filter { uc -> uc !is ImageAnalysis }.toMutableList()
+            }
 
-        val useCaseGroup = UseCaseGroup.Builder().apply {
-            for (uc in useCases.filterNotNull()) addUseCase(uc)
-        }
-            // TODO Orientation might be wrong, to be verified
-            .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build()).build()
+            val useCaseGroup = UseCaseGroup.Builder().apply {
+                for (uc in useCases.filterNotNull()) addUseCase(uc)
+            }
+                // TODO Orientation might be wrong, to be verified
+                .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build()).build()
 
-        concurrentCamera = null
-        previewCamera = cameraProvider.bindToLifecycle(
-            activity as LifecycleOwner,
-            cameraSelector,
-            useCaseGroup,
-        )
-        previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
+            concurrentCamera = null
+            previewCamera = cameraProvider.bindToLifecycle(
+                activity as LifecycleOwner,
+                cameraSelector,
+                useCaseGroup,
+            )
+            previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
+        }
     }
 
     @SuppressLint("RestrictedApi")

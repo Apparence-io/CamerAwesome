@@ -642,7 +642,10 @@ interface CameraInterface {
   fun startAnalysis()
   fun stopAnalysis()
   fun setFilter(matrix: List<Double>)
-  fun isVideoRecordingAndImageAnalysisSupported(sensor: String, callback: (Result<Boolean>) -> Unit)
+    fun isVideoRecordingAndImageAnalysisSupported(
+        sensor: PigeonSensorPosition,
+        callback: (Result<Boolean>) -> Unit
+    )
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -1317,8 +1320,8 @@ interface CameraInterface {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val sensorArg = args[0] as String
+              val args = message as List<Any?>
+              val sensorArg = PigeonSensorPosition.ofRaw(args[0] as Int)!!
             api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {

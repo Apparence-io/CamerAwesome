@@ -244,7 +244,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 - (void)startAnalysisWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)stopAnalysisWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setFilterMatrix:(NSArray<NSNumber *> *)matrix error:(FlutterError *_Nullable *_Nonnull)error;
-- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(PigeonSensorPosition)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 @end
 
 extern void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<CameraInterface> *_Nullable api);
