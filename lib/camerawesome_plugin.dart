@@ -480,9 +480,11 @@ class CamerawesomePlugin {
         return CamerawesomePlugin.checkiOSPermissions()
             .then((givenPermissions) => CamerAwesomePermission.values);
       } else if (UniversalPlatform.isWeb) {
-        return _getInterface()
-            .requestPermissions(saveGpsLocation)
-            .then((givenPermissions) => CamerAwesomePermission.values);
+        return _getInterface().checkPermissions().then((givenPermissions) =>
+            givenPermissions
+                .map((e) => CamerAwesomePermission.values
+                    .firstWhere((element) => element.name == e))
+                .toList());
       }
     } catch (e) {
       printLog("failed to check permissions here...");
