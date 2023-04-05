@@ -161,6 +161,25 @@ class CameraWebState {
   /// Throws a [CameraWebException] if the zoom level is invalid,
   /// not supported or the camera has not been initialized or started.
   void setZoomLevel(double zoom) {
+    ZoomLevel zoomLevel = getZoomLevelCapability();
+
+    if (zoom < zoomLevel.minimum || zoom > zoomLevel.maximum) {
+      throw CameraWebException(
+        CameraErrorCode.zoomLevelInvalid,
+        'The provided zoom level must be in the range of ${zoomLevel.minimum} to ${zoomLevel.maximum}.',
+      );
+    }
+
+    zoomLevel.videoTrack.applyConstraints(<String, Object>{
+      'advanced': <Object>[
+        <String, Object>{
+          ZoomLevel.constraintName: zoom,
+        }
+      ]
+    });
+  }
+
+  ZoomLevel getZoomLevelCapability() {
     final List<html.MediaStreamTrack> videoTracks =
         stream?.getVideoTracks() ?? <html.MediaStreamTrack>[];
 
@@ -197,21 +216,7 @@ class CameraWebState {
         'The zoom level is not supported by the current camera.',
       );
     }
-
-    if (zoom < zoomLevel.minimum || zoom > zoomLevel.maximum) {
-      throw CameraWebException(
-        CameraErrorCode.zoomLevelInvalid,
-        'The provided zoom level must be in the range of ${zoomLevel.minimum} to ${zoomLevel.maximum}.',
-      );
-    }
-
-    zoomLevel.videoTrack.applyConstraints(<String, Object>{
-      'advanced': <Object>[
-        <String, Object>{
-          ZoomLevel.constraintName: zoom,
-        }
-      ]
-    });
+    return zoomLevel;
   }
 
   ///

@@ -110,7 +110,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<double> getMaxZoom() {
-    return Future.value(0.0);
+    return Future.value(_cameraWebController.getMaxZoom());
   }
 
   @override

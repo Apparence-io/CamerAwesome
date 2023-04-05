@@ -148,18 +148,13 @@ class CameraWebController {
   }
 
   void setZoomLevel(final double zoomLevel) {
-    final Map<dynamic, dynamic>? supportedConstraints =
-        mediaDevices?.getSupportedConstraints();
-    final bool zoomLevelSupported =
-        supportedConstraints?[ZoomLevel.constraintName] as bool? ?? false;
-
-    if (!zoomLevelSupported) {
-      throw CameraWebException(
-        CameraErrorCode.zoomLevelNotSupported,
-        'The zoom level is not supported in the current browser.',
-      );
-    }
+    _checkZoomSupported();
     return cameraState.setZoomLevel(zoomLevel);
+  }
+
+  double getMaxZoom() {
+    _checkZoomSupported();
+    return cameraState.getZoomLevelCapability().maximum;
   }
 
   ///
@@ -186,6 +181,23 @@ class CameraWebController {
       throw CameraWebException(
         CameraErrorCode.unknown,
         'An unknown error occured when fetching the camera stream.',
+      );
+    }
+  }
+
+  /// Check if zoom is supported
+  /// throw [CameraWebException] if not supported
+  /// https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackCapabilities/zoom
+  void _checkZoomSupported() {
+    final Map<dynamic, dynamic>? supportedConstraints =
+        mediaDevices?.getSupportedConstraints();
+    final bool zoomLevelSupported =
+        supportedConstraints?[ZoomLevel.constraintName] as bool? ?? false;
+
+    if (!zoomLevelSupported) {
+      throw CameraWebException(
+        CameraErrorCode.zoomLevelNotSupported,
+        'The zoom level is not supported in the current browser.',
       );
     }
   }
