@@ -332,7 +332,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required OnImageForAnalysis onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
   }) : this._(
-    sensor: sensor,
+          sensor: sensor,
           flashMode: flashMode,
           zoom: zoom,
           mirrorFrontCamera: false,

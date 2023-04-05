@@ -33,9 +33,6 @@ class CamerawesomePlugin {
   static const EventChannel _imagesChannel =
       EventChannel('camerawesome/images');
 
-  static const EventChannel _luminosityChannel =
-      EventChannel('camerawesome/luminosity');
-
   static const EventChannel _physicalButtonChannel =
       EventChannel('camerawesome/physical_button');
 
@@ -44,8 +41,6 @@ class CamerawesomePlugin {
   static Stream<CameraPhysicalButton>? _physicalButtonStream;
 
   static Stream<bool>? _permissionsStream;
-
-  static Stream<SensorData>? _luminositySensorDataStream;
 
   static Stream<Map<String, dynamic>>? _imagesStream;
 
