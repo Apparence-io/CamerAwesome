@@ -2,10 +2,13 @@
 
 - ✨ Add utilities to convert AnalysisImage into JPEG in order to display them using `toJpeg()`.
 - ✨ Add `preview()` and `analysisOnly()` constructors to `CameraAwesomeBuilder`.
-- 🐛 Better handle use cases conflicts (video + image analysis on lower-end devices) for Android.
+- ✨ Volume button trigger to take picture or record/stop video.
+- ✨🍏 Add brightness exposure level on iOS / iPadOS.
 - 💥 AnalysisConfig has changed slightly its parameters to have platform-specific setup.
 - 💥 Storage permission is now optional on Android since the introduction of `preview()`
   and `analysisOnly()` modes.
+- 🐛🍏 iOS / iPadOS max zoom limit.
+- 🐛🤖 Better handle use cases conflicts (video + image analysis on lower-end devices) for Android.
 
 # 1.3.1
 
