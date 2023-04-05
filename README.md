@@ -54,7 +54,7 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                  | Android |  iOS  |
+| Features                                 | Android  |  iOS   |
 | :-------------------------------------- | :-----: | :---: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
@@ -68,7 +68,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 📸 Device flash support                  |    ✅    |   ✅   |
 | ⌛️ Auto focus                            |    ✅    |   ✅   |
 | 📲 Live switching camera                 |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream               |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream                |    ✅    |   ✅   |
 | 🤐 Background auto stop                  |    ✅    |   ✅   |
 | 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
 | 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
@@ -121,7 +121,6 @@ the [official documentation](https://developer.android.com/training/data-storage
 If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ```xml
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="com.example.yourpackage">
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -321,6 +320,7 @@ CameraAwesomeBuilder.awesome(
         // Max frames per second, null for no limit (default)
         maxFramesPerSecond: 20,
     ),
+)
 ```
 
 > MLkit recommands to use nv21 format for Android. <br>
