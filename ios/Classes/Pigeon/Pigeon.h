@@ -119,12 +119,12 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)makeWithBytes:(FlutterStandardTypedData *)bytes
     bytesPerRow:(NSNumber *)bytesPerRow
-    bytesPerPixel:(NSNumber *)bytesPerPixel
+    bytesPerPixel:(nullable NSNumber *)bytesPerPixel
     width:(nullable NSNumber *)width
     height:(nullable NSNumber *)height;
 @property(nonatomic, strong) FlutterStandardTypedData * bytes;
 @property(nonatomic, strong) NSNumber * bytesPerRow;
-@property(nonatomic, strong) NSNumber * bytesPerPixel;
+@property(nonatomic, strong, nullable) NSNumber * bytesPerPixel;
 @property(nonatomic, strong, nullable) NSNumber * width;
 @property(nonatomic, strong, nullable) NSNumber * height;
 @end

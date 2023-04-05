@@ -211,7 +211,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 @implementation PlaneWrapper
 + (instancetype)makeWithBytes:(FlutterStandardTypedData *)bytes
     bytesPerRow:(NSNumber *)bytesPerRow
-    bytesPerPixel:(NSNumber *)bytesPerPixel
+    bytesPerPixel:(nullable NSNumber *)bytesPerPixel
     width:(nullable NSNumber *)width
     height:(nullable NSNumber *)height {
   PlaneWrapper* pigeonResult = [[PlaneWrapper alloc] init];
@@ -229,7 +229,6 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   pigeonResult.bytesPerRow = GetNullableObjectAtIndex(list, 1);
   NSAssert(pigeonResult.bytesPerRow != nil, @"");
   pigeonResult.bytesPerPixel = GetNullableObjectAtIndex(list, 2);
-  NSAssert(pigeonResult.bytesPerPixel != nil, @"");
   pigeonResult.width = GetNullableObjectAtIndex(list, 3);
   pigeonResult.height = GetNullableObjectAtIndex(list, 4);
   return pigeonResult;

@@ -142,7 +142,7 @@ class AndroidFocusSettings {
 class PlaneWrapper {
   final Uint8List bytes;
   final int bytesPerRow;
-  final int bytesPerPixel;
+  final int? bytesPerPixel;
   final int? width;
   final int? height;
 

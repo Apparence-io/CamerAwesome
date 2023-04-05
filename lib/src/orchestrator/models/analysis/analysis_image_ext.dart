@@ -44,8 +44,9 @@ extension Bgra8888Converter on Bgra8888Image {
   }) async {
     // TODO Not implemented on the native side
     final jpegQuality = quality.clamp(0, 100);
+    final wrappedValue = wrapped();
     final wrappedImage = await AnalysisImageUtils().bgra8888toJpeg(
-      wrapped(),
+      wrappedValue,
       jpegQuality,
     );
     return wrappedImage.unwrap() as JpegImage;
@@ -127,12 +128,14 @@ extension AnalysisUnwrapper on AnalysisImageWrapper {
           height: height,
           width: width,
           bytes: bytes!,
-          cropRect: Rect.fromLTWH(
-            cropRect!.left.toDouble(),
-            cropRect!.top.toDouble(),
-            cropRect!.width.toDouble(),
-            cropRect!.height.toDouble(),
-          ),
+          cropRect: cropRect != null
+              ? Rect.fromLTWH(
+                  cropRect!.left.toDouble(),
+                  cropRect!.top.toDouble(),
+                  cropRect!.width.toDouble(),
+                  cropRect!.height.toDouble(),
+                )
+              : null,
           format: InputAnalysisImageFormat.values.byName(format.name),
           rotation: InputAnalysisImageRotation.values.byName(rotation!.name),
         );
@@ -164,7 +167,7 @@ extension PlaneWrap on ImagePlane {
     return PlaneWrapper(
       bytes: bytes,
       bytesPerRow: bytesPerRow,
-      bytesPerPixel: bytesPerPixel!,
+      bytesPerPixel: bytesPerPixel,
       width: width,
       height: height,
     );

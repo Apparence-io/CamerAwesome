@@ -50,6 +50,7 @@ class _CameraPageState extends State<CameraPage> {
           androidOptions: const AndroidAnalysisOptions.yuv420(
             width: 150,
           ),
+          cupertinoOptions: const CupertinoAnalysisOptions.bgra8888(),
           maxFramesPerSecond: 30,
         ),
         builder: (state, previewSize, previewRect) {
@@ -262,20 +263,37 @@ class _MyPreviewDecoratorWidgetState extends State<_MyPreviewDecoratorWidget> {
                           );
                         });
                   }, bgra8888: (image) {
-                    _currentJpeg = _applyFilterOnImage(
-                      imglib.Image.fromBytes(
-                        width: image.width,
-                        height: image.height,
-                        bytes: image.planes[0].bytes.buffer,
-                        order: imglib.ChannelOrder.bgra,
-                      ),
-                    );
+                    // _currentJpeg = _applyFilterOnImage(
+                    //   imglib.Image.fromBytes(
+                    //     width: image.width,
+                    //     height: image.height,
+                    //     bytes: image.planes[0].bytes.buffer,
+                    //     order: imglib.ChannelOrder.bgra,
+                    //   ),
+                    // );
 
-                    return ImageAnalysisPreview(
-                      currentJpeg: _currentJpeg!,
-                      width: image.width.toDouble(),
-                      height: image.height.toDouble(),
-                    );
+                    return FutureBuilder<JpegImage>(
+                        future: image.toJpeg(),
+                        builder: (_, snapshot) {
+                          if (snapshot.data == null && _currentJpeg == null) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (snapshot.data != null) {
+                            _currentJpeg =
+                                _applyFilterOnBytes(snapshot.data!.bytes);
+                          }
+                          return ImageAnalysisPreview(
+                            currentJpeg: _currentJpeg!,
+                            width: image.width.toDouble(),
+                            height: image.height.toDouble(),
+                          );
+                        });
+
+                    // return ImageAnalysisPreview(
+                    //   currentJpeg: _currentJpeg!,
+                    //   width: image.width.toDouble(),
+                    //   height: image.height.toDouble(),
+                    // );
                   }) ??
                   Container(
                     color: Colors.red,
@@ -350,9 +368,9 @@ class ImageAnalysisPreview extends StatelessWidget {
     return Container(
       color: Colors.black,
       child: Transform.scale(
-        scaleX: Platform.isAndroid ? -1 : null,
+        scaleX: -1,
         child: Transform.rotate(
-          angle: 3 / 2 * pi,
+          angle: Platform.isAndroid ? 3 / 2 * pi : 0,
           child: SizedBox.expand(
             child: Image.memory(
               currentJpeg,

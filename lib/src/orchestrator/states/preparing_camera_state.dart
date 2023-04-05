@@ -167,6 +167,12 @@ class PreparingCameraState extends CameraState {
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
     );
+
+    // On iOS, we need to start the camera to get the first frame because there
+    // is no "AnalysisMode" at all.
+    if (Platform.isIOS) {
+      return CamerawesomePlugin.start();
+    }
   }
 
   bool _isReady = false;
