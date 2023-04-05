@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/utils/file_utils.dart';
+import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:rxdart/rxdart.dart';
@@ -66,23 +64,18 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CameraAwesomeBuilder.awesome(
-        saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => path(CaptureMode.photo),
-          videoPathBuilder: () => path(CaptureMode.video),
-          initialCaptureMode: CaptureMode.photo,
-        ),
-        onMediaTap: (mediaCapture) => OpenFile.open(mediaCapture.filePath),
+      body: CameraAwesomeBuilder.previewOnly(
         previewFit: CameraPreviewFit.contain,
         aspectRatio: CameraAspectRatios.ratio_1_1,
         sensor: Sensors.front,
         onImageForAnalysis: (img) => _analyzeImage(img),
         imageAnalysisConfig: AnalysisConfig(
-          outputFormat: InputAnalysisImageFormat.nv21,
-          width: 250,
+          androidOptions: const AndroidAnalysisOptions.nv21(
+            width: 250,
+          ),
           maxFramesPerSecond: 30,
         ),
-        previewDecoratorBuilder: (state, previewSize, previewRect) {
+        builder: (state, previewSize, previewRect) {
           return _MyPreviewDecoratorWidget(
             cameraState: state,
             faceDetectionStream: _faceDetectionController,
@@ -95,49 +88,7 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future _analyzeImage(AnalysisImage img) async {
-    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
-
-    final InputImageRotation imageRotation =
-        InputImageRotation.values.byName(img.rotation.name);
-
-    final planeData = img.planes.map(
-      (ImagePlane plane) {
-        return InputImagePlaneMetadata(
-          bytesPerRow: plane.bytesPerRow,
-          height: plane.height,
-          width: plane.width,
-        );
-      },
-    ).toList();
-
-    final InputImage inputImage;
-    if (Platform.isIOS) {
-      final inputImageData = InputImageData(
-        size: imageSize,
-        imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
-        inputImageFormat: inputImageFormat(img.format),
-        planeData: planeData,
-      );
-
-      final WriteBuffer allBytes = WriteBuffer();
-      for (final ImagePlane plane in img.planes) {
-        allBytes.putUint8List(plane.bytes);
-      }
-      final bytes = allBytes.done().buffer.asUint8List();
-
-      inputImage =
-          InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-    } else {
-      inputImage = InputImage.fromBytes(
-        bytes: img.nv21Image!,
-        inputImageData: InputImageData(
-          imageRotation: imageRotation,
-          inputImageFormat: InputImageFormat.nv21,
-          planeData: planeData,
-          size: Size(img.width.toDouble(), img.height.toDouble()),
-        ),
-      );
-    }
+    final inputImage = img.toInputImage();
 
     try {
       _faceDetectionController.add(
@@ -145,24 +96,13 @@ class _CameraPageState extends State<CameraPage> {
           faces: await faceDetector.processImage(inputImage),
           absoluteImageSize: inputImage.inputImageData!.size,
           rotation: 0,
-          imageRotation: imageRotation,
-          cropRect: img.cropRect,
+          imageRotation: img.inputImageRotation,
+          croppedSize: img.croppedSize,
         ),
       );
       // debugPrint("...sending image resulted with : ${faces?.length} faces");
     } catch (error) {
       debugPrint("...sending image resulted error $error");
-    }
-  }
-
-  InputImageFormat inputImageFormat(InputAnalysisImageFormat format) {
-    switch (format) {
-      case InputAnalysisImageFormat.bgra8888:
-        return InputImageFormat.bgra8888;
-      case InputAnalysisImageFormat.nv21:
-        return InputImageFormat.nv21;
-      default:
-        return InputImageFormat.yuv420;
     }
   }
 }
@@ -225,13 +165,7 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final croppedSize = model.cropRect == null
-        ? model.absoluteImageSize
-        : Size(
-            // TODO Width and height are inverted
-            model.cropRect!.size.height,
-            model.cropRect!.size.width,
-          );
+    final croppedSize = model.croppedSize;
 
     final ratioAnalysisToPreview = previewSize.width / croppedSize.width;
 
@@ -279,33 +213,6 @@ class FaceDetectorPainter extends CustomPainter {
           }
       }
     }
-
-    final topLeft = _croppedPosition(
-      const Point(0, 0),
-      croppedSize: croppedSize,
-      painterSize: size,
-      ratio: ratioAnalysisToPreview,
-      flipXY: flipXY,
-    );
-    final bottomRight = _croppedPosition(
-      Point(croppedSize.width.toInt(), croppedSize.height.toInt()),
-      croppedSize: croppedSize,
-      painterSize: size,
-      ratio: ratioAnalysisToPreview,
-      flipXY: flipXY,
-    );
-    final rect =
-        Rect.fromLTRB(topLeft.dx, topLeft.dy, bottomRight.dx, bottomRight.dy);
-    print(
-        "rect: $rect with img analysis: $croppedSize - ${model.absoluteImageSize}");
-    // rect: Rect.fromLTRB(-89.3, 76.4, 303.5, 774.5) with img analysis: Size(198.0, 352.0) - Size(352.0, 288.0)
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..color = Colors.purple
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3,
-    );
 
     for (final Face face in model.faces) {
       Map<FaceContourType, Path> paths = {
@@ -416,14 +323,14 @@ class FaceDetectionModel {
   final Size absoluteImageSize;
   final int rotation;
   final InputImageRotation imageRotation;
-  final Rect? cropRect;
+  final Size croppedSize;
 
   FaceDetectionModel({
     required this.faces,
     required this.absoluteImageSize,
     required this.rotation,
     required this.imageRotation,
-    required this.cropRect,
+    required this.croppedSize,
   });
 
   @override
@@ -435,7 +342,7 @@ class FaceDetectionModel {
           absoluteImageSize == other.absoluteImageSize &&
           rotation == other.rotation &&
           imageRotation == other.imageRotation &&
-          cropRect == other.cropRect;
+          croppedSize == other.croppedSize;
 
   @override
   int get hashCode =>
@@ -443,5 +350,5 @@ class FaceDetectionModel {
       absoluteImageSize.hashCode ^
       rotation.hashCode ^
       imageRotation.hashCode ^
-      cropRect.hashCode;
+      croppedSize.hashCode;
 }

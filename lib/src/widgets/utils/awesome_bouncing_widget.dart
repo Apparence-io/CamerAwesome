@@ -72,7 +72,7 @@ class _AwesomeBouncingWidgetState extends State<AwesomeBouncingWidget>
   }
 
   void _onTapDown(TapDownDetails details) {
-    if (widget.vibrationEnabled != null) {
+    if (widget.vibrationEnabled == true) {
       HapticFeedback.selectionClick();
     }
     _controller?.forward.call();

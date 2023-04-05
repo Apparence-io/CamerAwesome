@@ -16,6 +16,7 @@ dependencies:
   google_mlkit_face_detection: ^0.5.0
   google_mlkit_barcode_scanning: ^0.5.0
   google_mlkit_text_recognition: ^0.5.0
+  image: ^4.0.15
   rxdart: ^0.27.7
   video_player: ^2.5.0
 

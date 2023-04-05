@@ -1,4 +1,4 @@
-export 'analysis_image.dart';
+export 'analysis/analysis_image.dart';
 export 'camera_flashes.dart';
 export 'camera_orientations.dart';
 export 'capture_modes.dart';
@@ -9,3 +9,4 @@ export 'save_config.dart';
 export 'sensor_config.dart';
 export 'permission_utils.dart';
 export 'filters/awesome_filter.dart';
+export 'analysis/analysis.dart';

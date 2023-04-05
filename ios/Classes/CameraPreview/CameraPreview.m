@@ -14,6 +14,7 @@
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
+                enablePhysicalButton:(BOOL)enablePhysicalButton
                      aspectRatioMode:(AspectRatio)aspectRatioMode
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
@@ -53,8 +54,13 @@
   _imageStreamController = [[ImageStreamController alloc] initWithStreamImages:streamImages];
   _motionController = [[MotionController alloc] init];
   _locationController = [[LocationController alloc] init];
+  _physicalButtonController = [[PhysicalButtonController alloc] init];
   
   [_motionController startMotionDetection];
+  
+  if (enablePhysicalButton) {
+    [_physicalButtonController startListening];
+  }
   
   [self setBestPreviewQuality];
   
@@ -76,6 +82,13 @@
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink {
   if (_motionController != nil) {
     [_motionController setOrientationEventSink:orientationEventSink];
+  }
+}
+
+/// Set physical button Flutter sink
+- (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink {
+  if (_physicalButtonController != nil) {
+    [_physicalButtonController setPhysicalButtonEventSink:physicalButtonEventSink];
   }
 }
 
@@ -175,12 +188,15 @@
 
 // Get max zoom level
 - (CGFloat)getMaxZoom {
-  return _captureDevice.activeFormat.videoMaxZoomFactor;
+  CGFloat maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
+  // Not sure why on iPhone 14 Pro, zoom at 90 not working, so let's block to 50 which is very high
+  return maxZoom > 50.0 ? 50.0 : maxZoom;
 }
 
 /// Dispose camera inputs & outputs
 - (void)dispose {
   [self stop];
+  [self.physicalButtonController stopListening];
   
   for (AVCaptureInput *input in [_captureSession inputs]) {
     [_captureSession removeInput:input];
@@ -242,7 +258,7 @@
 
 /// Set zoom level
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  CGFloat maxZoom = _captureDevice.activeFormat.videoMaxZoomFactor;
+  CGFloat maxZoom = [self getMaxZoom];
   CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
   
   NSError *zoomError;
@@ -251,6 +267,27 @@
     [_captureDevice unlockForConfiguration];
   } else {
     *error = [FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[zoomError localizedDescription]];
+  }
+}
+
+- (void)setBrightness:(NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  NSError *brightnessError = nil;
+  if ([_captureDevice lockForConfiguration:&brightnessError]) {
+    AVCaptureExposureMode exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+    if ([_captureDevice isExposureModeSupported:exposureMode]) {
+      [_captureDevice setExposureMode:exposureMode];
+    }
+    
+    CGFloat minExposureTargetBias = _captureDevice.minExposureTargetBias;
+    CGFloat maxExposureTargetBias = _captureDevice.maxExposureTargetBias;
+    
+    CGFloat exposureTargetBias = minExposureTargetBias + (maxExposureTargetBias - minExposureTargetBias) * [brightness floatValue];
+    exposureTargetBias = MAX(minExposureTargetBias, MIN(maxExposureTargetBias, exposureTargetBias));
+    
+    [_captureDevice setExposureTargetBias:exposureTargetBias completionHandler:nil];
+    [_captureDevice unlockForConfiguration];
+  } else {
+    *error = [FlutterError errorWithCode:@"BRIGHTNESS_NOT_SET" message:@"can't set the brightness value" details:[brightnessError localizedDescription]];
   }
 }
 

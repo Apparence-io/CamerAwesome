@@ -1,9 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:flutter/foundation.dart';
-
-import 'package:camerawesome/src/orchestrator/camera_context.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
@@ -12,6 +11,10 @@ typedef OnPhotoMode = Function(PhotoCameraState);
 typedef OnPreparingCamera = Function(PreparingCameraState);
 
 typedef OnVideoRecordingMode = Function(VideoRecordingCameraState);
+
+typedef OnPreviewMode = Function(PreviewCameraState);
+
+typedef OnAnalysisOnlyMode = Function(AnalysisCameraState);
 
 abstract class CameraState {
   // TODO Make private
@@ -22,11 +25,14 @@ abstract class CameraState {
 
   abstract final CaptureMode? captureMode;
 
+  // TODO return a generic type T instead of dynamic (will need to remove typedefs)
   when({
     OnVideoMode? onVideoMode,
     OnPhotoMode? onPhotoMode,
     OnPreparingCamera? onPreparingCamera,
     OnVideoRecordingMode? onVideoRecordingMode,
+    OnPreviewMode? onPreviewMode,
+    OnAnalysisOnlyMode? onAnalysisOnlyMode,
   }) {
     if (this is VideoCameraState && onVideoMode != null) {
       return onVideoMode(this as VideoCameraState);
@@ -40,6 +46,12 @@ abstract class CameraState {
     if (this is VideoRecordingCameraState && onVideoRecordingMode != null) {
       return onVideoRecordingMode(this as VideoRecordingCameraState);
     }
+    if (this is PreviewCameraState && onPreviewMode != null) {
+      return onPreviewMode(this as PreviewCameraState);
+    }
+    if (this is AnalysisCameraState && onAnalysisOnlyMode != null) {
+      return onAnalysisOnlyMode(this as AnalysisCameraState);
+    }
   }
 
   /// Closes streams depending on the current state
@@ -50,6 +62,7 @@ abstract class CameraState {
   /// - while saving an image
   /// Accessible from all states
   Stream<MediaCapture?> get captureState$ => cameraContext.captureState$;
+  MediaCapture? get captureState => cameraContext.captureState;
 
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
@@ -115,7 +128,7 @@ abstract class CameraState {
   /// - [CaptureMode.ANALYSIS]
   void setState(CaptureMode captureMode);
 
-  SaveConfig get saveConfig => cameraContext.saveConfig;
+  SaveConfig? get saveConfig => cameraContext.saveConfig;
 
   Future<PreviewSize> previewSize() {
     return cameraContext.previewSize();

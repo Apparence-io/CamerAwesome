@@ -4,11 +4,13 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
+export 'src/camera_characteristics/camera_characteristics.dart';
 export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
@@ -34,7 +36,12 @@ class CamerawesomePlugin {
   static const EventChannel _luminosityChannel =
       EventChannel('camerawesome/luminosity');
 
+  static const EventChannel _physicalButtonChannel =
+      EventChannel('camerawesome/physical_button');
+
   static Stream<CameraOrientations>? _orientationStream;
+
+  static Stream<CameraPhysicalButton>? _physicalButtonStream;
 
   static Stream<bool>? _permissionsStream;
 
@@ -106,6 +113,27 @@ class CamerawesomePlugin {
     return _orientationStream;
   }
 
+  static Stream<CameraPhysicalButton>? listenPhysicalButton() {
+    _physicalButtonStream ??= _physicalButtonChannel
+        .receiveBroadcastStream('physicalButtonChannel')
+        .transform(
+            StreamTransformer<dynamic, CameraPhysicalButton>.fromHandlers(
+                handleData: (data, sink) {
+      CameraPhysicalButton? physicalButton;
+      switch (data) {
+        case 'VOLUME_UP':
+          physicalButton = CameraPhysicalButton.volume_up;
+          break;
+        case 'VOLUME_DOWN':
+          physicalButton = CameraPhysicalButton.volume_down;
+          break;
+        default:
+      }
+      sink.add(physicalButton!);
+    }));
+    return _physicalButtonStream;
+  }
+
   static Stream<bool>? listenPermissionResult() {
     _permissionsStream ??= _permissionsChannel
         .receiveBroadcastStream('permissionsChannel')
@@ -123,7 +151,11 @@ class CamerawesomePlugin {
     required bool autoStart,
   }) async {
     return CameraInterface().setupImageAnalysisStream(
-        format.name, width, maxFramesPerSecond, autoStart);
+      format.name,
+      width,
+      maxFramesPerSecond,
+      autoStart,
+    );
   }
 
   static Stream<Map<String, dynamic>>? listenCameraImages() {
@@ -144,7 +176,8 @@ class CamerawesomePlugin {
 
   static Future<bool?> init(
     SensorConfig sensorConfig,
-    bool enableImageStream, {
+    bool enableImageStream,
+    bool enablePhysicalButton, {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
   }) async {
@@ -154,6 +187,7 @@ class CamerawesomePlugin {
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
           sensorConfig.mirrorFrontCamera,
+          enablePhysicalButton,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),
           enableImageStream,
@@ -311,24 +345,7 @@ class CamerawesomePlugin {
     if (brightness < 0 || brightness > 1) {
       throw "Value must be between [0,1]";
     }
-    // TODO: implement it on iOS
     return CameraInterface().setCorrection(brightness);
-  }
-
-  // listen for luminosity level
-  static Stream<SensorData>? listenLuminosityLevel() {
-    if (!Platform.isAndroid) {
-      // Not available
-      // TODO Implement it on iOS
-      throw "not available on this OS for now... only Android";
-    }
-    _luminositySensorDataStream ??= _luminosityChannel
-        .receiveBroadcastStream('luminosityChannel')
-        .transform(StreamTransformer<dynamic, SensorData>.fromHandlers(
-            handleData: (data, sink) {
-      sink.add(SensorData(data));
-    }));
-    return _luminositySensorDataStream;
   }
 
   /// returns the max zoom available on device

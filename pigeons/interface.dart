@@ -139,6 +139,89 @@ class AndroidFocusSettings {
   AndroidFocusSettings({required this.autoCancelDurationInMillis});
 }
 
+class PlaneWrapper {
+  final Uint8List bytes;
+  final int bytesPerRow;
+  final int? bytesPerPixel;
+  final int? width;
+  final int? height;
+
+  PlaneWrapper({
+    required this.bytes,
+    required this.bytesPerRow,
+    required this.bytesPerPixel,
+    this.width,
+    this.height,
+  });
+}
+
+enum AnalysisImageFormat { yuv_420, bgra8888, jpeg, nv21, unknown }
+
+enum AnalysisRotation {
+  rotation0deg,
+  rotation90deg,
+  rotation180deg,
+  rotation270deg
+}
+
+class CropRectWrapper {
+  final int left;
+  final int top;
+  final int width;
+  final int height;
+
+  CropRectWrapper({
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+  });
+}
+
+class AnalysisImageWrapper {
+  final AnalysisImageFormat format;
+  final Uint8List? bytes;
+  final int width;
+  final int height;
+  final List<PlaneWrapper?>? planes;
+  final CropRectWrapper? cropRect;
+  final AnalysisRotation? rotation;
+
+  AnalysisImageWrapper({
+    required this.format,
+    required this.bytes,
+    required this.width,
+    required this.height,
+    required this.planes,
+    required this.cropRect,
+    required this.rotation,
+  });
+}
+
+@HostApi()
+abstract class AnalysisImageUtils {
+  @async
+  AnalysisImageWrapper nv21toJpeg(
+    AnalysisImageWrapper nv21Image,
+    int jpegQuality,
+  );
+
+  @async
+  AnalysisImageWrapper yuv420toJpeg(
+    AnalysisImageWrapper yuvImage,
+    int jpegQuality,
+  );
+
+  @async
+  AnalysisImageWrapper yuv420toNv21(AnalysisImageWrapper yuvImage);
+
+  @async
+  AnalysisImageWrapper bgra8888toJpeg(
+    AnalysisImageWrapper bgra8888image,
+    int jpegQuality,
+  );
+}
+
 @HostApi()
 abstract class CameraInterface {
   @async
@@ -147,6 +230,7 @@ abstract class CameraInterface {
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
+    bool enablePhysicalButton,
     String flashMode,
     String captureMode,
     bool enableImageStream,
@@ -232,8 +316,7 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
-    bool autoStart,
-  );
+    bool autoStart,);
 
   @async
   bool setExifPreferences(ExifPreferences exifPreferences);
@@ -243,4 +326,7 @@ abstract class CameraInterface {
   void stopAnalysis();
 
   void setFilter(List<double> matrix);
+
+  @async
+  bool isVideoRecordingAndImageAnalysisSupported(String sensor);
 }

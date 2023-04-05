@@ -1,0 +1,330 @@
+# Image analysis formats
+
+`onImageForAnalysis` is triggered every time a new image is available for analysis.
+`AnalysisImage` is an abstract class and its implementation will depend on the platform and on the `AnalysisConfig` you have defined.
+You can use the `when()` helper function to decide what to do depending on the format:
+
+```dart
+final Widget? result = img.when(jpeg: (JpegImage image) {
+    return handleJpeg(image);
+}, yuv420: (Yuv420Image image) {
+    return handleYuv420( image);
+}, nv21: (Nv21Image image) {
+    return handleNv21(image);
+}, bgra8888: (Bgra8888Image image) {
+    return handleBgra8888(image);
+})
+```
+
+In the above example, handle methods are expected to return a `Widget`.
+You can ommit any of the format if you'd like (that's why `result` might be `null`).
+
+# Displaying an AnalysisImage
+
+An `Image` widget can be used to display an `AnalysisImage` but you may need to convert it to a format that can be displayed first.
+
+## AnalysisImage conversion
+
+The easiest conversion to display an `AnalysisImage` is to convert it to JPEG.
+
+Let's check how to convert each `AnalysisImage implementation.
+
+### JpegImage
+
+This implementation is already in JPEG, so you can simply display it without additional conversion:
+
+```dart
+final Widget? result = img.when(jpeg: (JpegImage image) {
+    return Image.memory(image.bytes);
+})
+```
+
+However, image analysis is often done on other image formats such as NV21 so you will probably end up using an other format.
+
+### YUV_420_888 and NV21
+
+You might succeed in converting these formats in pure dart, but performances will probably not be good and it's not easy to do.
+Instead, use `toJpeg()` on `Yuv420Image` and `Nv21Image` instances to convert them to `JpegImage`.
+This method will make the conversion on the native side so it returns a `Future`.
+
+Example:
+
+```dart
+final Widget? result = img.when(nv21: (Nv21Image image) {
+    return FutureBuilderr<JpegImage>(
+        future: image.toJpeg(),
+        builder: (BuildContext context, AsyncSnapshot<JpegImage> snapshot) {
+            if (snapshot.hasData) {
+                return Image.memory(snapshot.data!.bytes);
+            } else {
+                return SizedBox();
+            }
+        },
+    );
+});
+```
+
+### Bgra8888Image
+
+The iOS format is rather simple to convert in dart with the use of the `image` package:
+
+```dart
+Uint8List convertToJpeg(Bgra8888Image image){
+    return imglib.encodeJpg(
+        imglib.Image.fromBytes(
+            width: image.width,
+            height: image.height,
+            bytes: image.planes[0].bytes.buffer,
+            order: imglib.ChannelOrder.bgra,
+        ),
+        quality: 100,
+    );
+}
+```
+
+An alternative using native conversion is to simply call `toJpeg()` on the `Bgra8888Image` instance.
+It might be better in terms of performances but it returns a `Future`, like `Nv21Image.toJpeg()` and `Yuv420Image.toJpeg()`.
+
+# Example usage
+
+`image` package provides a [variety of effects](https://github.com/brendan-duncan/image/blob/main/doc/filters.md) that you can apply on an image.
+
+In the below example, we will apply a billboard effect to each analysis image and display the result.
+Since we display images one after the other, it will look like a camera preview with a filter applied on it:
+
+![Billboard effect](myimage.gif)
+
+
+Let's start with a basic CamerAwesome setup:
+
+```dart
+class CameraPage extends StatefulWidget {
+  const CameraPage({super.key});
+
+  @override
+  State<CameraPage> createState() => _CameraPageState();
+}
+
+class _CameraPageState extends State<CameraPage> {
+  // 1.
+  final _imageStreamController = StreamController<AnalysisImage>();
+
+  @override
+  void dispose() {
+    _imageStreamController.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // 2.
+      body: CameraAwesomeBuilder.analysisOnly(
+        aspectRatio: CameraAspectRatios.ratio_1_1,
+        sensor: Sensors.front,
+        // 3.
+        onImageForAnalysis: (img) async => _imageStreamController.add(img),
+        imageAnalysisConfig: AnalysisConfig(
+          androidOptions: const AndroidAnalysisOptions.yuv420(
+            width: 150,
+          ),
+          maxFramesPerSecond: 30,
+        ),
+        builder: (state, previewSize, previewRect) {
+          // 4.
+          return CameraPreviewDisplayer(
+            analysisImageStream: _imageStreamController.stream,
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+This part is quite simple but let's explain it a bit:
+
+1. We create a `StreamController` to send each `AnalysisImage` to a widget that will display them.
+2. The `CameraAwesomeBuilder.analysisOnly` builder is the most appropriate since the image analysis itself will be used to display a preview of the camera. We don't need an other camera preview.
+3. `onImageForAnalysis` is called every time a new image is available for analysis. This example simply adds the image to the stream.
+4. `CameraPreviewDisplayer` is where we'll handle the stream of images (given as argument).
+
+Now let's create the `CameraPreviewDisplayer` widget:
+
+```dart
+class CameraPreviewDisplayer extends StatefulWidget {
+  final Stream<AnalysisImage> analysisImageStream;
+
+  const CameraPreviewDisplayer({
+    super.key,
+    required this.analysisImageStream,
+  });
+
+  @override
+  State<CameraPreviewDisplayer> createState() => _CameraPreviewDisplayerState();
+}
+
+class _CameraPreviewDisplayerState extends State<CameraPreviewDisplayer> {
+  // 1.
+  Uint8List? _cachedJpeg;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      // 2.
+      child: StreamBuilder<AnalysisImage>(
+        stream: widget.analysisImageStream,
+        builder: (_, snapshot) {
+          if (!snapshot.hasData) {
+            return const SizedBox.shrink();
+          }
+
+          final img = snapshot.requireData;
+          // 3.
+          return img.when(jpeg: (image) {
+            // 4.
+            _cachedJpeg = _applyFilterOnBytes(image.bytes);
+
+            return ImageAnalysisPreview(
+              currentJpeg: _cachedJpeg!,
+              width: image.width.toDouble(),
+              height: image.height.toDouble(),
+            );
+          }, yuv420: (Yuv420Image image) {
+            // 5.
+            return FutureBuilder<JpegImage>(
+                future: image.toJpeg(),
+                builder: (_, snapshot) {
+                  if (snapshot.data == null && _cachedJpeg == null) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.data != null) {
+                    // 6.
+                    _cachedJpeg = _applyFilterOnBytes(
+                      snapshot.data!.bytes,
+                    );
+                  }
+                  return ImageAnalysisPreview(
+                    currentJpeg: _cachedJpeg!,
+                    width: image.width.toDouble(),
+                    height: image.height.toDouble(),
+                  );
+                });
+          }, nv21: (Nv21Image image) {
+            // 7.
+            return FutureBuilder<JpegImage>(
+                future: image.toJpeg(),
+                builder: (_, snapshot) {
+                  if (snapshot.data == null && _cachedJpeg == null) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.data != null) {
+                    _cachedJpeg = _applyFilterOnBytes(
+                      snapshot.data!.bytes,
+                    );
+                  }
+                  return ImageAnalysisPreview(
+                    currentJpeg: _cachedJpeg!,
+                    width: image.width.toDouble(),
+                    height: image.height.toDouble(),
+                  );
+                });
+          }, bgra8888: (Bgra8888Image image) {
+            // 8.
+            _cachedJpeg = _applyFilterOnImage(
+              imglib.Image.fromBytes(
+                width: image.width,
+                height: image.height,
+                bytes: image.planes[0].bytes.buffer,
+                order: imglib.ChannelOrder.bgra,
+              ),
+            );
+
+            return ImageAnalysisPreview(
+              currentJpeg: _cachedJpeg!,
+              width: image.width.toDouble(),
+              height: image.height.toDouble(),
+            );
+            // We handle all formats so we're sure there won't be a null value
+          })!;
+        },
+      ),
+    );
+  }
+
+  Uint8List _applyFilterOnBytes(Uint8List bytes) {
+    return _applyFilterOnImage(imglib.decodeJpg(bytes)!);
+  }
+
+  Uint8List _applyFilterOnImage(imglib.Image image) {
+    // 9.
+    return imglib.encodeJpg(
+      imglib.billboard(image),
+      quality: 70,
+    );
+  }
+}
+```
+
+There was a bit more code here! Let's explain it:
+
+1. The last image treated is saved in `_cachedJpeg`. It works as a kind of cache: if one conversion is still pending, we show the last one instead.
+2. Since we have a stream of images to display, we use a `StreamBuilder`.
+3. An `AnalysisImage` can have multiple formats. The `when` method let use handle all of them.
+4. If the image is already in `JPEG`, we can apply the filter directly on the bytes.
+5. If the image is in `yuv420` format, we need to convert it to `jpeg` first. We use the `toJpeg` method to do so. This method is asynchronous so we need to use a `FutureBuilder` to wait for the result.
+6. Once the `AsyncSnapshot` has data, apply the filter on it and save the result in `_cachedJpeg`.
+7. The `Nv21Image` handler works exactly the same as `Yuv420Image`.
+8. If the image is in `bgra8888` format, we can convert it easily in dart and apply the filter on the result.
+9. Use the `image` librare (aliased as "imglib" here) to apply a billboard effect on the image.
+
+Finally, let's create the `ImageAnalysisPreview` widget:
+
+```dart
+class ImageAnalysisPreview extends StatelessWidget {
+  final double width;
+  final double height;
+  final Uint8List currentJpeg;
+
+  const ImageAnalysisPreview({
+    super.key,
+    required this.currentJpeg,
+    required this.width,
+    required this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black,
+      child: Transform.scale(
+        // 1.
+        scaleX: -1,
+        child: Transform.rotate(
+          // 2.
+          angle: 3 / 2 * pi,
+          child: SizedBox.expand(
+            child: Image.memory(
+              currentJpeg,
+              // 3.
+              gaplessPlayback: true,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+Let's break it down:
+
+1. On Android, image analysis for the front camera is not flipped (like in the preview). Flip it back with `Transform.scale`.
+2. Rotate the image to have the same orientation as the camera preview.
+3. `gaplessPlayback` avoids flickering when the image is updated.
+
+Full source code is available in `example/analysis_image_filter.dart`.
+A more elaborate example where you can choose which filter to apply is also available in `example/analysis_image_filter_picker.dart`

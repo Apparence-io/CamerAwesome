@@ -24,6 +24,7 @@
 #import "PermissionsController.h"
 #import "AspectRatio.h"
 #import "CameraSensorType.h"
+#import "PhysicalButtonController.h"
 #import "InputAnalysisImageFormat.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -55,12 +56,14 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) MotionController *motionController;
 @property(readonly, nonatomic) LocationController *locationController;
 @property(readonly, nonatomic) VideoController *videoController;
+@property(readonly, nonatomic) PhysicalButtonController *physicalButtonController;
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
 @property(nonatomic, copy) void (^onFrameAvailable)(void);
 
 - (instancetype)initWithCameraSensor:(CameraSensor)sensor
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
+                enablePhysicalButton:(BOOL)enablePhysicalButton
                      aspectRatioMode:(AspectRatio)aspectRatioMode
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
@@ -68,6 +71,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
+- (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink;
 - (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCameraPresset:(CGSize)currentPreviewSize;
@@ -92,6 +96,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (CGFloat)getMaxZoom;
 - (CGSize)getEffectivPreviewSize;
 - (void)setUpCaptureSessionForAudioError:(nonnull void (^)(NSError *))error;
+- (void)setBrightness:(NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -2,12 +2,14 @@
 #import "CameraPreview.h"
 #import "Pigeon/Pigeon.h"
 #import "Permissions.h"
+#import "AnalysisController.h"
 
 FlutterEventSink orientationEventSink;
 FlutterEventSink videoRecordingEventSink;
 FlutterEventSink imageStreamEventSink;
+FlutterEventSink physicalButtonEventSink;
 
-@interface CamerawesomePlugin () <CameraInterface>
+@interface CamerawesomePlugin () <CameraInterface, AnalysisImageUtils>
 @property(readonly, nonatomic) NSObject<FlutterTextureRegistry> *registry;
 @property int64_t textureId;
 @property CameraPreview *camera;
@@ -16,6 +18,7 @@ FlutterEventSink imageStreamEventSink;
 
 @implementation CamerawesomePlugin {
   dispatch_queue_t _dispatchQueue;
+  dispatch_queue_t _dispatchQueueAnalysis;
 }
 
 - (instancetype)init:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -27,6 +30,10 @@ FlutterEventSink imageStreamEventSink;
     _dispatchQueue = dispatch_queue_create("camerawesome.dispatchqueue", NULL);
   }
   
+  if (_dispatchQueueAnalysis == nil) {
+    _dispatchQueueAnalysis = dispatch_queue_create("camerawesome.dispatchqueue.analysis", NULL);
+  }
+  
   return self;
 }
 
@@ -36,10 +43,14 @@ FlutterEventSink imageStreamEventSink;
                                                                       binaryMessenger:[registrar messenger]];
   FlutterEventChannel *imageStreamChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/images"
                                                                       binaryMessenger:[registrar messenger]];
+  FlutterEventChannel *physicalButtonChannel = [FlutterEventChannel eventChannelWithName:@"camerawesome/physical_button"
+                                                                         binaryMessenger:[registrar messenger]];
   [orientationChannel setStreamHandler:instance];
   [imageStreamChannel setStreamHandler:instance];
+  [physicalButtonChannel setStreamHandler:instance];
   
   CameraInterfaceSetup(registrar.messenger, instance);
+  AnalysisImageUtilsSetup(registrar.messenger, instance);
 }
 
 - (FlutterError *)onListenWithArguments:(NSString *)arguments eventSink:(FlutterEventSink)eventSink {
@@ -55,6 +66,12 @@ FlutterEventSink imageStreamEventSink;
     
     if (self.camera != nil) {
       [self.camera setImageStreamEvent:imageStreamEventSink];
+    }
+  } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
+    physicalButtonEventSink = eventSink;
+    
+    if (self.camera != nil) {
+      [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
     }
   }
   
@@ -74,6 +91,12 @@ FlutterEventSink imageStreamEventSink;
     if (self.camera != nil) {
       [self.camera setImageStreamEvent:imageStreamEventSink];
     }
+  } else if ([arguments  isEqual: @"physicalButtonChannel"]) {
+    physicalButtonEventSink = nil;
+    
+    if (self.camera != nil) {
+      [self.camera setPhysicalButtonEventSink:physicalButtonEventSink];
+    }
   }
   return nil;
 }
@@ -84,18 +107,18 @@ FlutterEventSink imageStreamEventSink;
 
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   NSMutableArray *permissions = [NSMutableArray new];
-
+  
   bool cameraPermission = [CameraPermissionsController checkPermission];
   bool microphonePermission = [MicrophonePermissionsController checkPermission];
-
+  
   if (cameraPermission) {
     [permissions addObject:@"camera"];
   }
-
+  
   if (microphonePermission) {
     [permissions addObject:@"record_audio"];
   }
-
+  
   return permissions;
 }
 
@@ -168,7 +191,7 @@ FlutterEventSink imageStreamEventSink;
 }
 
 - (void)setCorrectionBrightness:(nonnull NSNumber *)brightness error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  // TODO:
+  [_camera setBrightness:brightness error:error];
 }
 - (void)setExifPreferencesExifPreferences:(ExifPreferences *)exifPreferences completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
   [self.camera setExifPreferencesGPSLocation: exifPreferences.saveGPSLocation completion:completion];
@@ -255,7 +278,7 @@ FlutterEventSink imageStreamEventSink;
   return [_camera getSensors:AVCaptureDevicePositionBack];
 }
 
-- (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)setupCameraSensor:(nonnull NSString *)sensor aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
@@ -266,12 +289,19 @@ FlutterEventSink imageStreamEventSink;
     return;
   }
   
+  // If camera preview exist, dispose it
+  if (self.camera != nil) {
+    [self.camera dispose];
+    self.camera = nil;
+  }
+  
   AspectRatio aspectRatioMode = [self convertAspectRatio:aspectRatio];
   CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
   CameraSensor cameraSensor = ([sensor isEqualToString:@"FRONT"]) ? Front : Back;
   self.camera = [[CameraPreview alloc] initWithCameraSensor:cameraSensor
                                                streamImages:[enableImageStream boolValue]
                                           mirrorFrontCamera:[mirrorFrontCamera boolValue]
+                                       enablePhysicalButton:[enablePhysicalButton boolValue]
                                             aspectRatioMode:aspectRatioMode
                                                 captureMode:captureModeType
                                                  completion:completion
@@ -342,18 +372,18 @@ FlutterEventSink imageStreamEventSink;
 
 - (void)requestPermissionsSaveGpsLocation:(nonnull NSNumber *)saveGpsLocation completion:(nonnull void (^)(NSArray<NSString *> * _Nullable, FlutterError * _Nullable))completion {
   NSMutableArray *permissions = [NSMutableArray new];
-
+  
   const Boolean cameraGranted = [CameraPermissionsController checkAndRequestPermission];
   if (cameraGranted) {
     [permissions addObject:@"camera"];
   }
-
+  
   bool needToSaveGPSLocation = [saveGpsLocation boolValue];
   if (needToSaveGPSLocation) {
     // TODO: move this to permissions object
     [self.camera.locationController requestWhenInUseAuthorizationOnGranted:^{
       [permissions addObject:@"location"];
-
+      
       completion(permissions, nil);
     } declined:^{
       completion(permissions, nil);
@@ -367,7 +397,7 @@ FlutterEventSink imageStreamEventSink;
     *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't start image stream because video is recording" details:@""];
     return;
   }
-
+  
   [self.camera.imageStreamController setStreamImages:true];
 }
 
@@ -397,5 +427,26 @@ FlutterEventSink imageStreamEventSink;
   return aspectRatioMode;
 }
 
+- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
+  completion(@(YES), nil);
+}
+
+- (void)bgra8888toJpegBgra8888image:(nonnull AnalysisImageWrapper *)bgra8888image jpegQuality:(nonnull NSNumber *)jpegQuality completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
+  dispatch_async(_dispatchQueueAnalysis, ^{
+    [AnalysisController bgra8888toJpegBgra8888image:bgra8888image jpegQuality:jpegQuality completion:completion];
+  });
+}
+
+- (void)nv21toJpegNv21Image:(nonnull AnalysisImageWrapper *)nv21Image jpegQuality:(nonnull NSNumber *)jpegQuality completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
+  [AnalysisController nv21toJpegNv21Image:nv21Image jpegQuality:jpegQuality completion:completion];
+}
+
+- (void)yuv420toJpegYuvImage:(nonnull AnalysisImageWrapper *)yuvImage jpegQuality:(nonnull NSNumber *)jpegQuality completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
+  [AnalysisController yuv420toJpegYuvImage:yuvImage jpegQuality:jpegQuality completion:completion];
+}
+
+- (void)yuv420toNv21YuvImage:(nonnull AnalysisImageWrapper *)yuvImage completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
+  [AnalysisController yuv420toNv21YuvImage:yuvImage completion:completion];
+}
 
 @end

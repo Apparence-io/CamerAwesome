@@ -1,51 +1,63 @@
 {
-    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
-    // Pointez pour afficher la description des attributs existants.
-    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Example",
-            "request": "launch",
-            "type": "dart",
-            "program": "example/lib/main.dart"
-        },
-        {
-            "name": "Subroute",
-            "request": "launch",
-            "type": "dart",
-            "program": "example/lib/subroute_camera.dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "AI analysis - face detection",
-          "request": "launch",
-          "type": "dart",
-          "program": "example/lib/ai_analysis_faces.dart"
-        },
-      {
-        "name": "AI analysis - text/barcode detection",
-        "request": "launch",
-        "type": "dart",
-        "program": "example/lib/ai_analysis_barcode.dart"
-      },
-      {
-        "name": "AI Analysis - barcode with overlay",
-        "request": "launch",
-        "type": "dart",
-        "program": "example/lib/preview_overlay_example.dart"
-      },
-      {
-        "name": "Awesome UI - Custom Theme",
-        "request": "launch",
-        "type": "dart",
-        "program": "example/lib/custom_theme.dart"
-      },
-      {
-        "name": "Awesome UI - Custom widgets",
-        "request": "launch",
-        "type": "dart",
-        "program": "example/lib/custom_awesome_ui.dart"
-      }
-    ]
+  // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+  // Pointez pour afficher la description des attributs existants.
+  // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Example",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/main.dart"
+    },
+    {
+      "name": "Subroute",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/subroute_camera.dart",
+      "flutterMode": "profile"
+    },
+    {
+      "name": "AI analysis - face detection",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/ai_analysis_faces.dart"
+    },
+    {
+      "name": "AI analysis - text/barcode detection",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/ai_analysis_barcode.dart"
+    },
+    {
+      "name": "AI analysis - native conversion 1",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/analysis_image_filter.dart"
+    },
+    {
+      "name": "AI analysis - native conversion 2",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/analysis_image_filter_picker.dart"
+    },
+    {
+      "name": "AI Analysis - barcode with overlay",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/preview_overlay_example.dart"
+    },
+    {
+      "name": "Awesome UI - Custom Theme",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/custom_theme.dart"
+    },
+    {
+      "name": "Awesome UI - Custom widgets",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/custom_awesome_ui.dart"
+    }
+  ]
 }

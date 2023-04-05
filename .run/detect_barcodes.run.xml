@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="detect_barcodes" type="FlutterRunConfigurationType"
+        factoryName="Flutter">
+        <option name="filePath" value="$PROJECT_DIR$/example/lib/ai_analysis_barcode.dart" />
+        <method v="2" />
+    </configuration>
+</component>

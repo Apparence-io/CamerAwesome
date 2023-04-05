@@ -1,3 +1,15 @@
+# 1.4.0
+
+- ✨ Add utilities to convert AnalysisImage into JPEG in order to display them using `toJpeg()`.
+- ✨ Add `preview()` and `analysisOnly()` constructors to `CameraAwesomeBuilder`.
+- ✨ Volume button trigger to take picture or record/stop video.
+- ✨🍏 Add brightness exposure level on iOS / iPadOS.
+- 💥 AnalysisConfig has changed slightly its parameters to have platform-specific setup.
+- 💥 Storage permission is now optional on Android since the introduction of `preview()`
+  and `analysisOnly()` modes.
+- 🐛🍏 iOS / iPadOS max zoom limit.
+- 🐛🤖 Better handle use cases conflicts (video + image analysis on lower-end devices) for Android.
+
 # 1.3.1
 
 - 🐛 Fix video recording overlay image.
@@ -6,7 +18,8 @@
 # 1.3.0
 
 - ✨ Customize the built-in UI by setting an `AwesomeTheme`.
-- ✨ Top, middle and bottom parts of `CameraAwesomeBuilder.awesome()` can now be replaced by your own.
+- ✨ Top, middle and bottom parts of `CameraAwesomeBuilder.awesome()` can now be replaced by your
+  own.
 - ✨ Ability to set camera preview alignment and padding.
 - ✨ Ability to set aspect ratio, zoom, flash mode and SensorType when switching between front and back
   camera.

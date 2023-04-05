@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="camera_analysis_capabilities"
+        type="FlutterRunConfigurationType" factoryName="Flutter">
+        <option name="filePath"
+            value="$PROJECT_DIR$/example/lib/camera_analysis_capabilities.dart" />
+        <method v="2" />
+    </configuration>
+</component>

@@ -4,6 +4,7 @@ PODS:
     - Flutter
   - camerawesome (0.0.1):
     - Flutter
+    - JPSVolumeButtonHandler
   - CGRPCZlib (1.8.0)
   - CNIOAtomics (2.40.0)
   - CNIOBoringSSL (2.19.0)
@@ -76,6 +77,7 @@ PODS:
   - GTMSessionFetcher/Core (1.7.2)
   - integration_test (0.0.1):
     - Flutter
+  - JPSVolumeButtonHandler (1.0.5)
   - Logging (1.4.0)
   - MLImage (1.0.0-beta3)
   - MLKitBarcodeScanning (2.2.0):
@@ -119,7 +121,7 @@ PODS:
     - Flutter
     - gRPC-Swift (~> 1.8.0)
   - PromisesObjC (2.2.0)
-  - Protobuf (3.22.0)
+  - Protobuf (3.22.1)
   - SwiftNIO (2.40.0):
     - _NIODataStructures (= 2.40.0)
     - CNIOAtomics (= 2.40.0)
@@ -285,6 +287,7 @@ SPEC REPOS:
     - GoogleUtilitiesComponents
     - gRPC-Swift
     - GTMSessionFetcher
+    - JPSVolumeButtonHandler
     - Logging
     - MLImage
     - MLKitBarcodeScanning
@@ -338,7 +341,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   _NIODataStructures: 3d45d8e70a1d17a15b1dc59d102c63dbc0525ffd
   better_open_file: 03cf320415d4d3f46b6e00adc4a567d76c1a399d
-  camerawesome: 0f8628efae993cb064ec4f36322e89c237e1064f
+  camerawesome: 1e06540f60158809bc70f398ed1ac2cf93fe4188
   CGRPCZlib: 298dd3237ba4bd7b3eed109e7080ff3324b7d9c9
   CNIOAtomics: 8edf08644e5e6fa0f021c239be9e8beb1cd9ef18
   CNIOBoringSSL: 2c9c96c2e95f15e83fb8d26b9738d939cc39ae33
@@ -360,6 +363,7 @@ SPEC CHECKSUMS:
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
   GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba
   integration_test: a1e7d09bd98eca2fc37aefd79d4f41ad37bdbbe5
+  JPSVolumeButtonHandler: 53110330c9168ed325def93eabff39f0fe3e8082
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   MLImage: 489dfec109f21da8621b28d476401aaf7a0d4ff4
   MLKitBarcodeScanning: d92fe1911001ec36870162c5a0eb206f612b7169
@@ -372,7 +376,7 @@ SPEC CHECKSUMS:
   path_provider_foundation: c68054786f1b4f3343858c1e1d0caaded73f0be9
   patrol: a7622350c42b3a944962fbfe052d07e3691789e5
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
-  Protobuf: 5e6cbc143d02fe08585d86b0098f8b755d2caaab
+  Protobuf: d7f7c8329edf5eb8af65547a8ba3e9c1cee927d5
   SwiftNIO: 829958aab300642625091f82fc2f49cb7cf4ef24
   SwiftNIOConcurrencyHelpers: 697370136789b1074e4535eaae75cbd7f900370e
   SwiftNIOCore: 473fdfe746534d7aa25766916459eeaf6f92ef49
@@ -389,6 +393,6 @@ SPEC CHECKSUMS:
   SwiftProtobuf: afced68785854575756db965e9da52bbf3dc45e7
   video_player_avfoundation: e489aac24ef5cf7af82702979ed16f2a5ef84cff
 
-PODFILE CHECKSUM: b51e7d7490fedd20e5e789ac0bafe93cfbe09272
+PODFILE CHECKSUM: a8b143db2d88d9458665bb11a320e286001a8119
 
 COCOAPODS: 1.12.0

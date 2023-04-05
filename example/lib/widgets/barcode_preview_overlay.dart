@@ -139,14 +139,8 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
   /// Detects if one of the [barcodes] is in the [_scanArea] and updates UI
   /// accordingly.
   Future _detectBarcodeInArea(AnalysisImage img, List<Barcode> barcodes) async {
-    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
-    final croppedSize = img.cropRect == null
-        ? imageSize
-        : Size(
-            // TODO Width and height of cropRect are inverted
-            img.cropRect!.size.height,
-            img.cropRect!.size.width,
-          );
+    final Size imageSize = img.size;
+    final croppedSize = img.croppedSize;
 
     try {
       final ratioAnalysisToPreview =

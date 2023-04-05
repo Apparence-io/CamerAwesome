@@ -2,6 +2,7 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -15,6 +16,7 @@ import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.SensorOrientation
 import io.flutter.plugin.common.EventChannel
@@ -63,48 +65,53 @@ data class CameraXState(
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
-        // Preview
-        preview = if (aspectRatio != null) {
-            Preview.Builder().setTargetAspectRatio(aspectRatio!!).setCameraSelector(cameraSelector)
-                .build()
-        } else {
-            Preview.Builder().setCameraSelector(cameraSelector).build()
-        }
+        if (currentCaptureMode != CaptureModes.ANALYSIS_ONLY) {
+            // Preview
+            preview = if (aspectRatio != null) {
+                Preview.Builder().setTargetAspectRatio(aspectRatio!!)
+                    .setCameraSelector(cameraSelector).build()
+            } else {
+                Preview.Builder().setCameraSelector(cameraSelector).build()
+            }
 
-        preview!!.setSurfaceProvider(
-            surfaceProvider(executor(activity))
-        )
-        if (currentCaptureMode == CaptureModes.PHOTO) {
-            imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
+            preview!!.setSurfaceProvider(
+                surfaceProvider(executor(activity))
+            )
+            if (currentCaptureMode == CaptureModes.PHOTO) {
+                imageCapture = ImageCapture.Builder().setCameraSelector(cameraSelector)
 //                .setJpegQuality(100)
-                .apply {
-                    //photoSize?.let { setTargetResolution(it) }
-                    if (rational.denominator != rational.numerator) {
-                        setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
-                    }
-                    setFlashMode(
-                        when (flashMode) {
-                            FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
-                            FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
-                            else -> ImageCapture.FLASH_MODE_OFF
+                    .apply {
+                        //photoSize?.let { setTargetResolution(it) }
+                        if (rational.denominator != rational.numerator) {
+                            setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
                         }
-                    )
-                }.build()
-        } else {
-            recorder =
-                Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST)).build()
-            videoCapture = VideoCapture.withOutput(recorder!!)
+                        setFlashMode(
+                            when (flashMode) {
+                                FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
+                                FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
+                                else -> ImageCapture.FLASH_MODE_OFF
+                            }
+                        )
+                    }.build()
+            } else if (currentCaptureMode == CaptureModes.VIDEO) {
+                recorder =
+                    Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+                        .build()
+                videoCapture = VideoCapture.withOutput(recorder!!)
+            }
         }
 
-        val useCases = mutableListOf(
-            preview,
+        val addAnalysisUseCase = enableImageStream && imageAnalysisBuilder != null
+        var useCases = mutableListOf(
+            if (currentCaptureMode == CaptureModes.ANALYSIS_ONLY) null else preview,
             if (currentCaptureMode == CaptureModes.PHOTO) {
                 imageCapture
-            } else {
+            } else null,
+            if (currentCaptureMode == CaptureModes.VIDEO) {
                 videoCapture
-            },
-        ).apply {
-            if (enableImageStream && imageAnalysisBuilder != null) {
+            } else null,
+        ).filterNotNull().toMutableList().apply {
+            if (addAnalysisUseCase) {
                 imageAnalysis = imageAnalysisBuilder!!.build()
                 add(imageAnalysis!!)
             } else {
@@ -112,12 +119,23 @@ data class CameraXState(
             }
         }
 
+        val cameraLevel = CameraCapabilities.getCameraLevel(
+            cameraSelector, cameraProvider
+        )
         cameraProvider.unbindAll()
+        if (currentCaptureMode == CaptureModes.VIDEO && addAnalysisUseCase && cameraLevel < CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3) {
+            Log.w(
+                CamerawesomePlugin.TAG,
+                "Trying to bind too many use cases for this device (level $cameraLevel), ignoring image analysis"
+            )
+            useCases = useCases.filter { uc -> uc !is ImageAnalysis }.toMutableList()
+        }
+
         previewCamera = cameraProvider.bindToLifecycle(
             activity as LifecycleOwner,
             cameraSelector,
             UseCaseGroup.Builder().apply {
-                for (uc in useCases.filterNotNull()) addUseCase(uc)
+                for (uc in useCases) addUseCase(uc)
             }
                 // TODO Orientation might be wrong, to be verified
                 .setViewPort(ViewPort.Builder(rational, Surface.ROTATION_0).build()).build(),
@@ -147,23 +165,41 @@ data class CameraXState(
 
     fun setCaptureMode(captureMode: CaptureModes) {
         currentCaptureMode = captureMode
-        if (currentCaptureMode == CaptureModes.PHOTO) {
-            // Release video related stuff
-            videoCapture = null
-            recording?.close()
-            recording = null
-            recorder = null
+        when (currentCaptureMode) {
+            CaptureModes.PHOTO -> {
+                // Release video related stuff
+                videoCapture = null
+                recording?.close()
+                recording = null
+                recorder = null
 
-        } else {
-            // Release photo related stuff
-            imageCapture = null
+            }
+
+            CaptureModes.VIDEO -> {
+                // Release photo related stuff
+                imageCapture = null
+            }
+
+            else -> {
+                // Preview and analysis only modes
+
+                // Release video related stuff
+                videoCapture = null
+                recording?.close()
+                recording = null
+                recorder = null
+
+                // Release photo related stuff
+                imageCapture = null
+            }
         }
     }
 
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun previewSizes(): List<Size> {
         val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
-            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo)
+            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo),
+//            Camera2CameraInfo.from(previewCamera!!.cameraInfo).cameraId
         )
         return CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
     }
@@ -249,4 +285,6 @@ data class CameraXState(
             else -> Rational(3, 4)
         }
     }
+
+
 }

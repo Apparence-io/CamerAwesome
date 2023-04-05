@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="analysis_image_filter_picker"
+        type="FlutterRunConfigurationType" factoryName="Flutter">
+        <option name="filePath"
+            value="$PROJECT_DIR$/example/lib/analysis_image_filter_picker.dart" />
+        <method v="2" />
+    </configuration>
+</component>
