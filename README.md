@@ -54,8 +54,8 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                  | Android |  iOS  |
-| :-------------------------------------- | :-----: | :---: |
+| System                                   | Android |  iOS  |
+| :--------------------------------------- | :-----: | :---: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
@@ -63,11 +63,12 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 🌆 Photo live filters                    |    ✅    |   ✅   |
 | 🌤 Exposure level                        |    ✅    |   ✅   |
 | 📡 Broadcast live image stream           |    ✅    |   ✅   |
+| 🧪 Image analysis (barcode scan & more.) |    ✅    |   ✅   |
 | 👁 Zoom                                  |    ✅    |   ✅   |
 | 📸 Device flash support                  |    ✅    |   ✅   |
 | ⌛️ Auto focus                            |    ✅    |   ✅   |
 | 📲 Live switching camera                 |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream               |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream                |    ✅    |   ✅   |
 | 🤐 Background auto stop                  |    ✅    |   ✅   |
 | 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
 | 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
