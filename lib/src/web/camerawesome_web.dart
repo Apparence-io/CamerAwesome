@@ -237,8 +237,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<bool> isVideoRecordingAndImageAnalysisSupported(String argSensor) {
-    // TODO: implement isVideoRecordingAndImageAnalysisSupported
-    throw UnimplementedError();
+    return Future.value(false);
   }
 
   Widget buildPreview() {

@@ -102,7 +102,7 @@ class PreparingCameraState extends CameraState {
   void initPhysicalButton() {
     _physicalButtonStreamSub?.cancel();
     _physicalButtonStreamSub =
-        CamerawesomePlugin.listenPhysicalButton()!.listen(
+        CamerawesomePlugin.listenPhysicalButton()?.listen(
       (res) async {
         if (res == CameraPhysicalButton.volume_down ||
             res == CameraPhysicalButton.volume_up) {
