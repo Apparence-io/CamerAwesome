@@ -5,6 +5,8 @@ import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
 import 'package:camerawesome/src/web/src/models/flash_mode.dart';
+import 'package:camerawesome/src/web/src/models/zoom_level.dart';
+import 'package:camerawesome/src/web/src/utils/dart_js_util.dart';
 import 'package:camerawesome/src/web/src/utils/dart_ui.dart' as ui;
 
 const String torchModeKey = 'torch';
@@ -67,6 +69,21 @@ class CameraWebState {
   }
 
   Future<void> start() => videoElement.play();
+
+  /// Pauses the camera stream on the current frame.
+  void pause() => videoElement.pause();
+
+  /// Stops the camera stream and resets the camera source.
+  void stop() {
+    final List<html.MediaStreamTrack>? tracks = stream?.getTracks();
+    if (tracks != null) {
+      for (final html.MediaStreamTrack track in tracks) {
+        track.stop();
+      }
+    }
+    videoElement.srcObject = null;
+    stream = null;
+  }
 
   // Captures a picture and returns the saved file in a JPEG format.
   /// Enables the camera flash (torch mode) for a period of taking a picture
@@ -137,6 +154,64 @@ class CameraWebState {
     flashMode = mode;
     // Enable the torch mode only if the flash mode is always.
     _setTorchMode(enabled: mode == FlashMode.always);
+  }
+
+  /// Sets the camera zoom level to [zoom].
+  ///
+  /// Throws a [CameraWebException] if the zoom level is invalid,
+  /// not supported or the camera has not been initialized or started.
+  void setZoomLevel(double zoom) {
+    final List<html.MediaStreamTrack> videoTracks =
+        stream?.getVideoTracks() ?? <html.MediaStreamTrack>[];
+
+    if (videoTracks.isEmpty) {
+      throw CameraWebException(
+        CameraErrorCode.notStarted,
+        'The camera has not been initialized or started.',
+      );
+    }
+
+    final html.MediaStreamTrack defaultVideoTrack = videoTracks.first;
+
+    /// The zoom level capability is represented by MediaSettingsRange.
+    /// See: https://developer.mozilla.org/en-US/docs/Web/API/MediaSettingsRange
+    final Object zoomLevelCapability = defaultVideoTrack
+            .getCapabilities()[ZoomLevel.constraintName] as Object? ??
+        <dynamic, dynamic>{};
+
+    final num? minimumZoomLevel =
+        JsUtil.getProperty(zoomLevelCapability, 'min') as num?;
+    final num? maximumZoomLevel =
+        JsUtil.getProperty(zoomLevelCapability, 'max') as num?;
+
+    final ZoomLevel zoomLevel;
+    if (minimumZoomLevel != null && maximumZoomLevel != null) {
+      zoomLevel = ZoomLevel(
+        minimum: minimumZoomLevel.toDouble(),
+        maximum: maximumZoomLevel.toDouble(),
+        videoTrack: defaultVideoTrack,
+      );
+    } else {
+      throw CameraWebException(
+        CameraErrorCode.zoomLevelNotSupported,
+        'The zoom level is not supported by the current camera.',
+      );
+    }
+
+    if (zoom < zoomLevel.minimum || zoom > zoomLevel.maximum) {
+      throw CameraWebException(
+        CameraErrorCode.zoomLevelInvalid,
+        'The provided zoom level must be in the range of ${zoomLevel.minimum} to ${zoomLevel.maximum}.',
+      );
+    }
+
+    zoomLevel.videoTrack.applyConstraints(<String, Object>{
+      'advanced': <Object>[
+        <String, Object>{
+          ZoomLevel.constraintName: zoom,
+        }
+      ]
+    });
   }
 
   ///

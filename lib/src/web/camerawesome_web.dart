@@ -204,8 +204,8 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<void> setZoom(double argZoom) {
-    return Future.value();
+  Future<void> setZoom(double zoom) async {
+    return _cameraWebController.setZoomLevel(zoom);
   }
 
   @override
@@ -220,8 +220,9 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<bool> stop() {
-    return Future.value(false);
+  Future<bool> stop() async {
+    _cameraWebController.stop();
+    return true;
   }
 
   @override

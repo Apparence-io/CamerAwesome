@@ -9,6 +9,7 @@ import 'package:camerawesome/src/web/src/models/camera_state.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
 import 'package:camerawesome/src/web/src/models/flash_mode.dart';
+import 'package:camerawesome/src/web/src/models/zoom_level.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
@@ -119,6 +120,8 @@ class CameraWebController {
 
   Future<void> start() => cameraState.start();
 
+  void stop() => cameraState.stop();
+
   Future<bool> takePhoto(final String path) async {
     final blob = await cameraState.takePhoto();
     html.FileSystem filesystem =
@@ -143,6 +146,25 @@ class CameraWebController {
     }
     return cameraState.setFlashMode(flashMode);
   }
+
+  void setZoomLevel(final double zoomLevel) {
+    final Map<dynamic, dynamic>? supportedConstraints =
+        mediaDevices?.getSupportedConstraints();
+    final bool zoomLevelSupported =
+        supportedConstraints?[ZoomLevel.constraintName] as bool? ?? false;
+
+    if (!zoomLevelSupported) {
+      throw CameraWebException(
+        CameraErrorCode.zoomLevelNotSupported,
+        'The zoom level is not supported in the current browser.',
+      );
+    }
+    return cameraState.setZoomLevel(zoomLevel);
+  }
+
+  ///
+  /// PRIVATE METHODS
+  ///
 
   Future<html.MediaStream> _getCameraStream(
       final CameraOptions cameraOptions) async {
