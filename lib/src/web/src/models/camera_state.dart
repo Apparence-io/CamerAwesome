@@ -1,6 +1,7 @@
 import 'dart:html' as html;
 
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/web/src/models/camera_direction.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
@@ -219,6 +220,30 @@ class CameraWebState {
     return zoomLevel;
   }
 
+  /// Returns a lens direction of this camera.
+  ///
+  /// Returns null if the camera is missing a video track or
+  /// the video track does not include the facing mode setting.
+  CameraDirection? getCameraDirection() {
+    final List<html.MediaStreamTrack> videoTracks =
+        videoElement.srcObject?.getVideoTracks() ?? <html.MediaStreamTrack>[];
+
+    if (videoTracks.isEmpty) {
+      return null;
+    }
+
+    final html.MediaStreamTrack defaultVideoTrack = videoTracks.first;
+    final Map<dynamic, dynamic> defaultVideoTrackSettings =
+        defaultVideoTrack.getSettings();
+
+    final String? facingMode =
+        defaultVideoTrackSettings['facingMode'] as String?;
+
+    return facingMode == null
+        ? null
+        : CameraDirection.fromFacingMode(facingMode);
+  }
+
   ///
   ///PRIVATES
   ///
@@ -258,6 +283,13 @@ class CameraWebState {
 
   /// Applies default styles to the video [element].
   void _applyDefaultVideoStyles(html.VideoElement element) {
+    final bool isBackCamera = getCameraDirection() == CameraDirection.back;
+
+    // Flip the video horizontally if it is not taken from a back camera.
+    if (!isBackCamera) {
+      element.style.transform = 'scaleX(-1)';
+    }
+
     element.style
       ..transformOrigin = 'center'
       ..pointerEvents = 'none'

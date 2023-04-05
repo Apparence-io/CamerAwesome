@@ -14,7 +14,7 @@ enum FlashMode {
 
   /// Returns the [FlashMode] from a [String].
   /// Returns [FlashMode.none] if the [String] is not recognized.
-  static FlashMode fromString(String flashMode) {
+  factory FlashMode.fromString(String flashMode) {
     switch (flashMode) {
       case 'NONE':
         return FlashMode.none;
