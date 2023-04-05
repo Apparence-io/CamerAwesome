@@ -11,6 +11,7 @@ import 'package:camerawesome/src/web/src/utils/dart_js_util.dart';
 import 'package:camerawesome/src/web/src/utils/dart_ui.dart' as ui;
 
 const String torchModeKey = 'torch';
+const String facingModeKey = 'facingMode';
 
 class CameraWebState {
   /// Creates a new instance of [CameraWebState]
@@ -100,6 +101,15 @@ class CameraWebState {
     final int videoHeight = videoElement.videoHeight;
     final html.CanvasElement canvas =
         html.CanvasElement(width: videoWidth, height: videoHeight);
+
+    final bool isBackCamera = getCameraDirection() == CameraDirection.back;
+
+    // Flip the picture horizontally if it is not taken from a back camera.
+    if (!isBackCamera) {
+      canvas.context2D
+        ..translate(videoWidth, 0)
+        ..scale(-1, 1);
+    }
 
     canvas.context2D
         .drawImageScaled(videoElement, 0, 0, videoWidth, videoHeight);

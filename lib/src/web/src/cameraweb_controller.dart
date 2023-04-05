@@ -4,12 +4,16 @@ import 'dart:html' as html;
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/handlers/expections_handler.dart';
 import 'package:camerawesome/src/web/src/handlers/permissions_handler.dart';
+import 'package:camerawesome/src/web/src/models/camera_direction.dart';
+import 'package:camerawesome/src/web/src/models/camera_metadata.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/camera_state.dart';
+import 'package:camerawesome/src/web/src/models/camera_type.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
 import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:camerawesome/src/web/src/models/zoom_level.dart';
+import 'package:camerawesome/src/web/src/utils/dart_js_util.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
@@ -26,8 +30,8 @@ class CameraWebController {
   List<PreviewSize?> get availableVideoSizes => cameraState.availableVideoSizes;
 
   ///https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/enumerateDevices
-  Future<List<String>> availableCameras() async {
-    final List<String> camerasIds = <String>[];
+  Future<List<CameraMetadata>> availableCameras() async {
+    final List<CameraMetadata> camerasMetadata = <CameraMetadata>[];
     // Throw a not supported exception if the current browser window
     // does not support any media devices.
     if (mediaDevices == null) {
@@ -72,8 +76,25 @@ class CameraWebController {
       if (videoTracks.isEmpty) {
         continue;
       }
+      final String cameraLabel = videoInputDevice.label ?? '';
 
-      camerasIds.add(videoInputDevice.deviceId!);
+      // Get the facing mode from the first available video track.
+      final String? facingMode = _getFacingModeForVideoTrack(videoTracks.first);
+
+      // Get the lens direction based on the facing mode.
+      // Fallback to the external lens direction
+      // if the facing mode is not available.
+      final CameraDirection cameraDirection = facingMode != null
+          ? CameraDirection.fromFacingMode(facingMode)
+          : CameraDirection.external;
+
+      final cameraMetadata = CameraMetadata(
+        name: cameraLabel,
+        cameraDirection: cameraDirection,
+        deviceId: videoInputDevice.deviceId!,
+        facingMode: facingMode,
+      );
+      camerasMetadata.add(cameraMetadata);
 
       // Release the camera stream of the current video input device.
       for (final html.MediaStreamTrack videoTrack in videoTracks) {
@@ -81,7 +102,7 @@ class CameraWebController {
       }
     }
 
-    return camerasIds;
+    return camerasMetadata;
   }
 
   ///
@@ -94,21 +115,28 @@ class CameraWebController {
       _permissionsHandler.requestPermissions();
 
   Future<void> setupCamera(final int textureId) async {
-    final camerasIds = await availableCameras();
+    final camerasMetadata = await availableCameras();
     const videoSize = Size(4096, 2160);
+    final firstCamera = camerasMetadata.firstOrNull;
+
+    final CameraType? cameraType = firstCamera?.facingMode != null
+        ? CameraType.fromFacingMode(firstCamera!.facingMode!)
+        : null;
+
     cameraState = CameraWebState(
       textureId: textureId,
       options: CameraOptions(
         audio: const AudioConstraints(enabled: true),
         video: VideoConstraints(
-          facingMode: FacingModeConstraint(CameraType.user),
+          facingMode:
+              cameraType != null ? FacingModeConstraint(cameraType) : null,
           width: VideoSizeConstraint(
             ideal: videoSize.width.toInt(),
           ),
           height: VideoSizeConstraint(
             ideal: videoSize.height.toInt(),
           ),
-          deviceId: camerasIds.firstOrNull,
+          deviceId: firstCamera?.deviceId,
         ),
       ),
     );
@@ -160,6 +188,67 @@ class CameraWebController {
   ///
   /// PRIVATE METHODS
   ///
+
+  /// Returns a facing mode of the [videoTrack]
+  /// (null if the facing mode is not available).
+  String? _getFacingModeForVideoTrack(html.MediaStreamTrack videoTrack) {
+    if (mediaDevices == null) {
+      throw PlatformException(
+        code: CameraErrorCode.notSupported.toString(),
+        message: 'The camera is not supported on this device.',
+      );
+    }
+
+    // Check if the camera facing mode is supported by the current browser.
+    final Map<dynamic, dynamic> supportedConstraints =
+        mediaDevices!.getSupportedConstraints();
+    final bool facingModeSupported =
+        supportedConstraints[facingModeKey] as bool? ?? false;
+
+    // Return null if the facing mode is not supported.
+    if (!facingModeSupported) {
+      return null;
+    }
+
+    // MediaTrackSettings:
+    // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackSettings
+    final Map<dynamic, dynamic> videoTrackSettings = videoTrack.getSettings();
+    final String? facingMode = videoTrackSettings[facingModeKey] as String?;
+
+    if (facingMode != null) {
+      return facingMode;
+    }
+    // If the facing mode does not exist in the video track settings,
+    // check for the facing mode in the video track capabilities.
+    //
+    // MediaTrackCapabilities:
+    // https://www.w3.org/TR/mediacapture-streams/#dom-mediatrackcapabilities
+
+    // Check if getting the video track capabilities is supported.
+    //
+    // The method may not be supported on Firefox.
+    // See: https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrack/getCapabilities#browser_compatibility
+    if (!JsUtil.hasProperty(videoTrack, 'getCapabilities')) {
+      // Return null if the video track capabilites are not supported.
+      return null;
+    }
+
+    final Map<dynamic, dynamic> videoTrackCapabilities =
+        videoTrack.getCapabilities();
+
+    // A list of facing mode capabilities as
+    // the camera may support multiple facing modes.
+    final List<String> facingModeCapabilities = List<String>.from(
+        (videoTrackCapabilities[facingModeKey] as List<dynamic>?)
+                ?.cast<String>() ??
+            []);
+
+    if (facingModeCapabilities.isEmpty) {
+      return null;
+    }
+    final String facingModeCapability = facingModeCapabilities.first;
+    return facingModeCapability;
+  }
 
   Future<html.MediaStream> _getCameraStream(
       final CameraOptions cameraOptions) async {
