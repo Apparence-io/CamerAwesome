@@ -6,7 +6,9 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.hardware.camera2.CameraCharacteristics
 import android.location.Location
+import android.os.Build
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
@@ -52,7 +54,7 @@ import kotlin.math.roundToInt
 
 
 enum class CaptureModes {
-    PHOTO, VIDEO,
+    PHOTO, VIDEO, PREVIEW, ANALYSIS_ONLY,
 }
 
 class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
@@ -131,12 +133,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         val cameraSelector =
             if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
+        val mode = CaptureModes.valueOf(captureMode)
         cameraState = CameraXState(textureRegistry!!,
             textureEntry!!,
             cameraProvider = cameraProvider,
             cameraSelector = cameraSelector,
             mirrorFrontCamera = mirrorFrontCamera,
-            currentCaptureMode = CaptureModes.valueOf(captureMode),
+            currentCaptureMode = mode,
             enableImageStream = enableImageStream,
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
             this.updateAspectRatio(aspectRatio)
@@ -146,13 +149,15 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         orientationStreamListener =
             OrientationStreamListener(activity!!, listOf(sensorOrientationListener, cameraState))
         imageStreamChannel.setStreamHandler(cameraState)
-        cameraState.updateLifecycle(activity!!)
-        // Zoom should be set after updateLifeCycle
-        if (zoom > 0) {
-            // TODO Find a better way to set initial zoom than using a postDelayed
-            Handler(Looper.getMainLooper()).postDelayed({
-                cameraState.previewCamera!!.cameraControl.setLinearZoom(zoom.toFloat())
-            }, 200)
+        if (mode != CaptureModes.ANALYSIS_ONLY) {
+            cameraState.updateLifecycle(activity!!)
+            // Zoom should be set after updateLifeCycle
+            if (zoom > 0) {
+                // TODO Find a better way to set initial zoom than using a postDelayed
+                Handler(Looper.getMainLooper()).postDelayed({
+                    cameraState.previewCamera!!.cameraControl.setLinearZoom(zoom.toFloat())
+                }, 200)
+            }
         }
 
         callback(Result.success(true))
@@ -219,6 +224,31 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun setFilter(matrix: List<Double>) {
         colorMatrix = matrix
+    }
+
+    override fun isVideoRecordingAndImageAnalysisSupported(
+        sensor: String,
+        callback: (Result<Boolean>) -> Unit
+    ) {
+        val cameraSelector =
+            if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val cameraProvider = ProcessCameraProvider.getInstance(
+                activity!!
+            ).get()
+            callback(
+                Result.success(
+                    CameraCapabilities.getCameraLevel(
+                        cameraSelector,
+                        cameraProvider
+                    ) == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3
+                )
+            )
+        } else {
+            callback(Result.success(false))
+        }
+
     }
 
     override fun startAnalysis() {
@@ -314,17 +344,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
-
         cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
         cameraState.imageCapture!!.takePicture(outputFileOptions,
             ContextCompat.getMainExecutor(activity!!),
             object : ImageCapture.OnImageSavedCallback {
 
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Log.d(
-                        CamerawesomePlugin.TAG,
-                        "Success capturing picture ${outputFileResults.savedUri}, with location: ${exifPreferences.saveGPSLocation}"
-                    )
                     if (colorMatrix != null && noneFilter != colorMatrix) {
                         val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
 
@@ -687,6 +712,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         this.binding = binding
         textureRegistry = binding.textureRegistry
         CameraInterface.setUp(binding.binaryMessenger, this)
+        AnalysisImageUtils.setUp(binding.binaryMessenger, AnalysisImageConverter())
         orientationStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/orientation")
         orientationStreamChannel.setStreamHandler(sensorOrientationListener)
         imageStreamChannel = EventChannel(binding.binaryMessenger, "camerawesome/images")

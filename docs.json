@@ -55,19 +55,23 @@
       ]
     ],
     [
-      "AI with MLKit",
+      "Image analysis (AI)",
       [
         [
           "Image analysis configuration",
-          "/ai_with_mlkit/image_analysis_configuration"
+          "/image_analysis/image_analysis_configuration"
+        ],
+        [
+          "Image analysis formats and conversion",
+          "/image_analysis/image_format_conversions"
         ],
         [
           "Reading barcodes",
-          "/ai_with_mlkit/reading_barcodes"
+          "/image_analysis/reading_barcodes"
         ],
         [
           "Detecting faces",
-          "/ai_with_mlkit/detecting_faces"
+          "/image_analysis/detecting_faces"
         ]
       ]
     ],

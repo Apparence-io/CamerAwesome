@@ -2,7 +2,6 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
-import android.util.Log
 import android.util.Size
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageAnalysis
@@ -74,7 +73,10 @@ class ImageAnalysisBuilder private constructor(
             when (format) {
                 OutputImageFormat.JPEG -> {
                     val jpegImage = ImageUtil.yuvImageToJpegByteArray(
-                        imageProxy, Rect(0, 0, imageProxy.width, imageProxy.height), 80
+                        imageProxy,
+                        Rect(0, 0, imageProxy.width, imageProxy.height),
+                        80,
+//                        imageProxy.imageInfo.rotationDegrees
                     )
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage

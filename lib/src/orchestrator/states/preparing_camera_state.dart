@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
@@ -37,8 +36,18 @@ class PreparingCameraState extends CameraState {
       case CaptureMode.video:
         await _startVideoMode();
         break;
+      case CaptureMode.preview:
+        await _startPreviewMode();
+        break;
+      case CaptureMode.analysis_only:
+        await _startAnalysisMode();
+        break;
     }
     await cameraContext.analysisController?.setup();
+    if (nextCaptureMode == CaptureMode.analysis_only) {
+      // Analysis controller needs to be setup before going to AnalysisCameraState
+      cameraContext.changeState(AnalysisCameraState.from(cameraContext));
+    }
 
     if (cameraContext.enablePhysicalButton) {
       initPhysicalButton();
@@ -103,8 +112,8 @@ class PreparingCameraState extends CameraState {
             onVideoRecordingMode: (vrm) => vrm.stopRecording(),
           );
         }
-          },
-        );
+      },
+    );
   }
 
   @override
@@ -139,6 +148,31 @@ class PreparingCameraState extends CameraState {
     cameraContext.changeState(PhotoCameraState.from(cameraContext));
 
     return CamerawesomePlugin.start();
+  }
+
+  Future _startPreviewMode() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    await _init(
+      enableImageStream: cameraContext.imageAnalysisEnabled,
+      enablePhysicalButton: cameraContext.enablePhysicalButton,
+    );
+    cameraContext.changeState(PreviewCameraState.from(cameraContext));
+
+    return CamerawesomePlugin.start();
+  }
+
+  Future _startAnalysisMode() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    await _init(
+      enableImageStream: cameraContext.imageAnalysisEnabled,
+      enablePhysicalButton: cameraContext.enablePhysicalButton,
+    );
+
+    // On iOS, we need to start the camera to get the first frame because there
+    // is no "AnalysisMode" at all.
+    if (Platform.isIOS) {
+      return CamerawesomePlugin.start();
+    }
   }
 
   bool _isReady = false;

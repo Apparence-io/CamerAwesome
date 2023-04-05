@@ -82,6 +82,33 @@ enum class CamerAwesomePermission(val raw: Int) {
   }
 }
 
+enum class AnalysisImageFormat(val raw: Int) {
+  YUV_420(0),
+  BGRA8888(1),
+  JPEG(2),
+  NV21(3),
+  UNKNOWN(4);
+
+  companion object {
+    fun ofRaw(raw: Int): AnalysisImageFormat? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+enum class AnalysisRotation(val raw: Int) {
+  ROTATION0DEG(0),
+  ROTATION90DEG(1),
+  ROTATION180DEG(2),
+  ROTATION270DEG(3);
+
+  companion object {
+    fun ofRaw(raw: Int): AnalysisRotation? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PreviewSize (
   val width: Double,
@@ -207,6 +234,248 @@ data class AndroidFocusSettings (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class PlaneWrapper (
+  val bytes: ByteArray,
+  val bytesPerRow: Long,
+  val bytesPerPixel: Long? = null,
+  val width: Long? = null,
+  val height: Long? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): PlaneWrapper {
+      val bytes = list[0] as ByteArray
+      val bytesPerRow = list[1].let { if (it is Int) it.toLong() else it as Long }
+      val bytesPerPixel = list[2].let { if (it is Int) it.toLong() else it as Long? }
+      val width = list[3].let { if (it is Int) it.toLong() else it as Long? }
+      val height = list[4].let { if (it is Int) it.toLong() else it as Long? }
+      return PlaneWrapper(bytes, bytesPerRow, bytesPerPixel, width, height)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      bytes,
+      bytesPerRow,
+      bytesPerPixel,
+      width,
+      height,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class CropRectWrapper (
+  val left: Long,
+  val top: Long,
+  val width: Long,
+  val height: Long
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): CropRectWrapper {
+      val left = list[0].let { if (it is Int) it.toLong() else it as Long }
+      val top = list[1].let { if (it is Int) it.toLong() else it as Long }
+      val width = list[2].let { if (it is Int) it.toLong() else it as Long }
+      val height = list[3].let { if (it is Int) it.toLong() else it as Long }
+      return CropRectWrapper(left, top, width, height)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      left,
+      top,
+      width,
+      height,
+    )
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class AnalysisImageWrapper (
+  val format: AnalysisImageFormat,
+  val bytes: ByteArray? = null,
+  val width: Long,
+  val height: Long,
+  val planes: List<PlaneWrapper?>? = null,
+  val cropRect: CropRectWrapper? = null,
+  val rotation: AnalysisRotation? = null
+
+) {
+  companion object {
+    @Suppress("UNCHECKED_CAST")
+    fun fromList(list: List<Any?>): AnalysisImageWrapper {
+      val format = AnalysisImageFormat.ofRaw(list[0] as Int)!!
+      val bytes = list[1] as ByteArray?
+      val width = list[2].let { if (it is Int) it.toLong() else it as Long }
+      val height = list[3].let { if (it is Int) it.toLong() else it as Long }
+      val planes = list[4] as List<PlaneWrapper?>?
+      val cropRect: CropRectWrapper? = (list[5] as List<Any?>?)?.let {
+        CropRectWrapper.fromList(it)
+      }
+      val rotation: AnalysisRotation? = (list[6] as Int?)?.let {
+        AnalysisRotation.ofRaw(it)
+      }
+      return AnalysisImageWrapper(format, bytes, width, height, planes, cropRect, rotation)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf<Any?>(
+      format.raw,
+      bytes,
+      width,
+      height,
+      planes,
+      cropRect?.toList(),
+      rotation?.raw,
+    )
+  }
+}
+
+@Suppress("UNCHECKED_CAST")
+private object AnalysisImageUtilsCodec : StandardMessageCodec() {
+  override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
+    return when (type) {
+      128.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          AnalysisImageWrapper.fromList(it)
+        }
+      }
+      129.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          CropRectWrapper.fromList(it)
+        }
+      }
+      130.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          PlaneWrapper.fromList(it)
+        }
+      }
+      else -> super.readValueOfType(type, buffer)
+    }
+  }
+  override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
+    when (value) {
+      is AnalysisImageWrapper -> {
+        stream.write(128)
+        writeValue(stream, value.toList())
+      }
+      is CropRectWrapper -> {
+        stream.write(129)
+        writeValue(stream, value.toList())
+      }
+      is PlaneWrapper -> {
+        stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      else -> super.writeValue(stream, value)
+    }
+  }
+}
+
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface AnalysisImageUtils {
+  fun nv21toJpeg(nv21Image: AnalysisImageWrapper, jpegQuality: Long, callback: (Result<AnalysisImageWrapper>) -> Unit)
+  fun yuv420toJpeg(yuvImage: AnalysisImageWrapper, jpegQuality: Long, callback: (Result<AnalysisImageWrapper>) -> Unit)
+  fun yuv420toNv21(yuvImage: AnalysisImageWrapper, callback: (Result<AnalysisImageWrapper>) -> Unit)
+  fun bgra8888toJpeg(bgra8888image: AnalysisImageWrapper, jpegQuality: Long, callback: (Result<AnalysisImageWrapper>) -> Unit)
+
+  companion object {
+    /** The codec used by AnalysisImageUtils. */
+    val codec: MessageCodec<Any?> by lazy {
+      AnalysisImageUtilsCodec
+    }
+    /** Sets up an instance of `AnalysisImageUtils` to handle messages through the `binaryMessenger`. */
+    @Suppress("UNCHECKED_CAST")
+    fun setUp(binaryMessenger: BinaryMessenger, api: AnalysisImageUtils?) {
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.AnalysisImageUtils.nv21toJpeg", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val nv21ImageArg = args[0] as AnalysisImageWrapper
+            val jpegQualityArg = args[1].let { if (it is Int) it.toLong() else it as Long }
+            api.nv21toJpeg(nv21ImageArg, jpegQualityArg) { result: Result<AnalysisImageWrapper> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.AnalysisImageUtils.yuv420toJpeg", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val yuvImageArg = args[0] as AnalysisImageWrapper
+            val jpegQualityArg = args[1].let { if (it is Int) it.toLong() else it as Long }
+            api.yuv420toJpeg(yuvImageArg, jpegQualityArg) { result: Result<AnalysisImageWrapper> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.AnalysisImageUtils.yuv420toNv21", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val yuvImageArg = args[0] as AnalysisImageWrapper
+            api.yuv420toNv21(yuvImageArg) { result: Result<AnalysisImageWrapper> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.AnalysisImageUtils.bgra8888toJpeg", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val bgra8888imageArg = args[0] as AnalysisImageWrapper
+            val jpegQualityArg = args[1].let { if (it is Int) it.toLong() else it as Long }
+            api.bgra8888toJpeg(bgra8888imageArg, jpegQualityArg) { result: Result<AnalysisImageWrapper> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
 @Suppress("UNCHECKED_CAST")
 private object CameraInterfaceCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
@@ -322,6 +591,7 @@ interface CameraInterface {
   fun startAnalysis()
   fun stopAnalysis()
   fun setFilter(matrix: List<Double>)
+  fun isVideoRecordingAndImageAnalysisSupported(sensor: String, callback: (Result<Boolean>) -> Unit)
 
   companion object {
     /** The codec used by CameraInterface. */
@@ -970,6 +1240,26 @@ interface CameraInterface {
               wrapped = wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val sensorArg = args[0] as String
+            api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

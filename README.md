@@ -54,8 +54,8 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                   | Android  |  iOS   |
-| :--------------------------------------- | :------: | :----: |
+| System                                  | Android |  iOS  |
+| :-------------------------------------- | :-----: | :---: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
@@ -67,7 +67,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | 📸 Device flash support                  |    ✅    |   ✅   |
 | ⌛️ Auto focus                            |    ✅    |   ✅   |
 | 📲 Live switching camera                 |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream                |    ✅    |   ✅   |
+| 😵‍💫 Camera rotation stream               |    ✅    |   ✅   |
 | 🤐 Background auto stop                  |    ✅    |   ✅   |
 | 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
 | 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
@@ -92,13 +92,14 @@ Add these on `ios/Runner/Info.plist`:
 
 ```xml
 
-<key>NSCameraUsageDescription</key><string>Your own description</string>
+<key>NSCameraUsageDescription</key>
+<string>Your own description</string>
 
-<key>NSMicrophoneUsageDescription</key><string>To enable microphone access when recording video
-</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>To enable microphone access when recording video</string>
 
-<key>NSLocationWhenInUseUsageDescription</key><string>To enable GPS location access for Exif data
-</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>To enable GPS location access for Exif data</string>
 ```
 
 - **Android**
@@ -109,11 +110,19 @@ Change the minimum SDK version to 21 (or higher) in `android/app/build.gradle`:
 minSdkVersion 21
 ```
 
+In order to be able to take pictures or record videos, you may need additional permissions depending
+on the Android version and where you want to save them.
+Read more about it in
+the [official documentation](https://developer.android.com/training/data-storage).
+> `WRITE_EXTERNAL_STORAGE` is not included in the plugin starting with version 1.4.0.
+
+
 If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ```xml
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.example.yourpackage">
+        package="com.example.yourpackage">
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
   <!-- Other declarations -->
@@ -301,11 +310,16 @@ CameraAwesomeBuilder.awesome(
   ),
   onImageForAnalysis: analyzeImage,
   imageAnalysisConfig: AnalysisConfig(
-    outputFormat: InputAnalysisImageFormat.nv21, // choose between jpeg / nv21 / yuv_420 / bgra8888
-    width: 720,
-    maxFramesPerSecond: 20,
-  ),
-),
+        // Android specific options
+        androidOptions: const AndroidAnalysisOptions.nv21(
+            // Target width (CameraX will chose the closest resolution to this width)
+            width: 250,
+        ),
+        // Wether to start automatically the analysis (true by default)
+        autoStart: true,
+        // Max frames per second, null for no limit (default)
+        maxFramesPerSecond: 20,
+    ),
 ```
 
 > MLkit recommands to use nv21 format for Android. <br>
@@ -313,9 +327,19 @@ CameraAwesomeBuilder.awesome(
 > For machine learning you don't need full resolution images (720 or lower should be enough and
 > makes computation easier)
 
-Learn more about the image analysis configuration in the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration).
+Learn more about the image analysis configuration in
+the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
+.
 
-Check also detailed explanations on how to use MLKit to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes) and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
+Check also detailed explanations on how to use MLKit
+to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)
+and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
+
+⚠️ On Android, some devices don't support video recording and image analysis at the same time.
+
+- If they don't, image analysis will be ignored.
+- You can check if a device has this capability by
+  using `CameraCharacteristics .isVideoRecordingAndImageAnalysisSupported(Sensors.back)`.
 
 ---
 

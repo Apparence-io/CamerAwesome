@@ -266,7 +266,7 @@ packages:
     source: hosted
     version: "4.0.2"
   image:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: image
       sha256: "483a389d6ccb292b570c31b3a193779b1b0178e7eb571986d9a49904b6861227"
@@ -394,10 +394,10 @@ packages:
     dependency: "direct dev"
     description:
       name: patrol
-      sha256: f81b997b845eb73c7d6843ec8ec2b36ef4e8d14f4e32eaa6557715a4907beedd
+      sha256: "0c4f23ddf1e8754c76fbcbf364a6c10f93ac2568d95d48ee9a04f0e35a6b1e6f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.3"
+    version: "1.0.8"
   petitparser:
     dependency: transitive
     description:
