@@ -3,7 +3,6 @@ package com.apparence.camerawesome.cameraX
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.hardware.camera2.CameraCharacteristics
-import android.os.Build
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -11,7 +10,6 @@ import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
-import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
@@ -200,7 +198,8 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun previewSizes(): List<Size> {
         val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
-            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo)
+            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo),
+//            Camera2CameraInfo.from(previewCamera!!.cameraInfo).cameraId
         )
         return CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
     }

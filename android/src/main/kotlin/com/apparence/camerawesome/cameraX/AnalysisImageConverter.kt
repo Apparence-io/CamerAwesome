@@ -149,8 +149,8 @@ class AnalysisImageConverter : AnalysisImageUtils {
         val chromaWidth: Int = yuvImage.width.toInt() / 2
         val vRowStride = vPlane.bytesPerRow.toInt()
         val uRowStride = uPlane.bytesPerRow.toInt()
-        val vPixelStride = vPlane.bytesPerPixel.toInt()
-        val uPixelStride = uPlane.bytesPerPixel.toInt()
+        val vPixelStride = vPlane.bytesPerPixel!!.toInt()
+        val uPixelStride = uPlane.bytesPerPixel!!.toInt()
 
         // Interleave the u and v frames, filling up the rest of the buffer. Use two line buffers to
         // perform faster bulk gets from the byte buffers.
