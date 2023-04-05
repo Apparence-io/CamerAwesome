@@ -316,7 +316,8 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
-    bool autoStart,);
+    bool autoStart,
+  );
 
   @async
   bool setExifPreferences(ExifPreferences exifPreferences);

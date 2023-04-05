@@ -6,6 +6,7 @@ import 'package:camerawesome/src/orchestrator/models/analysis/input_analysis.dar
 import 'package:flutter/foundation.dart';
 
 part 'analysis_image_ext.dart';
+
 abstract class AnalysisImage {
   /// The height of the image in pixels.
   final int height;
@@ -196,7 +197,7 @@ class JpegImage extends AnalysisImage {
 
   JpegImage.from(Map<String, dynamic> map)
       : this(
-    bytes: map["jpegImage"],
+          bytes: map["jpegImage"],
           height: map["height"],
           width: map["width"],
           rotation: InputAnalysisImageRotation.values.byName(map["rotation"]),
