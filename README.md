@@ -54,7 +54,7 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                   | Android  |  iOS   |
+| Features                                 | Android  |  iOS   |
 | :--------------------------------------- | :------: | :----: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
