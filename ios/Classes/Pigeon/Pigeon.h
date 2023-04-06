@@ -25,16 +25,6 @@ typedef NS_ENUM(NSUInteger, VideoRecordingQuality) {
   VideoRecordingQualityHighest = 5,
 };
 
-/// Video recording aspect ratio.
-/// If the specified [VideoRecordingAspectRatio] is not available on the device
-/// for the given [VideoRecordingQuality], an exception will be thrown.
-/// You can set [VideoRecordingAspectRatio.any] to avoir this exception.
-typedef NS_ENUM(NSUInteger, VideoRecordingAspectRatio) {
-  VideoRecordingAspectRatioRatio_4_3 = 0,
-  VideoRecordingAspectRatioRatio_16_9 = 1,
-  VideoRecordingAspectRatioAny = 2,
-};
-
 /// If the specified [VideoRecordingQuality] is not available on the device,
 /// the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
 /// [higher] is the default fallback strategy.

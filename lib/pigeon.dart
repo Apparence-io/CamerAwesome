@@ -23,16 +23,6 @@ enum VideoRecordingQuality {
   highest,
 }
 
-/// Video recording aspect ratio.
-/// If the specified [VideoRecordingAspectRatio] is not available on the device
-/// for the given [VideoRecordingQuality], an exception will be thrown.
-/// You can set [VideoRecordingAspectRatio.any] to avoir this exception.
-enum VideoRecordingAspectRatio {
-  ratio_4_3,
-  ratio_16_9,
-  any,
-}
-
 /// If the specified [VideoRecordingQuality] is not available on the device,
 /// the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
 /// [higher] is the default fallback strategy.
@@ -46,13 +36,10 @@ enum PigeonSensorType {
   ///
   /// The wide angle sensor is the default sensor for iOS
   wideAngle,
-
   /// A built-in camera with a shorter focal length than that of the wide-angle camera.
   ultraWideAngle,
-
   /// A built-in camera device with a longer focal length than the wide-angle camera.
   telephoto,
-
   /// A device that consists of two cameras, one Infrared and one YUV.
   ///
   /// iOS only
@@ -299,7 +286,7 @@ class PlaneWrapper {
   PlaneWrapper({
     required this.bytes,
     required this.bytesPerRow,
-    required this.bytesPerPixel,
+    this.bytesPerPixel,
     this.width,
     this.height,
   });
@@ -308,7 +295,7 @@ class PlaneWrapper {
 
   int bytesPerRow;
 
-  int bytesPerPixel;
+  int? bytesPerPixel;
 
   int? width;
 
@@ -329,7 +316,7 @@ class PlaneWrapper {
     return PlaneWrapper(
       bytes: result[0]! as Uint8List,
       bytesPerRow: result[1]! as int,
-      bytesPerPixel: result[2]! as int,
+      bytesPerPixel: result[2] as int?,
       width: result[3] as int?,
       height: result[4] as int?,
     );

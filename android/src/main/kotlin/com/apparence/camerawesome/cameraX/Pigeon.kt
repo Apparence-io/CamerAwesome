@@ -67,24 +67,6 @@ enum class VideoRecordingQuality(val raw: Int) {
 }
 
 /**
- * Video recording aspect ratio.
- * If the specified [VideoRecordingAspectRatio] is not available on the device
- * for the given [VideoRecordingQuality], an exception will be thrown.
- * You can set [VideoRecordingAspectRatio.any] to avoir this exception.
- */
-enum class VideoRecordingAspectRatio(val raw: Int) {
-    RATIO_4_3(0),
-    RATIO_16_9(1),
-    ANY(2);
-
-    companion object {
-        fun ofRaw(raw: Int): VideoRecordingAspectRatio? {
-            return values().firstOrNull { it.raw == raw }
-        }
-    }
-}
-
-/**
  * If the specified [VideoRecordingQuality] is not available on the device,
  * the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
  * [higher] is the default fallback strategy.
@@ -110,15 +92,17 @@ enum class PigeonSensorType(val raw: Int) {
 
     /** A built-in camera with a shorter focal length than that of the wide-angle camera. */
     ULTRAWIDEANGLE(1),
-  /** A built-in camera device with a longer focal length than the wide-angle camera. */
-  TELEPHOTO(2),
-  /**
-   * A device that consists of two cameras, one Infrared and one YUV.
-   *
-   * iOS only
-   */
-  TRUEDEPTH(3),
-  UNKNOWN(4);
+
+    /** A built-in camera device with a longer focal length than the wide-angle camera. */
+    TELEPHOTO(2),
+
+    /**
+     * A device that consists of two cameras, one Infrared and one YUV.
+     *
+     * iOS only
+     */
+    TRUEDEPTH(3),
+    UNKNOWN(4);
 
   companion object {
     fun ofRaw(raw: Int): PigeonSensorType? {
@@ -195,13 +179,13 @@ data class ExifPreferences (
   val saveGPSLocation: Boolean
 
 ) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): ExifPreferences {
-      val saveGPSLocation = list[0] as Boolean
-      return ExifPreferences(saveGPSLocation)
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): ExifPreferences {
+            val saveGPSLocation = list[0] as Boolean
+            return ExifPreferences(saveGPSLocation)
+        }
     }
-  }
 
     fun toList(): List<Any?> {
         return listOf<Any?>(
@@ -304,16 +288,16 @@ data class PigeonSensorTypeDevice(
     val iso: Double,
     /** A Boolean value that indicates whether the flash is currently available for use. */
     val flashAvailable: Boolean,
-  /** An identifier that uniquely identifies the device. */
-  val uid: String
+    /** An identifier that uniquely identifies the device. */
+    val uid: String
 
 ) {
-  companion object {
-    @Suppress("UNCHECKED_CAST")
-    fun fromList(list: List<Any?>): PigeonSensorTypeDevice {
-      val sensorType = PigeonSensorType.ofRaw(list[0] as Int)!!
-      val name = list[1] as String
-      val iso = list[2] as Double
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        fun fromList(list: List<Any?>): PigeonSensorTypeDevice {
+            val sensorType = PigeonSensorType.ofRaw(list[0] as Int)!!
+            val name = list[1] as String
+            val iso = list[2] as Double
       val flashAvailable = list[3] as Boolean
       val uid = list[4] as String
       return PigeonSensorTypeDevice(sensorType, name, iso, flashAvailable, uid)
@@ -363,7 +347,7 @@ data class AndroidFocusSettings (
 data class PlaneWrapper(
     val bytes: ByteArray,
     val bytesPerRow: Long,
-    val bytesPerPixel: Long,
+    val bytesPerPixel: Long? = null,
     val width: Long? = null,
     val height: Long? = null
 
@@ -373,7 +357,7 @@ data class PlaneWrapper(
         fun fromList(list: List<Any?>): PlaneWrapper {
             val bytes = list[0] as ByteArray
             val bytesPerRow = list[1].let { if (it is Int) it.toLong() else it as Long }
-            val bytesPerPixel = list[2].let { if (it is Int) it.toLong() else it as Long }
+            val bytesPerPixel = list[2].let { if (it is Int) it.toLong() else it as Long? }
             val width = list[3].let { if (it is Int) it.toLong() else it as Long? }
             val height = list[4].let { if (it is Int) it.toLong() else it as Long? }
             return PlaneWrapper(bytes, bytesPerRow, bytesPerPixel, width, height)
@@ -724,16 +708,16 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
             }
             is PreviewSize -> {
                 stream.write(133)
-        writeValue(stream, value.toList())
-      }
-      is PreviewSize -> {
-          stream.write(134)
-        writeValue(stream, value.toList())
-      }
-      is VideoOptions -> {
-          stream.write(135)
-        writeValue(stream, value.toList())
-      }
+                writeValue(stream, value.toList())
+            }
+            is PreviewSize -> {
+                stream.write(134)
+                writeValue(stream, value.toList())
+            }
+            is VideoOptions -> {
+                stream.write(135)
+                writeValue(stream, value.toList())
+            }
       else -> super.writeValue(stream, value)
     }
   }
@@ -867,16 +851,20 @@ interface CameraInterface {
                             }
                         }
                     }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.checkPermissions", codec)
-        if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            var wrapped: List<Any?>
-            try {
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.CameraInterface.checkPermissions",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        var wrapped: List<Any?>
+                        try {
               wrapped = listOf<Any?>(api.checkPermissions())
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
@@ -947,8 +935,8 @@ interface CameraInterface {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.recordVideo", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val pathArg = args[0] as String
+              val args = message as List<Any?>
+              val pathArg = args[0] as String
               api.recordVideo(pathArg) { result: Result<Unit> ->
                   val error = result.exceptionOrNull()
                   if (error != null) {
