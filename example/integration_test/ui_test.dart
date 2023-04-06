@@ -27,7 +27,7 @@ void main() {
 
       await allowPermissionsIfNeeded($);
 
-      expect($(#ratioButton), findsOneWidget);
+      expect($(AwesomeAspectRatioButton), findsOneWidget);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
         $(AwesomeLocationButton).$(AwesomeBouncingWidget),
@@ -46,7 +46,7 @@ void main() {
 
       // Switch to video mode
       await $.tap(find.text("VIDEO"));
-      expect($(#ratioButton), findsNothing);
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
         $(AwesomeLocationButton).$(AwesomeBouncingWidget),
@@ -76,7 +76,7 @@ void main() {
 
       await allowPermissionsIfNeeded($);
 
-      expect($(#ratioButton), findsOneWidget);
+      expect($(AwesomeAspectRatioButton), findsOneWidget);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
         $(AwesomeLocationButton).$(AwesomeBouncingWidget),
@@ -106,11 +106,10 @@ void main() {
       );
 
       await allowPermissionsIfNeeded($);
-
-      await $.pump(const Duration(milliseconds: 2000));
+      await $.pump(const Duration(milliseconds: 1000));
 
       // Ratio button is not visible in video mode
-      expect($(#ratioButton), findsNothing);
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
       expect($(AwesomeCameraSwitchButton), findsOneWidget);
@@ -121,11 +120,12 @@ void main() {
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsOneWidget);
 
-      await $(AwesomeCaptureButton).tap();
+      await $(AwesomeCaptureButton).tap(andSettle: false);
       await allowPermissionsIfNeeded($);
+      await $.pump(const Duration(milliseconds: 2000));
 
-      // Recording
-      expect($(#ratioButton), findsNothing);
+      // // Recording
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsNothing);
       expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
       expect($(AwesomeCameraSwitchButton), findsNothing);
@@ -135,11 +135,11 @@ void main() {
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsNothing);
 
-      await $(AwesomeCaptureButton).tap();
-      await $.pump(const Duration(milliseconds: 2000));
+      await $(AwesomeCaptureButton).tap(andSettle: false);
+      await $.pump(const Duration(milliseconds: 4000));
 
       // Not recording
-      expect($(#ratioButton), findsNothing);
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
       expect($(AwesomeCameraSwitchButton), findsOneWidget);
@@ -267,6 +267,8 @@ void main() {
     },
   );
 
+  // TODO Doesn't work on Firebase Test Lab, Exif GPS data is not saved (but works on local emulator)
+  // See EXIF_PRINT logs at https://console.firebase.google.com/u/0/project/camerawesome-6e777/testlab/histories/bh.a7d83610595ed8b2/matrices/4861867399844663011/executions/bs.9deb07f6afc5c21c/logs
   patrol(
     'Location > Save if specified',
     ($) async {
@@ -282,9 +284,13 @@ void main() {
 
       await allowPermissionsIfNeeded($);
 
-      await $(AwesomeCaptureButton).tap();
+      await $(AwesomeCaptureButton).tap(andSettle: false);
+      await $.pump(const Duration(seconds: 2));
       final filePath = await tempPath('single_photo_back_gps.jpg');
       final exif = await readExifFromFile(File(filePath));
+      // for(final entry in exif.entries) {
+      //   print('EXIF_PRINT > ${entry.key} : ${entry.value}');
+      // }
       final gpsTags = exif.entries.where(
         (element) => element.key.startsWith('GPS GPS'),
       );
