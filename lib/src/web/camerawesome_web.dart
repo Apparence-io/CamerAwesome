@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/models.dart';
 import 'package:camerawesome/src/web/src/cameraweb_controller.dart';
-import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -58,7 +58,11 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
     ExifPreferences exifPreferences,
   ) async {
     final int textureId = _textureCounter++;
-    await _cameraWebController.setupCamera(textureId);
+    await _cameraWebController.setupCamera(
+      textureId,
+      FlashMode.values.byName(flashMode.toLowerCase()),
+      CaptureMode.values.byName(captureMode.toLowerCase()),
+    );
     return Future.value(true);
   }
 
@@ -88,6 +92,44 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
       Future.value(_cameraWebController.availableVideoSizes);
 
   @override
+  Future<double> getMaxZoom() {
+    return Future.value(_cameraWebController.getMaxZoom());
+  }
+
+  @override
+  Future<int> getPreviewTextureId() {
+    return Future.value(_cameraWebController.cameraState.textureId);
+  }
+
+  @override
+  Future<void> setCaptureMode(String captureMode) async {
+    return _cameraWebController
+        .setCaptureMode(CaptureMode.values.byName(captureMode.toLowerCase()));
+  }
+
+  @override
+  Future<void> setFlashMode(String flashMode) async {
+    return _cameraWebController
+        .setFlashMode(FlashMode.values.byName(flashMode.toLowerCase()));
+  }
+
+  @override
+  Future<void> setZoom(double zoom) async {
+    return _cameraWebController.setZoomLevel(zoom);
+  }
+
+  Widget buildPreview() {
+    return HtmlElementView(
+      viewType: _cameraWebController.cameraState.getViewType(),
+    );
+  }
+
+  @override
+  Future<PreviewSize?> getEffectivPreviewSize() {
+    return Future.value(PreviewSize(width: 4096, height: 2160));
+  }
+
+  @override
   Future<void> focusOnPoint(PreviewSize argPreviewsize, double argX,
       double argY, AndroidFocusSettings? argAndroidfocussettings) {
     return Future.value();
@@ -99,23 +141,8 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<PreviewSize?> getEffectivPreviewSize() {
-    return Future.value(PreviewSize(width: 4096, height: 2160));
-  }
-
-  @override
   Future<List<PigeonSensorTypeDevice?>> getFrontSensors() {
     return Future.value([]);
-  }
-
-  @override
-  Future<double> getMaxZoom() {
-    return Future.value(_cameraWebController.getMaxZoom());
-  }
-
-  @override
-  Future<int> getPreviewTextureId() {
-    return Future.value(_cameraWebController.cameraState.textureId);
   }
 
   @override
@@ -154,11 +181,6 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<void> setCaptureMode(String argMode) {
-    return Future.value();
-  }
-
-  @override
   Future<void> setCorrection(double argBrightness) {
     return Future.value();
   }
@@ -171,11 +193,6 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   @override
   Future<void> setFilter(List<double?> argMatrix) {
     return Future.value();
-  }
-
-  @override
-  Future<void> setFlashMode(String flashMode) async {
-    return _cameraWebController.setFlashMode(FlashMode.fromString(flashMode));
   }
 
   @override
@@ -201,11 +218,6 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   @override
   Future<void> setSensor(String argSensor, String? argDeviceid) {
     return Future.value();
-  }
-
-  @override
-  Future<void> setZoom(double zoom) async {
-    return _cameraWebController.setZoomLevel(zoom);
   }
 
   @override
@@ -238,11 +250,5 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   @override
   Future<bool> isVideoRecordingAndImageAnalysisSupported(String argSensor) {
     return Future.value(false);
-  }
-
-  Widget buildPreview() {
-    return HtmlElementView(
-      viewType: _cameraWebController.cameraState.getViewType(),
-    );
   }
 }

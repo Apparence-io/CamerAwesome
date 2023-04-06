@@ -1,11 +1,11 @@
 import 'dart:html' as html;
 
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/models/models.dart';
 import 'package:camerawesome/src/web/src/models/camera_direction.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
-import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:camerawesome/src/web/src/models/zoom_level.dart';
 import 'package:camerawesome/src/web/src/utils/dart_js_util.dart';
 import 'package:camerawesome/src/web/src/utils/dart_ui.dart' as ui;
@@ -48,7 +48,8 @@ class CameraWebState {
 
   /// Initializes the camera stream displayed in the [videoElement].
   /// Registers the camera view with [textureId] under [getViewType] type.
-  Future<void> initialize(final html.MediaStream mediaStream) async {
+  Future<void> initialize(
+      final html.MediaStream mediaStream, final FlashMode flashMode) async {
     stream = mediaStream;
     videoElement = html.VideoElement();
 
@@ -68,6 +69,11 @@ class CameraWebState {
       ..setAttribute('playsinline', '');
 
     _applyDefaultVideoStyles(videoElement);
+    try {
+      setFlashMode(flashMode);
+    } catch (e) {
+      // ignore exception on init if flash is not supported
+    }
   }
 
   Future<void> start() => videoElement.play();
@@ -255,6 +261,10 @@ class CameraWebState {
   }
 
   ///
+  /// VIDEO
+  ///
+
+  ///
   ///PRIVATES
   ///
 
@@ -306,5 +316,25 @@ class CameraWebState {
       ..width = '100%'
       ..height = '100%'
       ..objectFit = 'cover';
+  }
+
+  /// Returns the first supported video mime type (amongst mp4 and webm)
+  /// to use when recording a video.
+  ///
+  /// Throws a [CameraWebException] if the browser does not support
+  /// any of the available video mime types.
+  String get _videoMimeType {
+    const List<String> types = <String>[
+      'video/mp4',
+      'video/webm',
+    ];
+
+    return types.firstWhere(
+      (type) => html.MediaRecorder.isTypeSupported(type),
+      orElse: () => throw CameraWebException(
+        CameraErrorCode.notSupported,
+        'The browser does not support any of the following video types: ${types.join(',')}.',
+      ),
+    );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:camerawesome/src/web/src/models/camera_direction.dart';
 import 'package:flutter/material.dart';
 
@@ -44,5 +46,24 @@ class CameraMetadata {
         cameraDirection.hashCode ^
         deviceId.hashCode ^
         facingMode.hashCode;
+  }
+
+  factory CameraMetadata.create(
+    final MediaDeviceInfo deviceInfo,
+    final String? facingMode,
+  ) {
+    // Get the lens direction based on the facing mode.
+    // Fallback to the external lens direction
+    // if the facing mode is not available.
+    final CameraDirection cameraDirection = facingMode != null
+        ? CameraDirection.fromFacingMode(facingMode)
+        : CameraDirection.external;
+
+    return CameraMetadata(
+      name: deviceInfo.label ?? '',
+      cameraDirection: cameraDirection,
+      deviceId: deviceInfo.deviceId!,
+      facingMode: facingMode,
+    );
   }
 }

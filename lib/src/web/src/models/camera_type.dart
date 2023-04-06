@@ -1,5 +1,3 @@
-/// The camera type used in [FacingModeConstraint].
-///
 /// Specifies whether the requested camera should be facing away
 /// or toward the user.
 enum CameraType {

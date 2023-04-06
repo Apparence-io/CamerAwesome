@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:html' as html;
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/web/src/handlers/expections_handler.dart';
 import 'package:camerawesome/src/web/src/handlers/permissions_handler.dart';
-import 'package:camerawesome/src/web/src/models/camera_direction.dart';
 import 'package:camerawesome/src/web/src/models/camera_metadata.dart';
 import 'package:camerawesome/src/web/src/models/camera_options.dart';
 import 'package:camerawesome/src/web/src/models/camera_state.dart';
 import 'package:camerawesome/src/web/src/models/camera_type.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_error_code.dart';
 import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.dart';
-import 'package:camerawesome/src/web/src/models/flash_mode.dart';
 import 'package:camerawesome/src/web/src/models/zoom_level.dart';
 import 'package:camerawesome/src/web/src/utils/dart_js_util.dart';
 import 'package:collection/collection.dart';
@@ -21,6 +20,8 @@ class CameraWebController {
   late final CameraWebState cameraState;
 
   final PermissionsHandler _permissionsHandler;
+
+  late CaptureMode _captureMode;
 
   CameraWebController() : _permissionsHandler = PermissionsHandler();
 
@@ -56,11 +57,7 @@ class CameraWebController {
               device.deviceId != null && device.deviceId!.isNotEmpty,
         );
 
-    // Map video input devices to camera descriptions.
     for (final html.MediaDeviceInfo videoInputDevice in videoInputDevices) {
-      // Get the video stream for the current video input device
-      // to later use for the available video tracks.
-
       final CameraOptions cameraOptions = CameraOptions(
         video: VideoConstraints(deviceId: videoInputDevice.deviceId),
       );
@@ -76,23 +73,12 @@ class CameraWebController {
       if (videoTracks.isEmpty) {
         continue;
       }
-      final String cameraLabel = videoInputDevice.label ?? '';
-
       // Get the facing mode from the first available video track.
       final String? facingMode = _getFacingModeForVideoTrack(videoTracks.first);
 
-      // Get the lens direction based on the facing mode.
-      // Fallback to the external lens direction
-      // if the facing mode is not available.
-      final CameraDirection cameraDirection = facingMode != null
-          ? CameraDirection.fromFacingMode(facingMode)
-          : CameraDirection.external;
-
-      final cameraMetadata = CameraMetadata(
-        name: cameraLabel,
-        cameraDirection: cameraDirection,
-        deviceId: videoInputDevice.deviceId!,
-        facingMode: facingMode,
+      final cameraMetadata = CameraMetadata.create(
+        videoInputDevice,
+        facingMode,
       );
       camerasMetadata.add(cameraMetadata);
 
@@ -114,8 +100,16 @@ class CameraWebController {
   Future<List<String>> requestPermissions() =>
       _permissionsHandler.requestPermissions();
 
-  Future<void> setupCamera(final int textureId) async {
+  ///
+  /// INIT CAMERA
+  ///
+  Future<void> setupCamera(
+    final int textureId,
+    final FlashMode flashMode,
+    final CaptureMode captureMode,
+  ) async {
     final camerasMetadata = await availableCameras();
+    //TODO improve this
     const videoSize = Size(4096, 2160);
     final firstCamera = camerasMetadata.firstOrNull;
 
@@ -143,7 +137,8 @@ class CameraWebController {
     final stream = await _getCameraStream(
       cameraState.options,
     );
-    await cameraState.initialize(stream);
+    setCaptureMode(captureMode);
+    await cameraState.initialize(stream, flashMode);
   }
 
   Future<void> start() => cameraState.start();
@@ -161,6 +156,9 @@ class CameraWebController {
     return true;
   }
 
+  ///
+  /// CAMERA CONFIG
+  ///
   void setFlashMode(final FlashMode flashMode) {
     final Map<dynamic, dynamic>? supportedConstraints =
         mediaDevices?.getSupportedConstraints();
@@ -184,6 +182,14 @@ class CameraWebController {
     _checkZoomSupported();
     return cameraState.getZoomLevelCapability().maximum;
   }
+
+  void setCaptureMode(final CaptureMode captureMode) {
+    _captureMode = captureMode;
+  }
+
+  ///
+  /// VIDEO
+  ///
 
   ///
   /// PRIVATE METHODS
