@@ -1,4 +1,5 @@
 import 'package:camera_app/drivable_camera.dart';
+import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,8 @@ class CameraAwesomeApp extends StatelessWidget {
     return MaterialApp(
       title: 'camerAwesome',
       home: DrivableCamera(
-        saveConfig: SaveConfig.photo(pathBuilder: () async => 'photo.jpg'),
+        saveConfig:
+            SaveConfig.photo(pathBuilder: () async => path(CaptureMode.photo)),
         sensors: [
           Sensor.position(SensorPosition.back),
           Sensor.position(SensorPosition.front),

@@ -35,7 +35,6 @@ class CameraPage extends StatelessWidget {
           ),
           sensors: [
             Sensor.position(SensorPosition.back),
-            Sensor.position(SensorPosition.front),
           ],
           enablePhysicalButton: true,
           // filter: AwesomeFilter.AddictiveRed,

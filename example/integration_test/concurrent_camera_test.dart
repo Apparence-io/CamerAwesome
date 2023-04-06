@@ -1,5 +1,6 @@
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import 'common.dart';
 
@@ -18,7 +19,11 @@ main() {
       ),
     );
     await allowPermissionsIfNeeded($);
+    await $.pumpAndSettle();
+    // await $(AwesomeCaptureButton).tap(andSettle: false);
 
-    await $.pumpAndSettle(duration: const Duration(seconds: 5));
+    await $.pump(const Duration(seconds: 2));
+    await $.pump();
+    expect($(AwesomeCaptureButton), findsOneWidget);
   });
 }

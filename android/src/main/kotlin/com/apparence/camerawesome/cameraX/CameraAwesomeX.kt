@@ -12,6 +12,7 @@ import android.os.*
 import android.util.Log
 import android.util.Rational
 import android.util.Size
+import androidx.camera.camera2.Camera2Config
 import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -95,6 +96,15 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         0.0
     )
 
+    @SuppressLint("UnsafeOptInUsageError")
+    fun configureCameraXLogs() {
+        ProcessCameraProvider.configureInstance(
+            CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig())
+                .setMinimumLoggingLevel(Log.ERROR).build()
+        )
+    }
+
+
     @SuppressLint("RestrictedApi")
     override fun setupCamera(
         sensors: List<PigeonSensor>,
@@ -120,6 +130,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             activity!!.stopService(Intent(activity!!, PlayerService::class.java))
         }
 
+        configureCameraXLogs()
+
         val future = ProcessCameraProvider.getInstance(
             activity!!
         )
@@ -129,8 +141,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 //            if (CameraSensor.valueOf(sensor.name) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
         val mode = CaptureModes.valueOf(captureMode)
-        cameraState = CameraXState(
-            cameraProvider = cameraProvider,
+        cameraState = CameraXState(cameraProvider = cameraProvider,
             textureEntries = sensors.mapIndexed { index: Int, pigeonSensor: PigeonSensor ->
                 (pigeonSensor.deviceId
                     ?: index.toString()) to textureRegistry!!.createSurfaceTexture()
@@ -227,11 +238,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun isVideoRecordingAndImageAnalysisSupported(
-        sensorPosition: PigeonSensorPosition,
-        callback: (Result<Boolean>) -> Unit
+        sensor: PigeonSensorPosition, callback: (Result<Boolean>) -> Unit
     ) {
         val cameraSelector =
-            if (sensorPosition == PigeonSensorPosition.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+            if (sensor == PigeonSensorPosition.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val cameraProvider = ProcessCameraProvider.getInstance(
@@ -240,8 +250,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             callback(
                 Result.success(
                     CameraCapabilities.getCameraLevel(
-                        cameraSelector,
-                        cameraProvider
+                        cameraSelector, cameraProvider
                     ) == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3
                 )
             )
@@ -344,59 +353,66 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
-        cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
-        cameraState.imageCapture!!.takePicture(outputFileOptions,
-            ContextCompat.getMainExecutor(activity!!),
-            object : ImageCapture.OnImageSavedCallback {
-
-                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    if (colorMatrix != null && noneFilter != colorMatrix) {
-                        val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
-
-                        val originalBitmap = BitmapFactory.decodeFile(
-                            outputFileResults.savedUri?.path
+        for (imageCapture in cameraState.imageCaptures) {
+            imageCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
+            imageCapture.takePicture(outputFileOptions,
+                ContextCompat.getMainExecutor(activity!!),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        Log.d(
+                            "CameraX___", "Photo capture succeeded: ${outputFileResults.savedUri}"
                         )
-                        val bitmapCopy = Bitmap.createBitmap(
-                            originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
-                        )
-
-                        val canvas = Canvas(bitmapCopy)
-                        canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
-                            colorFilter = ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
-                                .toFloatArray())
-                        })
-
-                        try {
-                            FileOutputStream(outputFileResults.savedUri?.path).use { out ->
-                                bitmapCopy.compress(
-                                    Bitmap.CompressFormat.JPEG, 100, out
-                                )
-                            }
-                            exif.saveAttributes()
-                        } catch (e: IOException) {
-                            e.printStackTrace()
-                        }
-                    }
-
-                    if (exifPreferences.saveGPSLocation) {
-                        retrieveLocation {
+                        if (colorMatrix != null && noneFilter != colorMatrix) {
                             val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
-                            outputFileOptions.metadata.location = it
-                            exif.setGpsInfo(it)
-                            // We need to actually save the exif data to the file system
-                            exif.saveAttributes()
+
+                            val originalBitmap = BitmapFactory.decodeFile(
+                                outputFileResults.savedUri?.path
+                            )
+                            val bitmapCopy = Bitmap.createBitmap(
+                                originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
+                            )
+
+                            val canvas = Canvas(bitmapCopy)
+                            canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
+                                colorFilter =
+                                    ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
+                                        .toFloatArray())
+                            })
+
+                            try {
+                                FileOutputStream(outputFileResults.savedUri?.path).use { out ->
+                                    bitmapCopy.compress(
+                                        Bitmap.CompressFormat.JPEG, 100, out
+                                    )
+                                }
+                                exif.saveAttributes()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
+                        }
+
+                        if (exifPreferences.saveGPSLocation) {
+                            retrieveLocation {
+                                val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
+                                outputFileOptions.metadata.location = it
+                                exif.setGpsInfo(it)
+                                // We need to actually save the exif data to the file system
+                                exif.saveAttributes()
+                                callback(Result.success(true))
+                            }
+                        } else {
                             callback(Result.success(true))
                         }
-                    } else {
-                        callback(Result.success(true))
                     }
-                }
 
-                override fun onError(exception: ImageCaptureException) {
-                    Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
-                    callback(Result.success(false))
-                }
-            })
+                    override fun onError(exception: ImageCaptureException) {
+                        Log.d("CameraX___", "Error capturing picture")
+
+                        Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
+                        callback(Result.success(false))
+                    }
+                })
+        }
     }
 
     @SuppressLint("RestrictedApi", "MissingPermission")
@@ -453,12 +469,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     }
                 }
             }
-            cameraState.videoCapture!!.targetRotation =
-                orientationStreamListener!!.surfaceOrientation
-            cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(
-                activity!!, FileOutputOptions.Builder(File(path)).build()
-            ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
-                .start(cameraState.executor(activity!!), recordingListener)
+            for (videoCapture in cameraState.videoCaptures) {
+                videoCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
+                cameraState.recording = videoCapture.output.prepareRecording(
+                    activity!!, FileOutputOptions.Builder(File(path)).build()
+                ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
+                    .start(cameraState.executor(activity!!), recordingListener)
+            }
             callback(Result.success(Unit))
         }
     }
@@ -521,10 +538,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         val flashMode = FlashMode.valueOf(mode)
         cameraState.apply {
             this.flashMode = flashMode
-            this.imageCapture?.flashMode = when (flashMode) {
-                FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
-                FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
-                else -> ImageCapture.FLASH_MODE_OFF
+            for (imageCapture in cameraState.imageCaptures) {
+                imageCapture.flashMode = when (flashMode) {
+                    FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
+                    FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
+                    else -> ImageCapture.FLASH_MODE_OFF
+                }
             }
             (cameraState.concurrentCamera?.cameras?.firstOrNull()
                 ?: cameraState.previewCamera)?.cameraControl?.enableTorch(flashMode == FlashMode.ALWAYS)
@@ -768,4 +787,5 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         cancellationTokenSource.cancel()
         cameraPermissions.onCancel(null)
     }
+
 }

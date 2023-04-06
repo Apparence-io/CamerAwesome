@@ -3,7 +3,7 @@ pushd "${SCRIPT_DIR}/../android"
 # flutter build generates files in android/ for building the app
 flutter build apk
 ./gradlew app:assembleDebugAndroidTest
-./gradlew app:assembleDebug -Ptarget=`pwd`/../integration_test/bundled_test.dart
+./gradlew app:assembleDebug -Ptarget=`pwd`/../integration_test/concurrent_camera_test.dart
 
 popd
 

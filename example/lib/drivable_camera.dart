@@ -23,7 +23,7 @@ class DrivableCamera extends StatelessWidget {
           onMediaTap: (media) {},
           sensors: sensors,
           exifPreferences: exifPreferences,
-          filter: AwesomeFilter.AddictiveRed,
+          flashMode: FlashMode.always,
         ),
       ),
     );
