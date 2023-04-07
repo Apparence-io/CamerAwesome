@@ -27,7 +27,7 @@ void main() {
 
       await allowPermissionsIfNeeded($);
 
-      expect($(#ratioButton), findsOneWidget);
+      expect($(AwesomeAspectRatioButton), findsOneWidget);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
         $(AwesomeLocationButton).$(AwesomeBouncingWidget),
@@ -46,7 +46,7 @@ void main() {
 
       // Switch to video mode
       await $.tap(find.text("VIDEO"));
-      expect($(#ratioButton), findsNothing);
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
         $(AwesomeLocationButton).$(AwesomeBouncingWidget),
@@ -76,7 +76,7 @@ void main() {
 
       await allowPermissionsIfNeeded($);
 
-      expect($(#ratioButton), findsOneWidget);
+      expect($(AwesomeAspectRatioButton), findsOneWidget);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
         $(AwesomeLocationButton).$(AwesomeBouncingWidget),
@@ -106,11 +106,10 @@ void main() {
       );
 
       await allowPermissionsIfNeeded($);
-
-      await $.pump(const Duration(milliseconds: 2000));
+      await $.pump(const Duration(milliseconds: 1000));
 
       // Ratio button is not visible in video mode
-      expect($(#ratioButton), findsNothing);
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
       expect($(AwesomeCameraSwitchButton), findsOneWidget);
@@ -121,11 +120,12 @@ void main() {
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsOneWidget);
 
-      await $(AwesomeCaptureButton).tap();
+      await $(AwesomeCaptureButton).tap(andSettle: false);
       await allowPermissionsIfNeeded($);
+      await $.pump(const Duration(milliseconds: 2000));
 
-      // Recording
-      expect($(#ratioButton), findsNothing);
+      // // Recording
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsNothing);
       expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
       expect($(AwesomeCameraSwitchButton), findsNothing);
@@ -135,11 +135,11 @@ void main() {
       expect($(AwesomeCaptureButton), findsOneWidget);
       expect($(AwesomeCameraModeSelector).$(PageView), findsNothing);
 
-      await $(AwesomeCaptureButton).tap();
-      await $.pump(const Duration(milliseconds: 2000));
+      await $(AwesomeCaptureButton).tap(andSettle: false);
+      await $.pump(const Duration(milliseconds: 4000));
 
       // Not recording
-      expect($(#ratioButton), findsNothing);
+      expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect($(AwesomeLocationButton).$(AwesomeBouncingWidget), findsNothing);
       expect($(AwesomeCameraSwitchButton), findsOneWidget);
@@ -267,6 +267,8 @@ void main() {
     },
   );
 
+  // This test might not pass in Firebase Test Lab because location does not seem to be activated. It works on local device.
+  // TODO Try to use Patrol to enable location manually on the device
   patrol(
     'Location > Save if specified',
     ($) async {
@@ -282,9 +284,14 @@ void main() {
 
       await allowPermissionsIfNeeded($);
 
-      await $(AwesomeCaptureButton).tap();
+      await $(AwesomeCaptureButton).tap(andSettle: false);
+      // TODO Wait for media captured instead of a fixed duration (taking picture + retrieving locaiton might take a lot of time)
+      await $.pump(const Duration(seconds: 4));
       final filePath = await tempPath('single_photo_back_gps.jpg');
       final exif = await readExifFromFile(File(filePath));
+      // for (final entry in exif.entries) {
+      //   print('EXIF_PRINT > ${entry.key} : ${entry.value}');
+      // }
       final gpsTags = exif.entries.where(
         (element) => element.key.startsWith('GPS GPS'),
       );

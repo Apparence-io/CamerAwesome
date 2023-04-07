@@ -383,6 +383,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                             val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
                             outputFileOptions.metadata.location = it
                             exif.setGpsInfo(it)
+//                            Log.d("CAMERAX__EXIF", "GPS info saved ${it?.latitude} ${it?.longitude}")
                             // We need to actually save the exif data to the file system
                             exif.saveAttributes()
                             callback(Result.success(true))

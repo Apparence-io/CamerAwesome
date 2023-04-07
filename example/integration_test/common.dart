@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:patrol/patrol.dart';
 
+@isTest
 void patrol(
   String description,
   Future<void> Function(PatrolTester) callback, {
