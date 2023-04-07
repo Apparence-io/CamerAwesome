@@ -44,7 +44,9 @@ class CameraPage extends StatelessWidget {
             ),
             maxFramesPerSecond: 3,
           ),
-          sensors: [sensor],
+          sensorConfig: SensorConfig.single(
+            sensor: sensor,
+          ),
           previewDecoratorBuilder: (state, _, __) {
             return Center(
               child: FutureBuilder<bool>(

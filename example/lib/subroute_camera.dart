@@ -49,8 +49,10 @@ class CameraPage extends StatelessWidget {
                 initialCaptureMode: CaptureMode.photo,
               ),
               filter: AwesomeFilter.AddictiveRed,
-              flashMode: FlashMode.auto,
-              aspectRatio: CameraAspectRatios.ratio_16_9,
+              sensorConfig: SensorConfig.single(
+                flashMode: FlashMode.auto,
+                aspectRatio: CameraAspectRatios.ratio_16_9,
+              ),
               previewFit: CameraPreviewFit.fitWidth,
               onMediaTap: (mediaCapture) {
                 OpenFile.open(mediaCapture.filePath);

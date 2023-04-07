@@ -43,8 +43,10 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.analysisOnly(
-        aspectRatio: CameraAspectRatios.ratio_1_1,
-        sensors: [Sensor.position(SensorPosition.front)],
+        sensorConfig: SensorConfig.single(
+          sensor: Sensor.position(SensorPosition.front),
+          aspectRatio: CameraAspectRatios.ratio_1_1,
+        ),
         onImageForAnalysis: (img) async => _imageStreamController.add(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.yuv420(
