@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
 
+// TODO find a way to explain that this sensorconfig is not bound anymore (user changed sensor for example)
 class SensorConfig {
   late BehaviorSubject<FlashMode> _flashModeController;
 
@@ -41,7 +42,35 @@ class SensorConfig {
       BehaviorSubject<double>();
   StreamSubscription? _brightnessSubscription;
 
-  SensorConfig({
+  SensorConfig.single({
+    Sensor? sensor,
+    FlashMode flashMode = FlashMode.none,
+    bool mirrorFrontCamera = false,
+    double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+  }) : this._(
+          sensors: [sensor ?? Sensor.position(SensorPosition.back)],
+          flash: flashMode,
+          mirrorFrontCamera: mirrorFrontCamera,
+          currentZoom: zoom,
+          aspectRatio: aspectRatio,
+        );
+
+  SensorConfig.multiple({
+    required List<Sensor> sensors,
+    FlashMode flashMode = FlashMode.none,
+    bool mirrorFrontCamera = false,
+    double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+  }) : this._(
+          sensors: sensors,
+          flash: flashMode,
+          mirrorFrontCamera: mirrorFrontCamera,
+          currentZoom: zoom,
+          aspectRatio: aspectRatio,
+        );
+
+  SensorConfig._({
     required this.sensors,
     FlashMode flash = FlashMode.none,
     bool mirrorFrontCamera = false,

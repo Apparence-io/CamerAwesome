@@ -32,7 +32,9 @@ class CameraPage extends StatelessWidget {
           initialCaptureMode: CaptureMode.photo,
         ),
         filter: AwesomeFilter.AddictiveRed,
-        aspectRatio: CameraAspectRatios.ratio_1_1,
+        sensorConfig: SensorConfig.single(
+          aspectRatio: CameraAspectRatios.ratio_1_1,
+        ),
         previewFit: CameraPreviewFit.fitWidth,
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(

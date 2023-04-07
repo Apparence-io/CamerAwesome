@@ -52,17 +52,19 @@ class _CameraPageState extends State<CameraPage> {
                   videoPathBuilder: () => path(CaptureMode.video),
                   initialCaptureMode: CaptureMode.photo,
                 ),
-                sensors: [
-                  Sensor.position(SensorPosition.back),
-                  Sensor.position(SensorPosition.front),
-                  Sensor.type(SensorType.telephoto),
-                ],
+                sensorConfig: SensorConfig.multiple(
+                  sensors: [
+                    Sensor.position(SensorPosition.back),
+                    Sensor.position(SensorPosition.front),
+                    Sensor.type(SensorType.telephoto),
+                  ],
+                  flashMode: FlashMode.auto,
+                  aspectRatio: CameraAspectRatios.ratio_16_9,
+                ),
                 // TODO: create factory for multi cam & single
                 // sensors: sensorDeviceData!.availableSensors
                 //     .map((e) => Sensor.id(e.uid))
                 //     .toList(),
-                flashMode: FlashMode.auto,
-                aspectRatio: CameraAspectRatios.ratio_16_9,
                 previewFit: CameraPreviewFit.fitWidth,
                 onMediaTap: (mediaCapture) {
                   // TODO: multiple files

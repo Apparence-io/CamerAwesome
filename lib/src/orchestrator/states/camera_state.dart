@@ -1,8 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:flutter/foundation.dart';
-
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
@@ -62,6 +62,7 @@ abstract class CameraState {
   /// - while saving an image
   /// Accessible from all states
   Stream<MediaCapture?> get captureState$ => cameraContext.captureState$;
+
   MediaCapture? get captureState => cameraContext.captureState;
 
   /// Switch camera from [Sensors.BACK] [Sensors.front]
@@ -76,35 +77,32 @@ abstract class CameraState {
 
     SensorConfig next;
     if (previous.sensors.length <= 1) {
-      next = SensorConfig(
-        sensors: previous.sensors.map((sensor) {
-          // find the correct sensor according the position
-          if (sensor != null) {
-            if (sensor.position == SensorPosition.back) {
-              sensor.position = SensorPosition.front;
-            } else {
-              sensor.position = SensorPosition.back;
-            }
-
-            sensor.type = null;
-            sensor.deviceId = null;
-          }
-
-          return sensor;
-        }).toList(),
+      next = SensorConfig.single(
+        sensor: previous.sensors.first!.position == SensorPosition.back
+            ? Sensor.position(SensorPosition.front)
+            : Sensor.position(SensorPosition.back),
+        // TODO Initial values are not set in native when set like this
+        aspectRatio: aspectRatio ?? CameraAspectRatios.ratio_4_3,
+        zoom: zoom ?? 0.0,
+        flashMode: flash ?? FlashMode.none,
       );
     } else {
       // switch all camera position in array by one like this:
       // old: [front, telephoto, wide]
       // new : [wide, front, telephoto]
-      final newSensorsCopy = [...previous.sensors];
-      next = SensorConfig(
+      final newSensorsCopy = [...previous.sensors.whereNotNull()];
+      next = SensorConfig.multiple(
         sensors: newSensorsCopy
           ..insert(0, newSensorsCopy.removeAt(newSensorsCopy.length - 1)),
+        // TODO Initial values are not set in native when set like this
+        aspectRatio: aspectRatio ?? CameraAspectRatios.ratio_4_3,
+        zoom: zoom ?? 0.0,
+        flashMode: flash ?? FlashMode.none,
       );
     }
     await cameraContext.setSensorConfig(next);
 
+    // TODO Once initial sensorConfig is correctly handled, we can remove below lines
     if (aspectRatio != null) {
       await next.setAspectRatio(aspectRatio);
     }
@@ -119,22 +117,28 @@ abstract class CameraState {
   void setSensorType(int cameraPosition, SensorType type, String deviceId) {
     final previous = cameraContext.sensorConfig;
     int sensorIndex = 0;
-    final next = SensorConfig(
-      sensors: previous.sensors.map((sensor) {
-        if (sensorIndex == cameraPosition && sensor != null) {
-          if (sensor.type == PigeonSensorType.trueDepth) {
-            sensor.position = SensorPosition.front;
-          } else {
-            sensor.position = SensorPosition.back;
-          }
+    final next = SensorConfig.multiple(
+      sensors: previous.sensors
+          .map((sensor) {
+            if (sensorIndex == cameraPosition && sensor != null) {
+              if (sensor.type == PigeonSensorType.trueDepth) {
+                sensor.position = SensorPosition.front;
+              } else {
+                sensor.position = SensorPosition.back;
+              }
 
-          sensor.deviceId = deviceId;
-          sensor.type = type;
-        }
+              sensor.deviceId = deviceId;
+              sensor.type = type;
+            }
 
-        sensorIndex++;
-        return sensor;
-      }).toList(),
+            sensorIndex++;
+            return sensor;
+          })
+          .whereNotNull()
+          .toList(),
+      aspectRatio: previous.aspectRatio,
+      flashMode: previous.flashMode,
+      zoom: previous.zoom,
     );
     cameraContext.setSensorConfig(next);
   }
