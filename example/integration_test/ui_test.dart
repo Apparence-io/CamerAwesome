@@ -267,8 +267,8 @@ void main() {
     },
   );
 
-  // TODO Doesn't work on Firebase Test Lab, Exif GPS data is not saved (but works on local emulator)
-  // See EXIF_PRINT logs at https://console.firebase.google.com/u/0/project/camerawesome-6e777/testlab/histories/bh.a7d83610595ed8b2/matrices/4861867399844663011/executions/bs.9deb07f6afc5c21c/logs
+  // This test might not pass in Firebase Test Lab because location does not seem to be activated. It works on local device.
+  // TODO Try to use Patrol to enable location manually on the device
   patrol(
     'Location > Save if specified',
     ($) async {
@@ -285,10 +285,11 @@ void main() {
       await allowPermissionsIfNeeded($);
 
       await $(AwesomeCaptureButton).tap(andSettle: false);
-      await $.pump(const Duration(seconds: 2));
+      // TODO Wait for media captured instead of a fixed duration (taking picture + retrieving locaiton might take a lot of time)
+      await $.pump(const Duration(seconds: 4));
       final filePath = await tempPath('single_photo_back_gps.jpg');
       final exif = await readExifFromFile(File(filePath));
-      // for(final entry in exif.entries) {
+      // for (final entry in exif.entries) {
       //   print('EXIF_PRINT > ${entry.key} : ${entry.value}');
       // }
       final gpsTags = exif.entries.where(
