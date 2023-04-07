@@ -47,8 +47,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Which sensors you want to use
   final SensorConfig sensorConfig;
 
-  final bool mirrorFrontCamera;
-
   /// choose if you want to persist user location in image metadata or not
   final ExifPreferences? exifPreferences;
 
@@ -110,7 +108,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
 
   const CameraAwesomeBuilder._({
     required this.sensorConfig,
-    required this.mirrorFrontCamera,
     required this.enablePhysicalButton,
     required this.exifPreferences,
     required this.enableAudio,
@@ -157,7 +154,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// [onImageForAnalysis].
   CameraAwesomeBuilder.awesome({
     SensorConfig? sensorConfig,
-    bool mirrorFrontCamera = false,
     bool enablePhysicalButton = false,
     ExifPreferences? exifPreferences,
     bool enableAudio = true,
@@ -181,9 +177,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(
                 sensor: Sensor.position(SensorPosition.back),
-                mirrorFrontCamera: mirrorFrontCamera,
               ),
-          mirrorFrontCamera: mirrorFrontCamera,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
           enablePhysicalButton: enablePhysicalButton,
@@ -238,7 +232,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
                 sensor: Sensor.position(SensorPosition.back),
                 mirrorFrontCamera: mirrorFrontCamera,
               ),
-          mirrorFrontCamera: mirrorFrontCamera,
           enablePhysicalButton: enablePhysicalButton,
           exifPreferences: exifPreferences,
           enableAudio: enableAudio,
@@ -275,7 +268,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
-          mirrorFrontCamera: false,
           enablePhysicalButton: false,
           exifPreferences: null,
           enableAudio: false,
@@ -314,7 +306,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
-          mirrorFrontCamera: false,
           enablePhysicalButton: false,
           exifPreferences: null,
           enableAudio: false,
