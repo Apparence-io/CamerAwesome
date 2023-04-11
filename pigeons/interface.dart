@@ -22,7 +22,7 @@ class PigeonSensor {
   final PigeonSensorPosition? position;
   final PigeonSensorType? type;
   final String? deviceId;
-  
+
   PigeonSensor({
     this.position = PigeonSensorPosition.unknown,
     this.type = PigeonSensorType.unknown,
@@ -267,10 +267,10 @@ abstract class CameraInterface {
 
   // TODO async with void return type seems to not work (channel-error)
   @async
-  bool takePhoto(String path);
+  bool takePhoto(Map<PigeonSensor, String?> requests);
 
   @async
-  void recordVideo(String path, VideoOptions? options);
+  void recordVideo(Map<PigeonSensor, String?> requests, VideoOptions? options);
 
   void pauseVideoRecording();
 
@@ -338,7 +338,8 @@ abstract class CameraInterface {
     String format,
     int width,
     double? maxFramesPerSecond,
-    bool autoStart,);
+    bool autoStart,
+  );
 
   @async
   bool setExifPreferences(ExifPreferences exifPreferences);

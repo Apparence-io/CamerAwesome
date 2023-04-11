@@ -35,28 +35,37 @@ class VideoRecordingCameraState extends CameraState {
   /// Call [resumeRecording] to resume the capture.
   Future<void> pauseRecording(MediaCapture currentCapture) async {
     if (!currentCapture.isVideo) {
-      throw "Trying to pause a video while currentCapture is not a video (${currentCapture.filePath})";
+      throw "Trying to pause a video while currentCapture is not a video (${currentCapture.captureRequest.when(
+        single: (single) => single.file!.path,
+        multiple: (multiple) => multiple.fileBySensor.values.first!.path,
+      )})";
     }
     if (currentCapture.status != MediaCaptureStatus.capturing) {
       throw "Trying to pause a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
     }
     await CamerawesomePlugin.pauseVideoRecording();
     _mediaCapture = MediaCapture.capturing(
-        filePath: currentCapture.filePath, videoState: VideoState.paused);
+        captureRequest: currentCapture.captureRequest,
+        videoState: VideoState.paused);
   }
 
   /// Resumes a video recording.
   /// [pauseRecording] must have been called before.
   Future<void> resumeRecording(MediaCapture currentCapture) async {
     if (!currentCapture.isVideo) {
-      throw "Trying to pause a video while currentCapture is not a video (${currentCapture.filePath})";
+      throw "Trying to pause a video while currentCapture is not a video (${currentCapture.captureRequest.when(
+        single: (single) => single.file!.path,
+        multiple: (multiple) => multiple.fileBySensor.values.first!.path,
+      )})";
     }
     if (currentCapture.status != MediaCaptureStatus.capturing) {
       throw "Trying to pause a media capture in status ${currentCapture.status} instead of ${MediaCaptureStatus.capturing}";
     }
     await CamerawesomePlugin.resumeVideoRecording();
     _mediaCapture = MediaCapture.capturing(
-        filePath: currentCapture.filePath, videoState: VideoState.resumed);
+      captureRequest: currentCapture.captureRequest,
+      videoState: VideoState.resumed,
+    );
   }
 
   // TODO Video recording might end due to other reasons (not enough space left...)
@@ -68,9 +77,11 @@ class VideoRecordingCameraState extends CameraState {
     }
     final result = await CamerawesomePlugin.stopRecordingVideo();
     if (result) {
-      _mediaCapture = MediaCapture.success(filePath: currentCapture.filePath);
+      _mediaCapture =
+          MediaCapture.success(captureRequest: currentCapture.captureRequest);
     } else {
-      _mediaCapture = MediaCapture.failure(filePath: currentCapture.filePath);
+      _mediaCapture =
+          MediaCapture.failure(captureRequest: currentCapture.captureRequest);
     }
     await CamerawesomePlugin.setCaptureMode(CaptureMode.video);
     cameraContext.changeState(VideoCameraState.from(cameraContext));

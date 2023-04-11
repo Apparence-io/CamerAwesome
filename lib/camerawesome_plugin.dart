@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/adapters/pigeon_sensor_adapter.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
@@ -12,10 +13,10 @@ import 'package:flutter/services.dart';
 export 'src/camera_characteristics/camera_characteristics.dart';
 export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
-export 'src/orchestrator/states/states.dart';
-export 'src/widgets/camera_awesome_builder.dart';
 export 'src/orchestrator/models/sensor_type.dart';
 export 'src/orchestrator/models/sensors.dart';
+export 'src/orchestrator/states/states.dart';
+export 'src/widgets/camera_awesome_builder.dart';
 
 // built in widgets
 export 'src/widgets/widgets.dart';
@@ -185,15 +186,7 @@ class CamerawesomePlugin {
     return CameraInterface()
         .setupCamera(
           sensorConfig.sensors.map((e) {
-            return PigeonSensor(
-              position: e?.position?.name != null
-                  ? PigeonSensorPosition.values.byName(e!.position!.name)
-                  : PigeonSensorPosition.unknown,
-              deviceId: e?.deviceId,
-              type: e?.type?.name != null
-                  ? PigeonSensorType.values.byName(e!.type!.name)
-                  : PigeonSensorType.unknown,
-            );
+            return e?.toPigeon();
           }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
@@ -251,20 +244,41 @@ class CamerawesomePlugin {
     );
   }
 
-  static Future<bool> takePhoto(String path) async {
-    return CameraInterface().takePhoto(path);
+  static Future<bool> takePhoto(CaptureRequest captureRequest) async {
+    return CameraInterface().takePhoto(captureRequest.when(
+      single: (single) => {
+        single.sensor.toPigeon(): single.file?.path,
+      },
+      multiple: (multiple) => multiple.fileBySensor
+          .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
+    ));
   }
 
   static Future<void> recordVideo(
-    String path, {
+    CaptureRequest request, {
     CupertinoVideoOptions? cupertinoVideoOptions,
   }) {
+    final pathBySensor = request.when(
+      single: (single) => {
+        single.sensor.toPigeon(): single.file?.path,
+      },
+      multiple: (multiple) => multiple.fileBySensor
+          .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
+    );
     if (Platform.isAndroid) {
+      //   Est-ce qu'on devrait pas laisser le natif écrire le fichier où il veut et tant pis pour le path d'où ça ecrit?
+      // ça simplifierait beaucoup de choses
+      // Sinon il faut convertir une CaptureReqquest en objet pigeon, probablement une map<Sensor, String?>(null sur le web)
+      // En natif, on ferait probablement la map juste en fonction de l'ordre des sensors ou quelque chose comme ça.
+      // Il faudra peut-etre identifier chaque Sensor dart pour faire le mapping correctement avec un ID... sa fé réfléchire
       // TODO: add video options for Android
-      return CameraInterface().recordVideo(path, null);
+      return CameraInterface().recordVideo(
+        pathBySensor,
+        null,
+      );
     } else {
       return CameraInterface().recordVideo(
-        path,
+        pathBySensor,
         cupertinoVideoOptions != null
             ? VideoOptions(
                 fileType: cupertinoVideoOptions.fileType.name,

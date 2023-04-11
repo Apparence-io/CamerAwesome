@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -6,13 +5,13 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/states/handlers/filter_handler.dart';
 import 'package:camerawesome/src/photofilters/filters/filters.dart';
+import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
 class PhotoFilterModel {
-  PhotoFilterModel(this.path, this.imageFile, this.filter);
+  PhotoFilterModel(this.captureRequest, this.filter);
 
-  final String path;
-  final File imageFile;
+  final CaptureRequest captureRequest;
   final Filter filter;
 }
 
@@ -63,24 +62,32 @@ class PhotoCameraState extends CameraState {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> takePhoto() async {
-    String path = await filePathBuilder();
-    if (!path.endsWith(".jpg")) {
-      throw ("You can only capture .jpg files with CamerAwesome");
+  Future<CaptureRequest> takePhoto() async {
+    CaptureRequest captureRequest =
+        await filePathBuilder(sensorConfig.sensors.whereNotNull().toList());
+    final mediaCapture = MediaCapture.capturing(captureRequest: captureRequest);
+    if (!mediaCapture.isPicture) {
+      throw ("CaptureRequest must be a picture. ${captureRequest.when(
+        single: (single) => single.file!.path,
+        multiple: (multiple) => multiple.fileBySensor.values.first!.path,
+      )}");
     }
-    _mediaCapture = MediaCapture.capturing(filePath: path);
+    _mediaCapture = mediaCapture;
     try {
-      final succeeded = await CamerawesomePlugin.takePhoto(path);
+      final succeeded = await CamerawesomePlugin.takePhoto(captureRequest);
       if (succeeded) {
-        await FilterHandler().apply(path: path, filter: filter);
-        _mediaCapture = MediaCapture.success(filePath: path);
+        await FilterHandler()
+            .apply(captureRequest: captureRequest, filter: filter);
+
+        _mediaCapture = MediaCapture.success(captureRequest: captureRequest);
       } else {
-        _mediaCapture = MediaCapture.failure(filePath: path);
+        _mediaCapture = MediaCapture.failure(captureRequest: captureRequest);
       }
     } on Exception catch (e) {
-      _mediaCapture = MediaCapture.failure(filePath: path, exception: e);
+      _mediaCapture =
+          MediaCapture.failure(captureRequest: captureRequest, exception: e);
     }
-    return path;
+    return captureRequest;
   }
 
   /// PRIVATES

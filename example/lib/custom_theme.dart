@@ -1,5 +1,4 @@
 import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
@@ -27,8 +26,6 @@ class CameraPage extends StatelessWidget {
     return Scaffold(
       body: CameraAwesomeBuilder.awesome(
         saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => path(CaptureMode.photo),
-          videoPathBuilder: () => path(CaptureMode.video),
           initialCaptureMode: CaptureMode.photo,
         ),
         filter: AwesomeFilter.AddictiveRed,
@@ -62,7 +59,10 @@ class CameraPage extends StatelessWidget {
           ),
         ),
         onMediaTap: (mediaCapture) {
-          OpenFile.open(mediaCapture.filePath);
+          OpenFile.open(
+            mediaCapture.captureRequest
+                .when(single: (single) => single.file?.path),
+          );
         },
       ),
     );

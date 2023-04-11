@@ -1,7 +1,9 @@
+import 'package:camerawesome/src/orchestrator/file/builder/capture_request_builder.dart';
 import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
+import 'package:camerawesome/src/orchestrator/models/capture_request.dart';
+import 'package:camerawesome/src/orchestrator/models/sensors.dart';
 
-// TODO: return object
-typedef FilePathBuilder = Future<String> Function();
+typedef FilePathBuilder = Future<CaptureRequest> Function(List<Sensor> sensors);
 
 class SaveConfig {
   final FilePathBuilder? photoPathBuilder;
@@ -17,38 +19,38 @@ class SaveConfig {
   });
 
   /// You only want to take photos
-  SaveConfig.photo({required FilePathBuilder pathBuilder})
+  SaveConfig.photo({FilePathBuilder? pathBuilder})
       : this._(
-          photoPathBuilder: pathBuilder,
+          photoPathBuilder: pathBuilder ??
+              (sensors) => CaptureRequestBuilder()
+                  .build(captureMode: CaptureMode.photo, sensors: sensors),
           captureModes: [CaptureMode.photo],
           initialCaptureMode: CaptureMode.photo,
         );
 
   /// You only want to take videos
-  SaveConfig.video({required FilePathBuilder pathBuilder})
+  SaveConfig.video({FilePathBuilder? pathBuilder})
       : this._(
-          videoPathBuilder: pathBuilder,
+          videoPathBuilder: pathBuilder ??
+              (sensors) => CaptureRequestBuilder()
+                  .build(captureMode: CaptureMode.video, sensors: sensors),
           captureModes: [CaptureMode.video],
           initialCaptureMode: CaptureMode.video,
         );
 
   /// You want to be able to take both photos and videos
   SaveConfig.photoAndVideo({
-    required FilePathBuilder photoPathBuilder,
-    required FilePathBuilder videoPathBuilder,
+    FilePathBuilder? photoPathBuilder,
+    FilePathBuilder? videoPathBuilder,
     CaptureMode initialCaptureMode = CaptureMode.photo,
   }) : this._(
-          photoPathBuilder: photoPathBuilder,
-          videoPathBuilder: videoPathBuilder,
+          photoPathBuilder: photoPathBuilder ??
+              (sensors) => CaptureRequestBuilder()
+                  .build(captureMode: CaptureMode.photo, sensors: sensors),
+          videoPathBuilder: videoPathBuilder ??
+              (sensors) => CaptureRequestBuilder()
+                  .build(captureMode: CaptureMode.video, sensors: sensors),
           captureModes: [CaptureMode.photo, CaptureMode.video],
           initialCaptureMode: initialCaptureMode,
         );
-
-  /// If you only want to show Camera preview and/or use image analysis
-  /// TODO: Not yet supported
-// SaveConfig.noCaptures()
-//     : this._(
-//         captureModes: [],
-//         initialCaptureMode: CaptureModes.PHOTO,
-//       );
 }

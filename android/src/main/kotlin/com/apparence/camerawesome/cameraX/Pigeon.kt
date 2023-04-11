@@ -596,26 +596,44 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensors: List<PigeonSensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
-  fun checkPermissions(): List<String>
-  /**
-   * Returns given [CamerAwesomePermission] list (as String). Location permission might be
-   * refused but the app should still be able to run.
-   */
-  fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
-  fun getPreviewTextureId(cameraPosition: Long): Long
-  fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit)
-  fun recordVideo(path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit)
-  fun pauseVideoRecording()
-  fun resumeVideoRecording()
-  fun receivedImageFromStream()
-  fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit)
-  fun getFrontSensors(): List<PigeonSensorTypeDevice>
-  fun getBackSensors(): List<PigeonSensorTypeDevice>
-  fun start(): Boolean
-  fun stop(): Boolean
-  fun setFlashMode(mode: String)
-  fun handleAutoFocus()
+    fun setupCamera(
+        sensors: List<PigeonSensor>,
+        aspectRatio: String,
+        zoom: Double,
+        mirrorFrontCamera: Boolean,
+        enablePhysicalButton: Boolean,
+        flashMode: String,
+        captureMode: String,
+        enableImageStream: Boolean,
+        exifPreferences: ExifPreferences,
+        callback: (Result<Boolean>) -> Unit
+    )
+
+    fun checkPermissions(): List<String>
+
+    /**
+     * Returns given [CamerAwesomePermission] list (as String). Location permission might be
+     * refused but the app should still be able to run.
+     */
+    fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
+    fun getPreviewTextureId(cameraPosition: Long): Long
+    fun takePhoto(requests: Map<PigeonSensor, String?>, callback: (Result<Boolean>) -> Unit)
+    fun recordVideo(
+        requests: Map<PigeonSensor, String?>,
+        options: VideoOptions?,
+        callback: (Result<Unit>) -> Unit
+    )
+
+    fun pauseVideoRecording()
+    fun resumeVideoRecording()
+    fun receivedImageFromStream()
+    fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit)
+    fun getFrontSensors(): List<PigeonSensorTypeDevice>
+    fun getBackSensors(): List<PigeonSensorTypeDevice>
+    fun start(): Boolean
+    fun stop(): Boolean
+    fun setFlashMode(mode: String)
+    fun handleAutoFocus()
   /**
    * Starts auto focus on a point at ([x], [y]).
    *
@@ -641,7 +659,7 @@ interface CameraInterface {
   fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
   fun startAnalysis()
   fun stopAnalysis()
-  fun setFilter(matrix: List<Double>)
+    fun setFilter(matrix: List<Double>)
     fun isVideoRecordingAndImageAnalysisSupported(
         sensor: PigeonSensorPosition,
         callback: (Result<Boolean>) -> Unit
@@ -741,17 +759,17 @@ interface CameraInterface {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.takePhoto", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val pathArg = args[0] as String
-            api.takePhoto(pathArg) { result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(wrapResult(data))
+              val args = message as List<Any?>
+              val requestsArg = args[0] as Map<PigeonSensor, String?>
+              api.takePhoto(requestsArg) { result: Result<Boolean> ->
+                  val error = result.exceptionOrNull()
+                  if (error != null) {
+                      reply.reply(wrapError(error))
+                  } else {
+                      val data = result.getOrNull()
+                      reply.reply(wrapResult(data))
+                  }
               }
-            }
           }
         } else {
           channel.setMessageHandler(null)
@@ -761,17 +779,17 @@ interface CameraInterface {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.recordVideo", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val pathArg = args[0] as String
-            val optionsArg = args[1] as VideoOptions?
-            api.recordVideo(pathArg, optionsArg) { result: Result<Unit> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(wrapError(error))
-              } else {
-                reply.reply(wrapResult(null))
+              val args = message as List<Any?>
+              val requestsArg = args[0] as Map<PigeonSensor, String?>
+              val optionsArg = args[1] as VideoOptions?
+              api.recordVideo(requestsArg, optionsArg) { result: Result<Unit> ->
+                  val error = result.exceptionOrNull()
+                  if (error != null) {
+                      reply.reply(wrapError(error))
+                  } else {
+                      reply.reply(wrapResult(null))
+                  }
               }
-            }
           }
         } else {
           channel.setMessageHandler(null)
@@ -1322,15 +1340,15 @@ interface CameraInterface {
           channel.setMessageHandler { message, reply ->
               val args = message as List<Any?>
               val sensorArg = PigeonSensorPosition.ofRaw(args[0] as Int)!!
-            api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(wrapResult(data))
+              api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
+                  val error = result.exceptionOrNull()
+                  if (error != null) {
+                      reply.reply(wrapError(error))
+                  } else {
+                      val data = result.getOrNull()
+                      reply.reply(wrapResult(data))
+                  }
               }
-            }
           }
         } else {
           channel.setMessageHandler(null)

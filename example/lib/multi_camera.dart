@@ -1,5 +1,4 @@
 import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
@@ -48,8 +47,6 @@ class _CameraPageState extends State<CameraPage> {
         child: sensorDeviceData != null
             ? CameraAwesomeBuilder.awesome(
                 saveConfig: SaveConfig.photoAndVideo(
-                  photoPathBuilder: () => path(CaptureMode.photo),
-                  videoPathBuilder: () => path(CaptureMode.video),
                   initialCaptureMode: CaptureMode.photo,
                 ),
                 sensorConfig: SensorConfig.multiple(
@@ -68,7 +65,12 @@ class _CameraPageState extends State<CameraPage> {
                 previewFit: CameraPreviewFit.fitWidth,
                 onMediaTap: (mediaCapture) {
                   // TODO: multiple files
-                  OpenFile.open(mediaCapture.filePath);
+                  OpenFile.open(
+                    mediaCapture.captureRequest.when(
+                        single: (single) => single.file?.path,
+                        multiple: (multiple) =>
+                            multiple.fileBySensor.values.first?.path),
+                  );
                 },
               )
             : Container(),

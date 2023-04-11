@@ -44,8 +44,6 @@ class CameraPage extends StatelessWidget {
           Expanded(
             child: CameraAwesomeBuilder.awesome(
               saveConfig: SaveConfig.photoAndVideo(
-                photoPathBuilder: () => _path(CaptureMode.photo),
-                videoPathBuilder: () => _path(CaptureMode.video),
                 initialCaptureMode: CaptureMode.photo,
               ),
               filter: AwesomeFilter.AddictiveRed,
@@ -55,7 +53,11 @@ class CameraPage extends StatelessWidget {
               ),
               previewFit: CameraPreviewFit.fitWidth,
               onMediaTap: (mediaCapture) {
-                OpenFile.open(mediaCapture.filePath);
+                OpenFile.open(
+                  mediaCapture.captureRequest.when(
+                    single: (single) => single.file?.path,
+                  ),
+                );
               },
             ),
           ),

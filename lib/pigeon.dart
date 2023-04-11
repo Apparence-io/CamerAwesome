@@ -689,12 +689,12 @@ class CameraInterface {
     }
   }
 
-  Future<bool> takePhoto(String arg_path) async {
+  Future<bool> takePhoto(Map<PigeonSensor?, String?> arg_requests) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.takePhoto', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_path]) as List<Object?>?;
+        await channel.send(<Object?>[arg_requests]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -716,12 +716,13 @@ class CameraInterface {
     }
   }
 
-  Future<void> recordVideo(String arg_path, VideoOptions? arg_options) async {
+  Future<void> recordVideo(Map<PigeonSensor?, String?> arg_requests,
+      VideoOptions? arg_options) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.recordVideo', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_path, arg_options]) as List<Object?>?;
+    final List<Object?>? replyList = await channel
+        .send(<Object?>[arg_requests, arg_options]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
