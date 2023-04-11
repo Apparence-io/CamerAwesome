@@ -32,12 +32,14 @@
     </a>
 </div>
 
-📸 Embedding a camera experience within your own app should't be that hard. <br>
+[![en](https://img.shields.io/badge/language-english-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.md) [![zh](https://img.shields.io/badge/language-chinese-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.zh.md)
+
+📸 Embedding a camera experience within your own app shouldn't be that hard. <br>
 A flutter plugin to integrate awesome Android / iOS camera experience.<br>
 
 <br>
-This packages provides you a fully customizable camera experience that you can use within your app.<br>
-Use our awesome built in interface or customize it as you want.
+This package provides you with a fully customizable camera experience that you can use within your app.<br>
+Use our awesome built-in interface or customize it as you want.
 
 ---
 
@@ -323,10 +325,9 @@ CameraAwesomeBuilder.awesome(
     ),
 ```
 
-> MLkit recommands to use nv21 format for Android. <br>
+> MLkit recommends using nv21 format for Android. <br>
 > bgra8888 is the iOS format
-> For machine learning you don't need full resolution images (720 or lower should be enough and
-> makes computation easier)
+> For machine learning you don't need full full-resolution (720 or lower should be enough and makes computation easier)
 
 Learn more about the image analysis configuration in
 the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
@@ -357,7 +358,7 @@ Through state you can access to a `SensorConfig` class.
 | setBrightness        | change brightness level manually (better to let this auto) |
 | setMirrorFrontCamera | set mirroring for front camera                             |
 
-All of this configurations are listenable through a stream so your UI can automatically get updated
+All of these configurations are listenable through a stream so your UI can automatically get updated
 according to the actual configuration.
 
 <br>
