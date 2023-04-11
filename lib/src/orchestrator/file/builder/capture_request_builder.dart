@@ -12,10 +12,10 @@ abstract class BaseCaptureRequestBuilder {
   });
 }
 
-class CaptureRequestBuilder {
+class AwesomeCaptureRequestBuilder {
   final CaptureRequestBuilderImpl _fileBuilder;
 
-  CaptureRequestBuilder() : _fileBuilder = CaptureRequestBuilderImpl();
+  AwesomeCaptureRequestBuilder() : _fileBuilder = CaptureRequestBuilderImpl();
 
   Future<CaptureRequest> build({
     required CaptureMode captureMode,

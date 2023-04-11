@@ -18,7 +18,7 @@ class VideoCameraState extends CameraState {
         filePathBuilder: cameraContext.saveConfig!.videoPathBuilder!,
       );
 
-  final FilePathBuilder filePathBuilder;
+  final CaptureRequestBuilder filePathBuilder;
 
   @override
   void setState(CaptureMode captureMode) {

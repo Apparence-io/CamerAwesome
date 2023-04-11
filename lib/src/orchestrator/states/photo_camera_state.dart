@@ -33,7 +33,7 @@ class PhotoCameraState extends CameraState {
         exifPreferences: orchestrator.exifPreferences,
       );
 
-  final FilePathBuilder filePathBuilder;
+  final CaptureRequestBuilder filePathBuilder;
 
   final ExifPreferences exifPreferences;
 

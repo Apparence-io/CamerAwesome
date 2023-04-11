@@ -18,7 +18,7 @@ class VideoRecordingCameraState extends CameraState {
         filePathBuilder: orchestrator.saveConfig!.videoPathBuilder!,
       );
 
-  final FilePathBuilder filePathBuilder;
+  final CaptureRequestBuilder filePathBuilder;
 
   @override
   void setState(CaptureMode captureMode) {
