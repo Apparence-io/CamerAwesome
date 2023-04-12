@@ -1,6 +1,7 @@
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -32,11 +33,18 @@ class CameraPage extends StatelessWidget {
             photoPathBuilder: () => path(CaptureMode.photo),
             videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.photo,
+            videoOptions: VideoOptions(
+              android: AndroidVideoOptions(
+                bitrate: 6000000,
+                quality: VideoRecordingQuality.fhd,
+                fallbackStrategy: QualityFallbackStrategy.lower,
+              ),
+            ),
           ),
           enablePhysicalButton: true,
           filter: AwesomeFilter.AddictiveRed,
           flashMode: FlashMode.auto,
-          aspectRatio: CameraAspectRatios.ratio_16_9,
+          aspectRatio: CameraAspectRatios.ratio_4_3,
           previewFit: CameraPreviewFit.fitWidth,
           onMediaTap: (mediaCapture) {
             OpenFile.open(mediaCapture.filePath);

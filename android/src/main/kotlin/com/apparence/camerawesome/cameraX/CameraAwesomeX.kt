@@ -111,6 +111,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         captureMode: String,
         enableImageStream: Boolean,
         exifPreferences: ExifPreferences,
+        videoOptions: VideoOptions?,
         callback: (Result<Boolean>) -> Unit
     ) {
         if (enablePhysicalButton) {
@@ -141,6 +142,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             mirrorFrontCamera = mirrorFrontCamera,
             currentCaptureMode = mode,
             enableImageStream = enableImageStream,
+            videoOptions = videoOptions?.android,
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
             this.updateAspectRatio(aspectRatio)
             this.flashMode = FlashMode.valueOf(flashMode)
@@ -227,8 +229,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun isVideoRecordingAndImageAnalysisSupported(
-        sensor: String,
-        callback: (Result<Boolean>) -> Unit
+        sensor: String, callback: (Result<Boolean>) -> Unit
     ) {
         val cameraSelector =
             if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
@@ -240,8 +241,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             callback(
                 Result.success(
                     CameraCapabilities.getCameraLevel(
-                        cameraSelector,
-                        cameraProvider
+                        cameraSelector, cameraProvider
                     ) == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3
                 )
             )
@@ -402,7 +402,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        path: String, options: VideoOptions?, callback: (Result<Unit>) -> Unit
+        path: String, callback: (Result<Unit>) -> Unit
     ) {
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
@@ -454,6 +454,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     }
                 }
             }
+
             cameraState.videoCapture!!.targetRotation =
                 orientationStreamListener!!.surfaceOrientation
             cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(

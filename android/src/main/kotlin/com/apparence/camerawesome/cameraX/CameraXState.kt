@@ -13,7 +13,6 @@ import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
-import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.apparence.camerawesome.CamerawesomePlugin
@@ -30,7 +29,7 @@ data class CameraXState(
     val textureEntry: TextureRegistry.SurfaceTextureEntry,
     var imageCapture: ImageCapture? = null,
     var cameraSelector: CameraSelector,
-    private var recorder: Recorder? = null,
+    var recorder: Recorder? = null,
     var videoCapture: VideoCapture<Recorder>? = null,
     var preview: Preview? = null,
     var previewCamera: Camera? = null,
@@ -47,6 +46,7 @@ data class CameraXState(
     var flashMode: FlashMode = FlashMode.NONE,
     val onStreamReady: (state: CameraXState) -> Unit,
     var mirrorFrontCamera: Boolean = false,
+    val videoOptions: AndroidVideoOptions?,
 ) : EventChannel.StreamHandler, SensorOrientation {
 
     var imageAnalysisBuilder: ImageAnalysisBuilder? = null
@@ -94,9 +94,31 @@ data class CameraXState(
                         )
                     }.build()
             } else if (currentCaptureMode == CaptureModes.VIDEO) {
-                recorder =
-                    Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST))
-                        .build()
+                val recorderBuilder = Recorder.Builder()
+                // Aspect ratio is handled by the setViewPort on the UseCaseGroup
+                if (videoOptions?.quality != null) {
+                    val quality = when (videoOptions?.quality) {
+                        VideoRecordingQuality.LOWEST -> Quality.LOWEST
+                        VideoRecordingQuality.SD -> Quality.SD
+                        VideoRecordingQuality.HD -> Quality.HD
+                        VideoRecordingQuality.FHD -> Quality.FHD
+                        VideoRecordingQuality.UHD -> Quality.UHD
+                        else -> Quality.HIGHEST
+                    }
+                    recorderBuilder.setQualitySelector(
+                        QualitySelector.from(
+                            quality,
+                            if (videoOptions?.fallbackStrategy == QualityFallbackStrategy.LOWER) FallbackStrategy.lowerQualityOrHigherThan(
+                                quality
+                            )
+                            else FallbackStrategy.higherQualityOrLowerThan(quality)
+                        )
+                    )
+                }
+                if (videoOptions?.bitrate != null) {
+                    recorderBuilder.setTargetVideoEncodingBitRate(videoOptions.bitrate.toInt())
+                }
+                recorder = recorderBuilder.build()
                 videoCapture = VideoCapture.withOutput(recorder!!)
             }
         }
@@ -199,7 +221,7 @@ data class CameraXState(
     fun previewSizes(): List<Size> {
         val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
             Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo),
-//            Camera2CameraInfo.from(previewCamera!!.cameraInfo).cameraId
+            Camera2CameraInfo.from(previewCamera!!.cameraInfo).cameraId
         )
         return CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
     }
@@ -285,6 +307,4 @@ data class CameraXState(
             else -> Rational(3, 4)
         }
     }
-
-
 }
