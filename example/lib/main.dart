@@ -43,6 +43,55 @@ class CameraPage extends StatelessWidget {
           onMediaTap: (mediaCapture) {
             OpenFile.open(mediaCapture.filePath);
           },
+          previewDecoratorBuilder: (state, _, __) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                StreamBuilder<SensorConfig>(
+                  stream: state.sensorConfig$,
+                  builder: (context, sensorConfigSnapshot) {
+                    if (sensorConfigSnapshot.hasData) {
+                      return FutureBuilder(
+                        future: Future.wait([
+                          CamerawesomePlugin.getMinZoom(),
+                          CamerawesomePlugin.getMaxZoom(),
+                        ]),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final min = snapshot.data![0];
+                            final max = snapshot.data![1];
+                            return StreamBuilder<double>(
+                                stream: sensorConfigSnapshot.requireData.zoom$,
+                                builder: (context, snapshotZoom) {
+                                  final currentRatio = snapshotZoom.data !=
+                                              null &&
+                                          min != null &&
+                                          max != null
+                                      ? (max - min) * snapshotZoom.data! + min
+                                      : 1.0;
+                                  return Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      Text("x$min"),
+                                      Text(
+                                        "Zoom: x$currentRatio (${snapshotZoom.data?.toStringAsFixed(2)})",
+                                      ),
+                                      Text("x$max"),
+                                    ],
+                                  );
+                                });
+                          }
+                          return Text('No data');
+                        },
+                      );
+                    }
+                    return Text('No data');
+                  },
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

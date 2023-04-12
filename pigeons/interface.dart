@@ -313,6 +313,8 @@ abstract class CameraInterface {
 
   void setCorrection(double brightness);
 
+  double getMinZoom();
+
   double getMaxZoom();
 
   void setCaptureMode(String mode);

@@ -597,8 +597,27 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         )
     }
 
+    /**
+     * This method must be called after bindToLifecycle has been called
+     *
+     * @return the max zoom ratio
+     */
     override fun getMaxZoom(): Double {
         return cameraState.maxZoomRatio
+    }
+
+    /**
+     * This method must be called after bindToLifecycle has been called
+     *
+     * @return the min zoom ratio
+     */
+    override fun getMinZoom(): Double {
+        return cameraState.minZoomRatio
+    }
+
+    fun convertLinearToRatio(linear: Double): Double {
+        // TODO Not sure if this is correct
+        return linear * getMaxZoom() / getMinZoom()
     }
 
     @Deprecated("Use focusOnPoint instead")

@@ -58,6 +58,9 @@ data class CameraXState(
     val maxZoomRatio: Double
         get() = previewCamera!!.cameraInfo.zoomState.value!!.maxZoomRatio.toDouble()
 
+    val minZoomRatio: Double
+        get() = previewCamera!!.cameraInfo.zoomState.value!!.minZoomRatio.toDouble()
+
 
     val portrait: Boolean
         get() = previewCamera!!.cameraInfo.sensorRotationDegrees % 180 == 0

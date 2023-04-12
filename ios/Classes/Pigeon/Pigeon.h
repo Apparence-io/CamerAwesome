@@ -227,6 +227,8 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 - (void)setSensorSensors:(NSArray<PigeonSensor *> *)sensors error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCorrectionBrightness:(NSNumber *)brightness error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
+- (nullable NSNumber *)getMinZoomWithError:(FlutterError *_Nullable *_Nonnull)error;
+/// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getMaxZoomWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCaptureModeMode:(NSString *)mode error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.

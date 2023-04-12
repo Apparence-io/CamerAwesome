@@ -627,7 +627,8 @@ interface CameraInterface {
   fun setMirrorFrontCamera(mirror: Boolean)
   fun setSensor(sensors: List<PigeonSensor>)
   fun setCorrection(brightness: Double)
-  fun getMaxZoom(): Double
+    fun getMinZoom(): Double
+    fun getMaxZoom(): Double
   fun setCaptureMode(mode: String)
   fun isMultiCamSupported(): Boolean
   fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
@@ -641,7 +642,7 @@ interface CameraInterface {
   fun setExifPreferences(exifPreferences: ExifPreferences, callback: (Result<Boolean>) -> Unit)
   fun startAnalysis()
   fun stopAnalysis()
-  fun setFilter(matrix: List<Double>)
+    fun setFilter(matrix: List<Double>)
     fun isVideoRecordingAndImageAnalysisSupported(
         sensor: PigeonSensorPosition,
         callback: (Result<Boolean>) -> Unit
@@ -1027,26 +1028,50 @@ interface CameraInterface {
       }
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.setCorrection", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val brightnessArg = args[0] as Double
-            var wrapped: List<Any?>
-            try {
-              api.setCorrection(brightnessArg)
-              wrapped = listOf<Any?>(null)
-            } catch (exception: Throwable) {
-              wrapped = wrapError(exception)
-            }
-            reply.reply(wrapped)
+          if (api != null) {
+              channel.setMessageHandler { message, reply ->
+                  val args = message as List<Any?>
+                  val brightnessArg = args[0] as Double
+                  var wrapped: List<Any?>
+                  try {
+                      api.setCorrection(brightnessArg)
+                      wrapped = listOf<Any?>(null)
+                  } catch (exception: Throwable) {
+                      wrapped = wrapError(exception)
+                  }
+                  reply.reply(wrapped)
+              }
+          } else {
+              channel.setMessageHandler(null)
           }
-        } else {
-          channel.setMessageHandler(null)
-        }
       }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getMaxZoom", codec)
-        if (api != null) {
+        run {
+            val channel = BasicMessageChannel<Any?>(
+                binaryMessenger,
+                "dev.flutter.pigeon.CameraInterface.getMinZoom",
+                codec
+            )
+            if (api != null) {
+                channel.setMessageHandler { _, reply ->
+                    var wrapped: List<Any?>
+                    try {
+                        wrapped = listOf<Any?>(api.getMinZoom())
+                    } catch (exception: Throwable) {
+                        wrapped = wrapError(exception)
+                    }
+                    reply.reply(wrapped)
+                }
+            } else {
+                channel.setMessageHandler(null)
+            }
+        }
+        run {
+            val channel = BasicMessageChannel<Any?>(
+                binaryMessenger,
+                "dev.flutter.pigeon.CameraInterface.getMaxZoom",
+                codec
+            )
+            if (api != null) {
           channel.setMessageHandler { _, reply ->
             var wrapped: List<Any?>
             try {
@@ -1322,15 +1347,15 @@ interface CameraInterface {
           channel.setMessageHandler { message, reply ->
               val args = message as List<Any?>
               val sensorArg = PigeonSensorPosition.ofRaw(args[0] as Int)!!
-            api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
-              val error = result.exceptionOrNull()
-              if (error != null) {
-                reply.reply(wrapError(error))
-              } else {
-                val data = result.getOrNull()
-                reply.reply(wrapResult(data))
+              api.isVideoRecordingAndImageAnalysisSupported(sensorArg) { result: Result<Boolean> ->
+                  val error = result.exceptionOrNull()
+                  if (error != null) {
+                      reply.reply(wrapError(error))
+                  } else {
+                      val data = result.getOrNull()
+                      reply.reply(wrapResult(data))
+                  }
               }
-            }
           }
         } else {
           channel.setMessageHandler(null)
