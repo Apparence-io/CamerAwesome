@@ -138,8 +138,7 @@ class CameraContext {
       sensorConfigController.value.dispose();
     }
     await CamerawesomePlugin.setSensor(
-      newConfig.sensor,
-      deviceId: newConfig.captureDeviceId,
+      newConfig.sensors,
     );
   }
 
@@ -207,8 +206,8 @@ class CameraContext {
     return CamerawesomePlugin.getSensors();
   }
 
-  Future<int?> textureId() {
-    return CamerawesomePlugin.getPreviewTexture()
+  Future<int?> previewTextureId(int cameraPosition) {
+    return CamerawesomePlugin.getPreviewTexture(cameraPosition)
         .then(((value) => value?.toInt()));
   }
 }

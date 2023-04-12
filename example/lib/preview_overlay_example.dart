@@ -47,8 +47,10 @@ class _CameraPageState extends State<CameraPage> {
             videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.photo,
           ),
-          flashMode: FlashMode.auto,
-          aspectRatio: CameraAspectRatios.ratio_16_9,
+          sensorConfig: SensorConfig.single(
+            flashMode: FlashMode.auto,
+            aspectRatio: CameraAspectRatios.ratio_16_9,
+          ),
           previewFit: CameraPreviewFit.fitWidth,
           onMediaTap: (mediaCapture) {
             OpenFile.open(mediaCapture.filePath);

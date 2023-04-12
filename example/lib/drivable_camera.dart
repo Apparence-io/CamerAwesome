@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 
 class DrivableCamera extends StatelessWidget {
   final SaveConfig saveConfig;
-  final Sensors sensor;
+  final List<Sensor> sensors;
   final ExifPreferences? exifPreferences;
 
   const DrivableCamera({
     super.key,
     required this.saveConfig,
-    required this.sensor,
+    required this.sensors,
     this.exifPreferences,
   });
 
@@ -21,7 +21,15 @@ class DrivableCamera extends StatelessWidget {
         body: CameraAwesomeBuilder.awesome(
           saveConfig: saveConfig,
           onMediaTap: (media) {},
-          sensor: sensor,
+          sensorConfig: sensors.length == 1
+              ? SensorConfig.single(
+                  aspectRatio: CameraAspectRatios.ratio_1_1,
+                  flashMode: FlashMode.always,
+                )
+              : SensorConfig.multiple(
+                  sensors: sensors,
+                  flashMode: FlashMode.always,
+                ),
           exifPreferences: exifPreferences,
         ),
       ),

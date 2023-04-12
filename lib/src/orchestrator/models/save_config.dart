@@ -2,6 +2,7 @@ import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
 import 'package:camerawesome/src/orchestrator/models/models.dart';
 
+// TODO: return object
 typedef FilePathBuilder = Future<String> Function();
 
 class SaveConfig {

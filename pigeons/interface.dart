@@ -18,6 +18,24 @@ class ExifPreferences {
   ExifPreferences({required this.saveGPSLocation});
 }
 
+class PigeonSensor {
+  final PigeonSensorPosition? position;
+  final PigeonSensorType? type;
+  final String? deviceId;
+
+  PigeonSensor({
+    this.position = PigeonSensorPosition.unknown,
+    this.type = PigeonSensorType.unknown,
+    this.deviceId,
+  });
+}
+
+enum PigeonSensorPosition {
+  back,
+  front,
+  unknown,
+}
+
 /// Video recording quality, from [sd] to [uhd], with [highest] and [lowest] to
 /// let the device choose the best/worst quality available.
 /// [highest] is the default quality.
@@ -39,6 +57,17 @@ enum VideoRecordingQuality {
 enum QualityFallbackStrategy {
   higher,
   lower,
+}
+
+class VideoOptions {
+  // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
+  final AndroidVideoOptions? android;
+  final CupertinoVideoOptions? ios;
+
+  VideoOptions({
+    required this.android,
+    required this.ios,
+  });
 }
 
 class AndroidVideoOptions {
@@ -65,17 +94,6 @@ class CupertinoVideoOptions {
   CupertinoVideoOptions({
     required this.fileType,
     required this.codec,
-  });
-}
-
-class VideoOptions {
-  // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
-  final AndroidVideoOptions? android;
-  final CupertinoVideoOptions? ios;
-
-  VideoOptions({
-    required this.android,
-    required this.ios,
   });
 }
 
@@ -274,7 +292,7 @@ abstract class AnalysisImageUtils {
 abstract class CameraInterface {
   @async
   bool setupCamera(
-    String sensor,
+    List<PigeonSensor> sensors,
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
@@ -293,7 +311,7 @@ abstract class CameraInterface {
   @async
   List<String> requestPermissions(bool saveGpsLocation);
 
-  int getPreviewTextureId();
+  int getPreviewTextureId(int cameraPosition);
 
   // TODO async with void return type seems to not work (channel-error)
   @async
@@ -338,7 +356,8 @@ abstract class CameraInterface {
 
   void setMirrorFrontCamera(bool mirror);
 
-  void setSensor(String sensor, String? deviceId);
+  // TODO: specify the position of the sensor
+  void setSensor(List<PigeonSensor> sensors);
 
   void setCorrection(double brightness);
 
@@ -378,5 +397,7 @@ abstract class CameraInterface {
   void setFilter(List<double> matrix);
 
   @async
-  bool isVideoRecordingAndImageAnalysisSupported(String sensor);
+  bool isVideoRecordingAndImageAnalysisSupported(PigeonSensorPosition sensor);
+
+  bool isMultiCamSupported();
 }

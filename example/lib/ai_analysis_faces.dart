@@ -66,8 +66,10 @@ class _CameraPageState extends State<CameraPage> {
     return Scaffold(
       body: CameraAwesomeBuilder.previewOnly(
         previewFit: CameraPreviewFit.contain,
-        aspectRatio: CameraAspectRatios.ratio_1_1,
-        sensor: Sensors.front,
+        sensorConfig: SensorConfig.single(
+          sensor: Sensor.position(SensorPosition.front),
+          aspectRatio: CameraAspectRatios.ratio_1_1,
+        ),
         onImageForAnalysis: (img) => _analyzeImage(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(
@@ -138,7 +140,9 @@ class _MyPreviewDecoratorWidget extends StatelessWidget {
                     model: faceModelSnapshot.requireData,
                     previewSize: previewSize,
                     previewRect: previewRect,
-                    isBackCamera: snapshot.requireData.sensor == Sensors.back,
+                    isBackCamera:
+                        snapshot.requireData.sensors.first?.position ==
+                            SensorPosition.back,
                   ),
                 );
               },

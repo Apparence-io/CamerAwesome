@@ -14,6 +14,8 @@ export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
 export 'src/orchestrator/states/states.dart';
 export 'src/widgets/camera_awesome_builder.dart';
+export 'src/orchestrator/models/sensor_type.dart';
+export 'src/orchestrator/models/sensors.dart';
 
 // built in widgets
 export 'src/widgets/widgets.dart';
@@ -178,7 +180,17 @@ class CamerawesomePlugin {
   }) async {
     return CameraInterface()
         .setupCamera(
-      sensorConfig.sensor.name.toUpperCase(),
+          sensorConfig.sensors.map((e) {
+            return PigeonSensor(
+              position: e?.position?.name != null
+                  ? PigeonSensorPosition.values.byName(e!.position!.name)
+                  : PigeonSensorPosition.unknown,
+              deviceId: e?.deviceId,
+              type: e?.type?.name != null
+                  ? PigeonSensorType.values.byName(e!.type!.name)
+                  : PigeonSensorType.unknown,
+            );
+          }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
           sensorConfig.mirrorFrontCamera,
@@ -200,8 +212,8 @@ class CamerawesomePlugin {
         .toList();
   }
 
-  static Future<num?> getPreviewTexture() {
-    return CameraInterface().getPreviewTextureId();
+  static Future<num?> getPreviewTexture(final int cameraPosition) {
+    return CameraInterface().getPreviewTextureId(cameraPosition);
   }
 
   static Future<void> setPreviewSize(int width, int height) {
@@ -296,8 +308,20 @@ class CamerawesomePlugin {
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
-  static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
-    return CameraInterface().setSensor(sensor.name.toUpperCase(), deviceId);
+  static Future<void> setSensor(List<Sensor?> sensors) {
+    return CameraInterface().setSensor(
+      sensors.map((e) {
+        return PigeonSensor(
+          position: e?.position?.name != null
+              ? PigeonSensorPosition.values.byName(e!.position!.name)
+              : PigeonSensorPosition.unknown,
+          deviceId: e?.deviceId,
+          type: e?.type?.name != null
+              ? PigeonSensorType.values.byName(e!.type!.name)
+              : PigeonSensorType.unknown,
+        );
+      }).toList(),
+    );
   }
 
   /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]
@@ -331,6 +355,10 @@ class CamerawesomePlugin {
   /// returns the max zoom available on device
   static Future<num?> getMaxZoom() {
     return CameraInterface().getMaxZoom();
+  }
+
+  static Future<bool> isMultiCamSupported() {
+    return CameraInterface().isMultiCamSupported();
   }
 
   /// Change aspect ratio when a photo is taken

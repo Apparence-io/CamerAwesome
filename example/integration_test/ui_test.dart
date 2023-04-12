@@ -17,7 +17,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photoAndVideo(
             photoPathBuilder: () => tempPath('single_photo_back.jpg'),
             videoPathBuilder: () => tempPath('single_video_back.mp4'),

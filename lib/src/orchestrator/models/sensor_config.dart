@@ -3,9 +3,9 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
+// TODO find a way to explain that this sensorconfig is not bound anymore (user changed sensor for example)
 class SensorConfig {
   late BehaviorSubject<FlashMode> _flashModeController;
 
@@ -27,9 +27,7 @@ class SensorConfig {
   late Stream<double> zoom$;
 
   /// [back] or [front] camera
-  final Sensors sensor;
-
-  final String? captureDeviceId;
+  final List<Sensor?> sensors;
 
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
@@ -44,12 +42,38 @@ class SensorConfig {
       BehaviorSubject<double>();
   StreamSubscription? _brightnessSubscription;
 
-  SensorConfig({
-    required this.sensor,
+  SensorConfig.single({
+    Sensor? sensor,
+    FlashMode flashMode = FlashMode.none,
+    bool mirrorFrontCamera = false,
+    double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+  }) : this._(
+          sensors: [sensor ?? Sensor.position(SensorPosition.back)],
+          flash: flashMode,
+          mirrorFrontCamera: mirrorFrontCamera,
+          currentZoom: zoom,
+          aspectRatio: aspectRatio,
+        );
+
+  SensorConfig.multiple({
+    required List<Sensor> sensors,
+    FlashMode flashMode = FlashMode.none,
+    bool mirrorFrontCamera = false,
+    double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+  }) : this._(
+          sensors: sensors,
+          flash: flashMode,
+          mirrorFrontCamera: mirrorFrontCamera,
+          currentZoom: zoom,
+          aspectRatio: aspectRatio,
+        );
+
+  SensorConfig._({
+    required this.sensors,
     FlashMode flash = FlashMode.none,
     bool mirrorFrontCamera = false,
-    SensorType type = SensorType.wideAngle,
-    this.captureDeviceId,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
 
     /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)
@@ -62,7 +86,8 @@ class SensorConfig {
         BehaviorSubject<bool>.seeded(mirrorFrontCamera);
     mirrorFrontCamera$ = _mirrorFrontCameraController.stream;
 
-    _sensorTypeController = BehaviorSubject<SensorType>.seeded(type);
+    _sensorTypeController = BehaviorSubject<SensorType>.seeded(
+        sensors.first?.type ?? SensorType.wideAngle);
     sensorType$ = _sensorTypeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);

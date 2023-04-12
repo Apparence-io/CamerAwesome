@@ -13,13 +13,13 @@ void main() {
 }
 
 void photoTests() {
-  for (var sensor in Sensors.values) {
+  for (var sensor in SensorPosition.values) {
     patrol(
       'Take pictures > single picture ${sensor.name} camera',
       ($) async {
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensor: sensor,
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.photo(
               pathBuilder: () => tempPath('single_photo_back.jpg'),
             ),
@@ -44,7 +44,7 @@ void photoTests() {
         const picturesToTake = 3;
         await $.pumpWidgetAndSettle(
           DrivableCamera(
-            sensor: sensor,
+            sensors: [Sensor.position(sensor)],
             saveConfig: SaveConfig.photo(
               pathBuilder: () async {
                 final path = await tempPath(
@@ -71,17 +71,17 @@ void photoTests() {
   }
 
   patrol(
-    'Take pictures > One with ${Sensors.back} then one with ${Sensors.front}',
+    'Take pictures > One with ${SensorPosition.back} then one with ${SensorPosition.front}',
     ($) async {
       int idxSensor = 0;
       final sensors = [
-        Sensors.back,
-        Sensors.front,
-        Sensors.back,
+        SensorPosition.back,
+        SensorPosition.front,
+        SensorPosition.back,
       ];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () async {
               final path = await tempPath(

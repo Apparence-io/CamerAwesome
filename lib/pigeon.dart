@@ -8,27 +8,10 @@ import 'dart:typed_data' show Float64List, Int32List, Int64List, Uint8List;
 import 'package:flutter/foundation.dart' show ReadBuffer, WriteBuffer;
 import 'package:flutter/services.dart';
 
-/// Video recording quality, from [sd] to [uhd], with [highest] and [lowest] to
-/// let the device choose the best/worst quality available.
-/// [highest] is the default quality.
-///
-/// Qualities are defined like this:
-/// [sd] < [hd] < [fhd] < [uhd]
-enum VideoRecordingQuality {
-  lowest,
-  sd,
-  hd,
-  fhd,
-  uhd,
-  highest,
-}
-
-/// If the specified [VideoRecordingQuality] is not available on the device,
-/// the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
-/// [higher] is the default fallback strategy.
-enum QualityFallbackStrategy {
-  higher,
-  lower,
+enum PigeonSensorPosition {
+  back,
+  front,
+  unknown,
 }
 
 enum PigeonSensorType {
@@ -116,46 +99,43 @@ class ExifPreferences {
   }
 }
 
-class AndroidVideoOptions {
-  AndroidVideoOptions({
-    this.bitrate,
-    this.quality,
-    this.fallbackStrategy,
+class PigeonSensor {
+  PigeonSensor({
+    this.position,
+    this.type,
+    this.deviceId,
   });
 
-  /// The bitrate of the video recording. Only set it if a custom bitrate is
-  /// desired.
-  int? bitrate;
+  PigeonSensorPosition? position;
 
-  /// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
-  VideoRecordingQuality? quality;
+  PigeonSensorType? type;
 
-  QualityFallbackStrategy? fallbackStrategy;
+  String? deviceId;
 
   Object encode() {
     return <Object?>[
-      bitrate,
-      quality?.index,
-      fallbackStrategy?.index,
+      position?.index,
+      type?.index,
+      deviceId,
     ];
   }
 
-  static AndroidVideoOptions decode(Object result) {
+  static PigeonSensor decode(Object result) {
     result as List<Object?>;
-    return AndroidVideoOptions(
-      bitrate: result[0] as int?,
-      quality: result[1] != null
-          ? VideoRecordingQuality.values[result[1]! as int]
+    return PigeonSensor(
+      position: result[0] != null
+          ? PigeonSensorPosition.values[result[0]! as int]
           : null,
-      fallbackStrategy: result[2] != null
-          ? QualityFallbackStrategy.values[result[2]! as int]
+      type: result[1] != null
+          ? PigeonSensorType.values[result[1]! as int]
           : null,
+      deviceId: result[2] as String?,
     );
   }
 }
 
-class CupertinoVideoOptions {
-  CupertinoVideoOptions({
+class VideoOptions {
+  VideoOptions({
     required this.fileType,
     required this.codec,
   });
@@ -171,41 +151,11 @@ class CupertinoVideoOptions {
     ];
   }
 
-  static CupertinoVideoOptions decode(Object result) {
-    result as List<Object?>;
-    return CupertinoVideoOptions(
-      fileType: result[0]! as String,
-      codec: result[1]! as String,
-    );
-  }
-}
-
-class VideoOptions {
-  VideoOptions({
-    this.android,
-    this.ios,
-  });
-
-  AndroidVideoOptions? android;
-
-  CupertinoVideoOptions? ios;
-
-  Object encode() {
-    return <Object?>[
-      android?.encode(),
-      ios?.encode(),
-    ];
-  }
-
   static VideoOptions decode(Object result) {
     result as List<Object?>;
     return VideoOptions(
-      android: result[0] != null
-          ? AndroidVideoOptions.decode(result[0]! as List<Object?>)
-          : null,
-      ios: result[1] != null
-          ? CupertinoVideoOptions.decode(result[1]! as List<Object?>)
-          : null,
+      fileType: result[0]! as String,
+      codec: result[1]! as String,
     );
   }
 }
@@ -407,8 +357,9 @@ class AnalysisImageWrapper {
       cropRect: result[5] != null
           ? CropRectWrapper.decode(result[5]! as List<Object?>)
           : null,
-      rotation:
-          result[6] != null ? AnalysisRotation.values[result[6]! as int] : null,
+      rotation: result[6] != null
+          ? AnalysisRotation.values[result[6]! as int]
+          : null,
     );
   }
 }
@@ -434,11 +385,11 @@ class _AnalysisImageUtilsCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
         return AnalysisImageWrapper.decode(readValue(buffer)!);
-      case 129:
+      case 129: 
         return CropRectWrapper.decode(readValue(buffer)!);
-      case 130:
+      case 130: 
         return PlaneWrapper.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -456,13 +407,12 @@ class AnalysisImageUtils {
 
   static const MessageCodec<Object?> codec = _AnalysisImageUtilsCodec();
 
-  Future<AnalysisImageWrapper> nv21toJpeg(
-      AnalysisImageWrapper arg_nv21Image, int arg_jpegQuality) async {
+  Future<AnalysisImageWrapper> nv21toJpeg(AnalysisImageWrapper arg_nv21Image, int arg_jpegQuality) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AnalysisImageUtils.nv21toJpeg', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-        .send(<Object?>[arg_nv21Image, arg_jpegQuality]) as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_nv21Image, arg_jpegQuality]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -484,13 +434,12 @@ class AnalysisImageUtils {
     }
   }
 
-  Future<AnalysisImageWrapper> yuv420toJpeg(
-      AnalysisImageWrapper arg_yuvImage, int arg_jpegQuality) async {
+  Future<AnalysisImageWrapper> yuv420toJpeg(AnalysisImageWrapper arg_yuvImage, int arg_jpegQuality) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AnalysisImageUtils.yuv420toJpeg', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-        .send(<Object?>[arg_yuvImage, arg_jpegQuality]) as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_yuvImage, arg_jpegQuality]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -512,8 +461,7 @@ class AnalysisImageUtils {
     }
   }
 
-  Future<AnalysisImageWrapper> yuv420toNv21(
-      AnalysisImageWrapper arg_yuvImage) async {
+  Future<AnalysisImageWrapper> yuv420toNv21(AnalysisImageWrapper arg_yuvImage) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AnalysisImageUtils.yuv420toNv21', codec,
         binaryMessenger: _binaryMessenger);
@@ -540,13 +488,12 @@ class AnalysisImageUtils {
     }
   }
 
-  Future<AnalysisImageWrapper> bgra8888toJpeg(
-      AnalysisImageWrapper arg_bgra8888image, int arg_jpegQuality) async {
+  Future<AnalysisImageWrapper> bgra8888toJpeg(AnalysisImageWrapper arg_bgra8888image, int arg_jpegQuality) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AnalysisImageUtils.bgra8888toJpeg', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel
-        .send(<Object?>[arg_bgra8888image, arg_jpegQuality]) as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_bgra8888image, arg_jpegQuality]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -576,26 +523,23 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
     if (value is AndroidFocusSettings) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is AndroidVideoOptions) {
+    } else if (value is ExifPreferences) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is CupertinoVideoOptions) {
+    } else if (value is PigeonSensor) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is ExifPreferences) {
+    } else if (value is PigeonSensorTypeDevice) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is PigeonSensorTypeDevice) {
+    } else if (value is PreviewSize) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else if (value is PreviewSize) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is PreviewSize) {
-      buffer.putUint8(134);
-      writeValue(buffer, value.encode());
     } else if (value is VideoOptions) {
-      buffer.putUint8(135);
+      buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -605,21 +549,19 @@ class _CameraInterfaceCodec extends StandardMessageCodec {
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128: 
         return AndroidFocusSettings.decode(readValue(buffer)!);
-      case 129:
-        return AndroidVideoOptions.decode(readValue(buffer)!);
-      case 130:
-        return CupertinoVideoOptions.decode(readValue(buffer)!);
-      case 131:
+      case 129: 
         return ExifPreferences.decode(readValue(buffer)!);
-      case 132:
+      case 130: 
+        return PigeonSensor.decode(readValue(buffer)!);
+      case 131: 
         return PigeonSensorTypeDevice.decode(readValue(buffer)!);
-      case 133:
+      case 132: 
         return PreviewSize.decode(readValue(buffer)!);
-      case 134:
+      case 133: 
         return PreviewSize.decode(readValue(buffer)!);
-      case 135:
+      case 134: 
         return VideoOptions.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -637,32 +579,12 @@ class CameraInterface {
 
   static const MessageCodec<Object?> codec = _CameraInterfaceCodec();
 
-  Future<bool> setupCamera(
-      String arg_sensor,
-      String arg_aspectRatio,
-      double arg_zoom,
-      bool arg_mirrorFrontCamera,
-      bool arg_enablePhysicalButton,
-      String arg_flashMode,
-      String arg_captureMode,
-      bool arg_enableImageStream,
-      ExifPreferences arg_exifPreferences,
-      VideoOptions? arg_videoOptions) async {
+  Future<bool> setupCamera(List<PigeonSensor?> arg_sensors, String arg_aspectRatio, double arg_zoom, bool arg_mirrorFrontCamera, bool arg_enablePhysicalButton, String arg_flashMode, String arg_captureMode, bool arg_enableImageStream, ExifPreferences arg_exifPreferences) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setupCamera', codec,
         binaryMessenger: _binaryMessenger);
-    final List<Object?>? replyList = await channel.send(<Object?>[
-      arg_sensor,
-      arg_aspectRatio,
-      arg_zoom,
-      arg_mirrorFrontCamera,
-      arg_enablePhysicalButton,
-      arg_flashMode,
-      arg_captureMode,
-      arg_enableImageStream,
-      arg_exifPreferences,
-      arg_videoOptions
-    ]) as List<Object?>?;
+    final List<Object?>? replyList =
+        await channel.send(<Object?>[arg_sensors, arg_aspectRatio, arg_zoom, arg_mirrorFrontCamera, arg_enablePhysicalButton, arg_flashMode, arg_captureMode, arg_enableImageStream, arg_exifPreferences]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -740,12 +662,12 @@ class CameraInterface {
     }
   }
 
-  Future<int> getPreviewTextureId() async {
+  Future<int> getPreviewTextureId(int arg_cameraPosition) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.getPreviewTextureId', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
+        await channel.send(<Object?>[arg_cameraPosition]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -794,12 +716,12 @@ class CameraInterface {
     }
   }
 
-  Future<void> recordVideo(String arg_path) async {
+  Future<void> recordVideo(String arg_path, VideoOptions? arg_options) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.recordVideo', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_path]) as List<Object?>?;
+        await channel.send(<Object?>[arg_path, arg_options]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1131,12 +1053,12 @@ class CameraInterface {
     }
   }
 
-  Future<void> setSensor(String arg_sensor, String? arg_deviceId) async {
+  Future<void> setSensor(List<PigeonSensor?> arg_sensors) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.setSensor', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_sensor, arg_deviceId]) as List<Object?>?;
+        await channel.send(<Object?>[arg_sensors]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
@@ -1221,6 +1143,33 @@ class CameraInterface {
       );
     } else {
       return;
+    }
+  }
+
+  Future<bool> isMultiCamSupported() async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.CameraInterface.isMultiCamSupported', codec,
+        binaryMessenger: _binaryMessenger);
+    final List<Object?>? replyList =
+        await channel.send(null) as List<Object?>?;
+    if (replyList == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyList.length > 1) {
+      throw PlatformException(
+        code: replyList[0]! as String,
+        message: replyList[1] as String?,
+        details: replyList[2],
+      );
+    } else if (replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyList[0] as bool?)!;
     }
   }
 
@@ -1504,13 +1453,13 @@ class CameraInterface {
   }
 
   Future<bool> isVideoRecordingAndImageAnalysisSupported(
-      String arg_sensor) async {
+      PigeonSensorPosition arg_sensor) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.isVideoRecordingAndImageAnalysisSupported',
         codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_sensor]) as List<Object?>?;
+        await channel.send(<Object?>[arg_sensor.index]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

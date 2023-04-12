@@ -54,10 +54,11 @@ Use our awesome built in interface or customize it as you want.
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                   | Android |  iOS  |
+| Features                                 | Android |  iOS  |
 | :--------------------------------------- | :-----: | :---: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
+| 📹 Multi camera                          |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
 | 🎞 Take photos                           |    ✅    |   ✅   |
 | 🌆 Photo live filters                    |    ✅    |   ✅   |
@@ -77,7 +78,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ## 📖&nbsp; Installation and usage
 
-### Add the package in your pubspec.yaml
+### Add the package in your `pubspec.yaml`
 
 ```yaml
 dependencies:
@@ -121,7 +122,6 @@ the [official documentation](https://developer.android.com/training/data-storage
 If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ```xml
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="com.example.yourpackage">
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -203,12 +203,12 @@ CameraAwesomeBuilder.awesome(
 
 This builder can be customized with various settings:
 
-- a theme
-- builders for each part of the screen
-- initial camera setup
-- preview positioning
-- additional preview decoration
-- and more!
+- A theme.
+- Builders for each part of the screen.
+- Initial camera setup.
+- Preview positioning.
+- Additional preview decoration.
+- And much more!
 
 Here is an example:
 
@@ -288,7 +288,7 @@ Use this to achieve:
 - Facial recognition.
 - AI object detection.
 - Realtime video chats.
-  And much more 🤩
+- And much more 🤩
 
 ![Face AI](docs/img/face_ai.gif)
 
@@ -321,6 +321,7 @@ CameraAwesomeBuilder.awesome(
         // Max frames per second, null for no limit (default)
         maxFramesPerSecond: 20,
     ),
+)
 ```
 
 > MLkit recommands to use nv21 format for Android. <br>
@@ -350,12 +351,12 @@ Through state you can access to a `SensorConfig` class.
 
 <br>
 
-| Function             | Comment                                                    |
-| -------------------- | ---------------------------------------------------------- |
-| setZoom              | changing zoom                                              |
-| setFlashMode         | changing flash between NONE,ON,AUTO,ALWAYS                 |
-| setBrightness        | change brightness level manually (better to let this auto) |
-| setMirrorFrontCamera | set mirroring for front camera                             |
+| Function               | Comment                                                    |
+| ---------------------- | ---------------------------------------------------------- |
+| `setZoom`              | changing zoom                                              |
+| `setFlashMode`         | changing flash between NONE,ON,AUTO,ALWAYS                 |
+| `setBrightness`        | change brightness level manually (better to let this auto) |
+| `setMirrorFrontCamera` | set mirroring for front camera                             |
 
 All of this configurations are listenable through a stream so your UI can automatically get updated
 according to the actual configuration.

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/widgets/preview/awesome_camera_floating_preview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -49,7 +50,8 @@ class AwesomeCameraPreview extends StatefulWidget {
 class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   PreviewSize? _previewSize;
   PreviewSize? _flutterPreviewSize;
-  int? _textureId;
+
+  final List<Texture> _textures = [];
 
   PreviewSize? get pixelPreviewSize => _previewSize;
 
@@ -62,17 +64,19 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   Size? _previousCroppedSize;
   Size? _croppedSize;
 
+  // TODO: fetch this value from the native side
+  final int kMaximumSupportedFloatingPreview = 3;
+
   @override
   void initState() {
     super.initState();
     Future.wait([
       widget.state.previewSize(),
-      widget.state.textureId(),
+      _loadTextures(),
     ]).then((data) {
       if (mounted) {
         setState(() {
-          _previewSize = data[0] as PreviewSize;
-          _textureId = data[1] as int;
+          _previewSize = data[0];
         });
       }
     });
@@ -104,6 +108,19 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     });
   }
 
+  Future _loadTextures() async {
+    final sensors = widget.state.cameraContext.sensorConfig.sensors.length;
+
+    for (int i = 0; i < sensors; i++) {
+      final textureId = await widget.state.previewTextureId(i);
+      if (textureId != null) {
+        _textures.add(
+          Texture(textureId: textureId),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     _sensorConfigSubscription?.cancel();
@@ -113,7 +130,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   @override
   Widget build(BuildContext context) {
-    if (_textureId == null || _previewSize == null || _aspectRatio == null) {
+    if (_textures.isEmpty || _previewSize == null || _aspectRatio == null) {
       return widget.loadingWidget ??
           Center(
             child: Platform.isIOS
@@ -178,8 +195,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             _previousCroppedSize ??=
                 Size(_croppedSize!.width, _croppedSize!.height);
 
-            final previewTexture = Texture(textureId: _textureId!);
-
             final preview = SizedBox(
               width: constrainedSize.width,
               height: constrainedSize.height,
@@ -213,9 +228,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                                       snapshot.data != AwesomeFilter.None
                                   ? ColorFiltered(
                                       colorFilter: snapshot.data!.preview,
-                                      child: previewTexture,
+                                      child: _textures.first,
                                     )
-                                  : previewTexture;
+                                  : _textures.first;
                             }),
                       ),
                     ),
@@ -236,7 +251,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               CameraPreviewFit.contain
             ].contains(widget.previewFit)) {
               return Stack(children: [
-                Positioned.fill(
+                Positioned(
                   child: TweenAnimationBuilder<Size>(
                     builder: (context, anim, _) {
                       return _CroppedPreview(
@@ -277,6 +292,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                     ),
                   ),
                 ),
+                // TODO: be draggable
+                // TODO: add shadow & border
+                ..._buildPreviewTextures(),
               ]);
             } else {
               return Stack(children: [
@@ -304,6 +322,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                     ),
                   ),
                 ),
+                ..._buildPreviewTextures(),
               ]);
             }
           },
@@ -320,6 +339,32 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     double width = isWidthLarger ? otherSide : side;
     double height = isWidthLarger ? side : otherSide;
     return PreviewSize(width: width, height: height);
+  }
+
+  List<Widget> _buildPreviewTextures() {
+    final previewFrames = <Widget>[];
+
+    // if there is only one texture
+    if (_textures.length <= 1) {
+      return previewFrames;
+    }
+
+    for (int i = 1; i < _textures.length; i++) {
+      // TODO: add a way to retrive how camera can be added ("budget" on iOS ?)
+      if (i >= kMaximumSupportedFloatingPreview) {
+        break;
+      }
+
+      final texture = _textures[i];
+
+      final frame = AwesomeCameraFloatingPreview(
+        index: i,
+        texture: texture,
+      );
+      previewFrames.add(frame);
+    }
+
+    return previewFrames;
   }
 }
 

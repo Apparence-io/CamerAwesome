@@ -8,14 +8,12 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.camera2.CameraCharacteristics
 import android.location.Location
-import android.os.Build
-import android.os.CountDownTimer
-import android.os.Handler
-import android.os.Looper
-import android.os.Messenger
+import android.os.*
 import android.util.Log
 import android.util.Rational
 import android.util.Size
+import androidx.camera.camera2.Camera2Config
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FileOutputOptions
@@ -29,7 +27,6 @@ import com.apparence.camerawesome.buttons.PhysicalButtonMessageHandler
 import com.apparence.camerawesome.buttons.PhysicalButtonsHandler
 import com.apparence.camerawesome.buttons.PlayerService
 import com.apparence.camerawesome.models.FlashMode
-import com.apparence.camerawesome.sensors.CameraSensor
 import com.apparence.camerawesome.sensors.SensorOrientationListener
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -61,7 +58,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private lateinit var physicalButtonHandler: PhysicalButtonsHandler
     private var binding: FlutterPluginBinding? = null
     private var textureRegistry: TextureRegistry? = null
-    private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
     private var activity: Activity? = null
     private lateinit var imageStreamChannel: EventChannel
     private lateinit var orientationStreamChannel: EventChannel
@@ -100,9 +96,18 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         0.0
     )
 
+    @SuppressLint("UnsafeOptInUsageError")
+    fun configureCameraXLogs() {
+        ProcessCameraProvider.configureInstance(
+            CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig())
+                .setMinimumLoggingLevel(Log.ERROR).build()
+        )
+    }
+
+
     @SuppressLint("RestrictedApi")
     override fun setupCamera(
-        sensor: String,
+        sensors: List<PigeonSensor>,
         aspectRatio: String,
         zoom: Double,
         mirrorFrontCamera: Boolean,
@@ -125,20 +130,24 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             activity!!.stopService(Intent(activity!!, PlayerService::class.java))
         }
 
+        configureCameraXLogs()
+
         val future = ProcessCameraProvider.getInstance(
             activity!!
         )
         val cameraProvider = future.get()
-        textureEntry = textureRegistry!!.createSurfaceTexture()
 
         val cameraSelector =
             if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
         val mode = CaptureModes.valueOf(captureMode)
-        cameraState = CameraXState(textureRegistry!!,
-            textureEntry!!,
-            cameraProvider = cameraProvider,
-            cameraSelector = cameraSelector,
+        cameraState = CameraXState(cameraProvider = cameraProvider,
+            textureEntries = sensors.mapIndexed { index: Int, pigeonSensor: PigeonSensor ->
+                (pigeonSensor.deviceId
+                    ?: index.toString()) to textureRegistry!!.createSurfaceTexture()
+            }.toMap(),
+//            cameraSelector = cameraSelector,
+            sensors = sensors,
             mirrorFrontCamera = mirrorFrontCamera,
             currentCaptureMode = mode,
             enableImageStream = enableImageStream,
@@ -157,7 +166,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             if (zoom > 0) {
                 // TODO Find a better way to set initial zoom than using a postDelayed
                 Handler(Looper.getMainLooper()).postDelayed({
-                    cameraState.previewCamera!!.cameraControl.setLinearZoom(zoom.toFloat())
+                    (cameraState.concurrentCamera?.cameras?.firstOrNull()
+                        ?: cameraState.previewCamera)?.cameraControl?.setLinearZoom(zoom.toFloat())
                 }, 200)
             }
         }
@@ -229,10 +239,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun isVideoRecordingAndImageAnalysisSupported(
-        sensor: String, callback: (Result<Boolean>) -> Unit
+        sensor: PigeonSensorPosition, callback: (Result<Boolean>) -> Unit
     ) {
         val cameraSelector =
-            if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+            if (sensor == PigeonSensorPosition.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val cameraProvider = ProcessCameraProvider.getInstance(
@@ -294,8 +304,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         )
     }
 
-    override fun getPreviewTextureId(): Long {
-        return textureEntry!!.id()
+    override fun getPreviewTextureId(cameraPosition: Long): Long {
+        return cameraState.textureEntries[cameraPosition.toString()]!!.id()
     }
 
     /***
@@ -339,44 +349,48 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         imageFile: File, callback: (Result<Boolean>) -> Unit
     ) {
         val metadata = ImageCapture.Metadata()
-        if (cameraState.cameraSelector.lensFacing == CameraSelector.LENS_FACING_FRONT) {
+        if (cameraState.sensors.size == 1 && cameraState.sensors.first().position == PigeonSensorPosition.FRONT) {
             metadata.isReversedHorizontal = cameraState.mirrorFrontCamera
         }
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
-        cameraState.imageCapture!!.targetRotation = orientationStreamListener!!.surfaceOrientation
-        cameraState.imageCapture!!.takePicture(outputFileOptions,
-            ContextCompat.getMainExecutor(activity!!),
-            object : ImageCapture.OnImageSavedCallback {
-
-                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    if (colorMatrix != null && noneFilter != colorMatrix) {
-                        val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
-
-                        val originalBitmap = BitmapFactory.decodeFile(
-                            outputFileResults.savedUri?.path
+        for (imageCapture in cameraState.imageCaptures) {
+            imageCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
+            imageCapture.takePicture(outputFileOptions,
+                ContextCompat.getMainExecutor(activity!!),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        Log.d(
+                            "CameraX___", "Photo capture succeeded: ${outputFileResults.savedUri}"
                         )
-                        val bitmapCopy = Bitmap.createBitmap(
-                            originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
-                        )
+                        if (colorMatrix != null && noneFilter != colorMatrix) {
+                            val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
 
-                        val canvas = Canvas(bitmapCopy)
-                        canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
-                            colorFilter = ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
-                                .toFloatArray())
-                        })
+                            val originalBitmap = BitmapFactory.decodeFile(
+                                outputFileResults.savedUri?.path
+                            )
+                            val bitmapCopy = Bitmap.createBitmap(
+                                originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
+                            )
 
-                        try {
-                            FileOutputStream(outputFileResults.savedUri?.path).use { out ->
-                                bitmapCopy.compress(
-                                    Bitmap.CompressFormat.JPEG, 100, out
-                                )
+                            val canvas = Canvas(bitmapCopy)
+                            canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
+                                colorFilter =
+                                    ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
+                                        .toFloatArray())
+                            })
+
+                            try {
+                                FileOutputStream(outputFileResults.savedUri?.path).use { out ->
+                                    bitmapCopy.compress(
+                                        Bitmap.CompressFormat.JPEG, 100, out
+                                    )
+                                }
+                                exif.saveAttributes()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
                             }
-                            exif.saveAttributes()
-                        } catch (e: IOException) {
-                            e.printStackTrace()
                         }
-                    }
 
                     if (exifPreferences.saveGPSLocation) {
                         retrieveLocation {
@@ -393,11 +407,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     }
                 }
 
-                override fun onError(exception: ImageCaptureException) {
-                    Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
-                    callback(Result.success(false))
-                }
-            })
+                    override fun onError(exception: ImageCaptureException) {
+                        Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
+                        callback(Result.success(false))
+                    }
+                })
+        }
     }
 
     @SuppressLint("RestrictedApi", "MissingPermission")
@@ -454,13 +469,13 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     }
                 }
             }
-
-            cameraState.videoCapture!!.targetRotation =
-                orientationStreamListener!!.surfaceOrientation
-            cameraState.recording = cameraState.videoCapture!!.output.prepareRecording(
-                activity!!, FileOutputOptions.Builder(File(path)).build()
-            ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
-                .start(cameraState.executor(activity!!), recordingListener)
+            for (videoCapture in cameraState.videoCaptures) {
+                videoCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
+                cameraState.recording = videoCapture.output.prepareRecording(
+                    activity!!, FileOutputOptions.Builder(File(path)).build()
+                ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
+                    .start(cameraState.executor(activity!!), recordingListener)
+            }
             callback(Result.success(Unit))
         }
     }
@@ -518,16 +533,20 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         return true
     }
 
+    @SuppressLint("RestrictedApi")
     override fun setFlashMode(mode: String) {
         val flashMode = FlashMode.valueOf(mode)
         cameraState.apply {
             this.flashMode = flashMode
-            this.imageCapture?.flashMode = when (flashMode) {
-                FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
-                FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
-                else -> ImageCapture.FLASH_MODE_OFF
+            for (imageCapture in cameraState.imageCaptures) {
+                imageCapture.flashMode = when (flashMode) {
+                    FlashMode.ALWAYS, FlashMode.ON -> ImageCapture.FLASH_MODE_ON
+                    FlashMode.AUTO -> ImageCapture.FLASH_MODE_AUTO
+                    else -> ImageCapture.FLASH_MODE_OFF
+                }
             }
-            previewCamera?.cameraControl?.enableTorch(flashMode == FlashMode.ALWAYS)
+            (cameraState.concurrentCamera?.cameras?.firstOrNull()
+                ?: cameraState.previewCamera)?.cameraControl?.enableTorch(flashMode == FlashMode.ALWAYS)
         }
     }
 
@@ -540,31 +559,27 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun setSensor(sensor: String, deviceId: String?) {
-        val cameraSelector =
-            if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA
-            else CameraSelector.DEFAULT_FRONT_CAMERA
+    override fun setSensor(sensors: List<PigeonSensor>) {
         cameraState.apply {
-            this.cameraSelector = cameraSelector
+            this.sensors = sensors
+            // TODO Make below variables parameters
             // Also reset flash mode and aspect ratio
             this.flashMode = FlashMode.NONE
             this.aspectRatio = null
             this.rational = Rational(3, 4)
-            // Zoom should be reset automatically
-
             updateLifecycle(activity!!)
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun setCorrection(brightness: Double) {
         // TODO brightness calculation might not be the same as before CameraX
-        val range = cameraState.previewCamera?.cameraInfo?.exposureState?.exposureCompensationRange
-        if (range != null) {
-            val actualBrightnessValue = brightness * (range.upper - range.lower) + range.lower
-            cameraState.previewCamera?.cameraControl?.setExposureCompensationIndex(
-                actualBrightnessValue.roundToInt()
-            )
-        }
+        val range = (cameraState.concurrentCamera?.cameras?.firstOrNull()
+            ?: cameraState.previewCamera!!).cameraInfo.exposureState.exposureCompensationRange
+        val actualBrightnessValue = brightness * (range.upper - range.lower) + range.lower
+        cameraState.previewCamera?.cameraControl?.setExposureCompensationIndex(
+            actualBrightnessValue.roundToInt()
+        )
     }
 
     override fun getMaxZoom(): Double {
@@ -601,7 +616,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
         val autoFocusPoint = factory.createPoint(x.toFloat(), y.toFloat())
         try {
-            cameraState.previewCamera!!.cameraControl.startFocusAndMetering(
+            (cameraState.concurrentCamera?.cameras?.firstOrNull()
+                ?: cameraState.previewCamera!!).cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(
                     autoFocusPoint,
                     FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE or FocusMeteringAction.FLAG_AWB
@@ -624,6 +640,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             setCaptureMode(CaptureModes.valueOf(mode))
             updateLifecycle(activity!!)
         }
+    }
+
+    @ExperimentalCamera2Interop
+    override fun isMultiCamSupported(): Boolean {
+        return cameraState.isMultiCamSupported()
     }
 
     /// Changing the recording audio mode can't be changed once a recording has starded
@@ -660,11 +681,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi")
     override fun getEffectivPreviewSize(): PreviewSize {
-        val res = cameraState.preview!!.resolutionInfo?.resolution
+        val res = cameraState.previews!!.first().resolutionInfo?.resolution
         return if (res != null) {
             val rota90 = 90
             val rota270 = 270
-            when (cameraState.preview!!.resolutionInfo?.rotationDegrees) {
+            when (cameraState.previews!!.first().resolutionInfo?.rotationDegrees) {
                 rota90, rota270 -> {
                     PreviewSize(res.height.toDouble(), res.width.toDouble())
                 }
@@ -751,4 +772,5 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         cancellationTokenSource.cancel()
         cameraPermissions.onCancel(null)
     }
+
 }
