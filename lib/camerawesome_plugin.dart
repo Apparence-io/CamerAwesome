@@ -372,6 +372,11 @@ class CamerawesomePlugin {
     return CameraInterface().getMaxZoom();
   }
 
+  /// returns the min zoom available on device
+  static Future<num?> getMinZoom() {
+    return CameraInterface().getMinZoom();
+  }
+
   static Future<bool> isMultiCamSupported() {
     return CameraInterface().isMultiCamSupported();
   }
