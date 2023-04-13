@@ -13,8 +13,8 @@ main() {
           Sensor.position(SensorPosition.front)
         ],
         saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () => tempPath('single_photo_back.jpg'),
-          videoPathBuilder: () => tempPath('single_video_back.mp4'),
+          photoPathBuilder: tempPath('single_photo_back.jpg'),
+          videoPathBuilder: tempPath('single_video_back.mp4'),
         ),
       ),
     );

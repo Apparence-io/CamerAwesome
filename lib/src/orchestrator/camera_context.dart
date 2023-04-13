@@ -6,7 +6,6 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// This class handle the current state of the camera
@@ -52,6 +51,7 @@ class CameraContext {
   Stream<MediaCapture?> get captureState$ => mediaCaptureController.stream;
 
   MediaCapture? get captureState => mediaCaptureController.stream.value;
+
   CameraState get state => stateController.value;
 
   /// The config associated with a [Sensors].

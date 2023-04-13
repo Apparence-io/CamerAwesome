@@ -14,11 +14,13 @@ dependencies:
   carousel_slider: ^4.2.1
   collection: ^1.17.0
   colorfilter_generator: ^0.0.8
+  cross_file: ^0.3.3+4
   flutter:
     sdk: flutter
   image: ^4.0.15
     # photofilters:
   # git: https://github.com/svenopdehipt/photofilters.git
+  path_provider: ^2.0.14
   rxdart: ^0.27.7
 dev_dependencies:
   flutter_lints: ^2.0.1

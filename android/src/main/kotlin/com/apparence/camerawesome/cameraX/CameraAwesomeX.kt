@@ -47,6 +47,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 
 
@@ -338,17 +340,26 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
-    override fun takePhoto(path: String, callback: (Result<Boolean>) -> Unit) {
-        val imageFile = File(path)
-        imageFile.parentFile?.mkdirs()
-
-        takePhotoWith(imageFile, callback)
+    override fun takePhoto(
+        requests: Map<PigeonSensor, String?>,
+        callback: (Result<Boolean>) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val res: MutableMap<PigeonSensor, Boolean?> = requests.mapValues { null }.toMutableMap()
+            for (entry in requests.entries) {
+                // On Android, path should be specified
+                val imageFile = File(entry.value!!)
+                imageFile.parentFile?.mkdirs()
+                res[entry.key] = takePhotoWith(imageFile)
+            }
+            callback(Result.success(res.all { it.value == true }))
+        }
     }
 
     @SuppressLint("RestrictedApi")
-    private fun takePhotoWith(
-        imageFile: File, callback: (Result<Boolean>) -> Unit
-    ) {
+    private suspend fun takePhotoWith(
+        imageFile: File
+    ): Boolean = suspendCoroutine { continuation ->
         val metadata = ImageCapture.Metadata()
         if (cameraState.sensors.size == 1 && cameraState.sensors.first().position == PigeonSensorPosition.FRONT) {
             metadata.isReversedHorizontal = cameraState.mirrorFrontCamera
@@ -357,7 +368,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
         for (imageCapture in cameraState.imageCaptures) {
             imageCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
-            imageCapture.takePicture(outputFileOptions,
+            imageCapture.takePicture(
+                outputFileOptions,
                 ContextCompat.getMainExecutor(activity!!),
                 object : ImageCapture.OnImageSavedCallback {
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
@@ -401,16 +413,16 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 //                            Log.d("CAMERAX__EXIF", "GPS info saved ${it?.latitude} ${it?.longitude}")
                                 // We need to actually save the exif data to the file system
                                 exif.saveAttributes()
-                                callback(Result.success(true))
+                                continuation.resume(true)
                             }
                         } else {
-                            callback(Result.success(true))
+                            continuation.resume(true)
                         }
                     }
 
                     override fun onError(exception: ImageCaptureException) {
                         Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
-                        callback(Result.success(false))
+                        continuation.resume(false)
                     }
                 })
         }
@@ -418,8 +430,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        path: String, callback: (Result<Unit>) -> Unit
+        requests: Map<PigeonSensor, String?>,
+        callback: (Result<Unit>) -> Unit
     ) {
+        // TODO Handle multiple videos requests
+        val path = requests.values.first()!!
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
             if (cameraState.enableAudioRecording) {
@@ -470,7 +485,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                     }
                 }
             }
-            for (videoCapture in cameraState.videoCaptures) {
+            for (videoCapture in cameraState.videoCaptures.values) {
                 videoCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
                 cameraState.recording = videoCapture.output.prepareRecording(
                     activity!!, FileOutputOptions.Builder(File(path)).build()

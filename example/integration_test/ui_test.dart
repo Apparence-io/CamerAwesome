@@ -1,10 +1,6 @@
 // ignore_for_file: avoid_print
-import 'dart:io';
-
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
-import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,8 +15,8 @@ void main() {
         DrivableCamera(
           sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photoAndVideo(
-            photoPathBuilder: () => tempPath('single_photo_back.jpg'),
-            videoPathBuilder: () => tempPath('single_video_back.mp4'),
+            photoPathBuilder: tempPath('single_photo_back.jpg'),
+            videoPathBuilder: tempPath('single_video_back.mp4'),
           ),
         ),
       );

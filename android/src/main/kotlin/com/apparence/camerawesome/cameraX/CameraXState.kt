@@ -34,7 +34,7 @@ data class CameraXState(
 //    var cameraSelector: CameraSelector,
     var sensors: List<PigeonSensor>,
     var imageCaptures: MutableList<ImageCapture> = mutableListOf(),
-    var videoCaptures: MutableList<VideoCapture<Recorder>> = mutableListOf(),
+    var videoCaptures: MutableMap<PigeonSensor, VideoCapture<Recorder>> = mutableMapOf(),
     var previews: MutableList<Preview>? = null,
     var concurrentCamera: ConcurrentCamera? = null,
     var previewCamera: Camera? = null,
@@ -142,7 +142,7 @@ data class CameraXState(
                 } else {
                     val videoCapture = buildVideoCapture(videoOptions)
                     useCaseGroupBuilder.addUseCase(videoCapture)
-                    videoCaptures.add(videoCapture)
+                    videoCaptures[sensor] = videoCapture
                 }
                 if (isFirst && enableImageStream && imageAnalysisBuilder != null) {
                     imageAnalysis = imageAnalysisBuilder!!.build()
@@ -212,7 +212,7 @@ data class CameraXState(
             } else if (currentCaptureMode == CaptureModes.VIDEO) {
                 val videoCapture = buildVideoCapture(videoOptions)
                 useCaseGroupBuilder.addUseCase(videoCapture)
-                videoCaptures.add(videoCapture)
+                videoCaptures[sensors.first()] = videoCapture
             }
 
 

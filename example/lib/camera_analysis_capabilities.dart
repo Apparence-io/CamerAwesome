@@ -1,4 +1,3 @@
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
@@ -31,8 +30,6 @@ class CameraPage extends StatelessWidget {
           // Setting both video recording and image analysis is an error on Android if the camera is not of LEVEL 3
           // See explanations: https://developer.android.com/training/camerax/architecture#combine-use-cases
           saveConfig: SaveConfig.photoAndVideo(
-            photoPathBuilder: () => path(CaptureMode.photo),
-            videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.video,
           ),
           onImageForAnalysis: (image) async {

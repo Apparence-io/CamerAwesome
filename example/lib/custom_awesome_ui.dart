@@ -1,4 +1,3 @@
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
@@ -25,9 +24,7 @@ class CameraPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.awesome(
-        saveConfig: SaveConfig.photo(
-          pathBuilder: () => path(CaptureMode.photo),
-        ),
+        saveConfig: SaveConfig.photo(),
         sensorConfig: SensorConfig.single(
           sensor: Sensor.position(SensorPosition.back),
           aspectRatio: CameraAspectRatios.ratio_1_1,

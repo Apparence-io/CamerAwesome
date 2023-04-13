@@ -315,10 +315,10 @@ abstract class CameraInterface {
 
   // TODO async with void return type seems to not work (channel-error)
   @async
-  bool takePhoto(String path);
+  bool takePhoto(Map<PigeonSensor, String?> requests);
 
   @async
-  void recordVideo(String path);
+  void recordVideo(Map<PigeonSensor, String?> requests, VideoOptions? options);
 
   void pauseVideoRecording();
 
@@ -364,6 +364,8 @@ abstract class CameraInterface {
   double getMaxZoom();
 
   void setCaptureMode(String mode);
+
+  bool isMultiCamSupported();
 
   @async
   bool setRecordingAudioMode(bool enableAudio);
