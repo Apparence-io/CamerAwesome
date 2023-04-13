@@ -98,10 +98,14 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("UnsafeOptInUsageError")
     fun configureCameraXLogs() {
-        ProcessCameraProvider.configureInstance(
-            CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig())
-                .setMinimumLoggingLevel(Log.ERROR).build()
-        )
+        try {
+            ProcessCameraProvider.configureInstance(
+                CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig())
+                    .setMinimumLoggingLevel(Log.ERROR).build()
+            )
+        } catch (e: IllegalStateException) {
+            // Ignore if trying to configure CameraX more than once
+        }
     }
 
 
@@ -136,9 +140,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             activity!!
         )
         val cameraProvider = future.get()
-
-        val cameraSelector =
-            if (CameraSensor.valueOf(sensor) == CameraSensor.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
 
         val mode = CaptureModes.valueOf(captureMode)
         cameraState = CameraXState(cameraProvider = cameraProvider,
@@ -392,20 +393,20 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                             }
                         }
 
-                    if (exifPreferences.saveGPSLocation) {
-                        retrieveLocation {
-                            val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
-                            outputFileOptions.metadata.location = it
-                            exif.setGpsInfo(it)
+                        if (exifPreferences.saveGPSLocation) {
+                            retrieveLocation {
+                                val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
+                                outputFileOptions.metadata.location = it
+                                exif.setGpsInfo(it)
 //                            Log.d("CAMERAX__EXIF", "GPS info saved ${it?.latitude} ${it?.longitude}")
-                            // We need to actually save the exif data to the file system
-                            exif.saveAttributes()
+                                // We need to actually save the exif data to the file system
+                                exif.saveAttributes()
+                                callback(Result.success(true))
+                            }
+                        } else {
                             callback(Result.success(true))
                         }
-                    } else {
-                        callback(Result.success(true))
                     }
-                }
 
                     override fun onError(exception: ImageCaptureException) {
                         Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)

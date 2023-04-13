@@ -113,7 +113,7 @@ packages:
     source: hosted
     version: "0.17.2"
   exif:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: exif
       sha256: "542fd8dd8eda3dff65be415f38370541aecf9eb3663e0679d9da4689f6b16c8f"

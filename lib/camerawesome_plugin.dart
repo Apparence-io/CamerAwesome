@@ -5,18 +5,16 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 export 'src/camera_characteristics/camera_characteristics.dart';
 export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
-export 'src/orchestrator/states/states.dart';
-export 'src/widgets/camera_awesome_builder.dart';
 export 'src/orchestrator/models/sensor_type.dart';
 export 'src/orchestrator/models/sensors.dart';
-
+export 'src/orchestrator/states/states.dart';
+export 'src/widgets/camera_awesome_builder.dart';
 // built in widgets
 export 'src/widgets/widgets.dart';
 

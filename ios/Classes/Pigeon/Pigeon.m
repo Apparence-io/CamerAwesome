@@ -45,6 +45,18 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList;
 @end
 
+@interface AndroidVideoOptions ()
++ (AndroidVideoOptions *)fromList:(NSArray *)list;
++ (nullable AndroidVideoOptions *)nullableFromList:(NSArray *)list;
+- (NSArray *)toList;
+@end
+
+@interface CupertinoVideoOptions ()
++ (CupertinoVideoOptions *)fromList:(NSArray *)list;
++ (nullable CupertinoVideoOptions *)nullableFromList:(NSArray *)list;
+- (NSArray *)toList;
+@end
+
 @interface PigeonSensorTypeDevice ()
 + (PigeonSensorTypeDevice *)fromList:(NSArray *)list;
 + (nullable PigeonSensorTypeDevice *)nullableFromList:(NSArray *)list;
@@ -154,23 +166,77 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 @end
 
 @implementation VideoOptions
-+ (instancetype)makeWithFileType:(NSString *)fileType
-    codec:(NSString *)codec {
++ (instancetype)makeWithAndroid:(nullable AndroidVideoOptions *)android
+    ios:(nullable CupertinoVideoOptions *)ios {
   VideoOptions* pigeonResult = [[VideoOptions alloc] init];
-  pigeonResult.fileType = fileType;
-  pigeonResult.codec = codec;
+  pigeonResult.android = android;
+  pigeonResult.ios = ios;
   return pigeonResult;
 }
 + (VideoOptions *)fromList:(NSArray *)list {
   VideoOptions *pigeonResult = [[VideoOptions alloc] init];
+  pigeonResult.android = [AndroidVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 0))];
+  pigeonResult.ios = [CupertinoVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 1))];
+  return pigeonResult;
+}
++ (nullable VideoOptions *)nullableFromList:(NSArray *)list {
+  return (list) ? [VideoOptions fromList:list] : nil;
+}
+- (NSArray *)toList {
+  return @[
+    (self.android ? [self.android toList] : [NSNull null]),
+    (self.ios ? [self.ios toList] : [NSNull null]),
+  ];
+}
+@end
+
+@implementation AndroidVideoOptions
++ (instancetype)makeWithBitrate:(nullable NSNumber *)bitrate
+    quality:(VideoRecordingQuality)quality
+    fallbackStrategy:(QualityFallbackStrategy)fallbackStrategy {
+  AndroidVideoOptions* pigeonResult = [[AndroidVideoOptions alloc] init];
+  pigeonResult.bitrate = bitrate;
+  pigeonResult.quality = quality;
+  pigeonResult.fallbackStrategy = fallbackStrategy;
+  return pigeonResult;
+}
++ (AndroidVideoOptions *)fromList:(NSArray *)list {
+  AndroidVideoOptions *pigeonResult = [[AndroidVideoOptions alloc] init];
+  pigeonResult.bitrate = GetNullableObjectAtIndex(list, 0);
+  pigeonResult.quality = [GetNullableObjectAtIndex(list, 1) integerValue];
+  pigeonResult.fallbackStrategy = [GetNullableObjectAtIndex(list, 2) integerValue];
+  return pigeonResult;
+}
++ (nullable AndroidVideoOptions *)nullableFromList:(NSArray *)list {
+  return (list) ? [AndroidVideoOptions fromList:list] : nil;
+}
+- (NSArray *)toList {
+  return @[
+    (self.bitrate ?: [NSNull null]),
+    @(self.quality),
+    @(self.fallbackStrategy),
+  ];
+}
+@end
+
+@implementation CupertinoVideoOptions
++ (instancetype)makeWithFileType:(NSString *)fileType
+    codec:(NSString *)codec {
+  CupertinoVideoOptions* pigeonResult = [[CupertinoVideoOptions alloc] init];
+  pigeonResult.fileType = fileType;
+  pigeonResult.codec = codec;
+  return pigeonResult;
+}
++ (CupertinoVideoOptions *)fromList:(NSArray *)list {
+  CupertinoVideoOptions *pigeonResult = [[CupertinoVideoOptions alloc] init];
   pigeonResult.fileType = GetNullableObjectAtIndex(list, 0);
   NSAssert(pigeonResult.fileType != nil, @"");
   pigeonResult.codec = GetNullableObjectAtIndex(list, 1);
   NSAssert(pigeonResult.codec != nil, @"");
   return pigeonResult;
 }
-+ (nullable VideoOptions *)nullableFromList:(NSArray *)list {
-  return (list) ? [VideoOptions fromList:list] : nil;
++ (nullable CupertinoVideoOptions *)nullableFromList:(NSArray *)list {
+  return (list) ? [CupertinoVideoOptions fromList:list] : nil;
 }
 - (NSArray *)toList {
   return @[
@@ -512,16 +578,20 @@ void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObjec
     case 128: 
       return [AndroidFocusSettings fromList:[self readValue]];
     case 129: 
-      return [ExifPreferences fromList:[self readValue]];
+      return [AndroidVideoOptions fromList:[self readValue]];
     case 130: 
-      return [PigeonSensor fromList:[self readValue]];
+      return [CupertinoVideoOptions fromList:[self readValue]];
     case 131: 
-      return [PigeonSensorTypeDevice fromList:[self readValue]];
+      return [ExifPreferences fromList:[self readValue]];
     case 132: 
-      return [PreviewSize fromList:[self readValue]];
+      return [PigeonSensor fromList:[self readValue]];
     case 133: 
-      return [PreviewSize fromList:[self readValue]];
+      return [PigeonSensorTypeDevice fromList:[self readValue]];
     case 134: 
+      return [PreviewSize fromList:[self readValue]];
+    case 135: 
+      return [PreviewSize fromList:[self readValue]];
+    case 136: 
       return [VideoOptions fromList:[self readValue]];
     default:
       return [super readValueOfType:type];
@@ -536,23 +606,29 @@ void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObjec
   if ([value isKindOfClass:[AndroidFocusSettings class]]) {
     [self writeByte:128];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[ExifPreferences class]]) {
+  } else if ([value isKindOfClass:[AndroidVideoOptions class]]) {
     [self writeByte:129];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[PigeonSensor class]]) {
+  } else if ([value isKindOfClass:[CupertinoVideoOptions class]]) {
     [self writeByte:130];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[PigeonSensorTypeDevice class]]) {
+  } else if ([value isKindOfClass:[ExifPreferences class]]) {
     [self writeByte:131];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[PreviewSize class]]) {
+  } else if ([value isKindOfClass:[PigeonSensor class]]) {
     [self writeByte:132];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[PreviewSize class]]) {
+  } else if ([value isKindOfClass:[PigeonSensorTypeDevice class]]) {
     [self writeByte:133];
     [self writeValue:[value toList]];
-  } else if ([value isKindOfClass:[VideoOptions class]]) {
+  } else if ([value isKindOfClass:[PreviewSize class]]) {
     [self writeByte:134];
+    [self writeValue:[value toList]];
+  } else if ([value isKindOfClass:[PreviewSize class]]) {
+    [self writeByte:135];
+    [self writeValue:[value toList]];
+  } else if ([value isKindOfClass:[VideoOptions class]]) {
+    [self writeByte:136];
     [self writeValue:[value toList]];
   } else {
     [super writeValue:value];
@@ -589,7 +665,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:videoOptions:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:videoOptions:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSArray<PigeonSensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
@@ -601,7 +677,8 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         NSString *arg_captureMode = GetNullableObjectAtIndex(args, 6);
         NSNumber *arg_enableImageStream = GetNullableObjectAtIndex(args, 7);
         ExifPreferences *arg_exifPreferences = GetNullableObjectAtIndex(args, 8);
-        [api setupCameraSensors:arg_sensors aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera enablePhysicalButton:arg_enablePhysicalButton flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        VideoOptions *arg_videoOptions = GetNullableObjectAtIndex(args, 9);
+        [api setupCameraSensors:arg_sensors aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera enablePhysicalButton:arg_enablePhysicalButton flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences videoOptions:arg_videoOptions completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
@@ -692,12 +769,11 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(recordVideoPath:options:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(recordVideoPath:options:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(recordVideoPath:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(recordVideoPath:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSString *arg_path = GetNullableObjectAtIndex(args, 0);
-        VideoOptions *arg_options = GetNullableObjectAtIndex(args, 1);
-        [api recordVideoPath:arg_path options:arg_options completion:^(FlutterError *_Nullable error) {
+        [api recordVideoPath:arg_path completion:^(FlutterError *_Nullable error) {
           callback(wrapResult(nil, error));
         }];
       }];
@@ -1018,23 +1094,6 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
   {
     FlutterBasicMessageChannel *channel =
       [[FlutterBasicMessageChannel alloc]
-        initWithName:@"dev.flutter.pigeon.CameraInterface.isMultiCamSupported"
-        binaryMessenger:binaryMessenger
-        codec:CameraInterfaceGetCodec()];
-    if (api) {
-      NSCAssert([api respondsToSelector:@selector(isMultiCamSupportedWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(isMultiCamSupportedWithError:)", api);
-      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
-        FlutterError *error;
-        NSNumber *output = [api isMultiCamSupportedWithError:&error];
-        callback(wrapResult(output, error));
-      }];
-    } else {
-      [channel setMessageHandler:nil];
-    }
-  }
-  {
-    FlutterBasicMessageChannel *channel =
-      [[FlutterBasicMessageChannel alloc]
         initWithName:@"dev.flutter.pigeon.CameraInterface.setRecordingAudioMode"
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
@@ -1267,6 +1326,23 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         [api isVideoRecordingAndImageAnalysisSupportedSensor:arg_sensor completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.CameraInterface.isMultiCamSupported"
+        binaryMessenger:binaryMessenger
+        codec:CameraInterfaceGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(isMultiCamSupportedWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(isMultiCamSupportedWithError:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        NSNumber *output = [api isMultiCamSupportedWithError:&error];
+        callback(wrapResult(output, error));
       }];
     } else {
       [channel setMessageHandler:nil];

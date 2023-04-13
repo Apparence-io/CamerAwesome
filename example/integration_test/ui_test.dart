@@ -46,6 +46,7 @@ void main() {
 
       // Switch to video mode
       await $.tap(find.text("VIDEO"));
+      await $.pump(const Duration(milliseconds: 3000));
       expect($(AwesomeAspectRatioButton), findsNothing);
       expect($(AwesomeFlashButton), findsOneWidget);
       expect(
@@ -67,7 +68,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () => tempPath('single_photo_back.jpg'),
           ),
@@ -96,7 +97,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photoAndVideo(
             photoPathBuilder: () => tempPath('single_photo_back.jpg'),
             videoPathBuilder: () => tempPath('single_video_back.mp4'),
@@ -161,7 +162,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () => tempPath('single_photo_back.jpg'),
           ),
@@ -243,7 +244,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () => tempPath('single_photo_back_no_gps.jpg'),
           ),
@@ -269,12 +270,13 @@ void main() {
 
   // This test might not pass in Firebase Test Lab because location does not seem to be activated. It works on local device.
   // TODO Try to use Patrol to enable location manually on the device
+
   patrol(
     'Location > Save if specified',
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () => tempPath('single_photo_back_gps.jpg'),
           ),
@@ -304,7 +306,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () => tempPath('single_photo_back.jpg'),
           ),
@@ -327,7 +329,7 @@ void main() {
     ($) async {
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensor: Sensors.back,
+          sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
             pathBuilder: () => tempPath('single_photo_back.jpg'),
           ),

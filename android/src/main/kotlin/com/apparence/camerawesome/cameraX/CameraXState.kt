@@ -140,10 +140,7 @@ data class CameraXState(
                     useCaseGroupBuilder.addUseCase(imageCapture)
                     imageCaptures.add(imageCapture)
                 } else {
-                    val recorder =
-                        Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST))
-                            .build()
-                    val videoCapture = VideoCapture.withOutput(recorder)
+                    val videoCapture = buildVideoCapture(videoOptions)
                     useCaseGroupBuilder.addUseCase(videoCapture)
                     videoCaptures.add(videoCapture)
                 }
@@ -213,36 +210,11 @@ data class CameraXState(
                 useCaseGroupBuilder.addUseCase(imageCapture)
                 imageCaptures.add(imageCapture)
             } else if (currentCaptureMode == CaptureModes.VIDEO) {
-                val recorderBuilder = Recorder.Builder()
-                // Aspect ratio is handled by the setViewPort on the UseCaseGroup
-                if (videoOptions?.quality != null) {
-                    val quality = when (videoOptions?.quality) {
-                        VideoRecordingQuality.LOWEST -> Quality.LOWEST
-                        VideoRecordingQuality.SD -> Quality.SD
-                        VideoRecordingQuality.HD -> Quality.HD
-                        VideoRecordingQuality.FHD -> Quality.FHD
-                        VideoRecordingQuality.UHD -> Quality.UHD
-                        else -> Quality.HIGHEST
-                    }
-                    recorderBuilder.setQualitySelector(
-                        QualitySelector.from(
-                            quality,
-                            if (videoOptions?.fallbackStrategy == QualityFallbackStrategy.LOWER) FallbackStrategy.lowerQualityOrHigherThan(
-                                quality
-                            )
-                            else FallbackStrategy.higherQualityOrLowerThan(quality)
-                        )
-                    )
-                }
-                if (videoOptions?.bitrate != null) {
-                    recorderBuilder.setTargetVideoEncodingBitRate(videoOptions.bitrate.toInt())
-                }
-                val recorder = recorderBuilder.build()
-                val videoCapture = VideoCapture.withOutput(recorder!!)
+                val videoCapture = buildVideoCapture(videoOptions)
                 useCaseGroupBuilder.addUseCase(videoCapture)
                 videoCaptures.add(videoCapture)
             }
-        }
+
 
             val addAnalysisUseCase = enableImageStream && imageAnalysisBuilder != null
             val cameraLevel = CameraCapabilities.getCameraLevel(
@@ -275,6 +247,35 @@ data class CameraXState(
             )
             previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
         }
+    }
+
+    private fun buildVideoCapture(videoOptions: AndroidVideoOptions?): VideoCapture<Recorder> {
+        val recorderBuilder = Recorder.Builder()
+        // Aspect ratio is handled by the setViewPort on the UseCaseGroup
+        if (videoOptions?.quality != null) {
+            val quality = when (videoOptions.quality) {
+                VideoRecordingQuality.LOWEST -> Quality.LOWEST
+                VideoRecordingQuality.SD -> Quality.SD
+                VideoRecordingQuality.HD -> Quality.HD
+                VideoRecordingQuality.FHD -> Quality.FHD
+                VideoRecordingQuality.UHD -> Quality.UHD
+                else -> Quality.HIGHEST
+            }
+            recorderBuilder.setQualitySelector(
+                QualitySelector.from(
+                    quality,
+                    if (videoOptions.fallbackStrategy == QualityFallbackStrategy.LOWER) FallbackStrategy.lowerQualityOrHigherThan(
+                        quality
+                    )
+                    else FallbackStrategy.higherQualityOrLowerThan(quality)
+                )
+            )
+        }
+        if (videoOptions?.bitrate != null) {
+            recorderBuilder.setTargetVideoEncodingBitRate(videoOptions.bitrate.toInt())
+        }
+        val recorder = recorderBuilder.build()
+        return VideoCapture.withOutput(recorder)
     }
 
     @SuppressLint("RestrictedApi")

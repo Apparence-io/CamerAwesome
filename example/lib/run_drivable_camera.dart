@@ -16,10 +16,9 @@ class CameraAwesomeApp extends StatelessWidget {
       title: 'camerAwesome',
       home: DrivableCamera(
         saveConfig:
-            SaveConfig.photo(pathBuilder: () async => path(CaptureMode.photo)),
+            SaveConfig.video(pathBuilder: () async => path(CaptureMode.video)),
         sensors: [
           Sensor.position(SensorPosition.back),
-          Sensor.position(SensorPosition.front),
         ],
       ),
     );

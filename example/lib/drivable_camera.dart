@@ -22,14 +22,8 @@ class DrivableCamera extends StatelessWidget {
           saveConfig: saveConfig,
           onMediaTap: (media) {},
           sensorConfig: sensors.length == 1
-              ? SensorConfig.single(
-                  aspectRatio: CameraAspectRatios.ratio_1_1,
-                  flashMode: FlashMode.always,
-                )
-              : SensorConfig.multiple(
-                  sensors: sensors,
-                  flashMode: FlashMode.always,
-                ),
+              ? SensorConfig.single(sensor: sensors.first)
+              : SensorConfig.multiple(sensors: sensors),
           exifPreferences: exifPreferences,
         ),
       ),

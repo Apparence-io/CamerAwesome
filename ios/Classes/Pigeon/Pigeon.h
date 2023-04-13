@@ -16,6 +16,29 @@ typedef NS_ENUM(NSUInteger, PigeonSensorPosition) {
   PigeonSensorPositionUnknown = 2,
 };
 
+/// Video recording quality, from [sd] to [uhd], with [highest] and [lowest] to
+/// let the device choose the best/worst quality available.
+/// [highest] is the default quality.
+///
+/// Qualities are defined like this:
+/// [sd] < [hd] < [fhd] < [uhd]
+typedef NS_ENUM(NSUInteger, VideoRecordingQuality) {
+  VideoRecordingQualityLowest = 0,
+  VideoRecordingQualitySd = 1,
+  VideoRecordingQualityHd = 2,
+  VideoRecordingQualityFhd = 3,
+  VideoRecordingQualityUhd = 4,
+  VideoRecordingQualityHighest = 5,
+};
+
+/// If the specified [VideoRecordingQuality] is not available on the device,
+/// the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
+/// [higher] is the default fallback strategy.
+typedef NS_ENUM(NSUInteger, QualityFallbackStrategy) {
+  QualityFallbackStrategyHigher = 0,
+  QualityFallbackStrategyLower = 1,
+};
+
 typedef NS_ENUM(NSUInteger, PigeonSensorType) {
   /// A built-in wide-angle camera.
   ///
@@ -58,6 +81,8 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @class ExifPreferences;
 @class PigeonSensor;
 @class VideoOptions;
+@class AndroidVideoOptions;
+@class CupertinoVideoOptions;
 @class PigeonSensorTypeDevice;
 @class AndroidFocusSettings;
 @class PlaneWrapper;
@@ -90,6 +115,25 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @end
 
 @interface VideoOptions : NSObject
++ (instancetype)makeWithAndroid:(nullable AndroidVideoOptions *)android
+    ios:(nullable CupertinoVideoOptions *)ios;
+@property(nonatomic, strong, nullable) AndroidVideoOptions * android;
+@property(nonatomic, strong, nullable) CupertinoVideoOptions * ios;
+@end
+
+@interface AndroidVideoOptions : NSObject
++ (instancetype)makeWithBitrate:(nullable NSNumber *)bitrate
+    quality:(VideoRecordingQuality)quality
+    fallbackStrategy:(QualityFallbackStrategy)fallbackStrategy;
+/// The bitrate of the video recording. Only set it if a custom bitrate is
+/// desired.
+@property(nonatomic, strong, nullable) NSNumber * bitrate;
+/// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
+@property(nonatomic, assign) VideoRecordingQuality quality;
+@property(nonatomic, assign) QualityFallbackStrategy fallbackStrategy;
+@end
+
+@interface CupertinoVideoOptions : NSObject
 /// `init` unavailable to enforce nonnull fields, see the `make` class method.
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)makeWithFileType:(NSString *)fileType
@@ -193,7 +237,7 @@ extern void AnalysisImageUtilsSetup(id<FlutterBinaryMessenger> binaryMessenger, 
 NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 
 @protocol CameraInterface
-- (void)setupCameraSensors:(NSArray<PigeonSensor *> *)sensors aspectRatio:(NSString *)aspectRatio zoom:(NSNumber *)zoom mirrorFrontCamera:(NSNumber *)mirrorFrontCamera enablePhysicalButton:(NSNumber *)enablePhysicalButton flashMode:(NSString *)flashMode captureMode:(NSString *)captureMode enableImageStream:(NSNumber *)enableImageStream exifPreferences:(ExifPreferences *)exifPreferences completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+- (void)setupCameraSensors:(NSArray<PigeonSensor *> *)sensors aspectRatio:(NSString *)aspectRatio zoom:(NSNumber *)zoom mirrorFrontCamera:(NSNumber *)mirrorFrontCamera enablePhysicalButton:(NSNumber *)enablePhysicalButton flashMode:(NSString *)flashMode captureMode:(NSString *)captureMode enableImageStream:(NSNumber *)enableImageStream exifPreferences:(ExifPreferences *)exifPreferences videoOptions:(nullable VideoOptions *)videoOptions completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
 - (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError *_Nullable *_Nonnull)error;
 /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -202,7 +246,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getPreviewTextureIdCameraPosition:(NSNumber *)cameraPosition error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)takePhotoPath:(NSString *)path completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
-- (void)recordVideoPath:(NSString *)path options:(nullable VideoOptions *)options completion:(void (^)(FlutterError *_Nullable))completion;
+- (void)recordVideoPath:(NSString *)path completion:(void (^)(FlutterError *_Nullable))completion;
 - (void)pauseVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)resumeVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)receivedImageFromStreamWithError:(FlutterError *_Nullable *_Nonnull)error;
@@ -229,8 +273,6 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getMaxZoomWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setCaptureModeMode:(NSString *)mode error:(FlutterError *_Nullable *_Nonnull)error;
-/// @return `nil` only when `error != nil`.
-- (nullable NSNumber *)isMultiCamSupportedWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setRecordingAudioModeEnableAudio:(NSNumber *)enableAudio completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
 - (nullable NSArray<PreviewSize *> *)availableSizesWithError:(FlutterError *_Nullable *_Nonnull)error;
@@ -245,6 +287,8 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 - (void)stopAnalysisWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setFilterMatrix:(NSArray<NSNumber *> *)matrix error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)isVideoRecordingAndImageAnalysisSupportedSensor:(PigeonSensorPosition)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
+/// @return `nil` only when `error != nil`.
+- (nullable NSNumber *)isMultiCamSupportedWithError:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<CameraInterface> *_Nullable api);

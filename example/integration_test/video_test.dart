@@ -39,7 +39,7 @@ void main() {
     );
 
     patrol(
-      'Record video > multiple ${SensorPosition.back} camera',
+      'Record video > multiple ${sensor.name} camera',
       ($) async {
         int idxVideo = 0;
         const videosToTake = 3;
@@ -122,6 +122,8 @@ void main() {
           sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.video(
             pathBuilder: () async {
+              print("qqqqqqq__ idxSensor: $idxSensor/${sensors.length}");
+
               final path = await tempPath(
                   'switch_sensor_video_${idxSensor}_${sensors[idxSensor].name}.mp4');
               idxSensor++;
@@ -134,18 +136,21 @@ void main() {
       await allowPermissionsIfNeeded($);
 
       for (int i = 0; i < sensors.length; i++) {
-        final filePath = await tempPath(
-            'switch_sensor_video_${idxSensor}_${sensors[idxSensor].name}.mp4');
+        print("qqqqqqq__ sensor $i/${sensors.length}");
+
+        final filePath =
+            await tempPath('switch_sensor_video_${i}_${sensors[i].name}.mp4');
 
         if (i > 0 && sensors[i - 1] != sensors[i]) {
           await $.tester.pumpAndSettle();
           final switchButton = find.byType(AwesomeCameraSwitchButton);
           await $.tester.tap(switchButton, warnIfMissed: false);
+          await $.pump(const Duration(milliseconds: 2000));
         }
         await $(AwesomeCaptureButton).tap(andSettle: false);
         await allowPermissionsIfNeeded($);
         await Future.delayed(const Duration(seconds: 3));
-        await $(AwesomeCaptureButton).tap();
+        await $(AwesomeCaptureButton).tap(andSettle: false);
         await $.pump(const Duration(milliseconds: 2000));
 
         expect(File(filePath).existsSync(), true);
