@@ -318,7 +318,7 @@ abstract class CameraInterface {
   bool takePhoto(Map<PigeonSensor, String?> requests);
 
   @async
-  void recordVideo(Map<PigeonSensor, String?> requests, VideoOptions? options);
+  void recordVideo(Map<PigeonSensor, String?> requests);
 
   void pauseVideoRecording();
 
@@ -364,8 +364,6 @@ abstract class CameraInterface {
   double getMaxZoom();
 
   void setCaptureMode(String mode);
-
-  bool isMultiCamSupported();
 
   @async
   bool setRecordingAudioMode(bool enableAudio);

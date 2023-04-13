@@ -267,9 +267,7 @@ class CamerawesomePlugin {
       // TODO: add video options for Android
       return CameraInterface().recordVideo(pathBySensor);
     } else {
-      return CameraInterface().recordVideo(
-        pathBySensor,
-      );
+      return CameraInterface().recordVideo(pathBySensor);
     }
   }
 

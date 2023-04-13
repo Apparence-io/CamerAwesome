@@ -750,11 +750,11 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(takePhotoPath:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(takePhotoPath:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(takePhotoRequests:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(takePhotoRequests:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_path = GetNullableObjectAtIndex(args, 0);
-        [api takePhotoPath:arg_path completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        NSDictionary<PigeonSensor *, NSString *> *arg_requests = GetNullableObjectAtIndex(args, 0);
+        [api takePhotoRequests:arg_requests completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];
@@ -769,11 +769,11 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(recordVideoPath:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(recordVideoPath:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(recordVideoRequests:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(recordVideoRequests:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSString *arg_path = GetNullableObjectAtIndex(args, 0);
-        [api recordVideoPath:arg_path completion:^(FlutterError *_Nullable error) {
+        NSDictionary<PigeonSensor *, NSString *> *arg_requests = GetNullableObjectAtIndex(args, 0);
+        [api recordVideoRequests:arg_requests completion:^(FlutterError *_Nullable error) {
           callback(wrapResult(nil, error));
         }];
       }];

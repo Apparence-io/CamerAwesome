@@ -1,6 +1,10 @@
 // ignore_for_file: avoid_print
+import 'dart:io';
+
 import 'package:camera_app/drivable_camera.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:camerawesome/pigeon.dart';
+import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -66,7 +70,7 @@ void main() {
         DrivableCamera(
           sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
-            pathBuilder: () => tempPath('single_photo_back.jpg'),
+            pathBuilder: tempPath('single_photo_back.jpg'),
           ),
         ),
       );
@@ -95,8 +99,8 @@ void main() {
         DrivableCamera(
           sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photoAndVideo(
-            photoPathBuilder: () => tempPath('single_photo_back.jpg'),
-            videoPathBuilder: () => tempPath('single_video_back.mp4'),
+            photoPathBuilder: tempPath('single_photo_back.jpg'),
+            videoPathBuilder: tempPath('single_video_back.mp4'),
             initialCaptureMode: CaptureMode.video,
           ),
         ),
@@ -160,7 +164,7 @@ void main() {
         DrivableCamera(
           sensors: [Sensor.position(SensorPosition.back)],
           saveConfig: SaveConfig.photo(
-            pathBuilder: () => tempPath('single_photo_back.jpg'),
+            pathBuilder: tempPath('single_photo_back.jpg'),
           ),
         ),
       );
@@ -238,11 +242,12 @@ void main() {
   patrol(
     'Location > Do NOT save if not specified',
     ($) async {
+      final sensors = [Sensor.position(SensorPosition.back)];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensors: [Sensor.position(SensorPosition.back)],
+          sensors: sensors,
           saveConfig: SaveConfig.photo(
-            pathBuilder: () => tempPath('single_photo_back_no_gps.jpg'),
+            pathBuilder: tempPath('single_photo_back_no_gps.jpg'),
           ),
         ),
       );
@@ -254,7 +259,8 @@ void main() {
       // await $.native.pressBack();
 
       await $(AwesomeCaptureButton).tap();
-      final filePath = await tempPath('single_photo_back_no_gps.jpg');
+      final request = await tempPath('single_photo_back_no_gps.jpg')(sensors);
+      final filePath = request.when(single: (single) => single.file!.path);
       final exif = await readExifFromFile(File(filePath));
       final gpsTags = exif.entries.where(
         (element) => element.key.contains('GPSDate'),
@@ -270,11 +276,12 @@ void main() {
   patrol(
     'Location > Save if specified',
     ($) async {
+      final sensors = [Sensor.position(SensorPosition.back)];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensors: [Sensor.position(SensorPosition.back)],
+          sensors: sensors,
           saveConfig: SaveConfig.photo(
-            pathBuilder: () => tempPath('single_photo_back_gps.jpg'),
+            pathBuilder: tempPath('single_photo_back_gps.jpg'),
           ),
           exifPreferences: ExifPreferences(saveGPSLocation: true),
         ),
@@ -285,7 +292,8 @@ void main() {
       await $(AwesomeCaptureButton).tap(andSettle: false);
       // TODO Wait for media captured instead of a fixed duration (taking picture + retrieving locaiton might take a lot of time)
       await $.pump(const Duration(seconds: 4));
-      final filePath = await tempPath('single_photo_back_gps.jpg');
+      final request = await tempPath('single_photo_back_gps.jpg')(sensors);
+      final filePath = request.when(single: (single) => single.file!.path);
       final exif = await readExifFromFile(File(filePath));
       // for (final entry in exif.entries) {
       //   print('EXIF_PRINT > ${entry.key} : ${entry.value}');
@@ -300,11 +308,12 @@ void main() {
   patrol(
     'Focus > On camera preview tap, show focus indicator for 2 seconds',
     ($) async {
+      final sensors = [Sensor.position(SensorPosition.back)];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensors: [Sensor.position(SensorPosition.back)],
+          sensors: sensors,
           saveConfig: SaveConfig.photo(
-            pathBuilder: () => tempPath('single_photo_back.jpg'),
+            pathBuilder: tempPath('single_photo_back.jpg'),
           ),
         ),
       );
@@ -323,11 +332,12 @@ void main() {
   patrol(
     'Focus > On multiple focus, last more than 2 seconds',
     ($) async {
+      final sensors = [Sensor.position(SensorPosition.back)];
       await $.pumpWidgetAndSettle(
         DrivableCamera(
-          sensors: [Sensor.position(SensorPosition.back)],
+          sensors: sensors,
           saveConfig: SaveConfig.photo(
-            pathBuilder: () => tempPath('single_photo_back.jpg'),
+            pathBuilder: tempPath('single_photo_back.jpg'),
           ),
         ),
       );
