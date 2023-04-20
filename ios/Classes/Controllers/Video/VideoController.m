@@ -23,7 +23,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   // Create audio & video writer
   if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
@@ -69,7 +69,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - Audio & Video writers
 
 /// Setup video channel & write file on path
-- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   NSError *error = nil;
   NSURL *outputURL;
   if (path != nil) {
@@ -259,7 +259,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 # pragma mark - Settings converters
 
-- (AVFileType)getBestFileTypeAccordingOptions:(VideoOptions *)options {
+- (AVFileType)getBestFileTypeAccordingOptions:(CupertinoVideoOptions *)options {
   AVFileType fileType = AVFileTypeQuickTimeMovie;
   
   if (options && options != (id)[NSNull null]) {
@@ -280,7 +280,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   return fileType;
 }
 
-- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(VideoOptions *)options {
+- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(CupertinoVideoOptions *)options {
   AVVideoCodecType codecType = AVVideoCodecTypeH264;
   if (options && options != (id)[NSNull null]) {
     NSString *codec = options.codec;
