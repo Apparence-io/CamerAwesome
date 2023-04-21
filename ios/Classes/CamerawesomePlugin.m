@@ -64,7 +64,7 @@ FlutterEventSink physicalButtonEventSink;
 
 #pragma mark - Camera engine methods
 
-- (void)setupCameraSensors:(nonnull NSArray<PigeonSensor *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)setupCameraSensors:(nonnull NSArray<PigeonSensor *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences videoOptions:(nullable VideoOptions *)videoOptions completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
@@ -121,6 +121,7 @@ FlutterEventSink physicalButtonEventSink;
   } else {
     PigeonSensor *firstSensor = sensors.firstObject;
     self.camera = [[SingleCameraPreview alloc] initWithCameraSensor:firstSensor.position
+                                                       videoOptions:videoOptions != nil ? videoOptions.ios : nil
                                                        streamImages:[enableImageStream boolValue]
                                                   mirrorFrontCamera:[mirrorFrontCamera boolValue]
                                                enablePhysicalButton:[enablePhysicalButton boolValue]
@@ -338,9 +339,9 @@ FlutterEventSink physicalButtonEventSink;
   [self.camera pauseVideoRecording];
 }
 
-- (void)recordVideoPath:(nonnull NSString *)path options:(nullable VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
-  if (path == nil || path.length <= 0) {
-    completion([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
+- (void)recordVideoRequests:(nonnull NSDictionary<PigeonSensor *,NSString *> *)requests completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+  if (requests == nil || [requests count] <= 0) {
+    completion([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"at least one path must be set" details:nil]);
     return;
   }
   
@@ -353,8 +354,8 @@ FlutterEventSink physicalButtonEventSink;
     completion([FlutterError errorWithCode:@"MULTI_CAMERA_UNSUPPORTED" message:@"this feature is currently not supported with multi camera feature" details:nil]);
     return;
   }
-
-  [self.camera recordVideoAtPath:path withOptions:options completion:completion];
+  
+  [self.camera recordVideoAtPath:[[requests allValues] firstObject] completion:completion];
 }
 
 - (void)resumeVideoRecordingWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -403,22 +404,22 @@ FlutterEventSink physicalButtonEventSink;
 
 #pragma mark - General methods
 
-- (void)takePhotoPath:(nonnull NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)takePhotoRequests:(nonnull NSDictionary<PigeonSensor *,NSString *> *)requests completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (self.camera == nil && self.multiCamera == nil) {
     completion(nil, [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil]);
     return;
   }
 
-  if (path == nil || path.length <= 0) {
-    completion(nil, [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"a file path must be set" details:nil]);
+  if (requests == nil || [requests count] <= 0) {
+    completion(0, [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"at least one path must be set" details:nil]);
     return;
   }
 
   dispatch_async(_dispatchQueue, ^{
     if (self.multiCamera != nil) {
-      [self->_multiCamera takePictureAtPath:path completion:completion];
+      [self->_multiCamera takePhotoRequests:requests completion:completion];
     } else {
-      [self->_camera takePictureAtPath:path completion:completion];
+      [self->_camera takePictureAtPath:[[requests allValues] firstObject] completion:completion];
     }
   });
 }
@@ -681,6 +682,10 @@ FlutterEventSink physicalButtonEventSink;
   [self.camera.imageStreamController setStreamImages:false];
 }
 
+- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(PigeonSensorPosition)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
+  completion(@(NO), nil);
+}
+
 #pragma mark - Sensors methods
 
 - (nullable NSArray<PigeonSensorTypeDevice *> *)getFrontSensorsWithError:(FlutterError *_Nullable *_Nonnull)error {
@@ -719,10 +724,6 @@ FlutterEventSink physicalButtonEventSink;
 
 - (nullable NSNumber *)isMultiCamSupportedWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   return [NSNumber numberWithBool: [MultiCameraController isMultiCamSupported]];
-}
-
-- (void)isVideoRecordingAndImageAnalysisSupportedSensor:(NSString *)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion{
-  completion(@(YES), nil);
 }
 
 - (void)bgra8888toJpegBgra8888image:(nonnull AnalysisImageWrapper *)bgra8888image jpegQuality:(nonnull NSNumber *)jpegQuality completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
