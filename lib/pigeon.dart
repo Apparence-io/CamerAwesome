@@ -124,21 +124,21 @@ class ExifPreferences {
 
 class PigeonSensor {
   PigeonSensor({
-    this.position,
-    this.type,
+    required this.position,
+    required this.type,
     this.deviceId,
   });
 
-  PigeonSensorPosition? position;
+  PigeonSensorPosition position;
 
-  PigeonSensorType? type;
+  PigeonSensorType type;
 
   String? deviceId;
 
   Object encode() {
     return <Object?>[
-      position?.index,
-      type?.index,
+      position.index,
+      type.index,
       deviceId,
     ];
   }
@@ -146,12 +146,8 @@ class PigeonSensor {
   static PigeonSensor decode(Object result) {
     result as List<Object?>;
     return PigeonSensor(
-      position: result[0] != null
-          ? PigeonSensorPosition.values[result[0]! as int]
-          : null,
-      type: result[1] != null
-          ? PigeonSensorType.values[result[1]! as int]
-          : null,
+      position: PigeonSensorPosition.values[result[0]! as int],
+      type: PigeonSensorType.values[result[1]! as int],
       deviceId: result[2] as String?,
     );
   }

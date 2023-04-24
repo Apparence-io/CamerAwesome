@@ -203,28 +203,24 @@ data class ExifPreferences (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class PigeonSensor (
-  val position: PigeonSensorPosition? = null,
-  val type: PigeonSensorType? = null,
+  val position: PigeonSensorPosition,
+  val type: PigeonSensorType,
   val deviceId: String? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): PigeonSensor {
-      val position: PigeonSensorPosition? = (list[0] as Int?)?.let {
-        PigeonSensorPosition.ofRaw(it)
-      }
-      val type: PigeonSensorType? = (list[1] as Int?)?.let {
-        PigeonSensorType.ofRaw(it)
-      }
+      val position = PigeonSensorPosition.ofRaw(list[0] as Int)!!
+      val type = PigeonSensorType.ofRaw(list[1] as Int)!!
       val deviceId = list[2] as String?
       return PigeonSensor(position, type, deviceId)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
-      position?.raw,
-      type?.raw,
+      position.raw,
+      type.raw,
       deviceId,
     )
   }

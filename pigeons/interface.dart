@@ -19,8 +19,8 @@ class ExifPreferences {
 }
 
 class PigeonSensor {
-  final PigeonSensorPosition? position;
-  final PigeonSensorType? type;
+  final PigeonSensorPosition position;
+  final PigeonSensorType type;
   final String? deviceId;
 
   PigeonSensor({

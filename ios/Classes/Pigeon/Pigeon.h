@@ -106,6 +106,8 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @end
 
 @interface PigeonSensor : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
 + (instancetype)makeWithPosition:(PigeonSensorPosition)position
     type:(PigeonSensorType)type
     deviceId:(nullable NSString *)deviceId;
