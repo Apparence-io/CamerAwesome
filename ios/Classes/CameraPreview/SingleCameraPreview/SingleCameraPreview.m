@@ -12,6 +12,7 @@
 }
 
 - (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
+                        videoOptions:(nullable CupertinoVideoOptions *)videoOptions
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -29,6 +30,7 @@
   _cameraSensorPosition = sensor;
   _aspectRatio = aspectRatioMode;
   _mirrorFrontCamera = mirrorFrontCamera;
+  _videoOptions = videoOptions;
   
    //Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
@@ -447,7 +449,7 @@
 
 # pragma mark - Camera video
 /// Record video into the given path
-- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (_imageStreamController.streamImages) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
     return;
@@ -465,7 +467,7 @@
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       
       completion(nil);
-    } options:options completion:completion];
+    } options:_videoOptions completion:completion];
   } else {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }

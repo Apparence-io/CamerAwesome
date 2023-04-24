@@ -52,6 +52,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
+@property(readonly, nonatomic) CupertinoVideoOptions *videoOptions;
 @property(readonly, nonatomic) CameraPreviewTexture* previewTexture;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
@@ -65,6 +66,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(nonatomic, copy) void (^onPreviewFrameAvailable)(void);
 
 - (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
+                        videoOptions:(nullable CupertinoVideoOptions *)videoOptions
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -89,7 +91,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)start;
 - (void)stop;
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
-- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion;
+- (void)recordVideoAtPath:(NSString *)path completion:(nonnull void (^)(FlutterError * _Nullable))completion;
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)dispose;

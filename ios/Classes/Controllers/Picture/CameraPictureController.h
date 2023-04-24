@@ -33,13 +33,13 @@ typedef void(^OnPictureTaken)(void);
 @property(readonly, nonatomic) AVCaptureDevicePosition cameraPosition;
 
 - (instancetype)initWithPath:(NSString *)path
-                 orientation:(NSInteger)orientation
-              sensorPosition:(PigeonSensorPosition)sensorPosition
-             saveGPSLocation:(bool)saveGPSLocation
-           mirrorFrontCamera:(bool)mirrorFrontCamera
-                 aspectRatio:(AspectRatio)aspectRatio
-                  completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
-                    callback:(OnPictureTaken)callback;
+                orientation:(NSInteger)orientation
+            sensorPosition:(PigeonSensorPosition)sensorPosition
+            saveGPSLocation:(bool)saveGPSLocation
+          mirrorFrontCamera:(bool)mirrorFrontCamera
+                aspectRatio:(AspectRatio)aspectRatio
+                completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
+                  callback:(OnPictureTaken)callback;
 @end
 
 NS_ASSUME_NONNULL_END

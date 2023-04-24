@@ -14,13 +14,13 @@
 }
 
 - (instancetype)initWithPath:(NSString *)path
-                 orientation:(NSInteger)orientation
-              sensorPosition:(PigeonSensorPosition)sensorPosition
-             saveGPSLocation:(bool)saveGPSLocation
-           mirrorFrontCamera:(bool)mirrorFrontCamera
-                 aspectRatio:(AspectRatio)aspectRatio
-                  completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
-                    callback:(OnPictureTaken)callback {
+                     orientation:(NSInteger)orientation
+                  sensorPosition:(PigeonSensorPosition)sensorPosition
+                 saveGPSLocation:(bool)saveGPSLocation
+               mirrorFrontCamera:(bool)mirrorFrontCamera
+                     aspectRatio:(AspectRatio)aspectRatio
+                      completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
+                        callback:(OnPictureTaken)callback {
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
   _path = path;

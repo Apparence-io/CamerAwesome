@@ -241,13 +241,18 @@ class CamerawesomePlugin {
   }
 
   static Future<bool> takePhoto(CaptureRequest captureRequest) async {
-    return CameraInterface().takePhoto(captureRequest.when(
+    final request = captureRequest.when(
       single: (single) => {
         single.sensor.toPigeon(): single.file?.path,
       },
-      multiple: (multiple) => multiple.fileBySensor
-          .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
-    ));
+      multiple: (multiple) => multiple.fileBySensor.map((key, value) {
+        return MapEntry(key.toPigeon(), value?.path);
+      }),
+    );
+
+    // FIXME: This seems to be a bug in pigeon, it crash on iOS
+    // -[PigeonSensor copyWithZone:]: unrecognized selector sent to instance 0x281a6db60
+    return CameraInterface().takePhoto(request);
   }
 
   static Future<void> recordVideo(CaptureRequest request) {
