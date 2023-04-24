@@ -750,11 +750,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(takePhotoRequests:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(takePhotoRequests:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(takePhotoSensors:paths:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(takePhotoSensors:paths:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSDictionary<PigeonSensor *, NSString *> *arg_requests = GetNullableObjectAtIndex(args, 0);
-        [api takePhotoRequests:arg_requests completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        NSArray<PigeonSensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
+        NSArray<NSString *> *arg_paths = GetNullableObjectAtIndex(args, 1);
+        [api takePhotoSensors:arg_sensors paths:arg_paths completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

@@ -250,9 +250,10 @@ class CamerawesomePlugin {
       }),
     );
 
-    // FIXME: This seems to be a bug in pigeon, it crash on iOS
-    // -[PigeonSensor copyWithZone:]: unrecognized selector sent to instance 0x281a6db60
-    return CameraInterface().takePhoto(request);
+    return CameraInterface().takePhoto(
+      request.keys.toList(),
+      request.values.toList(),
+    );
   }
 
   static Future<void> recordVideo(CaptureRequest request) {

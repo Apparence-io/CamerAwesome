@@ -338,11 +338,8 @@
   // TODO:
 }
 
-- (void)takePhotoRequests:(nonnull NSDictionary<PigeonSensor *,NSString *> *)requests completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
-  NSArray *sensors = [requests allKeys];
-  NSArray *paths = [requests allValues];
-  
-  for (int i = 0; i < [requests count]; i++) {
+- (void)takePhotoSensors:(nonnull NSArray<PigeonSensor *> *)sensors paths:(nonnull NSArray<NSString *> *)paths completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+  for (int i = 0; i < [sensors count]; i++) {
     PigeonSensor *sensor = [sensors objectAtIndex:i];
     NSString *path = [paths objectAtIndex:i];
     

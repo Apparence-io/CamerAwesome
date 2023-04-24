@@ -717,7 +717,7 @@ interface CameraInterface {
    */
   fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
   fun getPreviewTextureId(cameraPosition: Long): Long
-  fun takePhoto(requests: Map<PigeonSensor, String?>, callback: (Result<Boolean>) -> Unit)
+  fun takePhoto(sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Boolean>) -> Unit)
   fun recordVideo(requests: Map<PigeonSensor, String?>, callback: (Result<Unit>) -> Unit)
   fun pauseVideoRecording()
   fun resumeVideoRecording()
@@ -853,8 +853,9 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val requestsArg = args[0] as Map<PigeonSensor, String?>
-            api.takePhoto(requestsArg) { result: Result<Boolean> ->
+            val sensorsArg = args[0] as List<PigeonSensor>
+            val pathsArg = args[1] as List<String?>
+            api.takePhoto(sensorsArg, pathsArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

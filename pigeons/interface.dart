@@ -315,7 +315,7 @@ abstract class CameraInterface {
 
   // TODO async with void return type seems to not work (channel-error)
   @async
-  bool takePhoto(Map<PigeonSensor, String?> requests);
+  bool takePhoto(List<PigeonSensor> sensors, List<String?> paths);
 
   @async
   void recordVideo(Map<PigeonSensor, String?> requests);

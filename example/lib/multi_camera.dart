@@ -64,7 +64,6 @@ class _CameraPageState extends State<CameraPage> {
                 //     .toList(),
                 previewFit: CameraPreviewFit.fitWidth,
                 onMediaTap: (mediaCapture) {
-                  // TODO: multiple files
                   OpenFile.open(
                     mediaCapture.captureRequest.when(
                         single: (single) => single.file?.path,

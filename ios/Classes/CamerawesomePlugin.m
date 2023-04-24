@@ -404,22 +404,27 @@ FlutterEventSink physicalButtonEventSink;
 
 #pragma mark - General methods
 
-- (void)takePhotoRequests:(nonnull NSDictionary<PigeonSensor *,NSString *> *)requests completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)takePhotoSensors:(nonnull NSArray<PigeonSensor *> *)sensors paths:(nonnull NSArray<NSString *> *)paths completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   if (self.camera == nil && self.multiCamera == nil) {
     completion(nil, [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil]);
     return;
   }
 
-  if (requests == nil || [requests count] <= 0) {
+  if (sensors == nil || [sensors count] <= 0 || paths == nil || [paths count] <= 0) {
     completion(0, [FlutterError errorWithCode:@"PATH_NOT_SET" message:@"at least one path must be set" details:nil]);
+    return;
+  }
+  
+  if ([sensors count] != [paths count]) {
+    completion(0, [FlutterError errorWithCode:@"PATH_INVALID" message:@"sensors & paths list seems to be different" details:nil]);
     return;
   }
 
   dispatch_async(_dispatchQueue, ^{
     if (self.multiCamera != nil) {
-      [self->_multiCamera takePhotoRequests:requests completion:completion];
+      [self->_multiCamera takePhotoSensors:sensors paths:paths completion:completion];
     } else {
-      [self->_camera takePictureAtPath:[[requests allValues] firstObject] completion:completion];
+      [self->_camera takePictureAtPath:[paths firstObject] completion:completion];
     }
   });
 }

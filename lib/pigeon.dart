@@ -786,12 +786,12 @@ class CameraInterface {
     }
   }
 
-  Future<bool> takePhoto(Map<PigeonSensor?, String?> arg_requests) async {
+  Future<bool> takePhoto(List<PigeonSensor?> arg_sensors, List<String?> arg_paths) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.takePhoto', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_requests]) as List<Object?>?;
+        await channel.send(<Object?>[arg_sensors, arg_paths]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
