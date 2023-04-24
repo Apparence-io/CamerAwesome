@@ -47,7 +47,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<bool> setupCamera(
-    String sensor,
+    List<PigeonSensor?> sensors,
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
@@ -56,6 +56,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
     String captureMode,
     bool enableImageStream,
     ExifPreferences exifPreferences,
+    VideoOptions? videoOptions,
   ) async {
     final int textureId = _textureCounter++;
     await _cameraWebController.setupCamera(
@@ -83,8 +84,8 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<bool> takePhoto(String path) async {
-    return _cameraWebController.takePhoto(path);
+  Future<bool> takePhoto(Map<PigeonSensor?, String?> sensors) async {
+    return _cameraWebController.takePhoto(sensors.entries.first.value!);
   }
 
   @override
@@ -97,7 +98,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<int> getPreviewTextureId() {
+  Future<int> getPreviewTextureId(int cameraPosition) {
     return Future.value(_cameraWebController.cameraState.textureId);
   }
 
@@ -161,7 +162,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<void> recordVideo(String argPath, VideoOptions? argOptions) {
+  Future<void> recordVideo(Map<PigeonSensor?, String?> sensors) {
     return Future.value();
   }
 
@@ -216,7 +217,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<void> setSensor(String argSensor, String? argDeviceid) {
+  Future<void> setSensor(List<PigeonSensor?> sensor) {
     return Future.value();
   }
 
@@ -248,7 +249,13 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<bool> isVideoRecordingAndImageAnalysisSupported(String argSensor) {
+  Future<bool> isVideoRecordingAndImageAnalysisSupported(
+      PigeonSensorPosition sensor) {
+    return Future.value(false);
+  }
+
+  @override
+  Future<bool> isMultiCamSupported() {
     return Future.value(false);
   }
 }
