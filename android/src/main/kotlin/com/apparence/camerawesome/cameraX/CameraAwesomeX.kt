@@ -341,12 +341,17 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun takePhoto(
-        requests: Map<PigeonSensor, String?>,
+        sensors: List<PigeonSensor>,
+        paths: List<String?>,
         callback: (Result<Boolean>) -> Unit
     ) {
+        val sensorsMap = sensors.mapIndexed { index, pigeonSensor ->
+            pigeonSensor to paths[index]
+        }.toMap()
         CoroutineScope(Dispatchers.Main).launch {
-            val res: MutableMap<PigeonSensor, Boolean?> = requests.mapValues { null }.toMutableMap()
-            for (entry in requests.entries) {
+            val res: MutableMap<PigeonSensor, Boolean?> =
+                sensorsMap.mapValues { null }.toMutableMap()
+            for (entry in sensorsMap.entries) {
                 // On Android, path should be specified
                 val imageFile = File(entry.value!!)
                 imageFile.parentFile?.mkdirs()

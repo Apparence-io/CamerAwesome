@@ -45,6 +45,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   SensorDeviceData? sensorDeviceData;
+  bool? isMultiCamSupported;
 
   @override
   void initState() {
@@ -55,6 +56,12 @@ class _CameraPageState extends State<CameraPage> {
         sensorDeviceData = value;
       });
     });
+
+    CamerawesomePlugin.isMultiCamSupported().then((value) {
+      setState(() {
+        isMultiCamSupported = value;
+      });
+    });
   }
 
   @override
@@ -62,20 +69,26 @@ class _CameraPageState extends State<CameraPage> {
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: sensorDeviceData != null
+        child: sensorDeviceData != null && isMultiCamSupported != null
             ? CameraAwesomeBuilder.awesome(
                 saveConfig: SaveConfig.photoAndVideo(
                   initialCaptureMode: CaptureMode.photo,
                 ),
-                sensorConfig: SensorConfig.multiple(
-                  sensors: [
-                    Sensor.position(SensorPosition.back),
-                    Sensor.position(SensorPosition.front),
-                    Sensor.type(SensorType.telephoto),
-                  ],
-                  flashMode: FlashMode.auto,
-                  aspectRatio: CameraAspectRatios.ratio_16_9,
-                ),
+                sensorConfig: isMultiCamSupported == true
+                    ? SensorConfig.multiple(
+                        sensors: [
+                          Sensor.position(SensorPosition.back),
+                          Sensor.position(SensorPosition.front),
+                          Sensor.type(SensorType.telephoto),
+                        ],
+                        flashMode: FlashMode.auto,
+                        aspectRatio: CameraAspectRatios.ratio_16_9,
+                      )
+                    : SensorConfig.single(
+                        sensor: Sensor.position(SensorPosition.back),
+                        flashMode: FlashMode.auto,
+                        aspectRatio: CameraAspectRatios.ratio_16_9,
+                      ),
                 // TODO: create factory for multi cam & single
                 // sensors: sensorDeviceData!.availableSensors
                 //     .map((e) => Sensor.id(e.uid))
@@ -99,6 +112,7 @@ class _CameraPageState extends State<CameraPage> {
 
 class GalleryPage extends StatefulWidget {
   final MultipleCaptureRequest multipleCaptureRequest;
+
   const GalleryPage({super.key, required this.multipleCaptureRequest});
 
   @override

@@ -61,11 +61,8 @@ class CameraPage extends StatelessWidget {
               ),
             ),
           ),
-          sensorConfig: SensorConfig.multiple(
-            sensors: [
-              Sensor.position(SensorPosition.back),
-              Sensor.position(SensorPosition.front),
-            ],
+          sensorConfig: SensorConfig.single(
+            sensor: Sensor.position(SensorPosition.back),
             flashMode: FlashMode.auto,
             aspectRatio: CameraAspectRatios.ratio_4_3,
           ),
