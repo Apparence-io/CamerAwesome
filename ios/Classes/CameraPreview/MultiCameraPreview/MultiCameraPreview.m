@@ -368,7 +368,7 @@
     [self.devices[i].capturePhotoOutput setPhotoSettingsForSceneMonitoring:settings];
     
     [self.devices[i].capturePhotoOutput capturePhotoWithSettings:settings
-                                         delegate:cameraPicture];
+                                                        delegate:cameraPicture];
   }
 }
 

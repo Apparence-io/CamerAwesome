@@ -32,7 +32,7 @@
   _mirrorFrontCamera = mirrorFrontCamera;
   _videoOptions = videoOptions;
   
-   //Creating capture session
+  // Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
   _captureVideoOutput = [AVCaptureVideoDataOutput new];
   _captureVideoOutput.videoSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
@@ -43,8 +43,6 @@
   [self initCameraPreview:sensor];
   
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  
-//  [self configSession];
   
   _captureMode = captureMode;
   
@@ -69,8 +67,6 @@
   }
   
   [self setBestPreviewQuality];
-  
-  // [self.cameraSession startRunning];
   
   return self;
 }
