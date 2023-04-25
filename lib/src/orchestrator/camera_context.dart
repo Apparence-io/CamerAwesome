@@ -104,7 +104,9 @@ class CameraContext {
         );
 
   changeState(CameraState newState) async {
+    final currentZoom = state.sensorConfig.zoom;
     state.dispose();
+
     if (state.captureMode != newState.captureMode) {
       // This should not be done multiple times for the same CaptureMode or it
       // generates problems (especially when recording a video)
@@ -120,6 +122,7 @@ class CameraContext {
       filterController.add(AwesomeFilter.None);
       filterSelectorOpened.add(false);
     }
+    newState.sensorConfig.setZoom(currentZoom);
   }
 
   Future<void> toggleFilterSelector() async {
