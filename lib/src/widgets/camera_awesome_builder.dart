@@ -133,12 +133,14 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// You need to provide a [SaveConfig] to define if you want to take
   /// photos, videos or both and where to save them.
   ///
-  /// You can initiate the camera with a few parameters:
+  /// You can initiate the camera with a few parameters through the [SensorConfig]:
   /// - which [sensors] to use ([front] or [back])
   /// - which [flashMode] to use
   /// - how much zoom you want (0.0 = no zoom, 1.0 = max zoom)
+  ///
+  /// You can also:
   /// - [enableAudio] when recording a video or not
-  /// - [exifPreferences] to indicate if you want to save GPS location when
+  /// - set [exifPreferences] to indicate if you want to save GPS location when
   /// taking photos
   ///
   /// If you want to customize the UI of the camera, you have several options:
@@ -296,8 +298,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// and  displaying that JPEG image.
   CameraAwesomeBuilder.analysisOnly({
     SensorConfig? sensorConfig,
-    FlashMode flashMode = FlashMode.none,
-    double zoom = 0.0,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
