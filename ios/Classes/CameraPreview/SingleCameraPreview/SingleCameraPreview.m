@@ -71,24 +71,6 @@
   return self;
 }
 
-// TODO: move this into VideoController
-- (void)adjustCameraFPS:(NSNumber *)fps {
-  NSArray *frameRateRanges = _captureDevice.activeFormat.videoSupportedFrameRateRanges;
-
-  if (frameRateRanges.count > 0) {
-      AVFrameRateRange *frameRateRange = frameRateRanges.firstObject;
-      NSError *error = nil;
-      
-      if ([_captureDevice lockForConfiguration:&error]) {
-          CMTime frameDuration = CMTimeMake(1, [fps intValue]);
-          if (CMTIME_COMPARE_INLINE(frameDuration, <=, frameRateRange.maxFrameDuration) && CMTIME_COMPARE_INLINE(frameDuration, >=, frameRateRange.minFrameDuration)) {
-            _captureDevice.activeVideoMinFrameDuration = frameDuration;
-          }
-          [_captureDevice unlockForConfiguration];
-      }
-  }
-}
-
 - (void)setAspectRatio:(AspectRatio)ratio {
   _aspectRatio = ratio;
 }
@@ -158,14 +140,14 @@
                                                               output:_captureVideoOutput];
   
   // TODO: works but deprecated...
-//  if ([_captureConnection isVideoMinFrameDurationSupported] && [_captureConnection isVideoMaxFrameDurationSupported]) {
-//    CMTime frameDuration = CMTimeMake(1, 12);
-//    [_captureConnection setVideoMinFrameDuration:frameDuration];
-//    [_captureConnection setVideoMaxFrameDuration:frameDuration];
-//  } else {
-//    NSLog(@"Failed to set frame duration");
-//  }
-
+  //  if ([_captureConnection isVideoMinFrameDurationSupported] && [_captureConnection isVideoMaxFrameDurationSupported]) {
+  //    CMTime frameDuration = CMTimeMake(1, 12);
+  //    [_captureConnection setVideoMinFrameDuration:frameDuration];
+  //    [_captureConnection setVideoMaxFrameDuration:frameDuration];
+  //  } else {
+  //    NSLog(@"Failed to set frame duration");
+  //  }
+  
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
   [_captureSession addConnection:_captureConnection];
@@ -479,12 +461,7 @@
   }
   
   if (!_videoController.isRecording) {
-    // Change video FPS
-    if (_videoOptions && _videoOptions.fps != nil && _videoOptions.fps > 0) {
-      [self adjustCameraFPS:_videoOptions.fps];
-    }
-    
-    [_videoController recordVideoAtPath:path orientation:_deviceOrientation audioSetupCallback:^{
+    [_videoController recordVideoAtPath:path captureDevice:_captureDevice orientation:_deviceOrientation audioSetupCallback:^{
       [self setUpCaptureSessionForAudioError:^(NSError *error) {
         completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
       }];

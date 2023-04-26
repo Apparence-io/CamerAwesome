@@ -23,7 +23,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   // Create audio & video writer
   if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
@@ -38,6 +38,13 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _videoIsDisconnected = NO;
   _audioIsDisconnected = NO;
   _orientation = orientation;
+  _captureDevice = device;
+  
+  // Change video FPS if provided
+  if (options && options.fps != nil && options.fps > 0) {
+    // TODO: do other config
+    [self adjustCameraFPS:options.fps];
+  }
 }
 
 /// Stop recording video
@@ -89,10 +96,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     AVVideoCodecKey                   : codecType,
     AVVideoWidthKey                   : @(_previewSize.height),
     AVVideoHeightKey                  : @(_previewSize.width),
-    AVVideoCompressionPropertiesKey   : @{
-      AVVideoAverageNonDroppableFrameRateKey: @(10),
-      AVVideoExpectedSourceFrameRateKey:      @(10)
-    },
   };
   
   _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
@@ -191,6 +194,24 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   CMSampleBufferCreateCopyWithNewTiming(nil, sample, count, pInfo, &sout);
   free(pInfo);
   return sout;
+}
+
+/// Adjust video preview & recording to specified FPS
+- (void)adjustCameraFPS:(NSNumber *)fps {
+  NSArray *frameRateRanges = _captureDevice.activeFormat.videoSupportedFrameRateRanges;
+
+  if (frameRateRanges.count > 0) {
+      AVFrameRateRange *frameRateRange = frameRateRanges.firstObject;
+      NSError *error = nil;
+      
+      if ([_captureDevice lockForConfiguration:&error]) {
+          CMTime frameDuration = CMTimeMake(1, [fps intValue]);
+          if (CMTIME_COMPARE_INLINE(frameDuration, <=, frameRateRange.maxFrameDuration) && CMTIME_COMPARE_INLINE(frameDuration, >=, frameRateRange.minFrameDuration)) {
+            _captureDevice.activeVideoMinFrameDuration = frameDuration;
+          }
+          [_captureDevice unlockForConfiguration];
+      }
+  }
 }
 
 # pragma mark - Camera Delegates
