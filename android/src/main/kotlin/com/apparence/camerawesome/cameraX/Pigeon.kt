@@ -288,22 +288,25 @@ data class AndroidVideoOptions (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class CupertinoVideoOptions (
-  val fileType: String,
-  val codec: String
+  val fileType: String? = null,
+  val codec: String? = null,
+  val fps: Long? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): CupertinoVideoOptions {
-      val fileType = list[0] as String
-      val codec = list[1] as String
-      return CupertinoVideoOptions(fileType, codec)
+      val fileType = list[0] as String?
+      val codec = list[1] as String?
+      val fps = list[2].let { if (it is Int) it.toLong() else it as Long? }
+      return CupertinoVideoOptions(fileType, codec, fps)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
       fileType,
       codec,
+      fps,
     )
   }
 }
@@ -718,7 +721,7 @@ interface CameraInterface {
   fun requestPermissions(saveGpsLocation: Boolean, callback: (Result<List<String>>) -> Unit)
   fun getPreviewTextureId(cameraPosition: Long): Long
   fun takePhoto(sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Boolean>) -> Unit)
-  fun recordVideo(requests: Map<PigeonSensor, String?>, callback: (Result<Unit>) -> Unit)
+  fun recordVideo(sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Unit>) -> Unit)
   fun pauseVideoRecording()
   fun resumeVideoRecording()
   fun receivedImageFromStream()
@@ -874,8 +877,9 @@ interface CameraInterface {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val requestsArg = args[0] as Map<PigeonSensor, String?>
-            api.recordVideo(requestsArg) { result: Result<Unit> ->
+            val sensorsArg = args[0] as List<PigeonSensor>
+            val pathsArg = args[1] as List<String?>
+            api.recordVideo(sensorsArg, pathsArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

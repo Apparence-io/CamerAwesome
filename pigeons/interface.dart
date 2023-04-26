@@ -88,12 +88,14 @@ class AndroidVideoOptions {
 }
 
 class CupertinoVideoOptions {
-  final String fileType;
-  final String codec;
+  final String? fileType;
+  final String? codec;
+  final int? fps;
 
   CupertinoVideoOptions({
-    required this.fileType,
-    required this.codec,
+    this.fileType,
+    this.codec,
+    this.fps,
   });
 }
 

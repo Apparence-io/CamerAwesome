@@ -136,12 +136,12 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @end
 
 @interface CupertinoVideoOptions : NSObject
-/// `init` unavailable to enforce nonnull fields, see the `make` class method.
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)makeWithFileType:(NSString *)fileType
-    codec:(NSString *)codec;
-@property(nonatomic, copy) NSString * fileType;
-@property(nonatomic, copy) NSString * codec;
++ (instancetype)makeWithFileType:(nullable NSString *)fileType
+    codec:(nullable NSString *)codec
+    fps:(nullable NSNumber *)fps;
+@property(nonatomic, copy, nullable) NSString * fileType;
+@property(nonatomic, copy, nullable) NSString * codec;
+@property(nonatomic, strong, nullable) NSNumber * fps;
 @end
 
 @interface PigeonSensorTypeDevice : NSObject

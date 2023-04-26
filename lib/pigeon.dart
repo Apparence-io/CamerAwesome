@@ -223,26 +223,31 @@ class AndroidVideoOptions {
 
 class CupertinoVideoOptions {
   CupertinoVideoOptions({
-    required this.fileType,
-    required this.codec,
+    this.fileType,
+    this.codec,
+    this.fps,
   });
 
-  String fileType;
+  String? fileType;
 
-  String codec;
+  String? codec;
+
+  int? fps;
 
   Object encode() {
     return <Object?>[
       fileType,
       codec,
+      fps,
     ];
   }
 
   static CupertinoVideoOptions decode(Object result) {
     result as List<Object?>;
     return CupertinoVideoOptions(
-      fileType: result[0]! as String,
-      codec: result[1]! as String,
+      fileType: result[0] as String?,
+      codec: result[1] as String?,
+      fps: result[2] as int?,
     );
   }
 }

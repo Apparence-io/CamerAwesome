@@ -63,15 +63,19 @@ class CupertinoVideoOptions {
   /// **WARNING:** Be sure to use the correct file type extension for the video!
   CupertinoFileType fileType;
 
+  int? fps;
+
   CupertinoVideoOptions({
     this.codec = CupertinoVideoCodec.h264,
     this.fileType = CupertinoFileType.quickTimeMovie,
+    this.fps,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'codec': codec.name,
       'fileType': fileType.name,
+      'fps': fps,
     };
   }
 }
