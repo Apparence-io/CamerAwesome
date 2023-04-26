@@ -339,12 +339,7 @@ FlutterEventSink physicalButtonEventSink;
   [self.camera pauseVideoRecording];
 }
 
-- (void)recordVideoRequests:(nonnull NSDictionary<PigeonSensor *,NSString *> *)requests completion:(nonnull void (^)(FlutterError * _Nullable))completion {
-  if (requests == nil || [requests count] <= 0) {
-    completion([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"at least one path must be set" details:nil]);
-    return;
-  }
-  
+- (void)recordVideoSensors:(nonnull NSArray<PigeonSensor *> *)sensors paths:(nonnull NSArray<NSString *> *)paths completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (self.camera == nil && self.multiCamera == nil) {
     completion([FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil]);
     return;
@@ -355,7 +350,17 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  [self.camera recordVideoAtPath:[[requests allValues] firstObject] completion:completion];
+  if (sensors == nil || [sensors count] <= 0 || paths == nil || [paths count] <= 0) {
+    completion([FlutterError errorWithCode:@"PATH_NOT_SET" message:@"at least one path must be set" details:nil]);
+    return;
+  }
+  
+  if ([sensors count] != [paths count]) {
+    completion([FlutterError errorWithCode:@"PATH_INVALID" message:@"sensors & paths list seems to be different" details:nil]);
+    return;
+  }
+  
+  [self.camera recordVideoAtPath:[paths firstObject] completion:completion];
 }
 
 - (void)resumeVideoRecordingWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
