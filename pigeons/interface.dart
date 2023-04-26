@@ -318,7 +318,7 @@ abstract class CameraInterface {
   bool takePhoto(List<PigeonSensor> sensors, List<String?> paths);
 
   @async
-  void recordVideo(Map<PigeonSensor, String?> requests);
+  void recordVideo(List<PigeonSensor> sensors, List<String?> paths);
 
   void pauseVideoRecording();
 

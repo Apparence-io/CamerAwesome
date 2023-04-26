@@ -248,7 +248,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getPreviewTextureIdCameraPosition:(NSNumber *)cameraPosition error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)takePhotoSensors:(NSArray<PigeonSensor *> *)sensors paths:(NSArray<NSString *> *)paths completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
-- (void)recordVideoRequests:(NSDictionary<PigeonSensor *, NSString *> *)requests completion:(void (^)(FlutterError *_Nullable))completion;
+- (void)recordVideoSensors:(NSArray<PigeonSensor *> *)sensors paths:(NSArray<NSString *> *)paths completion:(void (^)(FlutterError *_Nullable))completion;
 - (void)pauseVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)resumeVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)receivedImageFromStreamWithError:(FlutterError *_Nullable *_Nonnull)error;
