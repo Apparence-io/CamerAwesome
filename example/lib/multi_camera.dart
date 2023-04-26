@@ -77,9 +77,10 @@ class _CameraPageState extends State<CameraPage> {
                 sensorConfig: isMultiCamSupported == true
                     ? SensorConfig.multiple(
                         sensors: [
+                          // Android only supports two sensors at a time
                           Sensor.position(SensorPosition.back),
                           Sensor.position(SensorPosition.front),
-                          Sensor.type(SensorType.telephoto),
+                          if (Platform.isIOS) Sensor.type(SensorType.telephoto),
                         ],
                         flashMode: FlashMode.auto,
                         aspectRatio: CameraAspectRatios.ratio_16_9,

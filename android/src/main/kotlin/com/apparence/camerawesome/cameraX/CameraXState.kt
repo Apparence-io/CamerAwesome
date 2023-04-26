@@ -10,7 +10,6 @@ import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
-import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.core.concurrent.ConcurrentCamera
 import androidx.camera.core.concurrent.ConcurrentCameraConfig
@@ -22,6 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.SensorOrientation
+import com.apparence.camerawesome.utils.isMultiCamSupported
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executor
@@ -72,7 +72,7 @@ data class CameraXState(
         previews = mutableListOf()
         imageCaptures.clear()
         videoCaptures.clear()
-        if (isMultiCamSupported() && sensors.size > 1) {
+        if (cameraProvider.isMultiCamSupported() && sensors.size > 1) {
             val singleCameraConfigs = mutableListOf<SingleCameraConfig>()
             var isFirst = true
             for ((index, sensor) in sensors.withIndex()) {
@@ -418,25 +418,5 @@ data class CameraXState(
             "RATIO_1_1" -> Rational(1, 1)
             else -> Rational(3, 4)
         }
-    }
-
-    @SuppressLint("RestrictedApi")
-    @ExperimentalCamera2Interop
-    fun isMultiCamSupported(): Boolean {
-        val concurrentInfos = cameraProvider.availableConcurrentCameraInfos
-        var hasOnePair = false
-        for (cameraInfos in concurrentInfos) {
-//            Log.d("CameraX___INFOS", "Concurrent camera group below")
-            if (cameraInfos.size > 1) {
-                hasOnePair = true
-            }
-//            for (cameraInfo in cameraInfos) {
-//                Log.d(
-//                    "CameraX___INFOS",
-//                    "Single Camera facing ${if (cameraInfo.lensFacing == CameraSelector.LENS_FACING_BACK) "back" else "front"}"
-//                )
-//            }
-        }
-        return hasOnePair
     }
 }
