@@ -85,9 +85,14 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   AVVideoCodecType codecType = [self getBestCodecTypeAccordingOptions:options];
   AVFileType fileType = [self getBestFileTypeAccordingOptions:options];
   
-  NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:codecType, AVVideoCodecKey,[NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
-                                 [NSNumber numberWithInt:_previewSize.width], AVVideoHeightKey,
-                                 nil];
+  //  NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:codecType, AVVideoCodecKey,[NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
+  //                                 [NSNumber numberWithInt:_previewSize.width], AVVideoHeightKey,
+  //                                 nil];
+  NSDictionary *videoSettings = @{AVVideoCodecKey                  : codecType,
+                                  AVVideoWidthKey                  : @(_previewSize.height),
+                                  AVVideoHeightKey                 : @(_previewSize.width),
+                                  AVVideoExpectedSourceFrameRateKey : @(60),
+  };
   _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
                                                          outputSettings:videoSettings];
   [_videoWriterInput setTransform:[self getVideoOrientation]];
