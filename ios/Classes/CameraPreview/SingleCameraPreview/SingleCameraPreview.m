@@ -139,6 +139,15 @@
   _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
                                                               output:_captureVideoOutput];
   
+  // TODO: works but deprecated...
+  //  if ([_captureConnection isVideoMinFrameDurationSupported] && [_captureConnection isVideoMaxFrameDurationSupported]) {
+  //    CMTime frameDuration = CMTimeMake(1, 12);
+  //    [_captureConnection setVideoMinFrameDuration:frameDuration];
+  //    [_captureConnection setVideoMaxFrameDuration:frameDuration];
+  //  } else {
+  //    NSLog(@"Failed to set frame duration");
+  //  }
+  
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
   [_captureSession addConnection:_captureConnection];
@@ -452,7 +461,7 @@
   }
   
   if (!_videoController.isRecording) {
-    [_videoController recordVideoAtPath:path orientation:_deviceOrientation audioSetupCallback:^{
+    [_videoController recordVideoAtPath:path captureDevice:_captureDevice orientation:_deviceOrientation audioSetupCallback:^{
       [self setUpCaptureSessionForAudioError:^(NSError *error) {
         completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
       }];

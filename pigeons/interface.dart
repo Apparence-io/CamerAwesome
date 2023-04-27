@@ -88,12 +88,19 @@ class AndroidVideoOptions {
 }
 
 class CupertinoVideoOptions {
-  final String fileType;
-  final String codec;
+  /// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
+  final String? fileType;
+
+  /// Specify video codec, defaults to [AVVideoCodecTypeH264].
+  final String? codec;
+
+  /// Specify video fps, defaults to [30].
+  final int? fps;
 
   CupertinoVideoOptions({
-    required this.fileType,
-    required this.codec,
+    this.fileType,
+    this.codec,
+    this.fps,
   });
 }
 
@@ -318,7 +325,7 @@ abstract class CameraInterface {
   bool takePhoto(List<PigeonSensor> sensors, List<String?> paths);
 
   @async
-  void recordVideo(Map<PigeonSensor, String?> requests);
+  void recordVideo(List<PigeonSensor> sensors, List<String?> paths);
 
   void pauseVideoRecording();
 

@@ -223,26 +223,31 @@ class AndroidVideoOptions {
 
 class CupertinoVideoOptions {
   CupertinoVideoOptions({
-    required this.fileType,
-    required this.codec,
+    this.fileType,
+    this.codec,
+    this.fps,
   });
 
-  String fileType;
+  String? fileType;
 
-  String codec;
+  String? codec;
+
+  int? fps;
 
   Object encode() {
     return <Object?>[
       fileType,
       codec,
+      fps,
     ];
   }
 
   static CupertinoVideoOptions decode(Object result) {
     result as List<Object?>;
     return CupertinoVideoOptions(
-      fileType: result[0]! as String,
-      codec: result[1]! as String,
+      fileType: result[0] as String?,
+      codec: result[1] as String?,
+      fps: result[2] as int?,
     );
   }
 }
@@ -813,12 +818,12 @@ class CameraInterface {
     }
   }
 
-  Future<void> recordVideo(Map<PigeonSensor?, String?> arg_requests) async {
+  Future<void> recordVideo(List<PigeonSensor?> arg_sensors, List<String?> arg_paths) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.recordVideo', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(<Object?>[arg_requests]) as List<Object?>?;
+        await channel.send(<Object?>[arg_sensors, arg_paths]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

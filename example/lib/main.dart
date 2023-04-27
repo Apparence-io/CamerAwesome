@@ -54,6 +54,9 @@ class CameraPage extends StatelessWidget {
               }
             },
             videoOptions: VideoOptions(
+              ios: CupertinoVideoOptions(
+                fps: 10,
+              ),
               android: AndroidVideoOptions(
                 bitrate: 6000000,
                 quality: VideoRecordingQuality.fhd,

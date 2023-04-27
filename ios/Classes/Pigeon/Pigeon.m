@@ -220,19 +220,20 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 @end
 
 @implementation CupertinoVideoOptions
-+ (instancetype)makeWithFileType:(NSString *)fileType
-    codec:(NSString *)codec {
++ (instancetype)makeWithFileType:(nullable NSString *)fileType
+    codec:(nullable NSString *)codec
+    fps:(nullable NSNumber *)fps {
   CupertinoVideoOptions* pigeonResult = [[CupertinoVideoOptions alloc] init];
   pigeonResult.fileType = fileType;
   pigeonResult.codec = codec;
+  pigeonResult.fps = fps;
   return pigeonResult;
 }
 + (CupertinoVideoOptions *)fromList:(NSArray *)list {
   CupertinoVideoOptions *pigeonResult = [[CupertinoVideoOptions alloc] init];
   pigeonResult.fileType = GetNullableObjectAtIndex(list, 0);
-  NSAssert(pigeonResult.fileType != nil, @"");
   pigeonResult.codec = GetNullableObjectAtIndex(list, 1);
-  NSAssert(pigeonResult.codec != nil, @"");
+  pigeonResult.fps = GetNullableObjectAtIndex(list, 2);
   return pigeonResult;
 }
 + (nullable CupertinoVideoOptions *)nullableFromList:(NSArray *)list {
@@ -242,6 +243,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   return @[
     (self.fileType ?: [NSNull null]),
     (self.codec ?: [NSNull null]),
+    (self.fps ?: [NSNull null]),
   ];
 }
 @end
@@ -770,11 +772,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(recordVideoRequests:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(recordVideoRequests:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(recordVideoSensors:paths:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(recordVideoSensors:paths:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        NSDictionary<PigeonSensor *, NSString *> *arg_requests = GetNullableObjectAtIndex(args, 0);
-        [api recordVideoRequests:arg_requests completion:^(FlutterError *_Nullable error) {
+        NSArray<PigeonSensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
+        NSArray<NSString *> *arg_paths = GetNullableObjectAtIndex(args, 1);
+        [api recordVideoSensors:arg_sensors paths:arg_paths completion:^(FlutterError *_Nullable error) {
           callback(wrapResult(nil, error));
         }];
       }];

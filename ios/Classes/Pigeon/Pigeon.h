@@ -136,12 +136,12 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @end
 
 @interface CupertinoVideoOptions : NSObject
-/// `init` unavailable to enforce nonnull fields, see the `make` class method.
-- (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)makeWithFileType:(NSString *)fileType
-    codec:(NSString *)codec;
-@property(nonatomic, copy) NSString * fileType;
-@property(nonatomic, copy) NSString * codec;
++ (instancetype)makeWithFileType:(nullable NSString *)fileType
+    codec:(nullable NSString *)codec
+    fps:(nullable NSNumber *)fps;
+@property(nonatomic, copy, nullable) NSString * fileType;
+@property(nonatomic, copy, nullable) NSString * codec;
+@property(nonatomic, strong, nullable) NSNumber * fps;
 @end
 
 @interface PigeonSensorTypeDevice : NSObject
@@ -248,7 +248,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)getPreviewTextureIdCameraPosition:(NSNumber *)cameraPosition error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)takePhotoSensors:(NSArray<PigeonSensor *> *)sensors paths:(NSArray<NSString *> *)paths completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
-- (void)recordVideoRequests:(NSDictionary<PigeonSensor *, NSString *> *)requests completion:(void (^)(FlutterError *_Nullable))completion;
+- (void)recordVideoSensors:(NSArray<PigeonSensor *> *)sensors paths:(NSArray<NSString *> *)paths completion:(void (^)(FlutterError *_Nullable))completion;
 - (void)pauseVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)resumeVideoRecordingWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)receivedImageFromStreamWithError:(FlutterError *_Nullable *_Nonnull)error;
