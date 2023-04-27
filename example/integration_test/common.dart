@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:meta/meta.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:patrol/patrol.dart';
@@ -42,6 +41,6 @@ Future<CaptureRequest> Function(List<Sensor> sensors) tempPath(
       '${(await getTemporaryDirectory()).path}/test/$pictureName',
     );
     await file.create(recursive: true);
-    return SingleCaptureRequest(XFile(file.path), sensors.first);
+    return SingleCaptureRequest(file.path, sensors.first);
   };
 }

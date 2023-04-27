@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -42,15 +41,16 @@ class CameraPage extends StatelessWidget {
               if (sensors.length == 1) {
                 final String filePath =
                     '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-                return SingleCaptureRequest(XFile(filePath), sensors.first);
+                return SingleCaptureRequest(filePath, sensors.first);
               } else {
                 // Separate pictures taken with front and back camera
-                return MultipleCaptureRequest({
-                  for (final sensor in sensors)
-                    sensor: XFile(
-                      '${testDir.path}/${sensor.position == SensorPosition.front ? 'front_' : "back_"}${DateTime.now().millisecondsSinceEpoch}.jpg',
-                    )
-                });
+                return MultipleCaptureRequest(
+                  {
+                    for (final sensor in sensors)
+                      sensor:
+                          '${testDir.path}/${sensor.position == SensorPosition.front ? 'front_' : "back_"}${DateTime.now().millisecondsSinceEpoch}.jpg',
+                  },
+                );
               }
             },
             videoOptions: VideoOptions(

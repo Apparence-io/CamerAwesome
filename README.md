@@ -82,7 +82,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ```yaml
 dependencies:
-  camerawesome: ^1.3.0
+  camerawesome: ^2.0.0
   ...
 ```
 
@@ -190,9 +190,7 @@ That's all you need to create a complete camera experience within you app.
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.image(
-    pathBuilder: _path(),
-  ),
+  saveConfig: SaveConfig.photo(),
   onMediaTap: (mediaCapture) {
     OpenFile.open(mediaCapture.filePath);
   },
@@ -230,7 +228,7 @@ The camera preview will be visible behind what you will provide to the builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-  saveConfig: SaveConfig.image(pathBuilder: _path()),
+  saveConfig: SaveConfig.photo(),
   builder: (state, previewSize, previewRect) {
     // create your interface here
   },
@@ -306,9 +304,7 @@ the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.image(
-    pathBuilder: _path(),
-  ),
+  saveConfig: SaveConfig.photo(),
   onImageForAnalysis: analyzeImage,
   imageAnalysisConfig: AnalysisConfig(
         // Android specific options
