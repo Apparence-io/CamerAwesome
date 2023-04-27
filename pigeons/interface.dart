@@ -88,8 +88,13 @@ class AndroidVideoOptions {
 }
 
 class CupertinoVideoOptions {
+  /// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
   final String? fileType;
+
+  /// Specify video codec, defaults to [AVVideoCodecTypeH264].
   final String? codec;
+
+  /// Specify video fps, defaults to [30].
   final int? fps;
 
   CupertinoVideoOptions({
