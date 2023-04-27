@@ -1,3 +1,23 @@
+# 2.0.0 - Multi camera is here !
+
+Hello everyone 👋 !
+
+We are proud to announce the two most requested features on the official camera plugin:
+
+- Multi-camera 📹
+- Video settings 🎥
+
+Here is the complete changelog:
+
+- ✨ Added multi-camera feature, allowing users to display multiple camera previews simultaneously. Note that this feature is currently in beta, and we do not recommend using it in production.
+- ✨ Users can now pass options (such as bitrate, fps, and quality) when recording a video.
+- ✨🍏 Implemented brightness and exposure level settings on iOS / iPadOS.
+- ✨🤖 Added zoom indicator UI.
+- ♻️🍏 Completely reworked the code for increased clarity and performance.
+- 🐛 Fixed patrol tests.
+- 🐛 Fixed the use of capture button parameter in awesome bottom actions (thanks to @juliuszmandrosz).
+- 📝 Added Chinese README.md (thanks to @chyiiiiiiiiiiii).
+
 # 1.4.0
 
 - ✨ Add utilities to convert AnalysisImage into JPEG in order to display them using `toJpeg()`.
