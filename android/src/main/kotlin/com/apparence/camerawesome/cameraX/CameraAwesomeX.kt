@@ -383,9 +383,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             ContextCompat.getMainExecutor(activity!!),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Log.d(
-                        "CameraX___", "Photo capture succeeded: ${outputFileResults.savedUri}"
-                    )
                     if (colorMatrix != null && noneFilter != colorMatrix) {
                         val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
 
@@ -439,8 +436,20 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        requests: Map<PigeonSensor, String?>, callback: (Result<Unit>) -> Unit
+        sensors: List<PigeonSensor>,
+        paths: List<String?>,
+        callback: (Result<Unit>) -> Unit
     ) {
+        if (sensors.size != paths.size) {
+            throw Exception("sensors and paths must have the same length")
+        }
+        if (paths.size != cameraState.videoCaptures.size) {
+            throw Exception("paths and imageCaptures must have the same length")
+        }
+
+        val requests = sensors.mapIndexed { index, pigeonSensor ->
+            pigeonSensor to paths[index]
+        }.toMap()
         // TODO Handle multiple videos requests
         val path = requests.values.first()!!
         CoroutineScope(Dispatchers.Main).launch {
