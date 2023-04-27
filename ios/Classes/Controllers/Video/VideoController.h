@@ -21,6 +21,7 @@ typedef void(^OnVideoWriterSetup)(void);
 @property(readonly, nonatomic) bool isPaused;
 @property(readonly, nonatomic) bool isAudioEnabled;
 @property(readonly, nonatomic) bool isAudioSetup;
+@property(readonly, nonatomic) CupertinoVideoOptions *options;
 @property NSInteger orientation;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
 @property(readonly, nonatomic) AVAssetWriter *videoWriter;
