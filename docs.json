@@ -22,6 +22,10 @@
         [
           "Creating your own UI",
           "/getting_started/custom-ui"
+        ],
+        [
+          "Multiple cameras at once (🚧 BETA)",
+          "/getting_started/multicam"
         ]
       ]
     ],
