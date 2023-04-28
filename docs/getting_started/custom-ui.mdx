@@ -6,14 +6,7 @@ The camera preview will be visible behind what you will provide to this builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-  saveConfig: SaveConfig.photoAndVideo(
-    photoPathBuilder: () async {
-      return "some/path.jpg";
-    },
-    videoPathBuilder: () async {
-      return "some/path.mp4";
-    },
-  ),
+  saveConfig: SaveConfig.photoAndVideo(),
   builder: (cameraState, previewSize, previewRect) {
     // Return your UI (a Widget)
     return cameraState.when(
@@ -30,57 +23,56 @@ You can find more examples on the `example` folder.
 
 ### Properties
 
-| Method                      | Comment                                                                                                                                               |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **aspectRatio**             | Initial aspect ratio of photos and videos taken                                                                                                       |
-| **builder**                 | Create your own interface using the builder method.                                                                                                   |
-| **enableAudio**             | Activate audio by default (only for video mode)                                                                                                       |
-| **enablePhysicalButton**    | When set to true, volume buttons will capture pictures/videos depending on the current mode.                                                          |
-| **exifPreferences**         | Activate or deactivate location in photo exif                                                                                                         |
-| **filter**                  | Initial preview filter which will be applied to the photo                                                                                             |
-| **flashMode**               | The initial flash mode                                                                                                                                |
-| **imageAnalysisConfig**     | Image format, resolution and autoStart (start analysis immediately or later)                                                                          |
-| **mirrorFrontCamera**       | Activate to mirror the pictures taken with the front camera                                                                                           |
-| **onImageForAnalysis**      | Callback that will provide an image stream for AI analysis                                                                                            |
-| **onPreviewTapBuilder**     | Customize the behavior when the camera preview is tapped (tap to focus by default)                                                                    |
-| **onPreviewScaleBuilder**   | Customize what to do when the user makes a pinch (pinch to zoom by default)                                                                           |
-| **previewAlignment**        | Alignment of the preview                                                                                                                              |
-| **previewFit**              | One of fitWidth, fitHeight, contain, cover                                                                                                            |
-| **previewPadding**          | Padding around the preview                                                                                                                            |
-| **progressIndicator**       | Widget to show when loading                                                                                                                           |
-| **saveConfig**              | Define if you want to take photos, videos or both and where to save them                                                                              |
-| **sensor**                  | The initial camera sensor (Back or Front)                                                                                                             |
-| **theme**                   | Theme used to customize the built-in UI                                                                                                               |
-| **zoom**                    | A value between 0.0 (no zoom) and 1.0 (max zoom)                                                                                                      |
+| Method                    | Comment                                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **aspectRatio**           | Initial aspect ratio of photos and videos taken                                                                                               |
+| **builder**               | Create your own interface using the builder method.                                                                                           |
+| **enablePhysicalButton**  | When set to true, volume buttons will capture pictures/videos depending on the current mode.                                                  |
+| **filter**                | Initial preview filter which will be applied to the photo                                                                                     |
+| **imageAnalysisConfig**   | Image format, resolution and autoStart (start analysis immediately or later)                                                                  |
+| **onImageForAnalysis**    | Callback that will provide an image stream for AI analysis                                                                                    |
+| **onPreviewTapBuilder**   | Customize the behavior when the camera preview is tapped (tap to focus by default)                                                            |
+| **onPreviewScaleBuilder** | Customize what to do when the user makes a pinch (pinch to zoom by default)                                                                   |
+| **previewAlignment**      | Alignment of the preview                                                                                                                      |
+| **previewFit**            | One of fitWidth, fitHeight, contain, cover                                                                                                    |
+| **previewPadding**        | Padding around the preview                                                                                                                    |
+| **progressIndicator**     | Widget to show when loading                                                                                                                   |
+| **saveConfig**            | Define if you want to take photos, videos or both and where to save them                                                                      |
+| **sensorConfig**          | The initial sensor configuration: aspect ratio, flash mode, wether you want to mirror the front camera, which sensor to use and initial zoom. |
+| **theme**                 | Theme used to customize the built-in UI                                                                                                       |
 
 ### Builder method
 
-The builder method is the main method here.
+The `builder` method is the main method here.
 
 ```dart
 typedef CameraLayoutBuilder = Widget Function(CameraState cameraModeState, PreviewSize previewSize, Rect previewRect);
 ```
 
-CamerAwesome works using a state pattern to make sure you can only call methods available on the camera current state.
+CamerAwesome works using a state pattern to make sure you can only call methods available on the current camera state.
 The magic is that you don't have to do anything apart calling some methods using the camera state.
 
 ```dart
 state.when(
+    onAnalysisOnlyMode: (analysisCameraState) => analysisCameraState.startAnalysis(),
     onPhotoMode: (photoCameraState) => photoCameraState.takePhoto(),
     onVideoMode: (videoCameraState) => videoCameraState.startRecording(),
     onVideoRecordingMode: (videoRecordingCameraState) => videoRecordingCameraState.stopRecording(),
     onPreparingCamera: (preparingCameraState) => Loader(),
+    onPreviewMode: (previewCameraState) => previewModeState.focus(),
 );
 ```
 
 `previewSize` and `previewRect` are additional parameters that might be used to position your UI around or on top of the camera preview.
 
-#### CamerAwesome has 4 different states
+#### CamerAwesome has 6 different states
 
 - **PreparingCameraState** : camera is starting
 - **PhotoCameraState** : camera is ready to take a photo
 - **VideoCameraState** : camera is ready to take a video
 - **VideoRecordingCameraState** : camera is taking a video
+- **PreviewCameraState** : camera is in preview only mode
+- **AnalysisCameraState** : camera is in analysis only mode
 
 Here is a schema showing the interactions between states:
 ![Camera states interactions](/img/camera_states_interactions.png)
@@ -104,31 +96,6 @@ You can get inspiration on how we built every widgets.
 **Example**
 
 ```dart
-class AwesomeFlashButton extends StatelessWidget {
-  final CameraState state;
-
-  const AwesomeFlashButton({
-    super.key,
-    required this.state,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<FlashMode>(
-      stream: state.sensorConfig.flashMode$, // Listen to the currently selected flash mode
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Container();
-        }
-        return _FlashButton.from(
-          // Build your button differently based on the current Flash mode, with different icons for instance
-          flashMode: snapshot.requireData,
-          onTap: () => state.sensorConfig.switchCameraFlash(),
-        );
-      },
-    );
-  }
-}
 class AwesomeFlashButton extends StatelessWidget {
   final CameraState state;
 

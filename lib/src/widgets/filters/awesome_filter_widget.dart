@@ -7,7 +7,7 @@ import 'package:camerawesome/src/widgets/filters/awesome_filter_name_indicator.d
 import 'package:camerawesome/src/widgets/filters/awesome_filter_selector.dart';
 import 'package:camerawesome/src/widgets/utils/animated_clip_rect.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
-import 'package:camerawesome/src/widgets/zoom/zoom_selector.dart';
+import 'package:camerawesome/src/widgets/zoom/awesome_zoom_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -92,7 +92,7 @@ class _AwesomeFilterWidgetState extends State<AwesomeFilterWidget> {
                         : (!kIsWeb && Platform.isAndroid)
                             ? Center(
                                 key: const ValueKey("ZoomIndicator"),
-                                child: ZoomSelector(state: widget.state),
+                                child: AwesomeZoomSelector(state: widget.state),
                               )
                             : Center(
                                 key: const ValueKey("SensorTypeSelector"),

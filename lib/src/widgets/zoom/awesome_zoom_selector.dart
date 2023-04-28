@@ -1,19 +1,19 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
-class ZoomSelector extends StatefulWidget {
+class AwesomeZoomSelector extends StatefulWidget {
   final CameraState state;
 
-  const ZoomSelector({
+  const AwesomeZoomSelector({
     super.key,
     required this.state,
   });
 
   @override
-  State<ZoomSelector> createState() => _ZoomSelectorState();
+  State<AwesomeZoomSelector> createState() => _AwesomeZoomSelectorState();
 }
 
-class _ZoomSelectorState extends State<ZoomSelector> {
+class _AwesomeZoomSelectorState extends State<AwesomeZoomSelector> {
   double? minZoom;
   double? maxZoom;
 

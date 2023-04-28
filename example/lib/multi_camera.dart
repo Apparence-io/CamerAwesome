@@ -94,16 +94,16 @@ class _CameraPageState extends State<CameraPage> {
                 // sensors: sensorDeviceData!.availableSensors
                 //     .map((e) => Sensor.id(e.uid))
                 //     .toList(),
-                previewFit: CameraPreviewFit.fitWidth,
-                onMediaTap: (mediaCapture) {
-                  mediaCapture.captureRequest.when(
-                    single: (single) => OpenFile.open(single.file?.path),
-                    multiple: (multiple) => Navigator.of(context).pushNamed(
-                      '/gallery',
-                      arguments: multiple,
-                    ),
-                  );
-                },
+          onMediaTap: (mediaCapture) {
+            mediaCapture.captureRequest.when(
+              single: (single) => OpenFile.open(single.file?.path),
+              multiple: (multiple) => Navigator.of(context).pushNamed(
+                '/gallery',
+                arguments: multiple,
+              ),
+            );
+          }previewFit: CameraPreviewFit.fitWidth,
+                ,
               )
             : const SizedBox.shrink(),
       ),

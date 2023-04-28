@@ -1,1 +1,1 @@
-export 'zoom_selector.dart';
+export 'awesome_zoom_selector.dart';
