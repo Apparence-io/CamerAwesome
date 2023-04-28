@@ -271,9 +271,11 @@ class CamerawesomePlugin {
       // En natif, on ferait probablement la map juste en fonction de l'ordre des sensors ou quelque chose comme ça.
       // Il faudra peut-etre identifier chaque Sensor dart pour faire le mapping correctement avec un ID... sa fé réfléchire
       // TODO: add video options for Android
-      return CameraInterface().recordVideo(pathBySensor.keys.toList(), pathBySensor.values.toList());
+      return CameraInterface().recordVideo(
+          pathBySensor.keys.toList(), pathBySensor.values.toList());
     } else {
-      return CameraInterface().recordVideo(pathBySensor.keys.toList(), pathBySensor.values.toList());
+      return CameraInterface().recordVideo(
+          pathBySensor.keys.toList(), pathBySensor.values.toList());
     }
   }
 
