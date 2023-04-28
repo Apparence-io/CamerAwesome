@@ -39,6 +39,26 @@ typedef NS_ENUM(NSUInteger, QualityFallbackStrategy) {
   QualityFallbackStrategyLower = 1,
 };
 
+typedef NS_ENUM(NSUInteger, CupertinoFileType) {
+  CupertinoFileTypeQuickTimeMovie = 0,
+  CupertinoFileTypeMpeg4 = 1,
+  CupertinoFileTypeAppleM4V = 2,
+  CupertinoFileTypeType3GPP = 3,
+  CupertinoFileTypeType3GPP2 = 4,
+};
+
+typedef NS_ENUM(NSUInteger, CupertinoCodecType) {
+  CupertinoCodecTypeH264 = 0,
+  CupertinoCodecTypeHevc = 1,
+  CupertinoCodecTypeHevcWithAlpha = 2,
+  CupertinoCodecTypeJpeg = 3,
+  CupertinoCodecTypeAppleProRes4444 = 4,
+  CupertinoCodecTypeAppleProRes422 = 5,
+  CupertinoCodecTypeAppleProRes422HQ = 6,
+  CupertinoCodecTypeAppleProRes422LT = 7,
+  CupertinoCodecTypeAppleProRes422Proxy = 8,
+};
+
 typedef NS_ENUM(NSUInteger, PigeonSensorType) {
   /// A built-in wide-angle camera.
   ///
@@ -136,11 +156,14 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @end
 
 @interface CupertinoVideoOptions : NSObject
-+ (instancetype)makeWithFileType:(nullable NSString *)fileType
-    codec:(nullable NSString *)codec
++ (instancetype)makeWithFileType:(CupertinoFileType)fileType
+    codec:(CupertinoCodecType)codec
     fps:(nullable NSNumber *)fps;
-@property(nonatomic, copy, nullable) NSString * fileType;
-@property(nonatomic, copy, nullable) NSString * codec;
+/// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
+@property(nonatomic, assign) CupertinoFileType fileType;
+/// Specify video codec, defaults to [AVVideoCodecTypeH264].
+@property(nonatomic, assign) CupertinoCodecType codec;
+/// Specify video fps, defaults to [30].
 @property(nonatomic, strong, nullable) NSNumber * fps;
 @end
 

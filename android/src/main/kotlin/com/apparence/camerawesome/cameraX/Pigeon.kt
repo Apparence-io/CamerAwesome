@@ -94,6 +94,38 @@ enum class QualityFallbackStrategy(val raw: Int) {
   }
 }
 
+enum class CupertinoFileType(val raw: Int) {
+  QUICKTIMEMOVIE(0),
+  MPEG4(1),
+  APPLEM4V(2),
+  TYPE3GPP(3),
+  TYPE3GPP2(4);
+
+  companion object {
+    fun ofRaw(raw: Int): CupertinoFileType? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+enum class CupertinoCodecType(val raw: Int) {
+  H264(0),
+  HEVC(1),
+  HEVCWITHALPHA(2),
+  JPEG(3),
+  APPLEPRORES4444(4),
+  APPLEPRORES422(5),
+  APPLEPRORES422HQ(6),
+  APPLEPRORES422LT(7),
+  APPLEPRORES422PROXY(8);
+
+  companion object {
+    fun ofRaw(raw: Int): CupertinoCodecType? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 enum class PigeonSensorType(val raw: Int) {
   /**
    * A built-in wide-angle camera.
@@ -288,24 +320,31 @@ data class AndroidVideoOptions (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class CupertinoVideoOptions (
-  val fileType: String? = null,
-  val codec: String? = null,
+  /** Specify video file type, defaults to [AVFileTypeQuickTimeMovie]. */
+  val fileType: CupertinoFileType? = null,
+  /** Specify video codec, defaults to [AVVideoCodecTypeH264]. */
+  val codec: CupertinoCodecType? = null,
+  /** Specify video fps, defaults to [30]. */
   val fps: Long? = null
 
 ) {
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): CupertinoVideoOptions {
-      val fileType = list[0] as String?
-      val codec = list[1] as String?
+      val fileType: CupertinoFileType? = (list[0] as Int?)?.let {
+        CupertinoFileType.ofRaw(it)
+      }
+      val codec: CupertinoCodecType? = (list[1] as Int?)?.let {
+        CupertinoCodecType.ofRaw(it)
+      }
       val fps = list[2].let { if (it is Int) it.toLong() else it as Long? }
       return CupertinoVideoOptions(fileType, codec, fps)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
-      fileType,
-      codec,
+      fileType?.raw,
+      codec?.raw,
       fps,
     )
   }

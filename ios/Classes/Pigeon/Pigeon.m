@@ -220,8 +220,8 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 @end
 
 @implementation CupertinoVideoOptions
-+ (instancetype)makeWithFileType:(nullable NSString *)fileType
-    codec:(nullable NSString *)codec
++ (instancetype)makeWithFileType:(CupertinoFileType)fileType
+    codec:(CupertinoCodecType)codec
     fps:(nullable NSNumber *)fps {
   CupertinoVideoOptions* pigeonResult = [[CupertinoVideoOptions alloc] init];
   pigeonResult.fileType = fileType;
@@ -231,8 +231,8 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 }
 + (CupertinoVideoOptions *)fromList:(NSArray *)list {
   CupertinoVideoOptions *pigeonResult = [[CupertinoVideoOptions alloc] init];
-  pigeonResult.fileType = GetNullableObjectAtIndex(list, 0);
-  pigeonResult.codec = GetNullableObjectAtIndex(list, 1);
+  pigeonResult.fileType = [GetNullableObjectAtIndex(list, 0) integerValue];
+  pigeonResult.codec = [GetNullableObjectAtIndex(list, 1) integerValue];
   pigeonResult.fps = GetNullableObjectAtIndex(list, 2);
   return pigeonResult;
 }
@@ -241,8 +241,8 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 }
 - (NSArray *)toList {
   return @[
-    (self.fileType ?: [NSNull null]),
-    (self.codec ?: [NSNull null]),
+    @(self.fileType),
+    @(self.codec),
     (self.fps ?: [NSNull null]),
   ];
 }

@@ -87,12 +87,32 @@ class AndroidVideoOptions {
   });
 }
 
+enum CupertinoFileType {
+  quickTimeMovie,
+  mpeg4,
+  appleM4V,
+  type3GPP,
+  type3GPP2,
+}
+
+enum CupertinoCodecType {
+  h264,
+  hevc,
+  hevcWithAlpha,
+  jpeg,
+  appleProRes4444,
+  appleProRes422,
+  appleProRes422HQ,
+  appleProRes422LT,
+  appleProRes422Proxy,
+}
+
 class CupertinoVideoOptions {
   /// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
-  final String? fileType;
+  final CupertinoFileType? fileType;
 
   /// Specify video codec, defaults to [AVVideoCodecTypeH264].
-  final String? codec;
+  final CupertinoCodecType? codec;
 
   /// Specify video fps, defaults to [30].
   final int? fps;

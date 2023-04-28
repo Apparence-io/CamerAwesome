@@ -296,17 +296,25 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   AVFileType fileType = AVFileTypeQuickTimeMovie;
   
   if (options && options != (id)[NSNull null]) {
-    NSString *type = options.fileType;
-    if ([type isEqualToString:@"quickTimeMovie"]) {
-      fileType = AVFileTypeQuickTimeMovie;
-    } else if ([type isEqualToString:@"mpeg4"]) {
-      fileType = AVFileTypeMPEG4;
-    } else if ([type isEqualToString:@"appleM4V"]) {
-      fileType = AVFileTypeAppleM4V;
-    } else if ([type isEqualToString:@"type3GPP"]) {
-      fileType = AVFileType3GPP;
-    } else if ([type isEqualToString:@"type3GPP2"]) {
-      fileType = AVFileType3GPP2;
+    CupertinoFileType type = options.fileType;
+    switch (type) {
+      case CupertinoFileTypeQuickTimeMovie:
+        fileType = AVFileTypeQuickTimeMovie;
+        break;
+      case CupertinoFileTypeMpeg4:
+        fileType = AVFileTypeMPEG4;
+        break;
+      case CupertinoFileTypeAppleM4V:
+        fileType = AVFileTypeAppleM4V;
+        break;
+      case CupertinoFileTypeType3GPP:
+        fileType = AVFileType3GPP;
+        break;
+      case CupertinoFileTypeType3GPP2:
+        fileType = AVFileType3GPP2;
+        break;
+      default:
+        break;
     }
   }
   
@@ -316,25 +324,37 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 - (AVVideoCodecType)getBestCodecTypeAccordingOptions:(CupertinoVideoOptions *)options {
   AVVideoCodecType codecType = AVVideoCodecTypeH264;
   if (options && options != (id)[NSNull null]) {
-    NSString *codec = options.codec;
-    if ([codec isEqualToString:@"h264"]) {
-      codecType = AVVideoCodecTypeH264;
-    } else if ([codec isEqualToString:@"hevc"]) {
-      codecType = AVVideoCodecTypeHEVC;
-    } else if ([codec isEqualToString:@"hevcWithAlpha"]) {
-      codecType = AVVideoCodecTypeHEVCWithAlpha;
-    } else if ([codec isEqualToString:@"jpeg"]) {
-      codecType = AVVideoCodecTypeJPEG;
-    } else if ([codec isEqualToString:@"appleProRes4444"]) {
-      codecType = AVVideoCodecTypeAppleProRes4444;
-    } else if ([codec isEqualToString:@"appleProRes422"]) {
-      codecType = AVVideoCodecTypeAppleProRes422;
-    } else if ([codec isEqualToString:@"appleProRes422HQ"]) {
-      codecType = AVVideoCodecTypeAppleProRes422HQ;
-    } else if ([codec isEqualToString:@"appleProRes422LT"]) {
-      codecType = AVVideoCodecTypeAppleProRes422LT;
-    } else if ([codec isEqualToString:@"appleProRes422Proxy"]) {
-      codecType = AVVideoCodecTypeAppleProRes422Proxy;
+    CupertinoCodecType codec = options.codec;
+    switch (codec) {
+      case CupertinoCodecTypeH264:
+        codecType = AVVideoCodecTypeH264;
+        break;
+      case CupertinoCodecTypeHevc:
+        codecType = AVVideoCodecTypeHEVC;
+        break;
+      case CupertinoCodecTypeHevcWithAlpha:
+        codecType = AVVideoCodecTypeHEVCWithAlpha;
+        break;
+      case CupertinoCodecTypeJpeg:
+        codecType = AVVideoCodecTypeJPEG;
+        break;
+      case CupertinoCodecTypeAppleProRes4444:
+        codecType = AVVideoCodecTypeAppleProRes4444;
+        break;
+      case CupertinoCodecTypeAppleProRes422:
+        codecType = AVVideoCodecTypeAppleProRes422;
+        break;
+      case CupertinoCodecTypeAppleProRes422HQ:
+        codecType = AVVideoCodecTypeAppleProRes422HQ;
+        break;
+      case CupertinoCodecTypeAppleProRes422LT:
+        codecType = AVVideoCodecTypeAppleProRes422LT;
+        break;
+      case CupertinoCodecTypeAppleProRes422Proxy:
+        codecType = AVVideoCodecTypeAppleProRes422Proxy;
+        break;
+      default:
+        break;
     }
   }
   return codecType;
