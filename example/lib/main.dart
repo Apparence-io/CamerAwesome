@@ -54,6 +54,7 @@ class CameraPage extends StatelessWidget {
               }
             },
             videoOptions: VideoOptions(
+              enableAudio: true,
               ios: CupertinoVideoOptions(
                 fps: 10,
               ),

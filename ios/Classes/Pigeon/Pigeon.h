@@ -116,9 +116,15 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 @property(nonatomic, copy, nullable) NSString * deviceId;
 @end
 
+/// Video recording options. Some of them are specific to each platform.
 @interface VideoOptions : NSObject
-+ (instancetype)makeWithAndroid:(nullable AndroidVideoOptions *)android
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithEnableAudio:(NSNumber *)enableAudio
+    android:(nullable AndroidVideoOptions *)android
     ios:(nullable CupertinoVideoOptions *)ios;
+/// Enable audio while video recording
+@property(nonatomic, strong) NSNumber * enableAudio;
 @property(nonatomic, strong, nullable) AndroidVideoOptions * android;
 @property(nonatomic, strong, nullable) CupertinoVideoOptions * ios;
 @end
@@ -139,8 +145,11 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 + (instancetype)makeWithFileType:(nullable NSString *)fileType
     codec:(nullable NSString *)codec
     fps:(nullable NSNumber *)fps;
+/// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
 @property(nonatomic, copy, nullable) NSString * fileType;
+/// Specify video codec, defaults to [AVVideoCodecTypeH264].
 @property(nonatomic, copy, nullable) NSString * codec;
+/// Specify video fps, defaults to [30].
 @property(nonatomic, strong, nullable) NSNumber * fps;
 @end
 

@@ -12,22 +12,29 @@ class SaveConfig {
   final CaptureMode initialCaptureMode;
   final VideoOptions? videoOptions;
 
+  /// Choose if you want to persist user location in image metadata or not
+  final ExifPreferences? exifPreferences;
+
   SaveConfig._({
     this.photoPathBuilder,
     this.videoPathBuilder,
     required this.captureModes,
     required this.initialCaptureMode,
     this.videoOptions,
+    this.exifPreferences,
   });
 
   /// You only want to take photos
-  SaveConfig.photo({CaptureRequestBuilder? pathBuilder})
-      : this._(
+  SaveConfig.photo({
+    CaptureRequestBuilder? pathBuilder,
+    ExifPreferences? exifPreferences,
+  }) : this._(
           photoPathBuilder: pathBuilder ??
               (sensors) => AwesomeCaptureRequestBuilder()
                   .build(captureMode: CaptureMode.photo, sensors: sensors),
           captureModes: [CaptureMode.photo],
           initialCaptureMode: CaptureMode.photo,
+          exifPreferences: exifPreferences,
         );
 
   /// You only want to take videos
@@ -49,6 +56,7 @@ class SaveConfig {
     CaptureRequestBuilder? videoPathBuilder,
     CaptureMode initialCaptureMode = CaptureMode.photo,
     VideoOptions? videoOptions,
+    ExifPreferences? exifPreferences,
   }) : this._(
           photoPathBuilder: photoPathBuilder ??
               (sensors) => AwesomeCaptureRequestBuilder()
@@ -59,5 +67,6 @@ class SaveConfig {
           captureModes: [CaptureMode.photo, CaptureMode.video],
           initialCaptureMode: initialCaptureMode,
           videoOptions: videoOptions,
+          exifPreferences: exifPreferences,
         );
 }

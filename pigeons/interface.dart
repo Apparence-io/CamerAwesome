@@ -59,7 +59,11 @@ enum QualityFallbackStrategy {
   lower,
 }
 
+/// Video recording options. Some of them are specific to each platform.
 class VideoOptions {
+  /// Enable audio while video recording
+  final bool enableAudio;
+
   // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
   final AndroidVideoOptions? android;
   final CupertinoVideoOptions? ios;
@@ -67,6 +71,7 @@ class VideoOptions {
   VideoOptions({
     required this.android,
     required this.ios,
+    required this.enableAudio,
   });
 }
 

@@ -226,8 +226,14 @@ data class PigeonSensor (
   }
 }
 
-/** Generated class from Pigeon that represents data sent in messages. */
+/**
+ * Video recording options. Some of them are specific to each platform.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
 data class VideoOptions (
+  /** Enable audio while video recording */
+  val enableAudio: Boolean,
   val android: AndroidVideoOptions? = null,
   val ios: CupertinoVideoOptions? = null
 
@@ -235,17 +241,19 @@ data class VideoOptions (
   companion object {
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): VideoOptions {
-      val android: AndroidVideoOptions? = (list[0] as List<Any?>?)?.let {
+      val enableAudio = list[0] as Boolean
+      val android: AndroidVideoOptions? = (list[1] as List<Any?>?)?.let {
         AndroidVideoOptions.fromList(it)
       }
-      val ios: CupertinoVideoOptions? = (list[1] as List<Any?>?)?.let {
+      val ios: CupertinoVideoOptions? = (list[2] as List<Any?>?)?.let {
         CupertinoVideoOptions.fromList(it)
       }
-      return VideoOptions(android, ios)
+      return VideoOptions(enableAudio, android, ios)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
+      enableAudio,
       android?.toList(),
       ios?.toList(),
     )
@@ -288,8 +296,11 @@ data class AndroidVideoOptions (
 
 /** Generated class from Pigeon that represents data sent in messages. */
 data class CupertinoVideoOptions (
+  /** Specify video file type, defaults to [AVFileTypeQuickTimeMovie]. */
   val fileType: String? = null,
+  /** Specify video codec, defaults to [AVVideoCodecTypeH264]. */
   val codec: String? = null,
+  /** Specify video fps, defaults to [30]. */
   val fps: Long? = null
 
 ) {
