@@ -4,75 +4,138 @@ CamerAwesome comes with a full built UI that you can use as is.
 
 Use `CameraAwesomeBuilder.awesome()` to get a complete ready-to-use camera experience within your app.
 
-Here is a concrete example using **path_provider** to get valid paths and **better_open_file** to display the last media captured:
+Here is a concrete example using **better_open_file** to display the last media captured:
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.photoAndVideo(
-    photoPathBuilder: () async {
-      final Directory extDir = await getTemporaryDirectory();
-      final testDir =
-          await Directory('${extDir.path}/test').create(recursive: true);
-      return '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-    },
-    videoPathBuilder: () async {
-      final Directory extDir = await getTemporaryDirectory();
-      final testDir =
-          await Directory('${extDir.path}/test').create(recursive: true);
-      return '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.mp4';
-    },
-    onMediaTap: (mediaCapture) {
-      OpenFile.open(mediaCapture.filePath);
-    },
-  ),
+  saveConfig: SaveConfig.photoAndVideo(),
+  onMediaTap: (mediaCapture) {
+    OpenFile.open(mediaCapture.filePath);
+  },
 )
 ```
 
 ![Base Awesome UI](/img/base_awesome_ui.jpg)
 
-## 📷 Initial Camera setup
 
-You can set the initial camera configuration using the `CameraAwesomeBuilder` parameters.
+## 📁 Camera captures configuration
+
+`CameraAwesomeBuilder` requires a `SaveConfig` parameter.
+You can create one with one of the following factories:
+- `SaveConfig.photo()` if you only want to take photos
+- `SaveConfig.video()` to only take videos
+- `SaveConfig.photoAndVideo()` if you want to switch between photo and video modes.
+These factories don't require additional parameters, but you might want to customize a few things, like where to save your files.
+Here is a complete example to overwrite the default behaviors:
+```dart
+SaveConfig.photoAndVideo(
+  // 1.
+  initialCaptureMode: CaptureMode.photo,
+  // 2.
+  photoPathBuilder: (sensors) async {
+    ...
+  },
+  // 3.
+  videoPathBuilder: (sensors) async {
+    ...
+  },
+  // 4.
+  videoOptions: VideoOptions(
+    // TODODOC set enableAudio parameter here ?
+    ios: CupertinoVideoOptions(
+      fps: 10,
+      // TODODOC Add other possble params
+    ),
+    android: AndroidVideoOptions(
+      bitrate: 6000000,
+      quality: VideoRecordingQuality.fhd,
+      fallbackStrategy: QualityFallbackStrategy.lower,
+    ),
+  ),
+  // TODODOC set exifPreferences here ?
+)
+```
+Let's break it down:
+
+1. When using `photoAndVideo` mode, you can choose which mode to start with. Here we start with photo mode (default).
+2. You can customize the path where your photos will be saved.
+3. You can also customize where to save your videos.
+4. The video recording can be customized using `VideoOptions`. Note that each platform has its own settings.
+
+
+Here is a `photoPathBuilder` example:
+```dart
+SaveConfig.photoAndVideo(
+  photoPathBuilder: (sensors) async {
+    // 1.
+    final Directory extDir = await getTemporaryDirectory();
+    final testDir = await Directory('${extDir.path}/camerawesome').create(recursive: true);
+    
+    // 2.
+    if (sensors.length == 1) {
+      final String filePath =
+          '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      // 3.
+      return SingleCaptureRequest(filePath, sensors.first);
+    } else {
+      // 4.
+      return MultipleCaptureRequest(
+        {
+          for (final sensor in sensors)
+            sensor:
+                '${testDir.path}/${sensor.position == SensorPosition.front ? 'front_' : "back_"}${DateTime.now().millisecondsSinceEpoch}.jpg',
+        },
+      );
+    }
+  },
+  // Other params
+  ...
+)
+```
+There are 4 steps in this code:
+
+1. Create a directory where photos will be saved (here we use the temporary directory, using `path_provider`).
+2. Since `CamerAwesome` supports taking pictures with both front and back cameras at the same time, we need to detect if there is only one picture to take or several ones.
+3. If there is only one sensor used, we can build a `SingleCaptureRequest` with the file path and the sensor.
+4. If there are several sensors, we need to build a `MultipleCaptureRequest` with a map of file paths and sensors. In this case, we create a different path based on wether it's the front or back sensor that takes the picture.
+
+The same logic goes for videos but we replace the `.jpg` extension with `.mp4`.
+
+
+## 📷 Initial camera configuration
+
+You can set the initial camera configuration using a `SensorConfig`.
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  aspectRatio: CameraAspectRatios.ratio_1_1,
-  enableAudio: true,
-  exifPreferences: ExifPreferences(
-    saveGPSLocation: false,
+  sensorConfig: SensorConfig.single(
+    aspectRatio: CameraAspectRatios.ratio_4_3,
+    flashMode: FlashMode.auto,
+    mirrorFrontCamera: true,
+    sensor: Sensor.position(SensorPosition.back),
+    zoom: 0.0,
   ),
-  filter: Filters.none,
-  flashMode: FlashMode.none,
-  onMediaTap: (mediaCapture) {
-    print('Tap on ${mediaCapture.filePath}');
-  },
-  saveConfig: SaveConfig.photoAndVideo(
-    initialCaptureMode: CaptureMode.photo,
-    photoPathBuilder: () async {
-      return 'some/image/file/path.jpg';
-    },
-    videoPathBuilder: () async {
-      return 'some/video/file/path.mp4';
-    },
-  ),
-  sensor: Sensors.back,
-  zoom: 0.0,
-  // Other parameters
-  ...
 )
 ```
 
 | Parameter           | Description                                                                                                 |
 | ------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **aspectRatio**     | Initial aspect ratio of photos and videos taken                                                             |
-| **enableAudio**     | Activate audio by default (only for video mode)                                                             |
-| **exifPreferences** | Activate or deactivate location in photo exif                                                               |
-| **filter**          | Initial preview filter which will be applied to the photo                                                   |
 | **flashMode**       | The initial flash mode                                                                                      |
-| **onMediaTap**      | Choose what you want to do when user tap on the last media captured (when using the built-in image preview) |
-| **saveConfig**      | Define if you want to take photos, videos or both and where to save them                                    |
+| **mirrorFrontCamera** | Whether to mirror the front camera or not                                                                  |
 | **sensor**          | The initial camera sensor (Back or Front)                                                                   |
 | **zoom**            | A value between 0.0 (no zoom) and 1.0 (max zoom)                                                            |
+
+Note: you might also notice the `SensorConfig.multiple()` constructor which lets you specify several sensors.
+This feature is in beta, but you can take a look at the [dedicated documentation](/getting_started/multicam).
+
+// TODODOC Either move these parameters or provide a better documentation
+`CameraAwesomeBuilder` also provides a few more parameters:
+- enablePhysicalButton
+- enableAudio
+- filter
+- exifPreferences
+
 
 ## 🎨 Customize the built-in UI
 

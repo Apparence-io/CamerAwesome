@@ -32,12 +32,14 @@
     </a>
 </div>
 
-📸 Embedding a camera experience within your own app should't be that hard. <br>
+[![en](https://img.shields.io/badge/language-english-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.md) [![zh](https://img.shields.io/badge/language-chinese-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.zh.md)
+
+📸 Embedding a camera experience within your own app shouldn't be that hard. <br>
 A flutter plugin to integrate awesome Android / iOS camera experience.<br>
 
 <br>
-This packages provides you a fully customizable camera experience that you can use within your app.<br>
-Use our awesome built in interface or customize it as you want.
+This package provides you with a fully customizable camera experience that you can use within your app.<br>
+Use our awesome built-in interface or customize it as you want.
 
 ---
 
@@ -186,11 +188,11 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 ## 👌 Awesome built-in interface
 
 Just use our builder. <br>
-That's all you need to create a complete camera experience within you app.
+That's all you need to create a complete camera experience within your app.
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.photo(),
+  saveConfig: SaveConfig.photoAndVideo(),
   onMediaTap: (mediaCapture) {
     OpenFile.open(mediaCapture.filePath);
   },
@@ -212,9 +214,7 @@ Here is an example:
 
 ![Customized UI](docs/img/custom_awesome_ui.jpg)
 
-Check
-the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui)
-to learn more.
+Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
 
 ---
 
@@ -322,8 +322,7 @@ CameraAwesomeBuilder.awesome(
 
 > MLkit recommands to use nv21 format for Android. <br>
 > bgra8888 is the iOS format
-> For machine learning you don't need full resolution images (720 or lower should be enough and
-> makes computation easier)
+> For machine learning you don't need full resolution images (720 or lower should be enough and  makes computation easier)
 
 Learn more about the image analysis configuration in
 the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
@@ -349,13 +348,12 @@ Through state you can access to a `SensorConfig` class.
 
 | Function               | Comment                                                    |
 | ---------------------- | ---------------------------------------------------------- |
-| `setZoom`              | changing zoom                                              |
-| `setFlashMode`         | changing flash between NONE,ON,AUTO,ALWAYS                 |
+| `setZoom`              | change zoom                                                |
+| `setFlashMode`         | change flash between NONE,ON,AUTO,ALWAYS                   |
 | `setBrightness`        | change brightness level manually (better to let this auto) |
 | `setMirrorFrontCamera` | set mirroring for front camera                             |
 
-All of this configurations are listenable through a stream so your UI can automatically get updated
-according to the actual configuration.
+All of these configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
 
 <br>
 
