@@ -16,6 +16,7 @@ dependencies:
   colorfilter_generator: ^0.0.8
   flutter:
     sdk: flutter
+  focus_detector: ^2.0.1
   image: ^4.0.15
     # photofilters:
   # git: https://github.com/svenopdehipt/photofilters.git
