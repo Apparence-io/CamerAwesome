@@ -4,58 +4,29 @@
   "theme": "#36B9B9",
   "googleAnalytics": "G-J2YNQZ6BE8",
   "sidebar": [
-    [
-      "Overview",
-      "/index"
-    ],
+    ["Overview", "/index"],
     [
       "Getting Started",
       [
-        [
-          "Installing",
-          "/getting_started/installing"
-        ],
-        [
-          "Using the built-in UI ",
-          "/getting_started/awesome-ui"
-        ],
-        [
-          "Creating your own UI",
-          "/getting_started/custom-ui"
-        ],
-        [
-          "Multiple cameras at once (🚧 BETA)",
-          "/getting_started/multicam"
-        ]
+        ["Installing", "/getting_started/installing"],
+        ["Using the built-in UI ", "/getting_started/awesome-ui"],
+        ["Creating your own UI", "/getting_started/custom-ui"],
+        ["Multiple cameras at once (🚧 BETA)", "/getting_started/multicam"]
       ]
+    ],
+    [
+      "Migration guides",
+      [["From 1.x.x to 2.x.x", "/migration_guides/from_1_to_2"]]
     ],
     [
       "Widgets",
       [
-        [
-          "Theming",
-          "/widgets/theming"
-        ],
-        [
-          "Buttons",
-          "/widgets/awesome_buttons"
-        ],
-        [
-          "Layout",
-          "/widgets/layout"
-        ],
-        [
-          "AwesomeOrientedWidget",
-          "/widgets/awesome_oriented_widget"
-        ],
-        [
-          "Filters",
-          "/widgets/awesome_filters"
-        ],
-        [
-          "AwesomeCameraModeSelector",
-          "/widgets/awesome_camera_mode_selector"
-        ]
+        ["Theming", "/widgets/theming"],
+        ["Buttons", "/widgets/awesome_buttons"],
+        ["Layout", "/widgets/layout"],
+        ["AwesomeOrientedWidget", "/widgets/awesome_oriented_widget"],
+        ["Filters", "/widgets/awesome_filters"],
+        ["AwesomeCameraModeSelector", "/widgets/awesome_camera_mode_selector"]
       ]
     ],
     [
@@ -69,27 +40,15 @@
           "Image analysis formats and conversion",
           "/image_analysis/image_format_conversions"
         ],
-        [
-          "Reading barcodes",
-          "/image_analysis/reading_barcodes"
-        ],
-        [
-          "Detecting faces",
-          "/image_analysis/detecting_faces"
-        ]
+        ["Reading barcodes", "/image_analysis/reading_barcodes"],
+        ["Detecting faces", "/image_analysis/detecting_faces"]
       ]
     ],
     [
       "Appendix",
       [
-        [
-          "License",
-          "/appendix/license"
-        ],
-        [
-          "Roadmap",
-          "/appendix/roadmap"
-        ]
+        ["License", "/appendix/license"],
+        ["Roadmap", "/appendix/roadmap"]
       ]
     ]
   ]

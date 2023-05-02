@@ -1,4 +1,4 @@
-## 🎨 Creating a custom UI
+# 🎨 Creating your own UI
 
 If `CameraAwesomeBuilder.awesome()` doesn't fit your needs in terms of layout, you can create your own UI using the `CameraAwesomeBuilder.custom()` constructor.
 
@@ -21,7 +21,7 @@ CameraAwesomeBuilder.custom(
 
 You can find more examples on the `example` folder.
 
-### Properties
+## Properties
 
 | Method                    | Comment                                                                                                                                       |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -41,7 +41,7 @@ You can find more examples on the `example` folder.
 | **sensorConfig**          | The initial sensor configuration: aspect ratio, flash mode, wether you want to mirror the front camera, which sensor to use and initial zoom. |
 | **theme**                 | Theme used to customize the built-in UI                                                                                                       |
 
-### Builder method
+## Builder method
 
 The `builder` method is the main method here.
 
@@ -65,7 +65,7 @@ state.when(
 
 `previewSize` and `previewRect` are additional parameters that might be used to position your UI around or on top of the camera preview.
 
-#### CamerAwesome has 6 different states
+### CamerAwesome has 6 different states
 
 - **PreparingCameraState** : camera is starting
 - **PhotoCameraState** : camera is ready to take a photo
@@ -81,12 +81,12 @@ As you can see, after the initial `PreparingCameraState`, the new state is eithe
 A `VideoRecordingCameraState` replaces the `VideoCameraState` when a recording starts. You can't start two recording at the same time thanks to this.
 When the recording stops, a `VideoCameraState` replaces it again.
 
-#### You don't have to worry about state management here
+### You don't have to worry about state management here
 
 `CameraAwesomeBuilder` calls the `builder` method each time you switch between camera states.
 This way, you can react to these changes easily in your `builder` 👌
 
-### Creating my own widget
+## Creating my own widget
 
 `CameraState` lets you build a reactive UI by providing you streams and setters to the various properties around the camera.
 It should let you create everything you need in a reactive way without worrying about the camera flow.
@@ -144,7 +144,7 @@ Since we want to listen to its changes, we use `flashMode$`, which is a `Stream`
 >
 > The equivalent without $ is the current value. You should not store these in variables since they may change over time.
 
-### Using provided widgets
+## Using provided widgets
 
 You can find common widgets that you may want to use in the **Widgets** section.
 
@@ -156,14 +156,14 @@ Instead of handling it yourself, using the built-in widgets can let you rotate y
 
 Check also built-in [buttons](/widgets/buttons) and the [camera mode selector](/widgets/camera_mode_selector).
 
-### Setting and reading camera properties
+## Setting and reading camera properties
 
 If you need more customization, you can find details on how to access and update the properties of the camera below.
 
 Note that we recommend to access properties via their `Stream` whenever possible.
 If you need it to build your UI, just use it with a `StreamBuilder`.
 
-#### Camera sensor properties and methods
+### Camera sensor properties and methods
 
 `CameraState` gives access to the current `SensorConfig` (via a Stream or a getter).
 You will use this object to get or set different sensor related properties.
@@ -204,7 +204,7 @@ See the tables below for each use case.
 | **Get** current brightness value           | `state.sensorConfig.zoom`      |
 | **Stream** of the current brightness value | `state.sensorConfig.zoom$`     |
 
-#### Methods and properties available to any CameraState
+### Methods and properties available to any CameraState
 
 If you want to access more than just the current `SensorConfig`, you can explore what the different `CameraStates` provide.
 
@@ -219,7 +219,7 @@ First of all, they all give you the following features:
 
 More features are available depending on which `CameraState` is in use.
 
-#### PhotoCameraState properties and methods
+### PhotoCameraState properties and methods
 
 **Take a photo**
 
@@ -235,7 +235,7 @@ More features are available depending on which `CameraState` is in use.
 | **Get** saveGpsLocation       | `state.saveGpsLocation`        |
 | **Stream** of saveGpsLocation | `state.saveGpsLocation$`       |
 
-#### VideoCameraState properties and methods
+### VideoCameraState properties and methods
 
 In this state, you didn't start recording yet.
 
@@ -244,7 +244,7 @@ In this state, you didn't start recording yet.
 | Start recording a video        | `state.startRecording()` | This will push a `VideoRecordingCameraState`                                                          |
 | Enable/Disable audio recording | `state.enableAudio()`    | Must be set before starting a recording. Once started, it can't be changed for the current recording. |
 
-#### VideoRecordingCameraState properties and methods
+### VideoRecordingCameraState properties and methods
 
 In this state, the video recording has started.
 

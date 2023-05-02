@@ -52,6 +52,11 @@ Use our awesome built-in interface or customize it as you want.
   </a>
 </div>
 
+## Migration guide
+
+If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](docs.page/todo).
+
+
 ## Native features
 
 Here's all native features that cameraAwesome provides to the flutter side.
@@ -60,7 +65,7 @@ Here's all native features that cameraAwesome provides to the flutter side.
 | :--------------------------------------- | :-----: | :---: |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
-| 📹 Multi camera                          |    ✅    |   ✅   |
+| 📹 Multi camera  (🚧 BETA)                         |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
 | 🎞 Take photos                           |    ✅    |   ✅   |
 | 🌆 Photo live filters                    |    ✅    |   ✅   |
@@ -393,6 +398,37 @@ CameraAwesomeBuilder.custom(
 ```
 
 See all available filters in the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
+
+
+## 📷 📷 Concurrent cameras
+
+![Concurrent cameras](docs/img/concurrent_cameras.gif)
+
+> 🚧 Feature in beta 🚧
+> Any feedback is welcome!
+
+In order to start using CamerAwesome with multiple cameras simulatenously, you need to define a `SensorConfig` that uses several sensors. You can use the `SensorConfig.multiple()` constructor for this:
+
+```dart
+CameraAwesomeBuilder.awesome(
+    sensorConfig: SensorConfig.multiple(
+        sensors: [
+            Sensor.position(SensorPosition.back),
+            Sensor.position(SensorPosition.front),
+        ],
+        flashMode: FlashMode.auto,
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+    ),
+    // Other params
+)
+```
+
+This feature is not supported by all devices and even when it is, there are limitations that you must be aware of.
+
+Check the details in the [dedicated documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/multicam).
+
+
+
 
 <br>
 
