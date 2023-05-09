@@ -4,11 +4,10 @@ import 'package:camerawesome/src/orchestrator/file/builder/capture_request_build
 import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
 import 'package:camerawesome/src/orchestrator/models/capture_request.dart';
 import 'package:camerawesome/src/orchestrator/models/sensors.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CaptureRequestBuilderImpl extends BaseCaptureRequestBuilder {
-  Future<XFile> newFile(
+  Future<String> newFile(
     CaptureMode captureMode, {
     Sensor? sensor,
   }) async {
@@ -31,7 +30,7 @@ class CaptureRequestBuilderImpl extends BaseCaptureRequestBuilder {
     }
     final String filePath =
         '${testDir.path}/${DateTime.now().microsecondsSinceEpoch}$extension.$fileExtension';
-    return XFile(filePath);
+    return filePath;
   }
 
   @override

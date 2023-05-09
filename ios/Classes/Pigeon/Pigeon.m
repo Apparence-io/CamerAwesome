@@ -166,17 +166,21 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 @end
 
 @implementation VideoOptions
-+ (instancetype)makeWithAndroid:(nullable AndroidVideoOptions *)android
++ (instancetype)makeWithEnableAudio:(NSNumber *)enableAudio
+    android:(nullable AndroidVideoOptions *)android
     ios:(nullable CupertinoVideoOptions *)ios {
   VideoOptions* pigeonResult = [[VideoOptions alloc] init];
+  pigeonResult.enableAudio = enableAudio;
   pigeonResult.android = android;
   pigeonResult.ios = ios;
   return pigeonResult;
 }
 + (VideoOptions *)fromList:(NSArray *)list {
   VideoOptions *pigeonResult = [[VideoOptions alloc] init];
-  pigeonResult.android = [AndroidVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 0))];
-  pigeonResult.ios = [CupertinoVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 1))];
+  pigeonResult.enableAudio = GetNullableObjectAtIndex(list, 0);
+  NSAssert(pigeonResult.enableAudio != nil, @"");
+  pigeonResult.android = [AndroidVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 1))];
+  pigeonResult.ios = [CupertinoVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 2))];
   return pigeonResult;
 }
 + (nullable VideoOptions *)nullableFromList:(NSArray *)list {
@@ -184,6 +188,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 }
 - (NSArray *)toList {
   return @[
+    (self.enableAudio ?: [NSNull null]),
     (self.android ? [self.android toList] : [NSNull null]),
     (self.ios ? [self.ios toList] : [NSNull null]),
   ];

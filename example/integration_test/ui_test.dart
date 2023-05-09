@@ -282,8 +282,8 @@ void main() {
           sensors: sensors,
           saveConfig: SaveConfig.photo(
             pathBuilder: tempPath('single_photo_back_gps.jpg'),
+            exifPreferences: ExifPreferences(saveGPSLocation: true),
           ),
-          exifPreferences: ExifPreferences(saveGPSLocation: true),
         ),
       );
 

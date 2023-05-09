@@ -47,9 +47,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Which sensors you want to use
   final SensorConfig sensorConfig;
 
-  /// choose if you want to persist user location in image metadata or not
-  final ExifPreferences? exifPreferences;
-
   /// TODO: DOC
   final AwesomeFilter? filter;
 
@@ -58,9 +55,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   // one of fitWidth, fitHeight, contain, cover
   // currently only work for Android, this do nothing on iOS
   final CameraPreviewFit previewFit;
-
-  /// Enable audio while video recording
-  final bool enableAudio;
 
   /// Enable physical button (volume +/-) to take photo or record video
   final bool enablePhysicalButton;
@@ -109,8 +103,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   const CameraAwesomeBuilder._({
     required this.sensorConfig,
     required this.enablePhysicalButton,
-    required this.exifPreferences,
-    required this.enableAudio,
     required this.progressIndicator,
     required this.saveConfig,
     required this.onMediaTap,
@@ -138,11 +130,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// - which [flashMode] to use
   /// - how much zoom you want (0.0 = no zoom, 1.0 = max zoom)
   ///
-  /// You can also:
-  /// - [enableAudio] when recording a video or not
-  /// - set [exifPreferences] to indicate if you want to save GPS location when
-  /// taking photos
-  ///
   /// If you want to customize the UI of the camera, you have several options:
   /// - use a [progressIndicator] and define what to do when the preview of the
   /// last media taken is tapped thanks to [onMediaTap]
@@ -157,8 +144,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   CameraAwesomeBuilder.awesome({
     SensorConfig? sensorConfig,
     bool enablePhysicalButton = false,
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
     Widget? progressIndicator,
     required SaveConfig saveConfig,
     Function(MediaCapture)? onMediaTap,
@@ -180,8 +165,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
               SensorConfig.single(
                 sensor: Sensor.position(SensorPosition.back),
               ),
-          exifPreferences: exifPreferences,
-          enableAudio: enableAudio,
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
           builder: (cameraModeState, previewSize, previewRect) {
@@ -214,8 +197,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
     SensorConfig? sensorConfig,
     bool mirrorFrontCamera = false,
     bool enablePhysicalButton = false,
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
     required SaveConfig saveConfig,
@@ -235,8 +216,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
                 mirrorFrontCamera: mirrorFrontCamera,
               ),
           enablePhysicalButton: enablePhysicalButton,
-          exifPreferences: exifPreferences,
-          enableAudio: enableAudio,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: saveConfig,
@@ -271,8 +250,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
-          exifPreferences: null,
-          enableAudio: false,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: null,
@@ -307,8 +284,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
-          exifPreferences: null,
-          enableAudio: false,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: null,
@@ -386,8 +361,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       saveConfig: widget.saveConfig,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
-      exifPreferences:
-          widget.exifPreferences ?? ExifPreferences(saveGPSLocation: false),
+      exifPreferences: widget.saveConfig?.exifPreferences ??
+          ExifPreferences(saveGPSLocation: false),
     );
 
     // Initial CameraState is always PreparingState

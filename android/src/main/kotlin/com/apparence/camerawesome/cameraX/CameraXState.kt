@@ -40,7 +40,7 @@ data class CameraXState(
     var previewCamera: Camera? = null,
     private var currentCaptureMode: CaptureModes,
     var enableAudioRecording: Boolean = true,
-    var recording: Recording? = null,
+    var recordings: MutableList<Recording>? = null,
     var enableImageStream: Boolean = false,
     var photoSize: Size? = null,
     var previewSize: Size? = null,
@@ -54,17 +54,38 @@ data class CameraXState(
 ) : EventChannel.StreamHandler, SensorOrientation {
 
     var imageAnalysisBuilder: ImageAnalysisBuilder? = null
-    var imageAnalysis: ImageAnalysis? = null
+    private var imageAnalysis: ImageAnalysis? = null
+
+    private val mainCameraInfos: CameraInfo
+        @SuppressLint("RestrictedApi")
+        get() {
+            if (previewCamera == null && concurrentCamera == null) {
+                throw Exception("Trying to access main camera infos before setting the preview")
+            }
+            return previewCamera?.cameraInfo ?: concurrentCamera?.cameras?.first()?.cameraInfo!!
+        }
+
+    private val mainCameraControl: CameraControl
+        @SuppressLint("RestrictedApi")
+        get() {
+            if (previewCamera == null && concurrentCamera == null) {
+                throw Exception("Trying to access main camera control before setting the preview")
+            }
+            return previewCamera?.cameraControl
+                ?: concurrentCamera?.cameras?.first()?.cameraControl!!
+        }
 
     val maxZoomRatio: Double
-        get() = previewCamera!!.cameraInfo.zoomState.value!!.maxZoomRatio.toDouble()
+        @SuppressLint("RestrictedApi")
+        get() = mainCameraInfos.zoomState.value!!.maxZoomRatio.toDouble()
+
 
     val minZoomRatio: Double
-        get() = previewCamera!!.cameraInfo.zoomState.value!!.minZoomRatio.toDouble()
+        get() = mainCameraInfos.zoomState.value!!.minZoomRatio.toDouble()
 
 
     val portrait: Boolean
-        get() = previewCamera!!.cameraInfo.sensorRotationDegrees % 180 == 0
+        get() = mainCameraInfos.sensorRotationDegrees % 180 == 0
 
     fun executor(activity: Activity): Executor {
         return ContextCompat.getMainExecutor(activity)
@@ -297,11 +318,11 @@ data class CameraXState(
     }
 
     fun setLinearZoom(zoom: Float) {
-        previewCamera!!.cameraControl.setLinearZoom(zoom)
+        mainCameraControl.setLinearZoom(zoom)
     }
 
     fun startFocusAndMetering(autoFocusAction: FocusMeteringAction) {
-        previewCamera!!.cameraControl.startFocusAndMetering(autoFocusAction)
+        mainCameraControl.startFocusAndMetering(autoFocusAction)
     }
 
     fun setCaptureMode(captureMode: CaptureModes) {
@@ -310,8 +331,8 @@ data class CameraXState(
             CaptureModes.PHOTO -> {
                 // Release video related stuff
                 videoCaptures.clear()
-                recording?.close()
-                recording = null
+                recordings?.forEach { it.close() }
+                recordings = null
 
             }
             CaptureModes.VIDEO -> {
@@ -323,8 +344,8 @@ data class CameraXState(
 
                 // Release video related stuff
                 videoCaptures.clear()
-                recording?.close()
-                recording = null
+                recordings?.forEach { it.close() }
+                recordings = null
 
                 // Release photo related stuff
                 imageCaptures.clear()
@@ -335,14 +356,14 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun previewSizes(): List<Size> {
         val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
-            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo),
-            Camera2CameraInfo.from(previewCamera!!.cameraInfo).cameraId
+            Camera2CameraInfo.extractCameraCharacteristics(mainCameraInfos),
+            Camera2CameraInfo.from(mainCameraInfos).cameraId
         )
         return CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
     }
 
     fun qualityAvailableSizes(): List<String> {
-        val supportedQualities = QualitySelector.getSupportedQualities(previewCamera!!.cameraInfo)
+        val supportedQualities = QualitySelector.getSupportedQualities(mainCameraInfos)
         return supportedQualities.map {
             when (it) {
                 Quality.UHD -> {

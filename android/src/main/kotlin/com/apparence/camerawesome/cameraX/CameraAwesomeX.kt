@@ -69,8 +69,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var exifPreferences = ExifPreferences(false)
     private var cancellationTokenSource = CancellationTokenSource()
-    private var lastRecordedVideo: BehaviorSubject<Boolean>? = null
-    private var lastRecordedVideoSubscription: Disposable? = null
+    private var lastRecordedVideos: List<BehaviorSubject<Boolean>>? = null
+    private var lastRecordedVideoSubscriptions: MutableList<Disposable>? = null
     private var colorMatrix: List<Double>? = null
 
     private val noneFilter: List<Double> = listOf(
@@ -158,6 +158,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
             this.updateAspectRatio(aspectRatio)
             this.flashMode = FlashMode.valueOf(flashMode)
+            this.enableAudioRecording = videoOptions?.enableAudio ?: true
         }
         this.exifPreferences = exifPreferences
         orientationStreamListener =
@@ -436,9 +437,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        sensors: List<PigeonSensor>,
-        paths: List<String?>,
-        callback: (Result<Unit>) -> Unit
+        sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Unit>) -> Unit
     ) {
         if (sensors.size != paths.size) {
             throw Exception("sensors and paths must have the same length")
@@ -450,8 +449,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         val requests = sensors.mapIndexed { index, pigeonSensor ->
             pigeonSensor to paths[index]
         }.toMap()
-        // TODO Handle multiple videos requests
-        val path = requests.values.first()!!
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
             if (cameraState.enableAudioRecording) {
@@ -472,42 +469,52 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             }
 
 
-            lastRecordedVideoSubscription?.dispose()
-            lastRecordedVideo = BehaviorSubject.create()
-            val recordingListener = Consumer<VideoRecordEvent> { event ->
-                when (event) {
-                    is VideoRecordEvent.Start -> {
-                        Log.d(CamerawesomePlugin.TAG, "Capture Started")
-                    }
+            lastRecordedVideoSubscriptions?.forEach { it.dispose() }
+            lastRecordedVideos = buildList {
+                for (i in (0 until requests.size)) {
+                    this.add(BehaviorSubject.create())
+                }
+            }
+            cameraState.recordings = mutableListOf()
+            lastRecordedVideoSubscriptions = mutableListOf()
+            for ((index, videoCapture) in cameraState.videoCaptures.values.withIndex()) {
+                val recordingListener = Consumer<VideoRecordEvent> { event ->
+                    when (event) {
+                        is VideoRecordEvent.Start -> {
+                            Log.d(CamerawesomePlugin.TAG, "Capture Started")
+                        }
 
-                    is VideoRecordEvent.Finalize -> {
-                        if (!event.hasError()) {
-                            Log.d(
-                                CamerawesomePlugin.TAG,
-                                "Video capture succeeded: ${event.outputResults.outputUri}"
-                            )
-                            lastRecordedVideo!!.onNext(true)
-                        } else {
-                            // update app state when the capture failed.
-                            cameraState.apply {
-                                recording?.close()
-                                recording = null
+                        is VideoRecordEvent.Finalize -> {
+                            if (!event.hasError()) {
+                                Log.d(
+                                    CamerawesomePlugin.TAG,
+                                    "Video capture succeeded: ${event.outputResults.outputUri}"
+                                )
+                                lastRecordedVideos!![index].onNext(true)
+                            } else {
+                                // update app state when the capture failed.
+                                cameraState.apply {
+                                    recordings?.get(index)?.close()
+                                    if (recordings?.all {
+                                            it.isClosed
+                                        } == true) {
+                                        recordings = null
+                                    }
+                                }
+                                Log.e(
+                                    CamerawesomePlugin.TAG,
+                                    "Video capture ends with error: ${event.error}"
+                                )
+                                lastRecordedVideos!![index].onNext(false)
                             }
-                            Log.e(
-                                CamerawesomePlugin.TAG,
-                                "Video capture ends with error: ${event.error}"
-                            )
-                            lastRecordedVideo!!.onNext(false)
                         }
                     }
                 }
-            }
-            for (videoCapture in cameraState.videoCaptures.values) {
                 videoCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
-                cameraState.recording = videoCapture.output.prepareRecording(
-                    activity!!, FileOutputOptions.Builder(File(path)).build()
+                cameraState.recordings!!.add(videoCapture.output.prepareRecording(
+                    activity!!, FileOutputOptions.Builder(File(paths[index]!!)).build()
                 ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
-                    .start(cameraState.executor(activity!!), recordingListener)
+                    .start(cameraState.executor(activity!!), recordingListener))
             }
             callback(Result.success(Unit))
         }
@@ -515,23 +522,26 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit) {
         var submitted = false
-        val countDownTimer = object : CountDownTimer(5000, 5000) {
-            override fun onTick(interval: Long) {}
-            override fun onFinish() {
-                if (!submitted) {
-                    submitted = true
-                    callback(Result.success(false))
+        for (index in 0 until cameraState.recordings!!.size) {
+            val countDownTimer = object : CountDownTimer(5000, 5000) {
+                override fun onTick(interval: Long) {}
+                override fun onFinish() {
+                    if (!submitted) {
+                        submitted = true
+                        callback(Result.success(false))
+                    }
                 }
             }
-        }
-        countDownTimer.start()
-        cameraState.recording?.stop()
-        lastRecordedVideoSubscription = lastRecordedVideo!!.subscribe {
-            countDownTimer.cancel()
-            if (!submitted) {
-                submitted = true
-                callback(Result.success(it))
-            }
+            countDownTimer.start()
+
+            cameraState.recordings!![index].stop()
+            lastRecordedVideoSubscriptions!!.add(lastRecordedVideos!![index].subscribe({ it ->
+                countDownTimer.cancel()
+                if (!submitted) {
+                    submitted = true
+                    callback(Result.success(it))
+                }
+            }, { error -> error.printStackTrace() }))
         }
     }
 
@@ -544,11 +554,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun pauseVideoRecording() {
-        cameraState.recording?.pause()
+        cameraState.recordings?.forEach { it.pause() }
     }
 
     override fun resumeVideoRecording() {
-        cameraState.recording?.resume()
+        cameraState.recordings?.forEach { it.resume() }
     }
 
     override fun receivedImageFromStream() {
@@ -702,7 +712,9 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     /// Changing the recording audio mode can't be changed once a recording has starded
-    override fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit) {
+    override fun setRecordingAudioMode(
+        enableAudio: Boolean, callback: (Result<Boolean>) -> Unit
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             cameraPermissions.requestPermissions(
                 activity!!,

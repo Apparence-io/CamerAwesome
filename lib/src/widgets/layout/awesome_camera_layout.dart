@@ -10,7 +10,7 @@ import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../zoom/zoom_selector.dart';
+import '../zoom/awesome_zoom_selector.dart';
 
 /// This widget doesn't handle [PreparingCameraState]
 class AwesomeCameraLayout extends StatelessWidget {
@@ -33,7 +33,7 @@ class AwesomeCameraLayout extends StatelessWidget {
                 if (state.captureMode == CaptureMode.photo)
                   AwesomeFilterWidget(state: state)
                 else if (!kIsWeb && Platform.isAndroid)
-                  ZoomSelector(state: state),
+                  AwesomeZoomSelector(state: state),
                 AwesomeCameraModeSelector(state: state),
               ],
             )),

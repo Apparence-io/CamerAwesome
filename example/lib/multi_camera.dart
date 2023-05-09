@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 void main() {
   runApp(const CameraAwesomeApp());
@@ -72,7 +73,7 @@ class _CameraPageState extends State<CameraPage> {
         child: sensorDeviceData != null && isMultiCamSupported != null
             ? CameraAwesomeBuilder.awesome(
                 saveConfig: SaveConfig.photoAndVideo(
-                  initialCaptureMode: CaptureMode.photo,
+                  initialCaptureMode: CaptureMode.video,
                 ),
                 sensorConfig: isMultiCamSupported == true
                     ? SensorConfig.multiple(
@@ -138,13 +139,53 @@ class _GalleryPageState extends State<GalleryPage> {
           final file = widget.multipleCaptureRequest.fileBySensor[sensor];
           return GestureDetector(
             onTap: () => OpenFile.open(file.path),
-            child: Image.file(
-              File(file!.path),
-              fit: BoxFit.cover,
-            ),
+            child: file!.path.endsWith("jpg")
+                ? Image.file(
+                    File(file.path),
+                    fit: BoxFit.cover,
+                  )
+                : VideoPreview(file: File(file.path)),
           );
         },
       ),
+    );
+  }
+}
+
+class VideoPreview extends StatefulWidget {
+  final File file;
+
+  const VideoPreview({super.key, required this.file});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _VideoPreviewState();
+  }
+}
+
+class _VideoPreviewState extends State<VideoPreview> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.file(widget.file)
+      ..setLooping(true)
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+      });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: _controller.value.isInitialized
+          ? AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            )
+          : const SizedBox.shrink(),
     );
   }
 }
