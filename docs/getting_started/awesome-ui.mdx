@@ -55,7 +55,10 @@ SaveConfig.photoAndVideo(
       fallbackStrategy: QualityFallbackStrategy.lower,
     ),
   ),
+  // 5.
   exifPreferences: ExifPreferences(saveGPSLocation: true),
+  // 6.
+  mirrorFrontCamera: true,
 )
 ```
 
@@ -65,6 +68,8 @@ Let's break it down:
 2. You can customize the path where your photos will be saved.
 3. You can also customize where to save your videos.
 4. The video recording can be customized using `VideoOptions`. Note that each platform has its own settings.
+5. You can also enable or disable the GPS location in the EXIF data of your photos.
+6. Set if you want the front camera pictures & videos to be mirrored like in the preview.
 
 A `photoPathBuilder` could look like this:
 
@@ -115,20 +120,18 @@ CameraAwesomeBuilder.awesome(
   sensorConfig: SensorConfig.single(
     aspectRatio: CameraAspectRatios.ratio_4_3,
     flashMode: FlashMode.auto,
-    mirrorFrontCamera: true,
     sensor: Sensor.position(SensorPosition.back),
     zoom: 0.0,
   ),
 )
 ```
 
-| Parameter             | Description                                      |
-| --------------------- | ------------------------------------------------ |
-| **aspectRatio**       | Initial aspect ratio of photos and videos taken  |
-| **flashMode**         | The initial flash mode                           |
-| **mirrorFrontCamera** | Whether to mirror the front camera or not        |
-| **sensor**            | The initial camera sensor (Back or Front)        |
-| **zoom**              | A value between 0.0 (no zoom) and 1.0 (max zoom) |
+| Parameter       | Description                                      |
+| --------------- | ------------------------------------------------ |
+| **aspectRatio** | Initial aspect ratio of photos and videos taken  |
+| **flashMode**   | The initial flash mode                           |
+| **sensor**      | The initial camera sensor (Back or Front)        |
+| **zoom**        | A value between 0.0 (no zoom) and 1.0 (max zoom) |
 
 Note: you might also notice the `SensorConfig.multiple()` constructor which lets you specify several sensors.
 This feature is in beta, but you can take a look at the [dedicated documentation](/getting_started/multicam).
@@ -471,6 +474,7 @@ CameraAwesomeBuilder.awesome(
    // Define if you want to take photos, videos or both and where to save them
   saveConfig: SaveConfig.photoAndVideo(
     initialCaptureMode: CaptureMode.photo,
+    mirrorFrontCamera: true,
     photoPathBuilder: (sensors) async {
       // Return a valid file path (must be a jpg file)
       return SingleCaptureRequest('some/image/file/path.jpg', sensors.first);
@@ -484,7 +488,6 @@ CameraAwesomeBuilder.awesome(
   sensorConfig: SensorConfig.single(
     aspectRatio: CameraAspectRatios.ratio_4_3,
     flashMode: FlashMode.auto,
-    mirrorFrontCamera: true,
     sensor: Sensor.position(SensorPosition.back),
     zoom: 0.0,
   ),
@@ -528,28 +531,27 @@ CameraAwesomeBuilder.awesome(
 
 ### 🔬 Full list of properties
 
-| Method                      | Comment                                                                                                                                               |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **aspectRatio**             | Initial aspect ratio of photos and videos taken                                                                                                       |
-| **bottomActionsBuilder**    | A widget builder used to show buttons on the bottom of the preview.<br/>`AwesomeBottomActions` by default.                                            |
-| **enablePhysicalButton**    | When set to true, volume buttons will capture pictures/videos depending on the current mode.                                                          |
-| **filter**                  | Initial preview filter which will be applied to the photo                                                                                             |
-| **imageAnalysisConfig**     | Image format, resolution and autoStart (start analysis immediately or later)                                                                          |
-| **middleContentBuilder**    | A widget builder used to add widgets above the middle part of the preview (between bottom and top actions).<br/>Shows the filter selector by default. |
-| **mirrorFrontCamera**       | Activate to mirror the pictures taken with the front camera                                                                                           |
-| **onImageForAnalysis**      | Callback that will provide an image stream for AI analysis                                                                                            |
-| **onMediaTap**              | Choose what you want to do when user tap on the last media captured                                                                                   |
-| **onPreviewTapBuilder**     | Customize the behavior when the camera preview is tapped (tap to focus by default)                                                                    |
-| **onPreviewScaleBuilder**   | Customize what to do when the user makes a pinch (pinch to zoom by default)                                                                           |
-| **previewAlignment**        | Alignment of the preview                                                                                                                              |
-| **previewDecoratorBuilder** | A widget builder used to draw elements around or on top of the preview                                                                                |
-| **previewFit**              | One of fitWidth, fitHeight, contain, cover                                                                                                            |
-| **previewPadding**          | Padding around the preview                                                                                                                            |
-| **progressIndicator**       | Widget to show when loading                                                                                                                           |
-| **saveConfig**              | Define if you want to take photos, videos or both and where to save them. You can also set exif preferences and video recording settings.             |
-| **sensorConfig**            | The initial sensor configuration: aspect ratio, flash mode, wether you want to mirror the front camera, which sensor to use and initial zoom.         |
-| **theme**                   | Theme used to customize the built-in UI                                                                                                               |
-| **topActionsBuilder**       | A widget builder used to show buttons on the top of the preview.<br/>`AwesomeTopActions` by default.                                                  |
+| Method                      | Comment                                                                                                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **aspectRatio**             | Initial aspect ratio of photos and videos taken                                                                                                                                             |
+| **bottomActionsBuilder**    | A widget builder used to show buttons on the bottom of the preview.<br/>`AwesomeBottomActions` by default.                                                                                  |
+| **enablePhysicalButton**    | When set to true, volume buttons will capture pictures/videos depending on the current mode.                                                                                                |
+| **filter**                  | Initial preview filter which will be applied to the photo                                                                                                                                   |
+| **imageAnalysisConfig**     | Image format, resolution and autoStart (start analysis immediately or later)                                                                                                                |
+| **middleContentBuilder**    | A widget builder used to add widgets above the middle part of the preview (between bottom and top actions).<br/>Shows the filter selector by default.                                       |
+| **onImageForAnalysis**      | Callback that will provide an image stream for AI analysis                                                                                                                                  |
+| **onMediaTap**              | Choose what you want to do when user tap on the last media captured                                                                                                                         |
+| **onPreviewTapBuilder**     | Customize the behavior when the camera preview is tapped (tap to focus by default)                                                                                                          |
+| **onPreviewScaleBuilder**   | Customize what to do when the user makes a pinch (pinch to zoom by default)                                                                                                                 |
+| **previewAlignment**        | Alignment of the preview                                                                                                                                                                    |
+| **previewDecoratorBuilder** | A widget builder used to draw elements around or on top of the preview                                                                                                                      |
+| **previewFit**              | One of fitWidth, fitHeight, contain, cover                                                                                                                                                  |
+| **previewPadding**          | Padding around the preview                                                                                                                                                                  |
+| **progressIndicator**       | Widget to show when loading                                                                                                                                                                 |
+| **saveConfig**              | Define if you want to take photos, videos or both and where to save them. You can also set exif preferences, decide to mirror or not front camera outputs and set video recording settings. |
+| **sensorConfig**            | The initial sensor configuration: aspect ratio, flash mode, which sensor to use and initial zoom.                                                                                           |
+| **theme**                   | Theme used to customize the built-in UI                                                                                                                                                     |
+| **topActionsBuilder**       | A widget builder used to show buttons on the top of the preview.<br/>`AwesomeTopActions` by default.                                                                                        |
 
 ## 🔨 Need more customization? Other use cases?
 
