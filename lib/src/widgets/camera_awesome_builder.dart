@@ -213,7 +213,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(
                 sensor: Sensor.position(SensorPosition.back),
-                mirrorFrontCamera: mirrorFrontCamera,
               ),
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,

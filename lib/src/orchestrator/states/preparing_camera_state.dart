@@ -194,6 +194,7 @@ class PreparingCameraState extends CameraState {
       captureMode: nextCaptureMode,
       exifPreferences: cameraContext.exifPreferences,
       videoOptions: saveConfig?.videoOptions,
+      mirrorFrontCamera: saveConfig?.mirrorFrontCamera ?? false,
     );
     _isReady = true;
     return _isReady;
