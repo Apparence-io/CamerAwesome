@@ -173,11 +173,16 @@ class PigeonSensor {
   }
 }
 
+/// Video recording options. Some of them are specific to each platform.
 class VideoOptions {
   VideoOptions({
+    required this.enableAudio,
     this.android,
     this.ios,
   });
+
+  /// Enable audio while video recording
+  bool enableAudio;
 
   AndroidVideoOptions? android;
 
@@ -185,6 +190,7 @@ class VideoOptions {
 
   Object encode() {
     return <Object?>[
+      enableAudio,
       android?.encode(),
       ios?.encode(),
     ];
@@ -193,11 +199,12 @@ class VideoOptions {
   static VideoOptions decode(Object result) {
     result as List<Object?>;
     return VideoOptions(
-      android: result[0] != null
-          ? AndroidVideoOptions.decode(result[0]! as List<Object?>)
+      enableAudio: result[0]! as bool,
+      android: result[1] != null
+          ? AndroidVideoOptions.decode(result[1]! as List<Object?>)
           : null,
-      ios: result[1] != null
-          ? CupertinoVideoOptions.decode(result[1]! as List<Object?>)
+      ios: result[2] != null
+          ? CupertinoVideoOptions.decode(result[2]! as List<Object?>)
           : null,
     );
   }
