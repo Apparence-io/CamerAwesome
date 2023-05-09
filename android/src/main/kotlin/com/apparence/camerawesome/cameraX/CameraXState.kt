@@ -11,9 +11,6 @@ import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
-import androidx.camera.core.concurrent.ConcurrentCamera
-import androidx.camera.core.concurrent.ConcurrentCameraConfig
-import androidx.camera.core.concurrent.SingleCameraConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.core.content.ContextCompat
@@ -57,8 +54,7 @@ data class CameraXState(
     private var imageAnalysis: ImageAnalysis? = null
 
     private val mainCameraInfos: CameraInfo
-        @SuppressLint("RestrictedApi")
-        get() {
+        @SuppressLint("RestrictedApi") get() {
             if (previewCamera == null && concurrentCamera == null) {
                 throw Exception("Trying to access main camera infos before setting the preview")
             }
@@ -66,8 +62,7 @@ data class CameraXState(
         }
 
     private val mainCameraControl: CameraControl
-        @SuppressLint("RestrictedApi")
-        get() {
+        @SuppressLint("RestrictedApi") get() {
             if (previewCamera == null && concurrentCamera == null) {
                 throw Exception("Trying to access main camera control before setting the preview")
             }
@@ -76,8 +71,7 @@ data class CameraXState(
         }
 
     val maxZoomRatio: Double
-        @SuppressLint("RestrictedApi")
-        get() = mainCameraInfos.zoomState.value!!.maxZoomRatio.toDouble()
+        @SuppressLint("RestrictedApi") get() = mainCameraInfos.zoomState.value!!.maxZoomRatio.toDouble()
 
 
     val minZoomRatio: Double
@@ -97,7 +91,7 @@ data class CameraXState(
         imageCaptures.clear()
         videoCaptures.clear()
         if (cameraProvider.isMultiCamSupported() && sensors.size > 1) {
-            val singleCameraConfigs = mutableListOf<SingleCameraConfig>()
+            val singleCameraConfigs = mutableListOf<ConcurrentCamera.SingleCameraConfig>()
             var isFirst = true
             for ((index, sensor) in sensors.withIndex()) {
                 val useCaseGroupBuilder = UseCaseGroup.Builder()
@@ -180,16 +174,17 @@ data class CameraXState(
                     ViewPort.Builder(rational, Surface.ROTATION_0).build()
                 )
                 singleCameraConfigs.add(
-                    SingleCameraConfig.Builder().setLifecycleOwner(activity as LifecycleOwner)
-                        .setCameraSelector(cameraSelector)
-                        .setUseCaseGroup(useCaseGroupBuilder.build()).build()
+                    ConcurrentCamera.SingleCameraConfig(
+                        cameraSelector,
+                        useCaseGroupBuilder.build(), activity as LifecycleOwner,
+                    )
                 )
             }
 
             cameraProvider.unbindAll()
             previewCamera = null
             concurrentCamera = cameraProvider.bindToLifecycle(
-                ConcurrentCameraConfig.Builder().setCameraConfigs(singleCameraConfigs).build()
+                singleCameraConfigs
             )
             // Only set flash to the main camera (the first one)
             concurrentCamera!!.cameras.first().cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
@@ -335,10 +330,12 @@ data class CameraXState(
                 recordings = null
 
             }
+
             CaptureModes.VIDEO -> {
                 // Release photo related stuff
                 imageCaptures.clear()
             }
+
             else -> {
                 // Preview and analysis only modes
 
