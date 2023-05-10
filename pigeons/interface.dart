@@ -336,7 +336,7 @@ abstract class CameraInterface {
     VideoOptions? videoOptions,
   );
 
-  List<String> checkPermissions();
+  List<String> checkPermissions(List<String> permissions);
 
   /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
   /// refused but the app should still be able to run.

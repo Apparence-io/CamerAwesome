@@ -700,10 +700,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(checkPermissionsWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(checkPermissionsWithError:)", api);
+      NSCAssert([api respondsToSelector:@selector(checkPermissionsPermissions:error:)], @"CameraInterface api (%@) doesn't respond to @selector(checkPermissionsPermissions:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSArray<NSString *> *arg_permissions = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
-        NSArray<NSString *> *output = [api checkPermissionsWithError:&error];
+        NSArray<NSString *> *output = [api checkPermissionsPermissions:arg_permissions error:&error];
         callback(wrapResult(output, error));
       }];
     } else {
