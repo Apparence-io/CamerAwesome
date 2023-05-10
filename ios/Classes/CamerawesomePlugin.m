@@ -5,6 +5,7 @@
 #import "SingleCameraPreview.h"
 #import "MultiCameraController.h"
 #import "AspectRatioUtils.h"
+#import "CaptureModeUtils.h"
 #import "FlashModeUtils.h"
 #import "AnalysisController.h"
 
@@ -65,6 +66,8 @@ FlutterEventSink physicalButtonEventSink;
 #pragma mark - Camera engine methods
 
 - (void)setupCameraSensors:(nonnull NSArray<PigeonSensor *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences videoOptions:(nullable VideoOptions *)videoOptions completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+  
+  CaptureModes captureModeType = [CaptureModeUtils captureModeFromCaptureModeType:captureMode];
   if (![CameraPermissionsController checkAndRequestPermission]) {
     completion(nil, [FlutterError errorWithCode:@"MISSING_PERMISSION" message:@"you got to accept all permissions" details:nil]);
     return;
@@ -88,7 +91,6 @@ FlutterEventSink physicalButtonEventSink;
   _texturesIds = [NSMutableArray new];
   
   AspectRatio aspectRatioMode = [AspectRatioUtils convertAspectRatio:aspectRatio];
-  CaptureModes captureModeType = ([captureMode isEqualToString:@"PHOTO"]) ? Photo : Video;
   
   bool multiSensors = [sensors count] > 1;
   if (multiSensors) {
@@ -278,21 +280,23 @@ FlutterEventSink physicalButtonEventSink;
   }
 }
 
-- (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
-  NSMutableArray *permissions = [NSMutableArray new];
+- (nullable NSArray<NSString *> *)checkPermissionsPermissions:(nonnull NSArray<NSString *> *)permissions error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  bool isMicrophonePermissionRequired = [permissions containsObject:@"microphone"];
+  bool isCameraPermissionRequired = [permissions containsObject:@"camera"];
   
-  bool cameraPermission = [CameraPermissionsController checkPermission];
-  bool microphonePermission = [MicrophonePermissionsController checkPermission];
+  bool cameraPermission = isCameraPermissionRequired ? [CameraPermissionsController checkPermission] : NO;
+  bool microphonePermission = isMicrophonePermissionRequired ? [MicrophonePermissionsController checkPermission] : NO;
   
+  NSMutableArray *grantedPermissions = [NSMutableArray new];
   if (cameraPermission) {
-    [permissions addObject:@"camera"];
+    [grantedPermissions addObject:@"camera"];
   }
   
   if (microphonePermission) {
-    [permissions addObject:@"record_audio"];
+    [grantedPermissions addObject:@"record_audio"];
   }
   
-  return permissions;
+  return grantedPermissions;
 }
 
 - (nullable NSArray<NSString *> *)requestPermissionsWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -454,7 +458,7 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  CaptureModes captureMode = ([mode isEqualToString:@"PHOTO"]) ? Photo : Video;
+  CaptureModes captureMode = [CaptureModeUtils captureModeFromCaptureModeType:mode];
   if (self.multiCamera != nil) {
     if (captureMode == Video) {
       *error = [FlutterError errorWithCode:@"MULTI_CAMERA_UNSUPPORTED" message:@"impossible to set video mode when multi camera" details:nil];

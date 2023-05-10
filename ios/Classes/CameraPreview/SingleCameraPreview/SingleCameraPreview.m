@@ -527,7 +527,6 @@
     }];
   }
   
-  
   [_captureSession commitConfiguration];
 }
 
