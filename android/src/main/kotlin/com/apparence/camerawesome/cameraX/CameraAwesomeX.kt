@@ -572,6 +572,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun stop(): Boolean {
+        orientationStreamListener?.stop()
         cameraState.stop()
         return true
     }

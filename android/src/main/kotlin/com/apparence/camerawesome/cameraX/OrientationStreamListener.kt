@@ -15,19 +15,24 @@ class OrientationStreamListener(
             in 225 until 315 -> {
                 Surface.ROTATION_90
             }
+
             in 135 until 225 -> {
                 Surface.ROTATION_180
             }
+
             in 45 until 135 -> {
                 Surface.ROTATION_270
             }
+
             else -> {
                 Surface.ROTATION_0
             }
         }
 
+    private val orientationEventListener: OrientationEventListener
+
     init {
-        val orientationEventListener: OrientationEventListener =
+        orientationEventListener =
             object : OrientationEventListener(activity.applicationContext) {
                 override fun onOrientationChanged(i: Int) {
                     if (i == ORIENTATION_UNKNOWN) {
@@ -41,5 +46,9 @@ class OrientationStreamListener(
                 }
             }
         orientationEventListener.enable()
+    }
+
+    fun stop() {
+        orientationEventListener.disable()
     }
 }
