@@ -760,7 +760,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
   fun setupCamera(sensors: List<PigeonSensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, videoOptions: VideoOptions?, callback: (Result<Boolean>) -> Unit)
-  fun checkPermissions(): List<String>
+  fun checkPermissions(permissions: List<String>): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
    * refused but the app should still be able to run.
@@ -848,10 +848,12 @@ interface CameraInterface {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.checkPermissions", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val permissionsArg = args[0] as List<String>
             var wrapped: List<Any?>
             try {
-              wrapped = listOf<Any?>(api.checkPermissions())
+              wrapped = listOf<Any?>(api.checkPermissions(permissionsArg))
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }

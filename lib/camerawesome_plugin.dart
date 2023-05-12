@@ -50,8 +50,10 @@ class CamerawesomePlugin {
   /// Set it to true to print dart logs from camerawesome
   static bool printLogs = false;
 
-  static Future<bool?> checkiOSPermissions() async {
-    final permissions = await CameraInterface().checkPermissions();
+  static Future<bool?> checkiOSPermissions(
+      List<String?> permissionsName) async {
+    final permissions =
+        await CameraInterface().checkPermissions(permissionsName);
     return permissions.isEmpty;
   }
 
@@ -469,7 +471,10 @@ class CamerawesomePlugin {
   // UTILITY METHODS
   // ---------------------------------------------------
   static Future<List<CamerAwesomePermission>?> checkAndRequestPermissions(
-      bool saveGpsLocation) async {
+    bool saveGpsLocation, {
+    bool checkMicrophonePermissions = true,
+    bool checkCameraPermissions = true,
+  }) async {
     try {
       if (Platform.isAndroid) {
         return CameraInterface()
@@ -482,7 +487,16 @@ class CamerawesomePlugin {
         });
       } else if (Platform.isIOS) {
         // TODO iOS Return only permissions that were given
-        return CamerawesomePlugin.checkiOSPermissions()
+
+        List<String> permissions = [];
+        if (checkMicrophonePermissions) {
+          permissions.add("microphone");
+        }
+        if (checkCameraPermissions) {
+          permissions.add("camera");
+        }
+
+        return CamerawesomePlugin.checkiOSPermissions(permissions)
             .then((givenPermissions) => CamerAwesomePermission.values);
       }
     } catch (e) {

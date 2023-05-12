@@ -270,7 +270,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 @protocol CameraInterface
 - (void)setupCameraSensors:(NSArray<PigeonSensor *> *)sensors aspectRatio:(NSString *)aspectRatio zoom:(NSNumber *)zoom mirrorFrontCamera:(NSNumber *)mirrorFrontCamera enablePhysicalButton:(NSNumber *)enablePhysicalButton flashMode:(NSString *)flashMode captureMode:(NSString *)captureMode enableImageStream:(NSNumber *)enableImageStream exifPreferences:(ExifPreferences *)exifPreferences videoOptions:(nullable VideoOptions *)videoOptions completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 /// @return `nil` only when `error != nil`.
-- (nullable NSArray<NSString *> *)checkPermissionsWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable NSArray<NSString *> *)checkPermissionsPermissions:(NSArray<NSString *> *)permissions error:(FlutterError *_Nullable *_Nonnull)error;
 /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
 /// refused but the app should still be able to run.
 - (void)requestPermissionsSaveGpsLocation:(NSNumber *)saveGpsLocation completion:(void (^)(NSArray<NSString *> *_Nullable, FlutterError *_Nullable))completion;

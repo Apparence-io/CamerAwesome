@@ -742,12 +742,12 @@ class CameraInterface {
     }
   }
 
-  Future<List<String?>> checkPermissions() async {
+  Future<List<String?>> checkPermissions(List<String?> arg_permissions) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.checkPermissions', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
+        await channel.send(<Object?>[arg_permissions]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',
