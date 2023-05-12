@@ -310,7 +310,7 @@ NSObject<FlutterMessageCodec> *CameraInterfaceGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSArray<PreviewSize *> *)availableSizesWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)refreshWithError:(FlutterError *_Nullable *_Nonnull)error;
-- (nullable PreviewSize *)getEffectivPreviewSizeWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable PreviewSize *)getEffectivPreviewSizeIndex:(NSNumber *)index error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setPhotoSizeSize:(PreviewSize *)size error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setPreviewSizeSize:(PreviewSize *)size error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setAspectRatioAspectRatio:(NSString *)aspectRatio error:(FlutterError *_Nullable *_Nonnull)error;

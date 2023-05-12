@@ -1385,12 +1385,12 @@ class CameraInterface {
     }
   }
 
-  Future<PreviewSize?> getEffectivPreviewSize() async {
+  Future<PreviewSize?> getEffectivPreviewSize(int arg_index) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.getEffectivPreviewSize', codec,
         binaryMessenger: _binaryMessenger);
     final List<Object?>? replyList =
-        await channel.send(null) as List<Object?>?;
+        await channel.send(<Object?>[arg_index]) as List<Object?>?;
     if (replyList == null) {
       throw PlatformException(
         code: 'channel-error',

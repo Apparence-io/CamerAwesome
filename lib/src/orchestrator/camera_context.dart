@@ -201,8 +201,8 @@ class CameraContext {
     }
   }
 
-  Future<PreviewSize> previewSize() {
-    return CamerawesomePlugin.getEffectivPreviewSize();
+  Future<PreviewSize> previewSize(int index) {
+    return CamerawesomePlugin.getEffectivPreviewSize(index);
   }
 
   Future<SensorDeviceData> getSensors() {

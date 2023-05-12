@@ -796,7 +796,7 @@ interface CameraInterface {
   fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit)
   fun availableSizes(): List<PreviewSize>
   fun refresh()
-  fun getEffectivPreviewSize(): PreviewSize?
+  fun getEffectivPreviewSize(index: Long): PreviewSize?
   fun setPhotoSize(size: PreviewSize)
   fun setPreviewSize(size: PreviewSize)
   fun setAspectRatio(aspectRatio: String)
@@ -1314,10 +1314,12 @@ interface CameraInterface {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.CameraInterface.getEffectivPreviewSize", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val indexArg = args[0].let { if (it is Int) it.toLong() else it as Long }
             var wrapped: List<Any?>
             try {
-              wrapped = listOf<Any?>(api.getEffectivPreviewSize())
+              wrapped = listOf<Any?>(api.getEffectivPreviewSize(indexArg))
             } catch (exception: Throwable) {
               wrapped = wrapError(exception)
             }

@@ -406,7 +406,7 @@ abstract class CameraInterface {
 
   void refresh();
 
-  PreviewSize? getEffectivPreviewSize();
+  PreviewSize? getEffectivPreviewSize(int index);
 
   void setPhotoSize(PreviewSize size);
 

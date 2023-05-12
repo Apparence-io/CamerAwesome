@@ -1,14 +1,23 @@
+import 'package:camerawesome/src/orchestrator/models/sensors.dart';
 import 'package:camerawesome/src/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeCameraFloatingPreview extends StatefulWidget {
   final Texture texture;
   final int index;
-  const AwesomeCameraFloatingPreview({
-    Key? key,
+  final double aspectRatio;
+  final Sensor sensor;
+  final PictureInPictureConfig pictureInPictureConfig;
+
+  AwesomeCameraFloatingPreview({
+    super.key,
     required this.index,
+    required this.sensor,
     required this.texture,
-  }) : super(key: key);
+    required this.aspectRatio,
+    PictureInPictureConfig? pictureInPictureConfig,
+  }) : pictureInPictureConfig =
+            pictureInPictureConfig ?? PictureInPictureConfig(sensor: sensor);
 
   @override
   State<AwesomeCameraFloatingPreview> createState() =>
@@ -17,72 +26,45 @@ class AwesomeCameraFloatingPreview extends StatefulWidget {
 
 class _AwesomeCameraFloatingPreviewState
     extends State<AwesomeCameraFloatingPreview> {
-  Offset? _position;
+  late Offset _position;
 
   @override
   void initState() {
     super.initState();
-
-    // TODO: set position in config
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _position = Offset(
-          widget.index * 20,
-          MediaQuery.of(context).padding.top + 60 + (widget.index * 20),
-        );
-      });
-    });
+    _position = widget.pictureInPictureConfig.startingPosition;
   }
 
   @override
   Widget build(BuildContext context) {
-    return _position != null
-        ? Positioned(
-            left: _position!.dx,
-            top: _position!.dy,
-            child: AwesomeBouncingWidget(
-              onTap: () {},
-              child: GestureDetector(
-                onPanUpdate: (details) {
+    return Positioned(
+      left: _position.dx,
+      top: _position.dy,
+      child: AwesomeBouncingWidget(
+        // TODO We can tap behind the preview with the current AwesomeBouncingWidget implementation
+        onTap: widget.pictureInPictureConfig.onTap,
+        disabledOpacity: 1.0,
+        child: GestureDetector(
+          onPanUpdate: widget.pictureInPictureConfig.isDraggable
+              ? (details) {
                   setState(() {
                     _position = Offset(
-                      _position!.dx + details.delta.dx,
-                      _position!.dy + details.delta.dy,
+                      _position.dx + details.delta.dx,
+                      _position.dy + details.delta.dy,
                     );
                   });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border.all(color: Colors.white60, width: 3),
-                    borderRadius: BorderRadius.circular(23),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        spreadRadius: 10,
-                        blurRadius: 20,
-                        offset: const Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: SizedBox(
-                      // TODO: set size in config
-                      height: 200,
-                      child: Center(
-                        child: AspectRatio(
-                          aspectRatio: 9 / 16,
-                          child: widget.texture,
-                        ),
-                      ),
-                      // child: frontPreviewTexture,
-                    ),
-                  ),
-                ),
+                }
+              : null,
+          child: widget.pictureInPictureConfig.pictureInPictureBuilder(
+            Center(
+              child: AspectRatio(
+                aspectRatio: widget.aspectRatio,
+                child: widget.texture,
               ),
             ),
-          )
-        : const SizedBox();
+            widget.aspectRatio,
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -141,7 +141,7 @@ class _MyPreviewDecoratorWidget extends StatelessWidget {
                     previewSize: previewSize,
                     previewRect: previewRect,
                     isBackCamera:
-                        snapshot.requireData.sensors.first?.position ==
+                        snapshot.requireData.sensors.first.position ==
                             SensorPosition.back,
                   ),
                 );

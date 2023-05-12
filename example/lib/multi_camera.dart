@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -47,6 +48,7 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> {
   SensorDeviceData? sensorDeviceData;
   bool? isMultiCamSupported;
+  PipShape shape = PipShape.circle;
 
   @override
   void initState() {
@@ -67,6 +69,7 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
         color: Colors.white,
@@ -105,10 +108,167 @@ class _CameraPageState extends State<CameraPage> {
                     ),
                   );
                 },
+                pictureInPictureConfigBuilder: (index, sensor) {
+                  const width = 200.0;
+                  return PictureInPictureConfig(
+                    isDraggable: false,
+                    startingPosition: Offset(
+                        screenSize.width - width - 20.0 * index,
+                        screenSize.height - 356),
+                    sensor: sensor,
+                    pictureInPictureBuilder: (preview, aspectRatio) {
+                      return SizedBox(
+                        width: width,
+                        height: width,
+                        child: ClipPath(
+                          clipper: _MyCustomPipClipper(
+                            width: width,
+                            height: width * aspectRatio,
+                            shape: shape,
+                          ),
+                          child: SizedBox(
+                            width: width,
+                            child: preview,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                previewDecoratorBuilder: (state, _, __) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        color: Colors.white70,
+                        margin: const EdgeInsets.only(left: 8),
+                        child: const Text("Change picture in picture's shape:"),
+                      ),
+                      GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: 16 / 9,
+                        ),
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: PipShape.values.length,
+                        itemBuilder: (context, index) {
+                          final shape = PipShape.values[index];
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                this.shape = shape;
+                              });
+                            },
+                            child: Container(
+                              color: Colors.red.withOpacity(0.5),
+                              margin: const EdgeInsets.all(8.0),
+                              child: Center(
+                                child: Text(
+                                  shape.name,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
               )
             : const SizedBox.shrink(),
       ),
     );
+  }
+}
+
+enum PipShape {
+  square,
+  circle,
+  roundedSquare,
+  triangle,
+  hexagon;
+
+  Path getPath(Offset center, double width, double height) {
+    switch (this) {
+      case PipShape.square:
+        return Path()
+          ..addRect(Rect.fromCenter(
+            center: center,
+            width: min(width, height),
+            height: min(width, height),
+          ));
+      case PipShape.circle:
+        return Path()
+          ..addOval(Rect.fromCenter(
+            center: center,
+            width: min(width, height),
+            height: min(width, height),
+          ));
+      case PipShape.triangle:
+        return Path()
+          ..moveTo(center.dx, center.dy - min(width, height) / 2)
+          ..lineTo(center.dx + min(width, height) / 2,
+              center.dy + min(width, height) / 2)
+          ..lineTo(center.dx - min(width, height) / 2,
+              center.dy + min(width, height) / 2)
+          ..close();
+      case PipShape.roundedSquare:
+        return Path()
+          ..addRRect(RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: center,
+              width: min(width, height),
+              height: min(width, height),
+            ),
+            const Radius.circular(20.0),
+          ));
+      case PipShape.hexagon:
+        return Path()
+          ..moveTo(center.dx, center.dy - min(width, height) / 2)
+          ..lineTo(center.dx + min(width, height) / 2,
+              center.dy - min(width, height) / 4)
+          ..lineTo(center.dx + min(width, height) / 2,
+              center.dy + min(width, height) / 4)
+          ..lineTo(center.dx, center.dy + min(width, height) / 2)
+          ..lineTo(center.dx - min(width, height) / 2,
+              center.dy + min(width, height) / 4)
+          ..lineTo(center.dx - min(width, height) / 2,
+              center.dy - min(width, height) / 4)
+          ..close();
+    }
+  }
+}
+
+class _MyCustomPipClipper extends CustomClipper<Path> {
+  final double width;
+  final double height;
+  final PipShape shape;
+
+  const _MyCustomPipClipper({
+    required this.width,
+    required this.height,
+    required this.shape,
+  });
+
+  @override
+  Path getClip(Size size) {
+    return shape.getPath(
+      size.center(Offset.zero),
+      width,
+      height,
+    );
+  }
+
+  @override
+  bool shouldReclip(covariant _MyCustomPipClipper oldClipper) {
+    return width != oldClipper.width ||
+        height != oldClipper.height ||
+        shape != oldClipper.shape;
   }
 }
 
