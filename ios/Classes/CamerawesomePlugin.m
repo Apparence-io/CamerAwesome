@@ -582,7 +582,7 @@ FlutterEventSink physicalButtonEventSink;
   }
 }
 
-- (nullable PreviewSize *)getEffectivPreviewSizeWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+- (nullable PreviewSize *)getEffectivPreviewSizeIndex:(nonnull NSNumber *)index error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (self.camera == nil && self.multiCamera == nil) {
     *error = [FlutterError errorWithCode:@"CAMERA_MUST_BE_INIT" message:@"init must be call before start" details:nil];
   }
