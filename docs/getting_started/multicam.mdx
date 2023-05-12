@@ -35,6 +35,66 @@ Check the following method to determine if the feature is supported on the curre
 final isSupported = await CamerawesomePlugin.isMultiCamSupported()
 ```
 
+## Customizing the picture-in-picture preview
+
+The `pictureInPictureConfigBuilder` parameter lets you customize the preview of the additional sensors.
+
+A `PictureInPictureConfigBuilder` is a function that is called with the index of the sensor and the sensor itself as parameters and returns a `PictureInPictureConfig` object.
+
+Here is a sample code taken from the `multi_camera.dart` example:
+
+```dart
+CameraAwesomeBuilder.awesome(
+ pictureInPictureConfigBuilder: (index, sensor) {
+      const width = 200.0;
+      return PictureInPictureConfig(
+        // 1.
+        isDraggable: false,
+        // 2.
+        startingPosition: Offset(
+          screenSize.width - width - 20.0 * index,
+          screenSize.height - 356,
+        ),
+        // 3.
+        sensor: sensor,
+        // 4.
+        onTap: (){
+          print('on preview tap');
+        },
+        // 5.
+        pictureInPictureBuilder: (preview, aspectRatio) {
+          return SizedBox(
+            width: width,
+            height: width,
+            child: ClipPath(
+              clipper: _MyCustomPipClipper(
+                width: width,
+                height: width * aspectRatio,
+                shape: shape,
+              ),
+              child: SizedBox(
+                width: width,
+                // 6.
+                child: preview,
+              ),
+            ),
+          );
+        },
+      );
+    },
+)
+```
+
+Let's break it down:
+
+1. Define if you want the preview to be draggable or not using the `isDraggable` parameter.
+2. Choose the `startingPosition` of the preview. You may adjust it depending on the index of the sensor.
+3. Set for which `sensor` this preview is.
+4. Add an `onTap` callback.
+5. Customize how you want the preview to be displayed using the `pictureInPictureBuilder`. This builder must display the `preview` widget. You may also use the `aspectRatio` of the preview to adjust the size of the widget.
+
+
+
 ## Get the list of sensors
 
 You can get the list of all the sensors available on iOS with:

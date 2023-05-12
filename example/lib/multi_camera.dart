@@ -76,8 +76,8 @@ class _CameraPageState extends State<CameraPage> {
         child: sensorDeviceData != null && isMultiCamSupported != null
             ? CameraAwesomeBuilder.awesome(
                 saveConfig: SaveConfig.photoAndVideo(
-                  // initialCaptureMode: CaptureMode.video,
-                ),
+                    // initialCaptureMode: CaptureMode.video,
+                    ),
                 sensorConfig: isMultiCamSupported == true
                     ? SensorConfig.multiple(
                         sensors: [
@@ -113,8 +113,12 @@ class _CameraPageState extends State<CameraPage> {
                   return PictureInPictureConfig(
                     isDraggable: false,
                     startingPosition: Offset(
-                        screenSize.width - width - 20.0 * index,
-                        screenSize.height - 356),
+                      screenSize.width - width - 20.0 * index,
+                      screenSize.height - 356,
+                    ),
+                    onTap: () {
+                      print('on preview tap');
+                    },
                     sensor: sensor,
                     pictureInPictureBuilder: (preview, aspectRatio) {
                       return SizedBox(
