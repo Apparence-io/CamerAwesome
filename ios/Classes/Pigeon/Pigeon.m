@@ -1179,10 +1179,12 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(getEffectivPreviewSizeWithError:)], @"CameraInterface api (%@) doesn't respond to @selector(getEffectivPreviewSizeWithError:)", api);
+      NSCAssert([api respondsToSelector:@selector(getEffectivPreviewSizeIndex:error:)], @"CameraInterface api (%@) doesn't respond to @selector(getEffectivPreviewSizeIndex:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_index = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
-        PreviewSize *output = [api getEffectivPreviewSizeWithError:&error];
+        PreviewSize *output = [api getEffectivPreviewSizeIndex:arg_index error:&error];
         callback(wrapResult(output, error));
       }];
     } else {

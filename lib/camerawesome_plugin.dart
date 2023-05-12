@@ -183,7 +183,7 @@ class CamerawesomePlugin {
     return CameraInterface()
         .setupCamera(
           sensorConfig.sensors.map((e) {
-            return e?.toPigeon();
+            return e.toPigeon();
           }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
@@ -221,8 +221,8 @@ class CamerawesomePlugin {
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
-  static Future<PreviewSize> getEffectivPreviewSize() async {
-    final ps = await CameraInterface().getEffectivPreviewSize();
+  static Future<PreviewSize> getEffectivPreviewSize(int index) async {
+    final ps = await CameraInterface().getEffectivPreviewSize(index);
     if (ps != null) {
       return PreviewSize(width: ps.width, height: ps.height);
     } else {
@@ -267,17 +267,15 @@ class CamerawesomePlugin {
           .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
     );
     if (Platform.isAndroid) {
-      //   Est-ce qu'on devrait pas laisser le natif écrire le fichier où il veut et tant pis pour le path d'où ça ecrit?
-      // ça simplifierait beaucoup de choses
-      // Sinon il faut convertir une CaptureReqquest en objet pigeon, probablement une map<Sensor, String?>(null sur le web)
-      // En natif, on ferait probablement la map juste en fonction de l'ordre des sensors ou quelque chose comme ça.
-      // Il faudra peut-etre identifier chaque Sensor dart pour faire le mapping correctement avec un ID... sa fé réfléchire
-      // TODO: add video options for Android
       return CameraInterface().recordVideo(
-          pathBySensor.keys.toList(), pathBySensor.values.toList());
+        pathBySensor.keys.toList(),
+        pathBySensor.values.toList(),
+      );
     } else {
       return CameraInterface().recordVideo(
-          pathBySensor.keys.toList(), pathBySensor.values.toList());
+        pathBySensor.keys.toList(),
+        pathBySensor.values.toList(),
+      );
     }
   }
 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
+import 'package:camerawesome/src/widgets/preview/picture_in_picutre_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -100,6 +101,8 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// do image analysis
   final bool showPreview;
 
+  final PictureInPictureConfigBuilder? pictureInPictureConfigBuilder;
+
   const CameraAwesomeBuilder._({
     required this.sensorConfig,
     required this.enablePhysicalButton,
@@ -118,6 +121,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.previewPadding = EdgeInsets.zero,
     this.previewAlignment = Alignment.center,
     this.showPreview = true,
+    required this.pictureInPictureConfigBuilder,
   });
 
   /// Use the camera with the built-in interface.
@@ -160,6 +164,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget Function(CameraState state)? middleContentBuilder,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(
@@ -188,6 +193,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
   /// 🚧 Experimental
@@ -209,6 +215,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     AwesomeTheme? theme,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(
@@ -230,6 +237,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
   /// Use this constructor when you don't want to take pictures or record videos.
@@ -246,6 +254,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     CameraPreviewFit? previewFit,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
@@ -264,6 +273,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
   /// Use this constructor when you only want to do image analysis.
@@ -299,6 +309,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewPadding: EdgeInsets.zero,
           previewAlignment: Alignment.center,
           showPreview: false,
+          pictureInPictureConfigBuilder: null,
         );
 
   @override
@@ -445,6 +456,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                             ),
                         interfaceBuilder: widget.builder,
                         previewDecoratorBuilder: widget.previewDecoratorBuilder,
+                        pictureInPictureConfigBuilder:
+                            widget.pictureInPictureConfigBuilder,
                       ),
               ),
             ],

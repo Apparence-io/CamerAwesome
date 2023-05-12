@@ -27,7 +27,7 @@ class SensorConfig {
   late Stream<double> zoom$;
 
   /// [back] or [front] camera
-  final List<Sensor?> sensors;
+  final List<Sensor> sensors;
 
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
@@ -87,7 +87,7 @@ class SensorConfig {
     mirrorFrontCamera$ = _mirrorFrontCameraController.stream;
 
     _sensorTypeController = BehaviorSubject<SensorType>.seeded(
-        sensors.first?.type ?? SensorType.wideAngle);
+        sensors.first.type ?? SensorType.wideAngle);
     sensorType$ = _sensorTypeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
