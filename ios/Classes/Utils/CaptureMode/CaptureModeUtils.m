@@ -14,8 +14,10 @@
     return Photo;
   } else if ([captureModeType isEqualToString:@"VIDEO"]) {
     return Video;
-  } else {
+  } else if ([captureModeType isEqualToString:@"PREVIEW"]) {
     return Preview;
+  } else {
+    return AnalysisOnly;
   }
 }
 
