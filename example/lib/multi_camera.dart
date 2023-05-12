@@ -73,7 +73,7 @@ class _CameraPageState extends State<CameraPage> {
         child: sensorDeviceData != null && isMultiCamSupported != null
             ? CameraAwesomeBuilder.awesome(
                 saveConfig: SaveConfig.photoAndVideo(
-                  initialCaptureMode: CaptureMode.video,
+                  // initialCaptureMode: CaptureMode.video,
                 ),
                 sensorConfig: isMultiCamSupported == true
                     ? SensorConfig.multiple(
