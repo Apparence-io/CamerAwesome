@@ -179,6 +179,7 @@ class CamerawesomePlugin {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
     required VideoOptions? videoOptions,
+    required bool mirrorFrontCamera,
   }) async {
     return CameraInterface()
         .setupCamera(
@@ -187,7 +188,7 @@ class CamerawesomePlugin {
           }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
-          sensorConfig.mirrorFrontCamera,
+          mirrorFrontCamera,
           enablePhysicalButton,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),

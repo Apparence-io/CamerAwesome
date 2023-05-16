@@ -23,7 +23,6 @@ CameraAwesomeBuilder.awesome(
 +       sensor: Sensor.position(SensorPosition.back),
 +       flashMode: FlashMode.auto,
 +       aspectRatio: CameraAspectRatios.ratio_4_3,
-+       mirrorFrontCamera: true,
 +       zoom: 0.0,
 +   ),
 -   exifPreferences: ExifPreferences(saveGPSLocation: true),
@@ -65,6 +64,7 @@ CameraAwesomeBuilder.awesome(
 +         ),
 +       ),
 +       exifPreferences: ExifPreferences(saveGPSLocation: true),
++       mirrorFrontCamera: true,
      ),
     ...
 )
@@ -77,6 +77,7 @@ CameraAwesomeBuilder.awesome(
 - ✨ Users can now pass options (such as bitrate, fps, and quality) when recording a video.
 - ✨🍏 Implemented brightness and exposure level settings on iOS / iPadOS.
 - ✨🤖 Added zoom indicator UI.
+- ✨🤖 Video recording is now mirrored if `mirrorFrontCamera` is set to true.
 - ♻️🍏 Completely reworked the code for increased clarity and performance.
 - 🐛 Fixed patrol tests.
 - 🐛 Fixed the use of capture button parameter in awesome bottom actions (thanks to @juliuszmandrosz).

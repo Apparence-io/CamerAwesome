@@ -16,6 +16,7 @@ Here is the complete changelog:
 - ✨ Users can now pass options (such as bitrate, fps, and quality) when recording a video.
 - ✨🍏 Implemented brightness and exposure level settings on iOS / iPadOS.
 - ✨🤖 Added zoom indicator UI.
+- ✨🤖 Video recording is now mirrored if `mirrorFrontCamera` is set to true.
 - ♻️🍏 Completely reworked the code for increased clarity and performance.
 - 🐛 Fixed patrol tests.
 - 🐛 Fixed the use of capture button parameter in awesome bottom actions (thanks to @juliuszmandrosz).

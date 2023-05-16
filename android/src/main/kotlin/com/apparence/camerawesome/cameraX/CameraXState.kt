@@ -294,7 +294,9 @@ data class CameraXState(
             recorderBuilder.setTargetVideoEncodingBitRate(videoOptions.bitrate.toInt())
         }
         val recorder = recorderBuilder.build()
-        return VideoCapture.withOutput(recorder)
+        return VideoCapture.Builder<Recorder>(recorder)
+            .setMirrorMode(if (mirrorFrontCamera) MirrorMode.MIRROR_MODE_ON_FRONT_ONLY else MirrorMode.MIRROR_MODE_OFF)
+            .build()
     }
 
     @SuppressLint("RestrictedApi")

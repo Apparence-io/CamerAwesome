@@ -33,6 +33,7 @@ class CameraPage extends StatelessWidget {
         child: CameraAwesomeBuilder.awesome(
           saveConfig: SaveConfig.photoAndVideo(
             initialCaptureMode: CaptureMode.photo,
+            mirrorFrontCamera: true,
             photoPathBuilder: (sensors) async {
               final Directory extDir = await getTemporaryDirectory();
               final testDir = await Directory(
@@ -70,7 +71,6 @@ class CameraPage extends StatelessWidget {
             sensor: Sensor.position(SensorPosition.back),
             flashMode: FlashMode.auto,
             aspectRatio: CameraAspectRatios.ratio_4_3,
-            mirrorFrontCamera: true,
             zoom: 0.0,
           ),
           enablePhysicalButton: true,
