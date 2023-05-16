@@ -179,7 +179,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         callback(Result.success(true))
     }
 
-    override fun checkPermissions(): List<String> {
+    override fun checkPermissions(permissions: List<String>): List<String> {
         throw Exception("Not implemented on Android")
     }
 
