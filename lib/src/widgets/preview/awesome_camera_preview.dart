@@ -111,10 +111,12 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   }
 
   Future _loadTextures() async {
+    // ignore: invalid_use_of_protected_member
     final sensors = widget.state.cameraContext.sensorConfig.sensors.length;
 
     // Set it to true to debug the floating preview on a device that doesn't
     // support multicam
+    // ignore: dead_code
     if (false) {
       for (int i = 0; i < 2; i++) {
         final textureId = await widget.state.previewTextureId(0);
