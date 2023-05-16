@@ -76,13 +76,14 @@ class ImageAnalysisBuilder private constructor(
                         imageProxy,
                         Rect(0, 0, imageProxy.width, imageProxy.height),
                         80,
-//                        imageProxy.imageInfo.rotationDegrees
+                        imageProxy.imageInfo.rotationDegrees
                     )
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage
                     imageMap["cropRect"] = cropRect(imageProxy)
                     executor.execute { previewStreamSink?.success(imageMap) }
                 }
+
                 OutputImageFormat.YUV_420_888 -> {
                     val planes = imagePlanesAdapter(imageProxy)
                     val imageMap = imageProxyBaseAdapter(imageProxy)
@@ -90,6 +91,7 @@ class ImageAnalysisBuilder private constructor(
                     imageMap["cropRect"] = cropRect(imageProxy)
                     executor.execute { previewStreamSink?.success(imageMap) }
                 }
+
                 OutputImageFormat.NV21 -> {
                     val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
                     val planes = imagePlanesAdapter(imageProxy)

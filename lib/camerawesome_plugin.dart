@@ -4,15 +4,16 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/logger.dart';
+import 'package:camerawesome/src/orchestrator/adapters/pigeon_sensor_adapter.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
-import 'package:camerawesome/src/orchestrator/models/video_options.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 
 export 'src/camera_characteristics/camera_characteristics.dart';
 export 'src/orchestrator/analysis/analysis_controller.dart';
 export 'src/orchestrator/models/models.dart';
+export 'src/orchestrator/models/sensor_type.dart';
+export 'src/orchestrator/models/sensors.dart';
 export 'src/orchestrator/states/states.dart';
 export 'src/widgets/camera_awesome_builder.dart';
 
@@ -49,8 +50,10 @@ class CamerawesomePlugin {
   /// Set it to true to print dart logs from camerawesome
   static bool printLogs = false;
 
-  static Future<bool?> checkiOSPermissions() async {
-    final permissions = await CameraInterface().checkPermissions();
+  static Future<bool?> checkiOSPermissions(
+      List<String?> permissionsName) async {
+    final permissions =
+        await CameraInterface().checkPermissions(permissionsName);
     return permissions.isEmpty;
   }
 
@@ -175,18 +178,23 @@ class CamerawesomePlugin {
     bool enablePhysicalButton, {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
+    required VideoOptions? videoOptions,
+    required bool mirrorFrontCamera,
   }) async {
     return CameraInterface()
         .setupCamera(
-          sensorConfig.sensor.name.toUpperCase(),
+          sensorConfig.sensors.map((e) {
+            return e.toPigeon();
+          }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
-          sensorConfig.mirrorFrontCamera,
+          mirrorFrontCamera,
           enablePhysicalButton,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),
           enableImageStream,
           exifPreferences,
+          videoOptions,
         )
         .then((value) => true);
   }
@@ -199,8 +207,8 @@ class CamerawesomePlugin {
         .toList();
   }
 
-  static Future<num?> getPreviewTexture() {
-    return CameraInterface().getPreviewTextureId();
+  static Future<num?> getPreviewTexture(final int cameraPosition) {
+    return CameraInterface().getPreviewTextureId(cameraPosition);
   }
 
   static Future<void> setPreviewSize(int width, int height) {
@@ -214,8 +222,8 @@ class CamerawesomePlugin {
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
-  static Future<PreviewSize> getEffectivPreviewSize() async {
-    final ps = await CameraInterface().getEffectivPreviewSize();
+  static Future<PreviewSize> getEffectivPreviewSize(int index) async {
+    final ps = await CameraInterface().getEffectivPreviewSize(index);
     if (ps != null) {
       return PreviewSize(width: ps.width, height: ps.height);
     } else {
@@ -235,26 +243,39 @@ class CamerawesomePlugin {
     );
   }
 
-  static Future<bool> takePhoto(String path) async {
-    return CameraInterface().takePhoto(path);
+  static Future<bool> takePhoto(CaptureRequest captureRequest) async {
+    final request = captureRequest.when(
+      single: (single) => {
+        single.sensor.toPigeon(): single.file?.path,
+      },
+      multiple: (multiple) => multiple.fileBySensor.map((key, value) {
+        return MapEntry(key.toPigeon(), value?.path);
+      }),
+    );
+
+    return CameraInterface().takePhoto(
+      request.keys.toList(),
+      request.values.toList(),
+    );
   }
 
-  static Future<void> recordVideo(
-    String path, {
-    CupertinoVideoOptions? cupertinoVideoOptions,
-  }) {
+  static Future<void> recordVideo(CaptureRequest request) {
+    final pathBySensor = request.when(
+      single: (single) => {
+        single.sensor.toPigeon(): single.file?.path,
+      },
+      multiple: (multiple) => multiple.fileBySensor
+          .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
+    );
     if (Platform.isAndroid) {
-      // TODO: add video options for Android
-      return CameraInterface().recordVideo(path, null);
+      return CameraInterface().recordVideo(
+        pathBySensor.keys.toList(),
+        pathBySensor.values.toList(),
+      );
     } else {
       return CameraInterface().recordVideo(
-        path,
-        cupertinoVideoOptions != null
-            ? VideoOptions(
-                fileType: cupertinoVideoOptions.fileType.name,
-                codec: cupertinoVideoOptions.codec.name,
-              )
-            : null,
+        pathBySensor.keys.toList(),
+        pathBySensor.values.toList(),
       );
     }
   }
@@ -311,8 +332,20 @@ class CamerawesomePlugin {
   /// switch camera sensor between [Sensors.back] and [Sensors.front]
   /// on iOS, you can specify the deviceId if you have multiple cameras
   /// call [getSensors] to get the list of available cameras
-  static Future<void> setSensor(Sensors sensor, {String? deviceId}) {
-    return CameraInterface().setSensor(sensor.name.toUpperCase(), deviceId);
+  static Future<void> setSensor(List<Sensor?> sensors) {
+    return CameraInterface().setSensor(
+      sensors.map((e) {
+        return PigeonSensor(
+          position: e?.position?.name != null
+              ? PigeonSensorPosition.values.byName(e!.position!.name)
+              : PigeonSensorPosition.unknown,
+          deviceId: e?.deviceId,
+          type: e?.type?.name != null
+              ? PigeonSensorType.values.byName(e!.type!.name)
+              : PigeonSensorType.unknown,
+        );
+      }).toList(),
+    );
   }
 
   /// change capture mode between [CaptureMode.photo] and [CaptureMode.video]
@@ -344,8 +377,17 @@ class CamerawesomePlugin {
   }
 
   /// returns the max zoom available on device
-  static Future<num?> getMaxZoom() {
+  static Future<double?> getMaxZoom() {
     return CameraInterface().getMaxZoom();
+  }
+
+  /// returns the min zoom available on device
+  static Future<double?> getMinZoom() {
+    return CameraInterface().getMinZoom();
+  }
+
+  static Future<bool> isMultiCamSupported() {
+    return CameraInterface().isMultiCamSupported();
   }
 
   /// Change aspect ratio when a photo is taken
@@ -428,7 +470,10 @@ class CamerawesomePlugin {
   // UTILITY METHODS
   // ---------------------------------------------------
   static Future<List<CamerAwesomePermission>?> checkAndRequestPermissions(
-      bool saveGpsLocation) async {
+    bool saveGpsLocation, {
+    bool checkMicrophonePermissions = true,
+    bool checkCameraPermissions = true,
+  }) async {
     try {
       if (Platform.isAndroid) {
         return CameraInterface()
@@ -441,7 +486,16 @@ class CamerawesomePlugin {
         });
       } else if (Platform.isIOS) {
         // TODO iOS Return only permissions that were given
-        return CamerawesomePlugin.checkiOSPermissions()
+
+        List<String> permissions = [];
+        if (checkMicrophonePermissions) {
+          permissions.add("microphone");
+        }
+        if (checkCameraPermissions) {
+          permissions.add("camera");
+        }
+
+        return CamerawesomePlugin.checkiOSPermissions(permissions)
             .then((givenPermissions) => CamerAwesomePermission.values);
       }
     } catch (e) {

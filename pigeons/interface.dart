@@ -18,16 +18,114 @@ class ExifPreferences {
   ExifPreferences({required this.saveGPSLocation});
 }
 
-class VideoOptions {
-  String fileType;
-  String codec;
+class PigeonSensor {
+  final PigeonSensorPosition position;
+  final PigeonSensorType type;
+  final String? deviceId;
 
-  // TODO might add the framerate as well https://stackoverflow.com/questions/57485050/how-to-increase-frame-rate-with-android-camerax-imageanalysis
-  // TODO Add video quality
+  PigeonSensor({
+    this.position = PigeonSensorPosition.unknown,
+    this.type = PigeonSensorType.unknown,
+    this.deviceId,
+  });
+}
+
+enum PigeonSensorPosition {
+  back,
+  front,
+  unknown,
+}
+
+/// Video recording quality, from [sd] to [uhd], with [highest] and [lowest] to
+/// let the device choose the best/worst quality available.
+/// [highest] is the default quality.
+///
+/// Qualities are defined like this:
+/// [sd] < [hd] < [fhd] < [uhd]
+enum VideoRecordingQuality {
+  lowest,
+  sd,
+  hd,
+  fhd,
+  uhd,
+  highest,
+}
+
+/// If the specified [VideoRecordingQuality] is not available on the device,
+/// the [VideoRecordingQuality] will fallback to [higher] or [lower] quality.
+/// [higher] is the default fallback strategy.
+enum QualityFallbackStrategy {
+  higher,
+  lower,
+}
+
+/// Video recording options. Some of them are specific to each platform.
+class VideoOptions {
+  /// Enable audio while video recording
+  final bool enableAudio;
+
+  // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
+  final AndroidVideoOptions? android;
+  final CupertinoVideoOptions? ios;
 
   VideoOptions({
-    required this.fileType,
-    required this.codec,
+    required this.android,
+    required this.ios,
+    required this.enableAudio,
+  });
+}
+
+class AndroidVideoOptions {
+  /// The bitrate of the video recording. Only set it if a custom bitrate is
+  /// desired.
+  final int? bitrate;
+
+  /// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
+  final VideoRecordingQuality? quality;
+
+  final QualityFallbackStrategy? fallbackStrategy;
+
+  AndroidVideoOptions({
+    required this.bitrate,
+    required this.quality,
+    required this.fallbackStrategy,
+  });
+}
+
+enum CupertinoFileType {
+  quickTimeMovie,
+  mpeg4,
+  appleM4V,
+  type3GPP,
+  type3GPP2,
+}
+
+enum CupertinoCodecType {
+  h264,
+  hevc,
+  hevcWithAlpha,
+  jpeg,
+  appleProRes4444,
+  appleProRes422,
+  appleProRes422HQ,
+  appleProRes422LT,
+  appleProRes422Proxy,
+}
+
+class CupertinoVideoOptions {
+  /// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
+  final CupertinoFileType? fileType;
+
+  /// Specify video codec, defaults to [AVVideoCodecTypeH264].
+  final CupertinoCodecType? codec;
+
+  /// Specify video fps, defaults to [30].
+  final int? fps;
+
+  CupertinoVideoOptions({
+    this.fileType,
+    this.codec,
+    this.fps,
   });
 }
 
@@ -226,7 +324,7 @@ abstract class AnalysisImageUtils {
 abstract class CameraInterface {
   @async
   bool setupCamera(
-    String sensor,
+    List<PigeonSensor> sensors,
     String aspectRatio,
     double zoom,
     bool mirrorFrontCamera,
@@ -235,23 +333,24 @@ abstract class CameraInterface {
     String captureMode,
     bool enableImageStream,
     ExifPreferences exifPreferences,
+    VideoOptions? videoOptions,
   );
 
-  List<String> checkPermissions();
+  List<String> checkPermissions(List<String> permissions);
 
   /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
   /// refused but the app should still be able to run.
   @async
   List<String> requestPermissions(bool saveGpsLocation);
 
-  int getPreviewTextureId();
+  int getPreviewTextureId(int cameraPosition);
 
   // TODO async with void return type seems to not work (channel-error)
   @async
-  bool takePhoto(String path);
+  bool takePhoto(List<PigeonSensor> sensors, List<String?> paths);
 
   @async
-  void recordVideo(String path, VideoOptions? options);
+  void recordVideo(List<PigeonSensor> sensors, List<String?> paths);
 
   void pauseVideoRecording();
 
@@ -289,9 +388,12 @@ abstract class CameraInterface {
 
   void setMirrorFrontCamera(bool mirror);
 
-  void setSensor(String sensor, String? deviceId);
+  // TODO: specify the position of the sensor
+  void setSensor(List<PigeonSensor> sensors);
 
   void setCorrection(double brightness);
+
+  double getMinZoom();
 
   double getMaxZoom();
 
@@ -304,7 +406,7 @@ abstract class CameraInterface {
 
   void refresh();
 
-  PreviewSize? getEffectivPreviewSize();
+  PreviewSize? getEffectivPreviewSize(int index);
 
   void setPhotoSize(PreviewSize size);
 
@@ -329,5 +431,7 @@ abstract class CameraInterface {
   void setFilter(List<double> matrix);
 
   @async
-  bool isVideoRecordingAndImageAnalysisSupported(String sensor);
+  bool isVideoRecordingAndImageAnalysisSupported(PigeonSensorPosition sensor);
+
+  bool isMultiCamSupported();
 }

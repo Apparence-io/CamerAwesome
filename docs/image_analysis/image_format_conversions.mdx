@@ -120,8 +120,10 @@ class _CameraPageState extends State<CameraPage> {
     return Scaffold(
       // 2.
       body: CameraAwesomeBuilder.analysisOnly(
-        aspectRatio: CameraAspectRatios.ratio_1_1,
-        sensor: Sensors.front,
+        sensorConfig: SensorConfig.single(
+          sensor: Sensor.position(SensorPosition.front),
+          aspectRatio: CameraAspectRatios.ratio_1_1,
+        ),
         // 3.
         onImageForAnalysis: (img) async => _imageStreamController.add(img),
         imageAnalysisConfig: AnalysisConfig(

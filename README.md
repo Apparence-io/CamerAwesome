@@ -52,14 +52,20 @@ Use our awesome built-in interface or customize it as you want.
   </a>
 </div>
 
+## Migration guide
+
+If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](docs.page/todo).
+
+
 ## Native features
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| System                                   | Android |  iOS  |
-| :--------------------------------------- | :-----: | :---: |
+| Features                                 | Android  |  iOS   |
+| :--------------------------------------- | :-----:  | :---:  |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
+| 📹 Multi camera  (🚧 BETA)               |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
 | 🎞 Take photos                           |    ✅    |   ✅   |
 | 🌆 Photo live filters                    |    ✅    |   ✅   |
@@ -79,11 +85,11 @@ Here's all native features that cameraAwesome provides to the flutter side.
 
 ## 📖&nbsp; Installation and usage
 
-### Add the package in your pubspec.yaml
+### Add the package in your `pubspec.yaml`
 
 ```yaml
 dependencies:
-  camerawesome: ^1.3.0
+  camerawesome: ^2.0.0-dev.1
   ...
 ```
 
@@ -123,7 +129,6 @@ the [official documentation](https://developer.android.com/training/data-storage
 If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
 
 ```xml
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
         package="com.example.yourpackage">
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -188,13 +193,11 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 ## 👌 Awesome built-in interface
 
 Just use our builder. <br>
-That's all you need to create a complete camera experience within you app.
+That's all you need to create a complete camera experience within your app.
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.image(
-    pathBuilder: _path(),
-  ),
+  saveConfig: SaveConfig.photoAndVideo(),
   onMediaTap: (mediaCapture) {
     OpenFile.open(mediaCapture.filePath);
   },
@@ -205,20 +208,18 @@ CameraAwesomeBuilder.awesome(
 
 This builder can be customized with various settings:
 
-- a theme
-- builders for each part of the screen
-- initial camera setup
-- preview positioning
-- additional preview decoration
-- and more!
+- A theme.
+- Builders for each part of the screen.
+- Initial camera setup.
+- Preview positioning.
+- Additional preview decoration.
+- And much more!
 
 Here is an example:
 
 ![Customized UI](docs/img/custom_awesome_ui.jpg)
 
-Check
-the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui)
-to learn more.
+Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
 
 ---
 
@@ -232,7 +233,7 @@ The camera preview will be visible behind what you will provide to the builder.
 
 ```dart
 CameraAwesomeBuilder.custom(
-  saveConfig: SaveConfig.image(pathBuilder: _path()),
+  saveConfig: SaveConfig.photo(),
   builder: (state, previewSize, previewRect) {
     // create your interface here
   },
@@ -290,7 +291,7 @@ Use this to achieve:
 - Facial recognition.
 - AI object detection.
 - Realtime video chats.
-  And much more 🤩
+- And much more 🤩
 
 ![Face AI](docs/img/face_ai.gif)
 
@@ -308,9 +309,7 @@ the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/
 
 ```dart
 CameraAwesomeBuilder.awesome(
-  saveConfig: SaveConfig.image(
-    pathBuilder: _path(),
-  ),
+  saveConfig: SaveConfig.photo(),
   onImageForAnalysis: analyzeImage,
   imageAnalysisConfig: AnalysisConfig(
         // Android specific options
@@ -323,11 +322,12 @@ CameraAwesomeBuilder.awesome(
         // Max frames per second, null for no limit (default)
         maxFramesPerSecond: 20,
     ),
+)
 ```
 
 > MLkit recommends using nv21 format for Android. <br>
 > bgra8888 is the iOS format
-> For machine learning you don't need full full-resolution (720 or lower should be enough and makes computation easier)
+> For machine learning you don't need full-resolution images (720 or lower should be enough and makes computation easier)
 
 Learn more about the image analysis configuration in
 the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
@@ -351,15 +351,14 @@ Through state you can access to a `SensorConfig` class.
 
 <br>
 
-| Function             | Comment                                                    |
-| -------------------- | ---------------------------------------------------------- |
-| setZoom              | changing zoom                                              |
-| setFlashMode         | changing flash between NONE,ON,AUTO,ALWAYS                 |
-| setBrightness        | change brightness level manually (better to let this auto) |
-| setMirrorFrontCamera | set mirroring for front camera                             |
+| Function               | Comment                                                    |
+| ---------------------- | ---------------------------------------------------------- |
+| `setZoom`              | change zoom                                                |
+| `setFlashMode`         | change flash between NONE,ON,AUTO,ALWAYS                   |
+| `setBrightness`        | change brightness level manually (better to let this auto) |
+| `setMirrorFrontCamera` | set mirroring for front camera                             |
 
-All of these configurations are listenable through a stream so your UI can automatically get updated
-according to the actual configuration.
+All of these configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
 
 <br>
 
@@ -399,6 +398,37 @@ CameraAwesomeBuilder.custom(
 ```
 
 See all available filters in the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
+
+
+## 📷 📷 Concurrent cameras
+
+![Concurrent cameras](docs/img/concurrent_cameras.gif)
+
+> 🚧 Feature in beta 🚧
+> Any feedback is welcome!
+
+In order to start using CamerAwesome with multiple cameras simulatenously, you need to define a `SensorConfig` that uses several sensors. You can use the `SensorConfig.multiple()` constructor for this:
+
+```dart
+CameraAwesomeBuilder.awesome(
+    sensorConfig: SensorConfig.multiple(
+        sensors: [
+            Sensor.position(SensorPosition.back),
+            Sensor.position(SensorPosition.front),
+        ],
+        flashMode: FlashMode.auto,
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+    ),
+    // Other params
+)
+```
+
+This feature is not supported by all devices and even when it is, there are limitations that you must be aware of.
+
+Check the details in the [dedicated documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/multicam).
+
+
+
 
 <br>
 

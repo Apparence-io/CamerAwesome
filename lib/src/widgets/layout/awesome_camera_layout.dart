@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';
 import 'package:camerawesome/src/orchestrator/states/states.dart';
 import 'package:camerawesome/src/widgets/awesome_camera_mode_selector.dart';
@@ -5,6 +7,8 @@ import 'package:camerawesome/src/widgets/camera_awesome_builder.dart';
 import 'package:camerawesome/src/widgets/filters/awesome_filter_widget.dart';
 import 'package:camerawesome/src/widgets/layout/layout.dart';
 import 'package:camerawesome/src/widgets/utils/awesome_theme.dart';
+import 'package:camerawesome/src/widgets/zoom/awesome_zoom_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// This widget doesn't handle [PreparingCameraState]
@@ -26,7 +30,9 @@ class AwesomeCameraLayout extends StatelessWidget {
               children: [
                 const Spacer(),
                 if (state.captureMode == CaptureMode.photo)
-                  AwesomeFilterWidget(state: state),
+                  AwesomeFilterWidget(state: state)
+                else if (!kIsWeb && Platform.isAndroid)
+                  AwesomeZoomSelector(state: state),
                 AwesomeCameraModeSelector(state: state),
               ],
             )),

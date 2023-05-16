@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:better_open_file/better_open_file.dart';
-import 'package:camera_app/utils/file_utils.dart';
 import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camera_app/widgets/barcode_preview_overlay.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -43,15 +42,18 @@ class _CameraPageState extends State<CameraPage> {
         color: Colors.white,
         child: CameraAwesomeBuilder.awesome(
           saveConfig: SaveConfig.photoAndVideo(
-            photoPathBuilder: () => path(CaptureMode.photo),
-            videoPathBuilder: () => path(CaptureMode.video),
             initialCaptureMode: CaptureMode.photo,
           ),
-          flashMode: FlashMode.auto,
-          aspectRatio: CameraAspectRatios.ratio_16_9,
+          sensorConfig: SensorConfig.single(
+            flashMode: FlashMode.auto,
+            aspectRatio: CameraAspectRatios.ratio_16_9,
+          ),
           previewFit: CameraPreviewFit.fitWidth,
           onMediaTap: (mediaCapture) {
-            OpenFile.open(mediaCapture.filePath);
+            OpenFile.open(
+              mediaCapture.captureRequest
+                  .when(single: (single) => single.file?.path),
+            );
           },
           previewDecoratorBuilder: (state, previewSize, previewRect) {
             return BarcodePreviewOverlay(
