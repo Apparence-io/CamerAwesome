@@ -120,8 +120,8 @@ abstract class CameraState {
     final next = SensorConfig.multiple(
       sensors: previous.sensors
           .map((sensor) {
-            if (sensorIndex == cameraPosition && sensor != null) {
-              if (sensor.type == PigeonSensorType.trueDepth) {
+            if (sensorIndex == cameraPosition) {
+              if (sensor.type == SensorType.trueDepth) {
                 sensor.position = SensorPosition.front;
               } else {
                 sensor.position = SensorPosition.back;
