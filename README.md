@@ -61,11 +61,11 @@ If you are migrating from version 1.x.x to 2.x.x, please read the [migration gui
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| Features                                 | Android |  iOS  |
-| :--------------------------------------- | :-----: | :---: |
+| Features                                 | Android  |  iOS   |
+| :--------------------------------------- | :-----:  | :---:  |
 | 🔖 Ask permissions                       |    ✅    |   ✅   |
 | 🎥 Record video                          |    ✅    |   ✅   |
-| 📹 Multi camera  (🚧 BETA)                         |    ✅    |   ✅   |
+| 📹 Multi camera  (🚧 BETA)               |    ✅    |   ✅   |
 | 🔈 Enable/disable audio                  |    ✅    |   ✅   |
 | 🎞 Take photos                           |    ✅    |   ✅   |
 | 🌆 Photo live filters                    |    ✅    |   ✅   |
