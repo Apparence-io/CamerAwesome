@@ -43,6 +43,9 @@
   [self initCameraPreview:sensor];
   
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+  if (mirrorFrontCamera && [_captureConnection isVideoMirroringSupported]) {
+    [_captureConnection setVideoMirrored:mirrorFrontCamera];
+  }
   
   _captureMode = captureMode;
   
@@ -304,6 +307,10 @@
 
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   _mirrorFrontCamera = value;
+  
+  if ([_captureConnection isVideoMirroringSupported]) {
+      [_captureConnection setVideoMirrored:value];
+  }
 }
 
 /// Set flash mode
