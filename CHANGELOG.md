@@ -14,6 +14,7 @@ Here is the complete changelog:
 
 - ✨ Added multi-camera feature, allowing users to display multiple camera previews simultaneously. Note that this feature is currently in beta, and we do not recommend using it in production.
 - ✨ Users can now pass options (such as bitrate, fps, and quality) when recording a video.
+- ✨ You can now mirror video recording.
 - ✨🍏 Implemented brightness and exposure level settings on iOS / iPadOS.
 - ✨🤖 Added zoom indicator UI.
 - ✨🤖 Video recording is now mirrored if `mirrorFrontCamera` is set to true.
