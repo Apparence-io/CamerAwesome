@@ -67,7 +67,6 @@ class _ZoomIndicatorLayout extends StatelessWidget {
   final SensorConfig sensorConfig;
 
   const _ZoomIndicatorLayout({
-    super.key,
     required this.zoom,
     required this.min,
     required this.max,
@@ -135,7 +134,6 @@ class _ZoomIndicator extends StatelessWidget {
   final bool selected;
 
   const _ZoomIndicator({
-    super.key,
     required this.zoom,
     required this.min,
     required this.max,

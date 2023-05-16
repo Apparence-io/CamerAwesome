@@ -365,6 +365,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
     if (_textures.length <= 1) {
       return previewFrames;
     }
+    // ignore: invalid_use_of_protected_member
     final sensors = widget.state.cameraContext.sensorConfig.sensors;
 
     for (int i = 1; i < _textures.length; i++) {
