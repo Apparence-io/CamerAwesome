@@ -26,12 +26,15 @@
 #import "CameraSensorType.h"
 #import "PhysicalButtonController.h"
 #import "InputAnalysisImageFormat.h"
+#import "CameraPreviewTexture.h"
+#import "MultiCameraPreview.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CameraPreview : NSObject<FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate,
+@interface SingleCameraPreview : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate,
 AVCaptureAudioDataOutputSampleBufferDelegate>
 
+// TODO: move this to a single camera ?
 @property(readonly, nonatomic) AVCaptureSession *captureSession;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
 @property(readonly, nonatomic) AVCaptureInput *captureVideoInput;
@@ -39,18 +42,20 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) AVCaptureVideoDataOutput *captureVideoOutput;
 @property(readonly, nonatomic) AVCaptureVideoPreviewLayer *previewLayer;
 @property(readonly, nonatomic) AVCapturePhotoOutput *capturePhotoOutput;
+
 @property(readonly, nonatomic) UIDeviceOrientation deviceOrientation;
 @property(readonly, nonatomic) AVCaptureFlashMode flashMode;
 @property(readonly, nonatomic) AVCaptureTorchMode torchMode;
 @property(readonly, nonatomic) AVCaptureAudioDataOutput *audioOutput;
-@property(readonly, nonatomic) CameraSensor cameraSensor;
+@property(readonly, nonatomic) PigeonSensorPosition cameraSensorPosition;
 @property(readonly, nonatomic) NSString *captureDeviceId;
 @property(readonly, nonatomic) CaptureModes captureMode;
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
+@property(readonly, nonatomic) CupertinoVideoOptions *videoOptions;
+@property(readonly, nonatomic) CameraPreviewTexture* previewTexture;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
-@property(readonly) _Atomic(CVPixelBufferRef) latestPixelBuffer;
 @property(readonly, nonatomic) CGSize currentPreviewSize;
 @property(readonly, nonatomic) ImageStreamController *imageStreamController;
 @property(readonly, nonatomic) MotionController *motionController;
@@ -58,9 +63,10 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) VideoController *videoController;
 @property(readonly, nonatomic) PhysicalButtonController *physicalButtonController;
 @property(readonly, copy) void (^completion)(NSNumber * _Nullable, FlutterError * _Nullable);
-@property(nonatomic, copy) void (^onFrameAvailable)(void);
+@property(nonatomic, copy) void (^onPreviewFrameAvailable)(void);
 
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor
+- (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
+                        videoOptions:(nullable CupertinoVideoOptions *)videoOptions
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -68,10 +74,10 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
                        dispatchQueue:(dispatch_queue_t)dispatchQueue;
-- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setImageStreamEvent:(FlutterEventSink)imageStreamEventSink;
 - (void)setOrientationEventSink:(FlutterEventSink)orientationEventSink;
 - (void)setPhysicalButtonEventSink:(FlutterEventSink)physicalButtonEventSink;
+- (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCameraPresset:(CGSize)currentPreviewSize;
@@ -85,12 +91,11 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)start;
 - (void)stop;
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
-- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion;
+- (void)recordVideoAtPath:(NSString *)path completion:(nonnull void (^)(FlutterError * _Nullable))completion;
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)focusOnPoint:(CGPoint)position preview:(CGSize)preview error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)dispose;
-- (NSArray *)getSensors:(AVCaptureDevicePosition)position;
-- (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId;
+- (void)setSensor:(PigeonSensor *)sensor;
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGFloat)getMaxZoom;

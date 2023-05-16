@@ -1,9 +1,4 @@
-import 'package:camerawesome/src/orchestrator/models/sensor_config.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
-import 'package:camerawesome/src/orchestrator/models/sensors.dart';
-import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_bouncing_widget.dart';
-import 'package:camerawesome/src/widgets/utils/awesome_oriented_widget.dart';
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 
 class AwesomeSensorTypeSelector extends StatefulWidget {
@@ -51,7 +46,10 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
       return const SizedBox.shrink();
     }
 
-    if (sensorConfigSnapshot.data?.sensor == Sensors.front) {
+    if (sensorConfigSnapshot.data != null &&
+        sensorConfigSnapshot.data!.sensors.isNotEmpty &&
+        sensorConfigSnapshot.data!.sensors.first.position ==
+            SensorPosition.front) {
       return const SizedBox.shrink();
     }
 
@@ -89,7 +87,7 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
                     sensorType: SensorType.ultraWideAngle,
                     isSelected: snapshot.data == SensorType.ultraWideAngle,
                     onTap: () {
-                      widget.state.setSensorType(SensorType.ultraWideAngle,
+                      widget.state.setSensorType(0, SensorType.ultraWideAngle,
                           _sensorDeviceData!.ultraWideAngle!.uid);
                     },
                   ),
@@ -98,7 +96,7 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
                     sensorType: SensorType.wideAngle,
                     isSelected: snapshot.data == SensorType.wideAngle,
                     onTap: () {
-                      widget.state.setSensorType(SensorType.wideAngle,
+                      widget.state.setSensorType(0, SensorType.wideAngle,
                           _sensorDeviceData!.wideAngle!.uid);
                     },
                   ),
@@ -107,7 +105,7 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
                     sensorType: SensorType.telephoto,
                     isSelected: snapshot.data == SensorType.telephoto,
                     onTap: () {
-                      widget.state.setSensorType(SensorType.telephoto,
+                      widget.state.setSensorType(0, SensorType.telephoto,
                           _sensorDeviceData!.telephoto!.uid);
                     },
                   ),

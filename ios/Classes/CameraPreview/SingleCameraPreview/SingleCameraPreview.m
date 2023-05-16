@@ -5,13 +5,14 @@
 //  Created by Dimitri Dessus on 23/07/2020.
 //
 
-#import "CameraPreview.h"
+#import "SingleCameraPreview.h"
 
-@implementation CameraPreview {
+@implementation SingleCameraPreview {
   dispatch_queue_t _dispatchQueue;
 }
 
-- (instancetype)initWithCameraSensor:(CameraSensor)sensor
+- (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
+                        videoOptions:(nullable CupertinoVideoOptions *)videoOptions
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -24,6 +25,13 @@
   _completion = completion;
   _dispatchQueue = dispatchQueue;
   
+  _previewTexture = [[CameraPreviewTexture alloc] init];
+  
+  _cameraSensorPosition = sensor;
+  _aspectRatio = aspectRatioMode;
+  _mirrorFrontCamera = mirrorFrontCamera;
+  _videoOptions = videoOptions;
+  
   // Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
   _captureVideoOutput = [AVCaptureVideoDataOutput new];
@@ -32,13 +40,12 @@
   [_captureVideoOutput setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
   [_captureSession addOutputWithNoConnections:_captureVideoOutput];
   
-  _cameraSensor = sensor;
-  _aspectRatio = aspectRatioMode;
-  _mirrorFrontCamera = mirrorFrontCamera;
-  
   [self initCameraPreview:sensor];
   
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
+  if (mirrorFrontCamera && [_captureConnection isVideoMirroringSupported]) {
+    [_captureConnection setVideoMirrored:mirrorFrontCamera];
+  }
   
   _captureMode = captureMode;
   
@@ -92,6 +99,7 @@
   }
 }
 
+// TODO: move this to a QualityController
 /// Assign the default preview qualities
 - (void)setBestPreviewQuality {
   NSArray *qualities = [CameraQualities captureFormatsForDevice:_captureDevice];
@@ -117,7 +125,7 @@
 }
 
 /// Init camera preview with Front or Rear sensor
-- (void)initCameraPreview:(CameraSensor)sensor {
+- (void)initCameraPreview:(PigeonSensorPosition)sensor {
   // Here we set a preset which wont crash the device before switching to front or back
   [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
   
@@ -134,6 +142,15 @@
   _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
                                                               output:_captureVideoOutput];
   
+  // TODO: works but deprecated...
+  //  if ([_captureConnection isVideoMinFrameDurationSupported] && [_captureConnection isVideoMaxFrameDurationSupported]) {
+  //    CMTime frameDuration = CMTimeMake(1, 12);
+  //    [_captureConnection setVideoMinFrameDuration:frameDuration];
+  //    [_captureConnection setVideoMaxFrameDuration:frameDuration];
+  //  } else {
+  //    NSLog(@"Failed to set frame duration");
+  //  }
+  
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
   [_captureSession addConnection:_captureConnection];
@@ -145,15 +162,12 @@
   
   // Mirror the preview only on portrait mode
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  [_captureConnection setVideoMirrored:(_cameraSensor == Front)];
+  [_captureConnection setVideoMirrored:(_cameraSensorPosition == PigeonSensorPositionFront)];
   [_captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
 }
 
 - (void)dealloc {
-  if (_latestPixelBuffer) {
-    CFRelease(_latestPixelBuffer);
-  }
-  [_motionController startMotionDetection];
+  [self.motionController startMotionDetection];
 }
 
 /// Set camera preview size
@@ -227,7 +241,7 @@
 }
 
 /// Set sensor between Front & Rear camera
-- (void)setSensor:(CameraSensor)sensor deviceId:(NSString *)captureDeviceId {
+- (void)setSensor:(PigeonSensor *)sensor {
   // First remove all input & output
   [_captureSession beginConfiguration];
   
@@ -245,11 +259,11 @@
   [_captureSession removeOutput:_capturePhotoOutput];
   [_captureSession removeConnection:_captureConnection];
   
-  _cameraSensor = sensor;
-  _captureDeviceId = captureDeviceId;
+  _cameraSensorPosition = sensor.position;
+  _captureDeviceId = sensor.deviceId;
   
   // Init the camera preview with the selected sensor
-  [self initCameraPreview:sensor];
+  [self initCameraPreview:sensor.position];
   
   [self setBestPreviewQuality];
   
@@ -293,6 +307,10 @@
 
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   _mirrorFrontCamera = value;
+  
+  if ([_captureConnection isVideoMirroringSupported]) {
+      [_captureConnection setVideoMirrored:value];
+  }
 }
 
 /// Set flash mode
@@ -302,7 +320,7 @@
     return;
   }
   
-  if (_cameraSensor == Front) {
+  if (_cameraSensorPosition == PigeonSensorPositionFront) {
     *error = [FlutterError errorWithCode:@"FLASH_UNSUPPORTED" message:@"can't set flash for portrait mode" details:@""];
     return;
   }
@@ -363,7 +381,7 @@
 }
 
 /// Get the first available camera on device (front or rear)
-- (NSString *)selectAvailableCamera:(CameraSensor)sensor {
+- (NSString *)selectAvailableCamera:(PigeonSensorPosition)sensor {
   if (_captureDeviceId != nil) {
     return _captureDeviceId;
   }
@@ -376,47 +394,13 @@
                                                        position:AVCaptureDevicePositionUnspecified];
   devices = discoverySession.devices;
   
-  NSInteger cameraType = (sensor == Front) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
+  NSInteger cameraType = (sensor == PigeonSensorPositionFront) ? AVCaptureDevicePositionFront : AVCaptureDevicePositionBack;
   for (AVCaptureDevice *device in devices) {
     if ([device position] == cameraType) {
       return [device uniqueID];
     }
   }
   return nil;
-}
-
-- (NSArray *)getSensors:(AVCaptureDevicePosition)position {
-  NSMutableArray *sensors = [NSMutableArray new];
-  
-  NSArray *sensorsType = @[AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeBuiltInTelephotoCamera, AVCaptureDeviceTypeBuiltInUltraWideCamera, AVCaptureDeviceTypeBuiltInTrueDepthCamera];
-  
-  AVCaptureDeviceDiscoverySession *discoverySession = [AVCaptureDeviceDiscoverySession
-                                                       discoverySessionWithDeviceTypes:sensorsType
-                                                       mediaType:AVMediaTypeVideo
-                                                       position:AVCaptureDevicePositionUnspecified];
-  
-  for (AVCaptureDevice *device in discoverySession.devices) {
-    PigeonSensorType type;
-    if (device.deviceType == AVCaptureDeviceTypeBuiltInTelephotoCamera) {
-      type = PigeonSensorTypeTelephoto;
-    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInUltraWideCamera) {
-      type = PigeonSensorTypeUltraWideAngle;
-    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInTrueDepthCamera) {
-      type = PigeonSensorTypeTrueDepth;
-    } else if (device.deviceType == AVCaptureDeviceTypeBuiltInWideAngleCamera) {
-      type = PigeonSensorTypeWideAngle;
-    } else {
-      type = PigeonSensorTypeUnknown;
-    }
-    
-    PigeonSensorTypeDevice *sensorType = [PigeonSensorTypeDevice makeWithSensorType:type name:device.localizedName iso:[NSNumber numberWithFloat:device.ISO] flashAvailable:[NSNumber numberWithBool:device.flashAvailable] uid:device.uniqueID];
-    
-    if (device.position == position) {
-      [sensors addObject:sensorType];
-    }
-  }
-  
-  return sensors;
 }
 
 /// Set capture mode between Photo & Video mode
@@ -449,7 +433,7 @@
   // Instanciate camera picture obj
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
                                                                              orientation:_motionController.deviceOrientation
-                                                                                  sensor:_cameraSensor
+                                                                          sensorPosition:_cameraSensorPosition
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
                                                                              aspectRatio:_aspectRatio
@@ -477,14 +461,14 @@
 
 # pragma mark - Camera video
 /// Record video into the given path
-- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (_imageStreamController.streamImages) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
     return;
   }
   
   if (!_videoController.isRecording) {
-    [_videoController recordVideoAtPath:path orientation:_deviceOrientation audioSetupCallback:^{
+    [_videoController recordVideoAtPath:path captureDevice:_captureDevice orientation:_deviceOrientation audioSetupCallback:^{
       [self setUpCaptureSessionForAudioError:^(NSError *error) {
         completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
       }];
@@ -495,7 +479,7 @@
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       
       completion(nil);
-    } options:options completion:completion];
+    } options:_videoOptions completion:completion];
   } else {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }
@@ -550,7 +534,6 @@
     }];
   }
   
-  
   [_captureSession commitConfiguration];
 }
 
@@ -586,17 +569,9 @@
 
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
   if (output == _captureVideoOutput) {
-    CVPixelBufferRef newBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-    CFRetain(newBuffer);
-    CVPixelBufferRef old = atomic_load(&_latestPixelBuffer);
-    while (!atomic_compare_exchange_strong(&_latestPixelBuffer, &old, newBuffer)) {
-      old = atomic_load(&_latestPixelBuffer);
-    }
-    if (old != nil) {
-      CFRelease(old);
-    }
-    if (_onFrameAvailable) {
-      _onFrameAvailable();
+    [self.previewTexture updateBuffer:sampleBuffer];
+    if (_onPreviewFrameAvailable) {
+      _onPreviewFrameAvailable();
     }
   }
   
@@ -609,18 +584,6 @@
   if (_videoController.isRecording) {
     [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:_captureVideoOutput];
   }
-}
-
-# pragma mark - Data manipulation
-
-/// Used to copy pixels to in-memory buffer
-- (CVPixelBufferRef _Nullable)copyPixelBuffer {
-  CVPixelBufferRef pixelBuffer = atomic_load(&_latestPixelBuffer);
-  while (!atomic_compare_exchange_strong(&_latestPixelBuffer, &pixelBuffer, nil)) {
-    pixelBuffer = atomic_load(&_latestPixelBuffer);
-  }
-  
-  return pixelBuffer;
 }
 
 @end

@@ -5,9 +5,9 @@ class CameraCharacteristics {
   const CameraCharacteristics._();
 
   static Future<bool> isVideoRecordingAndImageAnalysisSupported(
-    Sensors sensor,
+    SensorPosition sensor,
   ) {
-    return CameraInterface()
-        .isVideoRecordingAndImageAnalysisSupported(sensor.name.toUpperCase());
+    return CameraInterface().isVideoRecordingAndImageAnalysisSupported(
+        PigeonSensorPosition.values.byName(sensor.name));
   }
 }
