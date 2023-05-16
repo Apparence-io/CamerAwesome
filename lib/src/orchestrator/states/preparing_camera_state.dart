@@ -87,8 +87,8 @@ class PreparingCameraState extends CameraState {
         await CamerawesomePlugin.checkAndRequestPermissions(
       cameraContext.exifPreferences.saveGPSLocation,
       checkCameraPermissions: true,
-      checkMicrophonePermissions: cameraContext.initialCaptureMode ==
-          CaptureMode.video,
+      checkMicrophonePermissions:
+          cameraContext.initialCaptureMode == CaptureMode.video,
     );
     if (cameraContext.exifPreferences.saveGPSLocation &&
         !(grantedPermissions?.contains(CamerAwesomePermission.location) ==
