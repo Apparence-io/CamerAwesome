@@ -56,8 +56,7 @@ class CamerawesomePlugin {
 
   static Future<bool?> checkiOSPermissions(
       List<String?> permissionsName) async {
-    final permissions =
-        await _getInterface().checkPermissions(permissionsName);
+    final permissions = await _getInterface().checkPermissions(permissionsName);
     return permissions.isEmpty;
   }
 
@@ -218,7 +217,7 @@ class CamerawesomePlugin {
   }
 
   static Future<num?> getPreviewTexture(final int cameraPosition) {
-    return CameraInterface().getPreviewTextureId(cameraPosition);
+    return _getInterface().getPreviewTextureId(cameraPosition);
   }
 
   static Future<void> setPreviewSize(int width, int height) {
@@ -263,7 +262,7 @@ class CamerawesomePlugin {
       }),
     );
 
-    return CameraInterface().takePhoto(
+    return _getInterface().takePhoto(
       request.keys.toList(),
       request.values.toList(),
     );
@@ -393,7 +392,7 @@ class CamerawesomePlugin {
 
   /// returns the min zoom available on device
   static Future<double?> getMinZoom() {
-    return CameraInterface().getMinZoom();
+    return _getInterface().getMinZoom();
   }
 
   static Future<bool> isMultiCamSupported() {
@@ -508,7 +507,7 @@ class CamerawesomePlugin {
         return CamerawesomePlugin.checkiOSPermissions(permissions)
             .then((givenPermissions) => CamerAwesomePermission.values);
       } else if (UniversalPlatform.isWeb) {
-        return _getInterface().checkPermissions().then((givenPermissions) =>
+        return _getInterface().checkPermissions([]).then((givenPermissions) =>
             givenPermissions
                 .map((e) => CamerAwesomePermission.values
                     .firstWhere((element) => element.name == e))

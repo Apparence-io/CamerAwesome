@@ -64,6 +64,12 @@
       "request": "launch",
       "type": "dart",
       "program": "example/lib/custom_awesome_ui.dart"
+    },
+    {
+      "name": "Drivable camera",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/run_drivable_camera.dart"
     }
   ]
 }

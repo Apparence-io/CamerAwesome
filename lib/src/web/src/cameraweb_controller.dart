@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html' as html;
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -14,6 +15,7 @@ import 'package:camerawesome/src/web/src/models/exceptions/camera_web_exception.
 import 'package:camerawesome/src/web/src/models/zoom_level.dart';
 import 'package:camerawesome/src/web/src/utils/dart_js_util.dart';
 import 'package:collection/collection.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/services.dart';
 
 class CameraWebController {
@@ -145,15 +147,33 @@ class CameraWebController {
 
   void stop() => cameraState.stop();
 
+  /// The [path] is just a fileName, the file will be downloaded in the browser
   Future<bool> takePhoto(final String path) async {
     final blob = await cameraState.takePhoto();
-    html.FileSystem filesystem =
-        await window!.requestFileSystem(1024 * 1024, persistent: false);
-    html.FileEntry fileEntry =
-        await filesystem.root?.createFile(path) as html.FileEntry;
-    html.FileWriter fw = await fileEntry.createWriter();
-    fw.write(blob);
+    final file = XFile(html.Url.createObjectUrl(blob));
+    await downloadFile(file, path);
+
+    // Below code is deprecated and does not seem to work (dart2js error)
+    // var filesystem =
+    //     await window!.requestFileSystem(1024 * 1024, persistent: false);
+    // html.FileEntry fileEntry =
+    //     await filesystem.root?.createFile(path) as html.FileEntry;
+    // html.FileWriter fw = await fileEntry.createWriter();
+    // fw.write(blob);
     return true;
+  }
+
+  Future<void> downloadFile(
+    XFile file,
+    String downloadName,
+  ) async {
+    // Encode our file in base64
+    final base64 = base64Encode(await file.readAsBytes());
+    // Create the link with the file
+    html.AnchorElement(href: 'data:application/octet-stream;base64,$base64')
+      ..target = 'blank'
+      ..download = downloadName
+      ..click();
   }
 
   ///
@@ -174,13 +194,28 @@ class CameraWebController {
   }
 
   void setZoomLevel(final double zoomLevel) {
-    _checkZoomSupported();
-    return cameraState.setZoomLevel(zoomLevel);
+    try {
+      _checkZoomSupported();
+      return cameraState.setZoomLevel(zoomLevel);
+    } on CameraWebException {}
   }
 
   double getMaxZoom() {
-    _checkZoomSupported();
-    return cameraState.getZoomLevelCapability().maximum;
+    try {
+      _checkZoomSupported();
+      return cameraState.getZoomLevelCapability().maximum;
+    } on CameraWebException {
+      return 0;
+    }
+  }
+
+  double getMinZoom() {
+    try {
+      _checkZoomSupported();
+      return cameraState.getZoomLevelCapability().minimum;
+    } on CameraWebException {
+      return 0;
+    }
   }
 
   void setCaptureMode(final CaptureMode captureMode) {

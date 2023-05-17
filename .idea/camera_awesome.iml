@@ -30,6 +30,12 @@
       <sourceFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/patrol/android/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/patrol/example/android/app/src/androidTest/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/patrol/example/android/app/src/main/kotlin" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.pub" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

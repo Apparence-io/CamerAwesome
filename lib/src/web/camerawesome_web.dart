@@ -79,13 +79,13 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<List<String>> checkPermissions() async {
+  Future<List<String?>> checkPermissions(List<String?> permissions) {
     return _cameraWebController.checkPermissions();
   }
 
   @override
-  Future<bool> takePhoto(Map<PigeonSensor?, String?> sensors) async {
-    return _cameraWebController.takePhoto(sensors.entries.first.value!);
+  Future<bool> takePhoto(List<PigeonSensor?> sensors, List<String?> paths) {
+    return _cameraWebController.takePhoto(paths.first!);
   }
 
   @override
@@ -95,6 +95,11 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   @override
   Future<double> getMaxZoom() {
     return Future.value(_cameraWebController.getMaxZoom());
+  }
+
+  @override
+  Future<double> getMinZoom() {
+    return Future.value(_cameraWebController.getMinZoom());
   }
 
   @override
@@ -126,7 +131,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<PreviewSize?> getEffectivPreviewSize() {
+  Future<PreviewSize?> getEffectivPreviewSize(int index) {
     return Future.value(PreviewSize(width: 4096, height: 2160));
   }
 
@@ -162,7 +167,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
   }
 
   @override
-  Future<void> recordVideo(Map<PigeonSensor?, String?> sensors) {
+  Future<void> recordVideo(List<PigeonSensor?> sensors, List<String?> paths) {
     return Future.value();
   }
 
@@ -234,6 +239,7 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<bool> stop() async {
+    print("camerawesome_web stop");
     _cameraWebController.stop();
     return true;
   }

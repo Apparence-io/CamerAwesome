@@ -7,7 +7,6 @@ import 'package:camerawesome/src/orchestrator/states/handlers/filter_handler.dar
 import 'package:camerawesome/src/photofilters/filters/filters.dart';
 import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:universal_io/io.dart';
 
 class PhotoFilterModel {
   PhotoFilterModel(this.captureRequest, this.filter);
