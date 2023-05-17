@@ -28,6 +28,7 @@ import com.apparence.camerawesome.buttons.PhysicalButtonsHandler
 import com.apparence.camerawesome.buttons.PlayerService
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.SensorOrientationListener
+import com.apparence.camerawesome.utils.isMultiCamSupported
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -40,15 +41,12 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.subjects.BehaviorSubject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
 
 
@@ -71,8 +69,8 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var exifPreferences = ExifPreferences(false)
     private var cancellationTokenSource = CancellationTokenSource()
-    private var lastRecordedVideo: BehaviorSubject<Boolean>? = null
-    private var lastRecordedVideoSubscription: Disposable? = null
+    private var lastRecordedVideos: List<BehaviorSubject<Boolean>>? = null
+    private var lastRecordedVideoSubscriptions: MutableList<Disposable>? = null
     private var colorMatrix: List<Double>? = null
 
     private val noneFilter: List<Double> = listOf(
@@ -110,6 +108,14 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
+    private fun getCameraProvider(): ProcessCameraProvider {
+        configureCameraXLogs()
+        val future = ProcessCameraProvider.getInstance(
+            activity!!
+        )
+        return future.get()
+    }
+
 
     @SuppressLint("RestrictedApi")
     override fun setupCamera(
@@ -136,12 +142,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             activity!!.stopService(Intent(activity!!, PlayerService::class.java))
         }
 
-        configureCameraXLogs()
-
-        val future = ProcessCameraProvider.getInstance(
-            activity!!
-        )
-        val cameraProvider = future.get()
+        val cameraProvider = getCameraProvider()
 
         val mode = CaptureModes.valueOf(captureMode)
         cameraState = CameraXState(cameraProvider = cameraProvider,
@@ -149,7 +150,6 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                 (pigeonSensor.deviceId
                     ?: index.toString()) to textureRegistry!!.createSurfaceTexture()
             }.toMap(),
-//            cameraSelector = cameraSelector,
             sensors = sensors,
             mirrorFrontCamera = mirrorFrontCamera,
             currentCaptureMode = mode,
@@ -158,6 +158,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
             this.updateAspectRatio(aspectRatio)
             this.flashMode = FlashMode.valueOf(flashMode)
+            this.enableAudioRecording = videoOptions?.enableAudio ?: true
         }
         this.exifPreferences = exifPreferences
         orientationStreamListener =
@@ -178,7 +179,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         callback(Result.success(true))
     }
 
-    override fun checkPermissions(): List<String> {
+    override fun checkPermissions(permissions: List<String>): List<String> {
         throw Exception("Not implemented on Android")
     }
 
@@ -341,16 +342,27 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun takePhoto(
-        requests: Map<PigeonSensor, String?>,
-        callback: (Result<Boolean>) -> Unit
+        sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Boolean>) -> Unit
     ) {
+        if (sensors.size != paths.size) {
+            throw Exception("sensors and paths must have the same length")
+        }
+        if (paths.size != cameraState.imageCaptures.size) {
+            throw Exception("paths and imageCaptures must have the same length")
+        }
+
+        val sensorsMap = sensors.mapIndexed { index, pigeonSensor ->
+            pigeonSensor to paths[index]
+        }.toMap()
         CoroutineScope(Dispatchers.Main).launch {
-            val res: MutableMap<PigeonSensor, Boolean?> = requests.mapValues { null }.toMutableMap()
-            for (entry in requests.entries) {
+            val res: MutableMap<PigeonSensor, Boolean?> =
+                sensorsMap.mapValues { null }.toMutableMap()
+            for ((index, entry) in sensorsMap.entries.withIndex()) {
                 // On Android, path should be specified
                 val imageFile = File(entry.value!!)
                 imageFile.parentFile?.mkdirs()
-                res[entry.key] = takePhotoWith(imageFile)
+                // cameraState.imageCaptures must be in the same order as the sensors / paths lists
+                res[entry.key] = takePhotoWith(cameraState.imageCaptures[index], imageFile)
             }
             callback(Result.success(res.all { it.value == true }))
         }
@@ -358,83 +370,85 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi")
     private suspend fun takePhotoWith(
-        imageFile: File
-    ): Boolean = suspendCoroutine { continuation ->
+        imageCapture: ImageCapture, imageFile: File
+    ): Boolean = suspendCancellableCoroutine { continuation ->
         val metadata = ImageCapture.Metadata()
         if (cameraState.sensors.size == 1 && cameraState.sensors.first().position == PigeonSensorPosition.FRONT) {
             metadata.isReversedHorizontal = cameraState.mirrorFrontCamera
         }
         val outputFileOptions =
             ImageCapture.OutputFileOptions.Builder(imageFile).setMetadata(metadata).build()
-        for (imageCapture in cameraState.imageCaptures) {
-            imageCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
-            imageCapture.takePicture(
-                outputFileOptions,
-                ContextCompat.getMainExecutor(activity!!),
-                object : ImageCapture.OnImageSavedCallback {
-                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                        Log.d(
-                            "CameraX___", "Photo capture succeeded: ${outputFileResults.savedUri}"
+//        for (imageCapture in cameraState.imageCaptures) {
+        imageCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
+        imageCapture.takePicture(outputFileOptions,
+            ContextCompat.getMainExecutor(activity!!),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    if (colorMatrix != null && noneFilter != colorMatrix) {
+                        val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
+
+                        val originalBitmap = BitmapFactory.decodeFile(
+                            outputFileResults.savedUri?.path
                         )
-                        if (colorMatrix != null && noneFilter != colorMatrix) {
-                            val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
+                        val bitmapCopy = Bitmap.createBitmap(
+                            originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
+                        )
 
-                            val originalBitmap = BitmapFactory.decodeFile(
-                                outputFileResults.savedUri?.path
-                            )
-                            val bitmapCopy = Bitmap.createBitmap(
-                                originalBitmap.width, originalBitmap.height, Bitmap.Config.ARGB_8888
-                            )
+                        val canvas = Canvas(bitmapCopy)
+                        canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
+                            colorFilter = ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
+                                .toFloatArray())
+                        })
 
-                            val canvas = Canvas(bitmapCopy)
-                            canvas.drawBitmap(originalBitmap, 0f, 0f, Paint().apply {
-                                colorFilter =
-                                    ColorMatrixColorFilter(colorMatrix!!.map { it.toFloat() }
-                                        .toFloatArray())
-                            })
-
-                            try {
-                                FileOutputStream(outputFileResults.savedUri?.path).use { out ->
-                                    bitmapCopy.compress(
-                                        Bitmap.CompressFormat.JPEG, 100, out
-                                    )
-                                }
-                                exif.saveAttributes()
-                            } catch (e: IOException) {
-                                e.printStackTrace()
+                        try {
+                            FileOutputStream(outputFileResults.savedUri?.path).use { out ->
+                                bitmapCopy.compress(
+                                    Bitmap.CompressFormat.JPEG, 100, out
+                                )
                             }
+                            exif.saveAttributes()
+                        } catch (e: IOException) {
+                            e.printStackTrace()
                         }
+                    }
 
-                        if (exifPreferences.saveGPSLocation) {
-                            retrieveLocation {
-                                val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
-                                outputFileOptions.metadata.location = it
-                                exif.setGpsInfo(it)
+                    if (exifPreferences.saveGPSLocation) {
+                        retrieveLocation {
+                            val exif = ExifInterface(outputFileResults.savedUri!!.path!!)
+                            outputFileOptions.metadata.location = it
+                            exif.setGpsInfo(it)
 //                            Log.d("CAMERAX__EXIF", "GPS info saved ${it?.latitude} ${it?.longitude}")
-                                // We need to actually save the exif data to the file system
-                                exif.saveAttributes()
-                                continuation.resume(true)
-                            }
-                        } else {
+                            // We need to actually save the exif data to the file system
+                            exif.saveAttributes()
                             continuation.resume(true)
                         }
+                    } else {
+                        if (continuation.isActive) continuation.resume(true)
                     }
+                }
 
-                    override fun onError(exception: ImageCaptureException) {
-                        Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
-                        continuation.resume(false)
-                    }
-                })
-        }
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e(CamerawesomePlugin.TAG, "Error capturing picture", exception)
+                    continuation.resume(false)
+                }
+            })
+//        }
     }
 
     @SuppressLint("RestrictedApi", "MissingPermission")
     override fun recordVideo(
-        requests: Map<PigeonSensor, String?>,
-        callback: (Result<Unit>) -> Unit
+        sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Unit>) -> Unit
     ) {
-        // TODO Handle multiple videos requests
-        val path = requests.values.first()!!
+        if (sensors.size != paths.size) {
+            throw Exception("sensors and paths must have the same length")
+        }
+        if (paths.size != cameraState.videoCaptures.size) {
+            throw Exception("paths and imageCaptures must have the same length")
+        }
+
+        val requests = sensors.mapIndexed { index, pigeonSensor ->
+            pigeonSensor to paths[index]
+        }.toMap()
         CoroutineScope(Dispatchers.Main).launch {
             var ignoreAudio = false
             if (cameraState.enableAudioRecording) {
@@ -455,42 +469,52 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             }
 
 
-            lastRecordedVideoSubscription?.dispose()
-            lastRecordedVideo = BehaviorSubject.create()
-            val recordingListener = Consumer<VideoRecordEvent> { event ->
-                when (event) {
-                    is VideoRecordEvent.Start -> {
-                        Log.d(CamerawesomePlugin.TAG, "Capture Started")
-                    }
+            lastRecordedVideoSubscriptions?.forEach { it.dispose() }
+            lastRecordedVideos = buildList {
+                for (i in (0 until requests.size)) {
+                    this.add(BehaviorSubject.create())
+                }
+            }
+            cameraState.recordings = mutableListOf()
+            lastRecordedVideoSubscriptions = mutableListOf()
+            for ((index, videoCapture) in cameraState.videoCaptures.values.withIndex()) {
+                val recordingListener = Consumer<VideoRecordEvent> { event ->
+                    when (event) {
+                        is VideoRecordEvent.Start -> {
+                            Log.d(CamerawesomePlugin.TAG, "Capture Started")
+                        }
 
-                    is VideoRecordEvent.Finalize -> {
-                        if (!event.hasError()) {
-                            Log.d(
-                                CamerawesomePlugin.TAG,
-                                "Video capture succeeded: ${event.outputResults.outputUri}"
-                            )
-                            lastRecordedVideo!!.onNext(true)
-                        } else {
-                            // update app state when the capture failed.
-                            cameraState.apply {
-                                recording?.close()
-                                recording = null
+                        is VideoRecordEvent.Finalize -> {
+                            if (!event.hasError()) {
+                                Log.d(
+                                    CamerawesomePlugin.TAG,
+                                    "Video capture succeeded: ${event.outputResults.outputUri}"
+                                )
+                                lastRecordedVideos!![index].onNext(true)
+                            } else {
+                                // update app state when the capture failed.
+                                cameraState.apply {
+                                    recordings?.get(index)?.close()
+                                    if (recordings?.all {
+                                            it.isClosed
+                                        } == true) {
+                                        recordings = null
+                                    }
+                                }
+                                Log.e(
+                                    CamerawesomePlugin.TAG,
+                                    "Video capture ends with error: ${event.error}"
+                                )
+                                lastRecordedVideos!![index].onNext(false)
                             }
-                            Log.e(
-                                CamerawesomePlugin.TAG,
-                                "Video capture ends with error: ${event.error}"
-                            )
-                            lastRecordedVideo!!.onNext(false)
                         }
                     }
                 }
-            }
-            for (videoCapture in cameraState.videoCaptures.values) {
                 videoCapture.targetRotation = orientationStreamListener!!.surfaceOrientation
-                cameraState.recording = videoCapture.output.prepareRecording(
-                    activity!!, FileOutputOptions.Builder(File(path)).build()
+                cameraState.recordings!!.add(videoCapture.output.prepareRecording(
+                    activity!!, FileOutputOptions.Builder(File(paths[index]!!)).build()
                 ).apply { if (cameraState.enableAudioRecording && !ignoreAudio) withAudioEnabled() }
-                    .start(cameraState.executor(activity!!), recordingListener)
+                    .start(cameraState.executor(activity!!), recordingListener))
             }
             callback(Result.success(Unit))
         }
@@ -498,23 +522,26 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     override fun stopRecordingVideo(callback: (Result<Boolean>) -> Unit) {
         var submitted = false
-        val countDownTimer = object : CountDownTimer(5000, 5000) {
-            override fun onTick(interval: Long) {}
-            override fun onFinish() {
-                if (!submitted) {
-                    submitted = true
-                    callback(Result.success(false))
+        for (index in 0 until cameraState.recordings!!.size) {
+            val countDownTimer = object : CountDownTimer(5000, 5000) {
+                override fun onTick(interval: Long) {}
+                override fun onFinish() {
+                    if (!submitted) {
+                        submitted = true
+                        callback(Result.success(false))
+                    }
                 }
             }
-        }
-        countDownTimer.start()
-        cameraState.recording?.stop()
-        lastRecordedVideoSubscription = lastRecordedVideo!!.subscribe {
-            countDownTimer.cancel()
-            if (!submitted) {
-                submitted = true
-                callback(Result.success(it))
-            }
+            countDownTimer.start()
+
+            cameraState.recordings!![index].stop()
+            lastRecordedVideoSubscriptions!!.add(lastRecordedVideos!![index].subscribe({ it ->
+                countDownTimer.cancel()
+                if (!submitted) {
+                    submitted = true
+                    callback(Result.success(it))
+                }
+            }, { error -> error.printStackTrace() }))
         }
     }
 
@@ -527,11 +554,11 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun pauseVideoRecording() {
-        cameraState.recording?.pause()
+        cameraState.recordings?.forEach { it.pause() }
     }
 
     override fun resumeVideoRecording() {
-        cameraState.recording?.resume()
+        cameraState.recordings?.forEach { it.resume() }
     }
 
     override fun receivedImageFromStream() {
@@ -545,6 +572,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun stop(): Boolean {
+        orientationStreamListener?.stop()
         cameraState.stop()
         return true
     }
@@ -598,8 +626,27 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         )
     }
 
+    /**
+     * This method must be called after bindToLifecycle has been called
+     *
+     * @return the max zoom ratio
+     */
     override fun getMaxZoom(): Double {
         return cameraState.maxZoomRatio
+    }
+
+    /**
+     * This method must be called after bindToLifecycle has been called
+     *
+     * @return the min zoom ratio
+     */
+    override fun getMinZoom(): Double {
+        return cameraState.minZoomRatio
+    }
+
+    fun convertLinearToRatio(linear: Double): Double {
+        // TODO Not sure if this is correct
+        return linear * getMaxZoom() / getMinZoom()
     }
 
     @Deprecated("Use focusOnPoint instead")
@@ -658,13 +705,17 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         }
     }
 
+
+    @SuppressLint("RestrictedApi")
     @ExperimentalCamera2Interop
     override fun isMultiCamSupported(): Boolean {
-        return cameraState.isMultiCamSupported()
+        return getCameraProvider().isMultiCamSupported()
     }
 
     /// Changing the recording audio mode can't be changed once a recording has starded
-    override fun setRecordingAudioMode(enableAudio: Boolean, callback: (Result<Boolean>) -> Unit) {
+    override fun setRecordingAudioMode(
+        enableAudio: Boolean, callback: (Result<Boolean>) -> Unit
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             cameraPermissions.requestPermissions(
                 activity!!,
@@ -696,12 +747,12 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun getEffectivPreviewSize(): PreviewSize {
-        val res = cameraState.previews!!.first().resolutionInfo?.resolution
+    override fun getEffectivPreviewSize(index: Long): PreviewSize {
+        val res = cameraState.previews!![index.toInt()].resolutionInfo?.resolution
         return if (res != null) {
             val rota90 = 90
             val rota270 = 270
-            when (cameraState.previews!!.first().resolutionInfo?.rotationDegrees) {
+            when (cameraState.previews!![index.toInt()].resolutionInfo?.rotationDegrees) {
                 rota90, rota270 -> {
                     PreviewSize(res.height.toDouble(), res.width.toDouble())
                 }

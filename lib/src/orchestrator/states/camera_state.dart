@@ -78,7 +78,7 @@ abstract class CameraState {
     SensorConfig next;
     if (previous.sensors.length <= 1) {
       next = SensorConfig.single(
-        sensor: previous.sensors.first!.position == SensorPosition.back
+        sensor: previous.sensors.first.position == SensorPosition.back
             ? Sensor.position(SensorPosition.front)
             : Sensor.position(SensorPosition.back),
         // TODO Initial values are not set in native when set like this
@@ -120,8 +120,8 @@ abstract class CameraState {
     final next = SensorConfig.multiple(
       sensors: previous.sensors
           .map((sensor) {
-            if (sensorIndex == cameraPosition && sensor != null) {
-              if (sensor.type == PigeonSensorType.trueDepth) {
+            if (sensorIndex == cameraPosition) {
+              if (sensor.type == SensorType.trueDepth) {
                 sensor.position = SensorPosition.front;
               } else {
                 sensor.position = SensorPosition.back;
@@ -189,8 +189,8 @@ abstract class CameraState {
 
   SaveConfig? get saveConfig => cameraContext.saveConfig;
 
-  Future<PreviewSize> previewSize() {
-    return cameraContext.previewSize();
+  Future<PreviewSize> previewSize(int index) {
+    return cameraContext.previewSize(index);
   }
 
   Future<SensorDeviceData> getSensors() {

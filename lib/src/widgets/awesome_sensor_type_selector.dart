@@ -48,7 +48,7 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
 
     if (sensorConfigSnapshot.data != null &&
         sensorConfigSnapshot.data!.sensors.isNotEmpty &&
-        sensorConfigSnapshot.data!.sensors.first!.position ==
+        sensorConfigSnapshot.data!.sensors.first.position ==
             SensorPosition.front) {
       return const SizedBox.shrink();
     }

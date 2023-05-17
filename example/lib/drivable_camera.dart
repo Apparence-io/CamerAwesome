@@ -1,17 +1,14 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 
 class DrivableCamera extends StatelessWidget {
   final SaveConfig saveConfig;
   final List<Sensor> sensors;
-  final ExifPreferences? exifPreferences;
 
   const DrivableCamera({
     super.key,
     required this.saveConfig,
     required this.sensors,
-    this.exifPreferences,
   });
 
   @override
@@ -24,7 +21,6 @@ class DrivableCamera extends StatelessWidget {
           sensorConfig: sensors.length == 1
               ? SensorConfig.single(sensor: sensors.first)
               : SensorConfig.multiple(sensors: sensors),
-          exifPreferences: exifPreferences,
         ),
       ),
     );

@@ -19,8 +19,8 @@ class ExifPreferences {
 }
 
 class PigeonSensor {
-  final PigeonSensorPosition? position;
-  final PigeonSensorType? type;
+  final PigeonSensorPosition position;
+  final PigeonSensorType type;
   final String? deviceId;
 
   PigeonSensor({
@@ -59,7 +59,11 @@ enum QualityFallbackStrategy {
   lower,
 }
 
+/// Video recording options. Some of them are specific to each platform.
 class VideoOptions {
+  /// Enable audio while video recording
+  final bool enableAudio;
+
   // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
   final AndroidVideoOptions? android;
   final CupertinoVideoOptions? ios;
@@ -67,6 +71,7 @@ class VideoOptions {
   VideoOptions({
     required this.android,
     required this.ios,
+    required this.enableAudio,
   });
 }
 
@@ -87,13 +92,40 @@ class AndroidVideoOptions {
   });
 }
 
+enum CupertinoFileType {
+  quickTimeMovie,
+  mpeg4,
+  appleM4V,
+  type3GPP,
+  type3GPP2,
+}
+
+enum CupertinoCodecType {
+  h264,
+  hevc,
+  hevcWithAlpha,
+  jpeg,
+  appleProRes4444,
+  appleProRes422,
+  appleProRes422HQ,
+  appleProRes422LT,
+  appleProRes422Proxy,
+}
+
 class CupertinoVideoOptions {
-  final String fileType;
-  final String codec;
+  /// Specify video file type, defaults to [AVFileTypeQuickTimeMovie].
+  final CupertinoFileType? fileType;
+
+  /// Specify video codec, defaults to [AVVideoCodecTypeH264].
+  final CupertinoCodecType? codec;
+
+  /// Specify video fps, defaults to [30].
+  final int? fps;
 
   CupertinoVideoOptions({
-    required this.fileType,
-    required this.codec,
+    this.fileType,
+    this.codec,
+    this.fps,
   });
 }
 
@@ -304,7 +336,7 @@ abstract class CameraInterface {
     VideoOptions? videoOptions,
   );
 
-  List<String> checkPermissions();
+  List<String> checkPermissions(List<String> permissions);
 
   /// Returns given [CamerAwesomePermission] list (as String). Location permission might be
   /// refused but the app should still be able to run.
@@ -315,10 +347,10 @@ abstract class CameraInterface {
 
   // TODO async with void return type seems to not work (channel-error)
   @async
-  bool takePhoto(Map<PigeonSensor, String?> requests);
+  bool takePhoto(List<PigeonSensor> sensors, List<String?> paths);
 
   @async
-  void recordVideo(Map<PigeonSensor, String?> requests);
+  void recordVideo(List<PigeonSensor> sensors, List<String?> paths);
 
   void pauseVideoRecording();
 
@@ -361,6 +393,8 @@ abstract class CameraInterface {
 
   void setCorrection(double brightness);
 
+  double getMinZoom();
+
   double getMaxZoom();
 
   void setCaptureMode(String mode);
@@ -372,7 +406,7 @@ abstract class CameraInterface {
 
   void refresh();
 
-  PreviewSize? getEffectivPreviewSize();
+  PreviewSize? getEffectivPreviewSize(int index);
 
   void setPhotoSize(PreviewSize size);
 

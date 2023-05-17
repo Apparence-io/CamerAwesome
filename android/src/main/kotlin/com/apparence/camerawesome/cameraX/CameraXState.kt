@@ -10,11 +10,7 @@ import android.view.Surface
 import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
-import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
-import androidx.camera.core.concurrent.ConcurrentCamera
-import androidx.camera.core.concurrent.ConcurrentCameraConfig
-import androidx.camera.core.concurrent.SingleCameraConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.core.content.ContextCompat
@@ -22,6 +18,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.apparence.camerawesome.CamerawesomePlugin
 import com.apparence.camerawesome.models.FlashMode
 import com.apparence.camerawesome.sensors.SensorOrientation
+import com.apparence.camerawesome.utils.isMultiCamSupported
 import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executor
@@ -40,7 +37,7 @@ data class CameraXState(
     var previewCamera: Camera? = null,
     private var currentCaptureMode: CaptureModes,
     var enableAudioRecording: Boolean = true,
-    var recording: Recording? = null,
+    var recordings: MutableList<Recording>? = null,
     var enableImageStream: Boolean = false,
     var photoSize: Size? = null,
     var previewSize: Size? = null,
@@ -54,14 +51,35 @@ data class CameraXState(
 ) : EventChannel.StreamHandler, SensorOrientation {
 
     var imageAnalysisBuilder: ImageAnalysisBuilder? = null
-    var imageAnalysis: ImageAnalysis? = null
+    private var imageAnalysis: ImageAnalysis? = null
+
+    private val mainCameraInfos: CameraInfo
+        @SuppressLint("RestrictedApi") get() {
+            if (previewCamera == null && concurrentCamera == null) {
+                throw Exception("Trying to access main camera infos before setting the preview")
+            }
+            return previewCamera?.cameraInfo ?: concurrentCamera?.cameras?.first()?.cameraInfo!!
+        }
+
+    private val mainCameraControl: CameraControl
+        @SuppressLint("RestrictedApi") get() {
+            if (previewCamera == null && concurrentCamera == null) {
+                throw Exception("Trying to access main camera control before setting the preview")
+            }
+            return previewCamera?.cameraControl
+                ?: concurrentCamera?.cameras?.first()?.cameraControl!!
+        }
 
     val maxZoomRatio: Double
-        get() = previewCamera!!.cameraInfo.zoomState.value!!.maxZoomRatio.toDouble()
+        @SuppressLint("RestrictedApi") get() = mainCameraInfos.zoomState.value!!.maxZoomRatio.toDouble()
+
+
+    val minZoomRatio: Double
+        get() = mainCameraInfos.zoomState.value!!.minZoomRatio.toDouble()
 
 
     val portrait: Boolean
-        get() = previewCamera!!.cameraInfo.sensorRotationDegrees % 180 == 0
+        get() = mainCameraInfos.sensorRotationDegrees % 180 == 0
 
     fun executor(activity: Activity): Executor {
         return ContextCompat.getMainExecutor(activity)
@@ -72,8 +90,8 @@ data class CameraXState(
         previews = mutableListOf()
         imageCaptures.clear()
         videoCaptures.clear()
-        if (isMultiCamSupported() && sensors.size > 1) {
-            val singleCameraConfigs = mutableListOf<SingleCameraConfig>()
+        if (cameraProvider.isMultiCamSupported() && sensors.size > 1) {
+            val singleCameraConfigs = mutableListOf<ConcurrentCamera.SingleCameraConfig>()
             var isFirst = true
             for ((index, sensor) in sensors.withIndex()) {
                 val useCaseGroupBuilder = UseCaseGroup.Builder()
@@ -156,16 +174,17 @@ data class CameraXState(
                     ViewPort.Builder(rational, Surface.ROTATION_0).build()
                 )
                 singleCameraConfigs.add(
-                    SingleCameraConfig.Builder().setLifecycleOwner(activity as LifecycleOwner)
-                        .setCameraSelector(cameraSelector)
-                        .setUseCaseGroup(useCaseGroupBuilder.build()).build()
+                    ConcurrentCamera.SingleCameraConfig(
+                        cameraSelector,
+                        useCaseGroupBuilder.build(), activity as LifecycleOwner,
+                    )
                 )
             }
 
             cameraProvider.unbindAll()
             previewCamera = null
             concurrentCamera = cameraProvider.bindToLifecycle(
-                ConcurrentCameraConfig.Builder().setCameraConfigs(singleCameraConfigs).build()
+                singleCameraConfigs
             )
             // Only set flash to the main camera (the first one)
             concurrentCamera!!.cameras.first().cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
@@ -275,7 +294,9 @@ data class CameraXState(
             recorderBuilder.setTargetVideoEncodingBitRate(videoOptions.bitrate.toInt())
         }
         val recorder = recorderBuilder.build()
-        return VideoCapture.withOutput(recorder)
+        return VideoCapture.Builder<Recorder>(recorder)
+            .setMirrorMode(if (mirrorFrontCamera) MirrorMode.MIRROR_MODE_ON_FRONT_ONLY else MirrorMode.MIRROR_MODE_OFF)
+            .build()
     }
 
     @SuppressLint("RestrictedApi")
@@ -294,11 +315,11 @@ data class CameraXState(
     }
 
     fun setLinearZoom(zoom: Float) {
-        previewCamera!!.cameraControl.setLinearZoom(zoom)
+        mainCameraControl.setLinearZoom(zoom)
     }
 
     fun startFocusAndMetering(autoFocusAction: FocusMeteringAction) {
-        previewCamera!!.cameraControl.startFocusAndMetering(autoFocusAction)
+        mainCameraControl.startFocusAndMetering(autoFocusAction)
     }
 
     fun setCaptureMode(captureMode: CaptureModes) {
@@ -307,21 +328,23 @@ data class CameraXState(
             CaptureModes.PHOTO -> {
                 // Release video related stuff
                 videoCaptures.clear()
-                recording?.close()
-                recording = null
+                recordings?.forEach { it.close() }
+                recordings = null
 
             }
+
             CaptureModes.VIDEO -> {
                 // Release photo related stuff
                 imageCaptures.clear()
             }
+
             else -> {
                 // Preview and analysis only modes
 
                 // Release video related stuff
                 videoCaptures.clear()
-                recording?.close()
-                recording = null
+                recordings?.forEach { it.close() }
+                recordings = null
 
                 // Release photo related stuff
                 imageCaptures.clear()
@@ -332,14 +355,14 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun previewSizes(): List<Size> {
         val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
-            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.cameraInfo),
-            Camera2CameraInfo.from(previewCamera!!.cameraInfo).cameraId
+            Camera2CameraInfo.extractCameraCharacteristics(mainCameraInfos),
+            Camera2CameraInfo.from(mainCameraInfos).cameraId
         )
         return CamcorderProfileResolutionQuirk(characteristics).supportedResolutions
     }
 
     fun qualityAvailableSizes(): List<String> {
-        val supportedQualities = QualitySelector.getSupportedQualities(previewCamera!!.cameraInfo)
+        val supportedQualities = QualitySelector.getSupportedQualities(mainCameraInfos)
         return supportedQualities.map {
             when (it) {
                 Quality.UHD -> {
@@ -418,25 +441,5 @@ data class CameraXState(
             "RATIO_1_1" -> Rational(1, 1)
             else -> Rational(3, 4)
         }
-    }
-
-    @SuppressLint("RestrictedApi")
-    @ExperimentalCamera2Interop
-    fun isMultiCamSupported(): Boolean {
-        val concurrentInfos = cameraProvider.availableConcurrentCameraInfos
-        var hasOnePair = false
-        for (cameraInfos in concurrentInfos) {
-//            Log.d("CameraX___INFOS", "Concurrent camera group below")
-            if (cameraInfos.size > 1) {
-                hasOnePair = true
-            }
-//            for (cameraInfo in cameraInfos) {
-//                Log.d(
-//                    "CameraX___INFOS",
-//                    "Single Camera facing ${if (cameraInfo.lensFacing == CameraSelector.LENS_FACING_BACK) "back" else "front"}"
-//                )
-//            }
-        }
-        return hasOnePair
     }
 }

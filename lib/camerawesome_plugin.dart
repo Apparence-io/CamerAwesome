@@ -54,8 +54,10 @@ class CamerawesomePlugin {
   static CameraInterface _getInterface() =>
       UniversalPlatform.isWeb ? CamerawesomeWeb() : CameraInterface();
 
-  static Future<bool?> checkiOSPermissions() async {
-    final permissions = await _getInterface().checkPermissions();
+  static Future<bool?> checkiOSPermissions(
+      List<String?> permissionsName) async {
+    final permissions =
+        await _getInterface().checkPermissions(permissionsName);
     return permissions.isEmpty;
   }
 
@@ -187,15 +189,16 @@ class CamerawesomePlugin {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
     required VideoOptions? videoOptions,
+    required bool mirrorFrontCamera,
   }) async {
     return _getInterface()
         .setupCamera(
           sensorConfig.sensors.map((e) {
-            return e?.toPigeon();
+            return e.toPigeon();
           }).toList(),
           sensorConfig.aspectRatio.name.toUpperCase(),
           sensorConfig.zoom,
-          sensorConfig.mirrorFrontCamera,
+          mirrorFrontCamera,
           enablePhysicalButton,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),
@@ -229,8 +232,8 @@ class CamerawesomePlugin {
 
   /// android has a limits on preview size and fallback to 1920x1080 if preview is too big
   /// So to prevent having different ratio we get the real preview Size directly from nativ side
-  static Future<PreviewSize> getEffectivPreviewSize() async {
-    final ps = await _getInterface().getEffectivPreviewSize();
+  static Future<PreviewSize> getEffectivPreviewSize(int index) async {
+    final ps = await _getInterface().getEffectivPreviewSize(index);
     if (ps != null) {
       return PreviewSize(width: ps.width, height: ps.height);
     } else {
@@ -251,13 +254,19 @@ class CamerawesomePlugin {
   }
 
   static Future<bool> takePhoto(CaptureRequest captureRequest) async {
-    return CameraInterface().takePhoto(captureRequest.when(
+    final request = captureRequest.when(
       single: (single) => {
         single.sensor.toPigeon(): single.file?.path,
       },
-      multiple: (multiple) => multiple.fileBySensor
-          .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
-    ));
+      multiple: (multiple) => multiple.fileBySensor.map((key, value) {
+        return MapEntry(key.toPigeon(), value?.path);
+      }),
+    );
+
+    return CameraInterface().takePhoto(
+      request.keys.toList(),
+      request.values.toList(),
+    );
   }
 
   static Future<void> recordVideo(CaptureRequest request) {
@@ -269,15 +278,15 @@ class CamerawesomePlugin {
           .map((key, value) => MapEntry(key.toPigeon(), value?.path)),
     );
     if (UniversalPlatform.isAndroid) {
-      //   Est-ce qu'on devrait pas laisser le natif écrire le fichier où il veut et tant pis pour le path d'où ça ecrit?
-      // ça simplifierait beaucoup de choses
-      // Sinon il faut convertir une CaptureReqquest en objet pigeon, probablement une map<Sensor, String?>(null sur le web)
-      // En natif, on ferait probablement la map juste en fonction de l'ordre des sensors ou quelque chose comme ça.
-      // Il faudra peut-etre identifier chaque Sensor dart pour faire le mapping correctement avec un ID... sa fé réfléchire
-      // TODO: add video options for Android
-      return CameraInterface().recordVideo(pathBySensor);
+      return CameraInterface().recordVideo(
+        pathBySensor.keys.toList(),
+        pathBySensor.values.toList(),
+      );
     } else {
-      return CameraInterface().recordVideo(pathBySensor);
+      return CameraInterface().recordVideo(
+        pathBySensor.keys.toList(),
+        pathBySensor.values.toList(),
+      );
     }
   }
 
@@ -378,8 +387,13 @@ class CamerawesomePlugin {
   }
 
   /// returns the max zoom available on device
-  static Future<num?> getMaxZoom() {
+  static Future<double?> getMaxZoom() {
     return _getInterface().getMaxZoom();
+  }
+
+  /// returns the min zoom available on device
+  static Future<double?> getMinZoom() {
+    return CameraInterface().getMinZoom();
   }
 
   static Future<bool> isMultiCamSupported() {
@@ -466,7 +480,10 @@ class CamerawesomePlugin {
   // UTILITY METHODS
   // ---------------------------------------------------
   static Future<List<CamerAwesomePermission>?> checkAndRequestPermissions(
-      bool saveGpsLocation) async {
+    bool saveGpsLocation, {
+    bool checkMicrophonePermissions = true,
+    bool checkCameraPermissions = true,
+  }) async {
     try {
       if (UniversalPlatform.isAndroid) {
         return _getInterface()
@@ -479,7 +496,16 @@ class CamerawesomePlugin {
         });
       } else if (UniversalPlatform.isIOS) {
         // TODO iOS Return only permissions that were given
-        return CamerawesomePlugin.checkiOSPermissions()
+
+        List<String> permissions = [];
+        if (checkMicrophonePermissions) {
+          permissions.add("microphone");
+        }
+        if (checkCameraPermissions) {
+          permissions.add("camera");
+        }
+
+        return CamerawesomePlugin.checkiOSPermissions(permissions)
             .then((givenPermissions) => CamerAwesomePermission.values);
       } else if (UniversalPlatform.isWeb) {
         return _getInterface().checkPermissions().then((givenPermissions) =>

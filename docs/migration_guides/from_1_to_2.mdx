@@ -1,0 +1,84 @@
+# Migrating from 1.x.x to 2.x.x
+
+CamerAwesome 2.0.0 is a major release that brings a lot of new features and improvements.
+
+The most important change is that you can use several sensors concurrently which implied several API changes to CamerAwesome.
+
+This guide will help you to migrate your code from 1.x.x to 2.x.x.
+
+## Breaking changes
+
+The initial settings of the `CameraAwesomeBuilder` have been moved to either `SaveConfig` or `SensorConfig`.
+
+See the code diff below:
+
+```diff
+CameraAwesomeBuilder.awesome(
+-   sensor: Sensors.back,
+-   flashMode: FlashMode.auto,
+-   aspectRatio: CameraAspectRatios.ratio_4_3,
+-   mirrorFrontCamera: true,
+-   zoom: 0.0,
++   sensorConfig: SensorConfig.single(
++       sensor: Sensor.position(SensorPosition.back),
++       flashMode: FlashMode.auto,
++       aspectRatio: CameraAspectRatios.ratio_4_3,
++       zoom: 0.0,
++   ),
+-   exifPreferences: ExifPreferences(saveGPSLocation: true),
+-   enableAudio: true,
+    saveConfig: SaveConfig.photoAndVideo(
+        initialCaptureMode: CaptureMode.photo,
++       photoPathBuilder: (sensors) async {
++         final Directory extDir = await getTemporaryDirectory();
++         final testDir = await Directory(
++           '${extDir.path}/camerawesome',
++         ).create(recursive: true);
++         if (sensors.length == 1) {
++           final String filePath =
++               '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
++           return SingleCaptureRequest(filePath, sensors.first);
++         } else {
++           // Separate pictures taken with front and back camera
++           return MultipleCaptureRequest(
++             {
++               for (final sensor in sensors)
++                 sensor:
++                     '${testDir.path}/${sensor.position == SensorPosition.front ? 'front_' : "back_"}${DateTime.now().millisecondsSinceEpoch}.jpg',
++             },
++           );
++         }
++       },
++       videoPathBuilder: (sensors) async {
++           // same logic as photoPathBuilder
++       },
++       videoOptions: VideoOptions(
++         enableAudio: true,
++         ios: CupertinoVideoOptions(
++           fps: 10,
++         ),
++         android: AndroidVideoOptions(
++           bitrate: 6000000,
++           quality: VideoRecordingQuality.fhd,
++           fallbackStrategy: QualityFallbackStrategy.lower,
++         ),
++       ),
++       exifPreferences: ExifPreferences(saveGPSLocation: true),
++       mirrorFrontCamera: true,
+     ),
+    ...
+)
+```
+
+
+## Changelog
+
+- ✨ Added multi-camera feature, allowing users to display multiple camera previews simultaneously. Note that this feature is currently in beta, and we do not recommend using it in production.
+- ✨ Users can now pass options (such as bitrate, fps, and quality) when recording a video.
+- ✨🍏 Implemented brightness and exposure level settings on iOS / iPadOS.
+- ✨🤖 Added zoom indicator UI.
+- ✨🤖 Video recording is now mirrored if `mirrorFrontCamera` is set to true.
+- ♻️🍏 Completely reworked the code for increased clarity and performance.
+- 🐛 Fixed patrol tests.
+- 🐛 Fixed the use of capture button parameter in awesome bottom actions (thanks to @juliuszmandrosz).
+- 📝 Added Chinese README.md (thanks to @chyiiiiiiiiiiii).

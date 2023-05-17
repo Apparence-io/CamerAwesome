@@ -47,9 +47,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Which sensors you want to use
   final SensorConfig sensorConfig;
 
-  /// choose if you want to persist user location in image metadata or not
-  final ExifPreferences? exifPreferences;
-
   /// TODO: DOC
   final AwesomeFilter? filter;
 
@@ -58,9 +55,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   // one of fitWidth, fitHeight, contain, cover
   // currently only work for Android, this do nothing on iOS
   final CameraPreviewFit previewFit;
-
-  /// Enable audio while video recording
-  final bool enableAudio;
 
   /// Enable physical button (volume +/-) to take photo or record video
   final bool enablePhysicalButton;
@@ -106,11 +100,11 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// do image analysis
   final bool showPreview;
 
+  final PictureInPictureConfigBuilder? pictureInPictureConfigBuilder;
+
   const CameraAwesomeBuilder._({
     required this.sensorConfig,
     required this.enablePhysicalButton,
-    required this.exifPreferences,
-    required this.enableAudio,
     required this.progressIndicator,
     required this.saveConfig,
     required this.onMediaTap,
@@ -126,6 +120,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     this.previewPadding = EdgeInsets.zero,
     this.previewAlignment = Alignment.center,
     this.showPreview = true,
+    required this.pictureInPictureConfigBuilder,
   });
 
   /// Use the camera with the built-in interface.
@@ -133,13 +128,10 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// You need to provide a [SaveConfig] to define if you want to take
   /// photos, videos or both and where to save them.
   ///
-  /// You can initiate the camera with a few parameters:
+  /// You can initiate the camera with a few parameters through the [SensorConfig]:
   /// - which [sensors] to use ([front] or [back])
   /// - which [flashMode] to use
   /// - how much zoom you want (0.0 = no zoom, 1.0 = max zoom)
-  /// - [enableAudio] when recording a video or not
-  /// - [exifPreferences] to indicate if you want to save GPS location when
-  /// taking photos
   ///
   /// If you want to customize the UI of the camera, you have several options:
   /// - use a [progressIndicator] and define what to do when the preview of the
@@ -155,8 +147,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   CameraAwesomeBuilder.awesome({
     SensorConfig? sensorConfig,
     bool enablePhysicalButton = false,
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
     Widget? progressIndicator,
     required SaveConfig saveConfig,
     Function(MediaCapture)? onMediaTap,
@@ -173,13 +163,12 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Widget Function(CameraState state)? middleContentBuilder,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(
                 sensor: Sensor.position(SensorPosition.back),
               ),
-          exifPreferences: exifPreferences,
-          enableAudio: enableAudio,
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
           builder: (cameraModeState, previewSize, previewRect) {
@@ -203,6 +192,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
   /// 🚧 Experimental
@@ -212,8 +202,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
     SensorConfig? sensorConfig,
     bool mirrorFrontCamera = false,
     bool enablePhysicalButton = false,
-    ExifPreferences? exifPreferences,
-    bool enableAudio = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
     required SaveConfig saveConfig,
@@ -226,15 +214,13 @@ class CameraAwesomeBuilder extends StatefulWidget {
     AwesomeTheme? theme,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(
                 sensor: Sensor.position(SensorPosition.back),
-                mirrorFrontCamera: mirrorFrontCamera,
               ),
           enablePhysicalButton: enablePhysicalButton,
-          exifPreferences: exifPreferences,
-          enableAudio: enableAudio,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: saveConfig,
@@ -249,6 +235,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
   /// Use this constructor when you don't want to take pictures or record videos.
@@ -265,12 +252,11 @@ class CameraAwesomeBuilder extends StatefulWidget {
     CameraPreviewFit? previewFit,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
-          exifPreferences: null,
-          enableAudio: false,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: null,
@@ -285,6 +271,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
   /// Use this constructor when you only want to do image analysis.
@@ -296,8 +283,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// and  displaying that JPEG image.
   CameraAwesomeBuilder.analysisOnly({
     SensorConfig? sensorConfig,
-    FlashMode flashMode = FlashMode.none,
-    double zoom = 0.0,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
@@ -307,8 +292,6 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
-          exifPreferences: null,
-          enableAudio: false,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: null,
@@ -324,6 +307,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           previewPadding: EdgeInsets.zero,
           previewAlignment: Alignment.center,
           showPreview: false,
+          pictureInPictureConfigBuilder: null,
         );
 
   @override
@@ -386,8 +370,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       saveConfig: widget.saveConfig,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
-      exifPreferences:
-          widget.exifPreferences ?? ExifPreferences(saveGPSLocation: false),
+      exifPreferences: widget.saveConfig?.exifPreferences ??
+          ExifPreferences(saveGPSLocation: false),
     );
 
     // Initial CameraState is always PreparingState
@@ -470,6 +454,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                             ),
                         interfaceBuilder: widget.builder,
                         previewDecoratorBuilder: widget.previewDecoratorBuilder,
+                        pictureInPictureConfigBuilder:
+                            widget.pictureInPictureConfigBuilder,
                       ),
               ),
             ],

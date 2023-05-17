@@ -60,7 +60,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (CGFloat)getMaxZoom;
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (CGSize)getEffectivPreviewSize;
-- (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
+- (void)takePhotoSensors:(nonnull NSArray<PigeonSensor *> *)sensors paths:(nonnull NSArray<NSString *> *)paths completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)dispose;
 - (void)setAspectRatio:(AspectRatio)ratio;
 - (void)setExifPreferencesGPSLocation:(bool)gpsLocation completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;

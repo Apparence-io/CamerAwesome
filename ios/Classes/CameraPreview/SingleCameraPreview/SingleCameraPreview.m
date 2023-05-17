@@ -12,6 +12,7 @@
 }
 
 - (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
+                        videoOptions:(nullable CupertinoVideoOptions *)videoOptions
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -29,8 +30,9 @@
   _cameraSensorPosition = sensor;
   _aspectRatio = aspectRatioMode;
   _mirrorFrontCamera = mirrorFrontCamera;
+  _videoOptions = videoOptions;
   
-   //Creating capture session
+  // Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
   _captureVideoOutput = [AVCaptureVideoDataOutput new];
   _captureVideoOutput.videoSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_32BGRA)};
@@ -41,8 +43,9 @@
   [self initCameraPreview:sensor];
   
   [_captureConnection setAutomaticallyAdjustsVideoMirroring:NO];
-  
-//  [self configSession];
+  if (mirrorFrontCamera && [_captureConnection isVideoMirroringSupported]) {
+    [_captureConnection setVideoMirrored:mirrorFrontCamera];
+  }
   
   _captureMode = captureMode;
   
@@ -67,8 +70,6 @@
   }
   
   [self setBestPreviewQuality];
-  
-  // [self.cameraSession startRunning];
   
   return self;
 }
@@ -140,6 +141,15 @@
   // Create connection
   _captureConnection = [AVCaptureConnection connectionWithInputPorts:_captureVideoInput.ports
                                                               output:_captureVideoOutput];
+  
+  // TODO: works but deprecated...
+  //  if ([_captureConnection isVideoMinFrameDurationSupported] && [_captureConnection isVideoMaxFrameDurationSupported]) {
+  //    CMTime frameDuration = CMTimeMake(1, 12);
+  //    [_captureConnection setVideoMinFrameDuration:frameDuration];
+  //    [_captureConnection setVideoMaxFrameDuration:frameDuration];
+  //  } else {
+  //    NSLog(@"Failed to set frame duration");
+  //  }
   
   // Attaching to session
   [_captureSession addInputWithNoConnections:_captureVideoInput];
@@ -297,6 +307,10 @@
 
 - (void)setMirrorFrontCamera:(bool)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   _mirrorFrontCamera = value;
+  
+  if ([_captureConnection isVideoMirroringSupported]) {
+      [_captureConnection setVideoMirrored:value];
+  }
 }
 
 /// Set flash mode
@@ -447,14 +461,14 @@
 
 # pragma mark - Camera video
 /// Record video into the given path
-- (void)recordVideoAtPath:(NSString *)path withOptions:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   if (_imageStreamController.streamImages) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
     return;
   }
   
   if (!_videoController.isRecording) {
-    [_videoController recordVideoAtPath:path orientation:_deviceOrientation audioSetupCallback:^{
+    [_videoController recordVideoAtPath:path captureDevice:_captureDevice orientation:_deviceOrientation audioSetupCallback:^{
       [self setUpCaptureSessionForAudioError:^(NSError *error) {
         completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
       }];
@@ -465,7 +479,7 @@
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       
       completion(nil);
-    } options:options completion:completion];
+    } options:_videoOptions completion:completion];
   } else {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }
@@ -519,7 +533,6 @@
       completion(@(NO), [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
     }];
   }
-  
   
   [_captureSession commitConfiguration];
 }

@@ -22,11 +22,18 @@ class SingleCaptureRequest extends CaptureRequest {
   final XFile? file;
   final Sensor sensor;
 
-  const SingleCaptureRequest(this.file, this.sensor);
+  SingleCaptureRequest(String? filePath, this.sensor)
+      : file = filePath == null ? null : XFile(filePath);
 }
 
 class MultipleCaptureRequest extends CaptureRequest {
   final Map<Sensor, XFile?> fileBySensor;
 
-  const MultipleCaptureRequest(this.fileBySensor);
+  MultipleCaptureRequest(Map<Sensor, String?> filePathBySensor)
+      : fileBySensor = {
+          for (final sensor in filePathBySensor.keys)
+            sensor: filePathBySensor[sensor] != null
+                ? XFile(filePathBySensor[sensor]!)
+                : null,
+        };
 }
