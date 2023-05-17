@@ -54,7 +54,7 @@ Use our awesome built-in interface or customize it as you want.
 
 ## Migration guide
 
-If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](docs.page/todo).
+If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](https://docs.page/Apparence-io/camera_awesome/migration_guides/from_1_to_2).
 
 
 ## Native features
