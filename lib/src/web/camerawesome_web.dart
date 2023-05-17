@@ -239,7 +239,6 @@ class CamerawesomeWeb extends ACamerawesomeWeb {
 
   @override
   Future<bool> stop() async {
-    print("camerawesome_web stop");
     _cameraWebController.stop();
     return true;
   }

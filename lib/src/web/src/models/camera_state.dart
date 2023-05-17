@@ -77,10 +77,9 @@ class CameraWebState {
   }
 
   Future<void> start() async {
+    // TODO There is a crash without this delay, but it's not clear why. Probably a race condition.
     await Future.delayed(Duration(milliseconds: 200));
-    print("videoElement.play() starts, ${videoElement.srcObject == null}");
     await videoElement.play();
-    print("videoElement.play() ends");
   }
 
   /// Pauses the camera stream on the current frame.
