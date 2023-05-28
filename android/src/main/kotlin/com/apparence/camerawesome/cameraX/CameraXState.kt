@@ -47,6 +47,7 @@ data class CameraXState(
     var flashMode: FlashMode = FlashMode.NONE,
     val onStreamReady: (state: CameraXState) -> Unit,
     var mirrorFrontCamera: Boolean = false,
+    val videoRecordingQuality: VideoRecordingQuality?,
     val videoOptions: AndroidVideoOptions?,
 ) : EventChannel.StreamHandler, SensorOrientation {
 
@@ -271,8 +272,8 @@ data class CameraXState(
     private fun buildVideoCapture(videoOptions: AndroidVideoOptions?): VideoCapture<Recorder> {
         val recorderBuilder = Recorder.Builder()
         // Aspect ratio is handled by the setViewPort on the UseCaseGroup
-        if (videoOptions?.quality != null) {
-            val quality = when (videoOptions.quality) {
+        if (videoRecordingQuality != null) {
+            val quality = when (videoRecordingQuality) {
                 VideoRecordingQuality.LOWEST -> Quality.LOWEST
                 VideoRecordingQuality.SD -> Quality.SD
                 VideoRecordingQuality.HD -> Quality.HD
@@ -283,7 +284,7 @@ data class CameraXState(
             recorderBuilder.setQualitySelector(
                 QualitySelector.from(
                     quality,
-                    if (videoOptions.fallbackStrategy == QualityFallbackStrategy.LOWER) FallbackStrategy.lowerQualityOrHigherThan(
+                    if (videoOptions?.fallbackStrategy == QualityFallbackStrategy.LOWER) FallbackStrategy.lowerQualityOrHigherThan(
                         quality
                     )
                     else FallbackStrategy.higherQualityOrLowerThan(quality)

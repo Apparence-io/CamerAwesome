@@ -167,10 +167,12 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 
 @implementation VideoOptions
 + (instancetype)makeWithEnableAudio:(NSNumber *)enableAudio
+    quality:(VideoRecordingQuality)quality
     android:(nullable AndroidVideoOptions *)android
     ios:(nullable CupertinoVideoOptions *)ios {
   VideoOptions* pigeonResult = [[VideoOptions alloc] init];
   pigeonResult.enableAudio = enableAudio;
+  pigeonResult.quality = quality;
   pigeonResult.android = android;
   pigeonResult.ios = ios;
   return pigeonResult;
@@ -179,8 +181,9 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   VideoOptions *pigeonResult = [[VideoOptions alloc] init];
   pigeonResult.enableAudio = GetNullableObjectAtIndex(list, 0);
   NSAssert(pigeonResult.enableAudio != nil, @"");
-  pigeonResult.android = [AndroidVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 1))];
-  pigeonResult.ios = [CupertinoVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 2))];
+  pigeonResult.quality = [GetNullableObjectAtIndex(list, 1) integerValue];
+  pigeonResult.android = [AndroidVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 2))];
+  pigeonResult.ios = [CupertinoVideoOptions nullableFromList:(GetNullableObjectAtIndex(list, 3))];
   return pigeonResult;
 }
 + (nullable VideoOptions *)nullableFromList:(NSArray *)list {
@@ -189,6 +192,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList {
   return @[
     (self.enableAudio ?: [NSNull null]),
+    @(self.quality),
     (self.android ? [self.android toList] : [NSNull null]),
     (self.ios ? [self.ios toList] : [NSNull null]),
   ];
@@ -197,19 +201,16 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 
 @implementation AndroidVideoOptions
 + (instancetype)makeWithBitrate:(nullable NSNumber *)bitrate
-    quality:(VideoRecordingQuality)quality
     fallbackStrategy:(QualityFallbackStrategy)fallbackStrategy {
   AndroidVideoOptions* pigeonResult = [[AndroidVideoOptions alloc] init];
   pigeonResult.bitrate = bitrate;
-  pigeonResult.quality = quality;
   pigeonResult.fallbackStrategy = fallbackStrategy;
   return pigeonResult;
 }
 + (AndroidVideoOptions *)fromList:(NSArray *)list {
   AndroidVideoOptions *pigeonResult = [[AndroidVideoOptions alloc] init];
   pigeonResult.bitrate = GetNullableObjectAtIndex(list, 0);
-  pigeonResult.quality = [GetNullableObjectAtIndex(list, 1) integerValue];
-  pigeonResult.fallbackStrategy = [GetNullableObjectAtIndex(list, 2) integerValue];
+  pigeonResult.fallbackStrategy = [GetNullableObjectAtIndex(list, 1) integerValue];
   return pigeonResult;
 }
 + (nullable AndroidVideoOptions *)nullableFromList:(NSArray *)list {
@@ -218,7 +219,6 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 - (NSArray *)toList {
   return @[
     (self.bitrate ?: [NSNull null]),
-    @(self.quality),
     @(self.fallbackStrategy),
   ];
 }

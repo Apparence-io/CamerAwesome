@@ -266,6 +266,8 @@ data class PigeonSensor (
 data class VideoOptions (
   /** Enable audio while video recording */
   val enableAudio: Boolean,
+  /** The quality of the video recording, defaults to [VideoRecordingQuality.highest]. */
+  val quality: VideoRecordingQuality? = null,
   val android: AndroidVideoOptions? = null,
   val ios: CupertinoVideoOptions? = null
 
@@ -274,18 +276,22 @@ data class VideoOptions (
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): VideoOptions {
       val enableAudio = list[0] as Boolean
-      val android: AndroidVideoOptions? = (list[1] as List<Any?>?)?.let {
+      val quality: VideoRecordingQuality? = (list[1] as Int?)?.let {
+        VideoRecordingQuality.ofRaw(it)
+      }
+      val android: AndroidVideoOptions? = (list[2] as List<Any?>?)?.let {
         AndroidVideoOptions.fromList(it)
       }
-      val ios: CupertinoVideoOptions? = (list[2] as List<Any?>?)?.let {
+      val ios: CupertinoVideoOptions? = (list[3] as List<Any?>?)?.let {
         CupertinoVideoOptions.fromList(it)
       }
-      return VideoOptions(enableAudio, android, ios)
+      return VideoOptions(enableAudio, quality, android, ios)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
       enableAudio,
+      quality?.raw,
       android?.toList(),
       ios?.toList(),
     )
@@ -299,8 +305,6 @@ data class AndroidVideoOptions (
    * desired.
    */
   val bitrate: Long? = null,
-  /** The quality of the video recording, defaults to [VideoRecordingQuality.highest]. */
-  val quality: VideoRecordingQuality? = null,
   val fallbackStrategy: QualityFallbackStrategy? = null
 
 ) {
@@ -308,19 +312,15 @@ data class AndroidVideoOptions (
     @Suppress("UNCHECKED_CAST")
     fun fromList(list: List<Any?>): AndroidVideoOptions {
       val bitrate = list[0].let { if (it is Int) it.toLong() else it as Long? }
-      val quality: VideoRecordingQuality? = (list[1] as Int?)?.let {
-        VideoRecordingQuality.ofRaw(it)
-      }
-      val fallbackStrategy: QualityFallbackStrategy? = (list[2] as Int?)?.let {
+      val fallbackStrategy: QualityFallbackStrategy? = (list[1] as Int?)?.let {
         QualityFallbackStrategy.ofRaw(it)
       }
-      return AndroidVideoOptions(bitrate, quality, fallbackStrategy)
+      return AndroidVideoOptions(bitrate, fallbackStrategy)
     }
   }
   fun toList(): List<Any?> {
     return listOf<Any?>(
       bitrate,
-      quality?.raw,
       fallbackStrategy?.raw,
     )
   }

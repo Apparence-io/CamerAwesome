@@ -141,23 +141,23 @@ typedef NS_ENUM(NSUInteger, AnalysisRotation) {
 /// `init` unavailable to enforce nonnull fields, see the `make` class method.
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)makeWithEnableAudio:(NSNumber *)enableAudio
+    quality:(VideoRecordingQuality)quality
     android:(nullable AndroidVideoOptions *)android
     ios:(nullable CupertinoVideoOptions *)ios;
 /// Enable audio while video recording
 @property(nonatomic, strong) NSNumber * enableAudio;
+/// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
+@property(nonatomic, assign) VideoRecordingQuality quality;
 @property(nonatomic, strong, nullable) AndroidVideoOptions * android;
 @property(nonatomic, strong, nullable) CupertinoVideoOptions * ios;
 @end
 
 @interface AndroidVideoOptions : NSObject
 + (instancetype)makeWithBitrate:(nullable NSNumber *)bitrate
-    quality:(VideoRecordingQuality)quality
     fallbackStrategy:(QualityFallbackStrategy)fallbackStrategy;
 /// The bitrate of the video recording. Only set it if a custom bitrate is
 /// desired.
 @property(nonatomic, strong, nullable) NSNumber * bitrate;
-/// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
-@property(nonatomic, assign) VideoRecordingQuality quality;
 @property(nonatomic, assign) QualityFallbackStrategy fallbackStrategy;
 @end
 

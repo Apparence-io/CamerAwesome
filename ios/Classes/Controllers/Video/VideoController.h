@@ -21,6 +21,7 @@ typedef void(^OnVideoWriterSetup)(void);
 @property(readonly, nonatomic) bool isPaused;
 @property(readonly, nonatomic) bool isAudioEnabled;
 @property(readonly, nonatomic) bool isAudioSetup;
+@property(readonly, nonatomic) VideoRecordingQuality recordingQuality;
 @property(readonly, nonatomic) CupertinoVideoOptions *options;
 @property NSInteger orientation;
 @property(readonly, nonatomic) AVCaptureDevice *captureDevice;
@@ -37,7 +38,7 @@ typedef void(^OnVideoWriterSetup)(void);
 @property(assign, nonatomic) CMTime audioTimeOffset;
 
 - (instancetype)init;
-- (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion;
+- (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options quality:(VideoRecordingQuality)quality completion:(nonnull void (^)(FlutterError * _Nullable))completion;
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion;
 - (void)pauseVideoRecording;
 - (void)resumeVideoRecording;

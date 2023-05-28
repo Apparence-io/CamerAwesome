@@ -155,6 +155,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
             currentCaptureMode = mode,
             enableImageStream = enableImageStream,
             videoOptions = videoOptions?.android,
+            videoRecordingQuality = videoOptions?.quality,
             onStreamReady = { state -> state.updateLifecycle(activity!!) }).apply {
             this.updateAspectRatio(aspectRatio)
             this.flashMode = FlashMode.valueOf(flashMode)
