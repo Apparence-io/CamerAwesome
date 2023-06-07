@@ -117,7 +117,7 @@ class _CameraPageState extends State<CameraPage> {
                       screenSize.height - 356,
                     ),
                     onTap: () {
-                      print('on preview tap');
+                      debugPrint('on preview tap');
                     },
                     sensor: sensor,
                     pictureInPictureBuilder: (preview, aspectRatio) {

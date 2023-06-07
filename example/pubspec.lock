@@ -197,34 +197,34 @@ packages:
     dependency: "direct main"
     description:
       name: google_mlkit_barcode_scanning
-      sha256: bbd48976d8c6bbb1aad325f8f098fc4e6da59c8139bc4aa6f57a0cf1bfd7db47
+      sha256: "60171e66d05a57f19d4a4e4422bbd8d448569db9ab59f3c5e13bbea2492598c7"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.0"
+    version: "0.7.0"
   google_mlkit_commons:
     dependency: transitive
     description:
       name: google_mlkit_commons
-      sha256: af63771903947d5523d9e991a939a4b8bf994f11661c9b9c8a71d7d3997115f8
+      sha256: "42c31500be3aba08bcc2cf45d5af648affc40e46684f437b8383084657e982cf"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.0"
+    version: "0.4.0"
   google_mlkit_face_detection:
     dependency: "direct main"
     description:
       name: google_mlkit_face_detection
-      sha256: db3a14db32640cf279a24202140958a2b017925eedae7e2cdf69dab98e92c23b
+      sha256: "61889535a9c63a8e6322e25969f75a4a950a56103bdd477f1a5817d6f06553b9"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.0"
+    version: "0.7.0"
   google_mlkit_text_recognition:
     dependency: "direct main"
     description:
       name: google_mlkit_text_recognition
-      sha256: "6dc31f02beb1cfd6818da4bf29bf4ae5f4f9e16422c1efd0b515ed0756d73b8e"
+      sha256: "90a56bf4b6abb90421cb95dc896c66ba7c5ae0e4bbdd4ee07d2a4f259b9e5bda"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.0"
+    version: "0.8.1"
   googleapis_auth:
     dependency: transitive
     description:
@@ -277,10 +277,10 @@ packages:
     dependency: "direct main"
     description:
       name: image
-      sha256: "483a389d6ccb292b570c31b3a193779b1b0178e7eb571986d9a49904b6861227"
+      sha256: a72242c9a0ffb65d03de1b7113bc4e189686fc07c7147b8b41811d0dd0e0d9bf
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.15"
+    version: "4.0.17"
   integration_test:
     dependency: transitive
     description: flutter
@@ -354,10 +354,10 @@ packages:
     dependency: "direct main"
     description:
       name: path_provider
-      sha256: c7edf82217d4b2952b2129a61d3ad60f1075b9299e629e149a8d2e39c2e6aad4
+      sha256: "3087813781ab814e4157b172f1a11c46be20179fcc9bea043e0fba36bc0acaa2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.14"
+    version: "2.0.15"
   path_provider_android:
     dependency: transitive
     description:
@@ -402,10 +402,10 @@ packages:
     dependency: "direct dev"
     description:
       name: patrol
-      sha256: a81546fbe25de76e9256e7340d1aa0e1603e6f7b0e4bb91b90a2e08e22992587
+      sha256: ea12c41cfa88316cd460fe76bc2c53e5ae5175ed6a2b9cd7a8161407232ddac7
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.4"
   petitparser:
     dependency: transitive
     description:

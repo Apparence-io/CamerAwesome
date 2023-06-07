@@ -12,21 +12,21 @@ dependencies:
     sdk: flutter
   camerawesome:
     path: ../
-  path_provider: ^2.0.14
+  path_provider: ^2.0.15
   better_open_file: ^3.6.4
-  google_mlkit_face_detection: ^0.5.0
-  google_mlkit_barcode_scanning: ^0.5.0
-  google_mlkit_text_recognition: ^0.5.0
-  image: ^4.0.15
-  meta: ^1.8.0
+  google_mlkit_face_detection: ^0.7.0
+  google_mlkit_barcode_scanning: ^0.7.0
+  google_mlkit_text_recognition: ^0.8.1
+  image: ^4.0.17
+  meta: ^1.9.1
   rxdart: ^0.27.7
-  video_player: ^2.5.0
+  video_player: ^2.6.1
 
 dev_dependencies:
-  exif: ^3.1.2
+  exif: ^3.1.4
   flutter_test:
     sdk: flutter
-  patrol: ^1.0.8
+  patrol: ^1.1.4
   flutter_lints: ^2.0.1
 
 flutter:
