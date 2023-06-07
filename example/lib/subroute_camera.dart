@@ -72,6 +72,7 @@ class CameraPage extends StatelessWidget {
     );
   }
 
+  // ignore: unused_element
   Future<String> _path(CaptureMode captureMode) async {
     final Directory extDir = await getTemporaryDirectory();
     final testDir =
