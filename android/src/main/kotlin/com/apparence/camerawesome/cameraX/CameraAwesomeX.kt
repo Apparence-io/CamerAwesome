@@ -546,11 +546,43 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun getFrontSensors(): List<PigeonSensorTypeDevice> {
-        TODO("Not yet implemented")
+        val result = mutableListOf<PigeonSensorTypeDevice>()
+        if (::cameraState.isInitialized) {
+            for (sensor in cameraState.sensors) {
+                if (sensor.position == PigeonSensorPosition.FRONT) {
+                    result.add(
+                        PigeonSensorTypeDevice(
+                            sensor.type,
+                            sensor.position.name,
+                            0.0,
+                            false,
+                            sensor.deviceId ?: ""
+                        )
+                    )
+                }
+            }
+        }
+        return result
     }
 
     override fun getBackSensors(): List<PigeonSensorTypeDevice> {
-        TODO("Not yet implemented")
+        val result = mutableListOf<PigeonSensorTypeDevice>()
+        if (::cameraState.isInitialized) {
+        for (sensor in cameraState.sensors){
+            if (sensor.position == PigeonSensorPosition.BACK) {
+                result.add(
+                    PigeonSensorTypeDevice(
+                        sensor.type,
+                        sensor.position.name,
+                        0.0,
+                        false,
+                        sensor.deviceId ?: ""
+                    )
+                )
+            }
+        }
+        }
+        return result
     }
 
     override fun pauseVideoRecording() {
