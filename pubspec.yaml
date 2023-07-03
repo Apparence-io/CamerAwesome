@@ -12,21 +12,24 @@ environment:
 
 dependencies:
   carousel_slider: ^4.2.1
-  collection: ^1.17.0
   colorfilter_generator: ^0.0.8
   cross_file: ^0.3.3+4
   flutter:
     sdk: flutter
-  image: ^4.0.15
+  image: ^4.0.17
     # photofilters:
   # git: https://github.com/svenopdehipt/photofilters.git
-  path_provider: ^2.0.14
+  path_provider: ^2.0.15
   rxdart: ^0.27.7
+
 dev_dependencies:
-  flutter_lints: ^2.0.1
+  flutter_lints: ^2.0.2
   flutter_test:
     sdk: flutter
-  pigeon: ^9.2.5
+  pigeon: ^10.1.1
+
+dependency_overrides:
+  collection: ^1.17.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
