@@ -64,6 +64,9 @@ class VideoOptions {
   /// Enable audio while video recording
   final bool enableAudio;
 
+  /// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
+  final VideoRecordingQuality? quality;
+
   // TODO if there are properties common to all platform, move them here (iOS, Android and Web)
   final AndroidVideoOptions? android;
   final CupertinoVideoOptions? ios;
@@ -72,6 +75,7 @@ class VideoOptions {
     required this.android,
     required this.ios,
     required this.enableAudio,
+    required this.quality,
   });
 }
 
@@ -80,14 +84,10 @@ class AndroidVideoOptions {
   /// desired.
   final int? bitrate;
 
-  /// The quality of the video recording, defaults to [VideoRecordingQuality.highest].
-  final VideoRecordingQuality? quality;
-
   final QualityFallbackStrategy? fallbackStrategy;
 
   AndroidVideoOptions({
     required this.bitrate,
-    required this.quality,
     required this.fallbackStrategy,
   });
 }

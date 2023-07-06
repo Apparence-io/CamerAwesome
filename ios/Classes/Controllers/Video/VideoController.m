@@ -23,8 +23,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options quality:(VideoRecordingQuality)quality completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   _options = options;
+  _recordingQuality = quality;
   
   // Create audio & video writer
   if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
@@ -97,11 +98,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   // Read from options if available
   AVVideoCodecType codecType = [self getBestCodecTypeAccordingOptions:options];
   AVFileType fileType = [self getBestFileTypeAccordingOptions:options];
-  
+  CGSize videoSize = [self getBestVideoSizeAccordingQuality: _recordingQuality];
+    
   NSDictionary *videoSettings = @{
     AVVideoCodecKey   : codecType,
-    AVVideoWidthKey   : @(_previewSize.height),
-    AVVideoHeightKey  : @(_previewSize.width),
+    AVVideoWidthKey   : @(videoSize.height),
+    AVVideoHeightKey  : @(videoSize.width),
   };
   
   _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
@@ -358,6 +360,41 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     }
   }
   return codecType;
+}
+
+- (CGSize)getBestVideoSizeAccordingQuality:(VideoRecordingQuality)quality {
+  CGSize size;
+  switch (quality) {
+    case VideoRecordingQualityUhd:
+    case VideoRecordingQualityHighest:
+      if (@available(iOS 9.0, *)) {
+        if ([_captureDevice supportsAVCaptureSessionPreset:AVCaptureSessionPreset3840x2160]) {
+          size = CGSizeMake(3840, 2160);
+        } else {
+          size = CGSizeMake(1920, 1080);
+        }
+      } else {
+        return CGSizeMake(1920, 1080);
+      }
+      break;
+    case VideoRecordingQualityFhd:
+      size = CGSizeMake(1920, 1080);
+      break;
+    case VideoRecordingQualityHd:
+      size = CGSizeMake(1280, 720);
+      break;
+    case VideoRecordingQualitySd:
+    case VideoRecordingQualityLowest:
+      size = CGSizeMake(960, 540);
+      break;
+  }
+    
+  // ensure video output size does not exceed capture session size
+  if (size.width > _previewSize.width) {
+    size = _previewSize;
+  }
+  
+  return size;
 }
 
 # pragma mark - Setter

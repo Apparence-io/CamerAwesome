@@ -13,6 +13,7 @@
 
 - (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
                         videoOptions:(nullable CupertinoVideoOptions *)videoOptions
+                    recordingQuality:(VideoRecordingQuality)recordingQuality
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
@@ -31,6 +32,7 @@
   _aspectRatio = aspectRatioMode;
   _mirrorFrontCamera = mirrorFrontCamera;
   _videoOptions = videoOptions;
+  _recordingQuality = recordingQuality;
   
   // Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
@@ -479,7 +481,7 @@
       [self->_captureVideoOutput setSampleBufferDelegate:self queue:self->_dispatchQueue];
       
       completion(nil);
-    } options:_videoOptions completion:completion];
+    } options:_videoOptions quality: _recordingQuality completion:completion];
   } else {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"already recording video" details:@""]);
   }

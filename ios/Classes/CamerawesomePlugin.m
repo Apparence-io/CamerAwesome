@@ -124,6 +124,7 @@ FlutterEventSink physicalButtonEventSink;
     PigeonSensor *firstSensor = sensors.firstObject;
     self.camera = [[SingleCameraPreview alloc] initWithCameraSensor:firstSensor.position
                                                        videoOptions:videoOptions != nil ? videoOptions.ios : nil
+                                                   recordingQuality:videoOptions != nil ? videoOptions.quality : VideoRecordingQualityHighest
                                                        streamImages:[enableImageStream boolValue]
                                                   mirrorFrontCamera:[mirrorFrontCamera boolValue]
                                                enablePhysicalButton:[enablePhysicalButton boolValue]

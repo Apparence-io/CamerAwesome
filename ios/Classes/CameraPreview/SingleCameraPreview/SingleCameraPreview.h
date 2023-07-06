@@ -53,6 +53,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) NSString *currentPresset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) CupertinoVideoOptions *videoOptions;
+@property(readonly, nonatomic) VideoRecordingQuality recordingQuality;
 @property(readonly, nonatomic) CameraPreviewTexture* previewTexture;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
@@ -67,6 +68,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 
 - (instancetype)initWithCameraSensor:(PigeonSensorPosition)sensor
                         videoOptions:(nullable CupertinoVideoOptions *)videoOptions
+                    recordingQuality:(VideoRecordingQuality)recordingQuality
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
