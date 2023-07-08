@@ -440,10 +440,14 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         sensors: List<PigeonSensor>, paths: List<String?>, callback: (Result<Unit>) -> Unit
     ) {
         if (sensors.size != paths.size) {
+            Log.d(CamerawesomePlugin.TAG, "Sensors length: ${sensors.size}")
+            Log.d(CamerawesomePlugin.TAG, "Paths length: ${paths.size}")
             throw Exception("sensors and paths must have the same length")
         }
         if (paths.size != cameraState.videoCaptures.size) {
-            throw Exception("paths and imageCaptures must have the same length")
+            Log.d(CamerawesomePlugin.TAG, "Paths length: ${paths.size}")
+            Log.d(CamerawesomePlugin.TAG, "VideoCaptures length: ${cameraState.videoCaptures.size}")
+            throw Exception("paths and videoCaptures must have the same length")
         }
 
         val requests = sensors.mapIndexed { index, pigeonSensor ->
