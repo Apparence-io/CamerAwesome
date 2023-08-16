@@ -4,18 +4,6 @@ import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
-typedef OnVideoMode = Function(VideoCameraState);
-
-typedef OnPhotoMode = Function(PhotoCameraState);
-
-typedef OnPreparingCamera = Function(PreparingCameraState);
-
-typedef OnVideoRecordingMode = Function(VideoRecordingCameraState);
-
-typedef OnPreviewMode = Function(PreviewCameraState);
-
-typedef OnAnalysisOnlyMode = Function(AnalysisCameraState);
-
 abstract class CameraState {
   // TODO Make private
   @protected
@@ -25,14 +13,13 @@ abstract class CameraState {
 
   abstract final CaptureMode? captureMode;
 
-  // TODO return a generic type T instead of dynamic (will need to remove typedefs)
-  when({
-    OnVideoMode? onVideoMode,
-    OnPhotoMode? onPhotoMode,
-    OnPreparingCamera? onPreparingCamera,
-    OnVideoRecordingMode? onVideoRecordingMode,
-    OnPreviewMode? onPreviewMode,
-    OnAnalysisOnlyMode? onAnalysisOnlyMode,
+  T when<T>({
+    T Function(VideoCameraState)? onVideoMode,
+    T Function(PhotoCameraState)? onPhotoMode,
+    T Function(PreparingCameraState)? onPreparingCamera,
+    T Function(VideoRecordingCameraState)? onVideoRecordingMode,
+    T Function(PreviewCameraState)? onPreviewMode,
+    T Function(AnalysisCameraState)? onAnalysisOnlyMode,
   }) {
     if (this is VideoCameraState && onVideoMode != null) {
       return onVideoMode(this as VideoCameraState);
@@ -52,6 +39,7 @@ abstract class CameraState {
     if (this is AnalysisCameraState && onAnalysisOnlyMode != null) {
       return onAnalysisOnlyMode(this as AnalysisCameraState);
     }
+    throw Exception("Unhandled CameraState type");
   }
 
   /// Closes streams depending on the current state
