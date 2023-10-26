@@ -7,10 +7,12 @@ import 'package:flutter/services.dart';
 
 class AwesomeCaptureButton extends StatefulWidget {
   final CameraState state;
+  final Function(String)? onCapture;
 
   const AwesomeCaptureButton({
     super.key,
     required this.state,
+    this.onCapture,
   });
 
   @override
@@ -65,8 +67,7 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
               onPhotoMode: (_) => CameraButtonPainter(),
               onPreparingCamera: (_) => CameraButtonPainter(),
               onVideoMode: (_) => VideoButtonPainter(),
-              onVideoRecordingMode: (_) =>
-                  VideoButtonPainter(isRecording: true),
+              onVideoRecordingMode: (_) => VideoButtonPainter(isRecording: true),
             ),
           ),
         ),
@@ -93,7 +94,7 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
 
   get onTap => () {
         widget.state.when(
-          onPhotoMode: (photoState) => photoState.takePhoto(),
+          onPhotoMode: (photoState) => photoState.takePhoto(widget.onCapture),
           onVideoMode: (videoState) => videoState.startRecording(),
           onVideoRecordingMode: (videoState) => videoState.stopRecording(),
         );

@@ -23,8 +23,7 @@ class PhotoCameraState extends CameraState {
     required this.filePathBuilder,
     required this.exifPreferences,
   }) : super(cameraContext) {
-    _saveGpsLocationController =
-        BehaviorSubject.seeded(exifPreferences.saveGPSLocation);
+    _saveGpsLocationController = BehaviorSubject.seeded(exifPreferences.saveGPSLocation);
     saveGpsLocation$ = _saveGpsLocationController.stream;
   }
 
@@ -63,7 +62,7 @@ class PhotoCameraState extends CameraState {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> takePhoto() async {
+  Future<String> takePhoto(Function(String)? onCapture) async {
     String path = await filePathBuilder();
     if (!path.endsWith(".jpg")) {
       throw ("You can only capture .jpg files with CamerAwesome");
@@ -74,6 +73,7 @@ class PhotoCameraState extends CameraState {
       if (succeeded) {
         await FilterHandler().apply(path: path, filter: filter);
         _mediaCapture = MediaCapture.success(filePath: path);
+        onCapture?.call(path);
       } else {
         _mediaCapture = MediaCapture.failure(filePath: path);
       }
