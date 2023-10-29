@@ -347,8 +347,11 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        _cameraContext.state
+        _cameraContext //
+            .state
             .when(onVideoRecordingMode: (mode) => mode.stopRecording());
+        break;
+      case AppLifecycleState.hidden:
         break;
     }
     super.didChangeAppLifecycleState(state);

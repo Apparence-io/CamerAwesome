@@ -122,6 +122,8 @@ class PreviewSize {
       height: result[1]! as double,
     );
   }
+
+  Size toSize() => Size(width, height);
 }
 
 class ExifPreferences {
