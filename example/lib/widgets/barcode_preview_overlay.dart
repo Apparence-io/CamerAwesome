@@ -198,7 +198,7 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
         // Check if the barcode is within bounds
         if (barcode.cornerPoints != null) {
           final topLeft = _croppedPosition(
-            barcode.cornerPoints![0],
+            barcode.cornerPoints[0],
             analysisImageSize: imageSize,
             croppedSize: croppedSize,
             screenSize: _screenSize,
@@ -206,7 +206,7 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
             flipXY: flipXY,
           ).translate(-widget.previewRect.left, -widget.previewRect.top);
           final bottomRight = _croppedPosition(
-            barcode.cornerPoints![2],
+            barcode.cornerPoints[2],
             analysisImageSize: imageSize,
             croppedSize: croppedSize,
             screenSize: _screenSize,

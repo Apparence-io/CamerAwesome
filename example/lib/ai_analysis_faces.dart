@@ -96,7 +96,7 @@ class _CameraPageState extends State<CameraPage> {
       _faceDetectionController.add(
         FaceDetectionModel(
           faces: await faceDetector.processImage(inputImage),
-          absoluteImageSize: inputImage.inputImageData!.size,
+          absoluteImageSize: inputImage.metadata!.size,
           rotation: 0,
           imageRotation: img.inputImageRotation,
           croppedSize: img.croppedSize,
