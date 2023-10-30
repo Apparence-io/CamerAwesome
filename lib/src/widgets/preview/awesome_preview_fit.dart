@@ -4,16 +4,16 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 
+final previewWidgetKey = GlobalKey();
+
 class AnimatedPreviewFit extends StatefulWidget {
   final CameraPreviewFit previewFit;
-  // final PreviewSize? previousPreviewSize;
   final PreviewSizeCalculator previewSizeCalculator;
   final Widget child;
 
   const AnimatedPreviewFit({
     super.key,
     required this.previewFit,
-    // required this.previousPreviewSize,
     required this.child,
     required this.previewSizeCalculator,
   });
@@ -29,7 +29,8 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   @override
   void initState() {
     super.initState();
-    maxSize ??= computeMaxSize();
+    widget.previewSizeCalculator.compute();
+    maxSize = widget.previewSizeCalculator.maxSize;
 
     animation = Tween<Size>(
       begin: maxSize,
@@ -40,26 +41,25 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   @override
   void didUpdateWidget(covariant AnimatedPreviewFit oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.previewSizeCalculator != oldWidget.previewSizeCalculator) {
+      widget.previewSizeCalculator.compute();
+    }
 
-    var oldMaxSize = oldWidget.previewSizeCalculator.getMaxSize();
     animation = Tween<Size>(
-      begin: oldMaxSize,
-      end: widget.previewSizeCalculator.getMaxSize(),
+      begin: oldWidget.previewSizeCalculator.maxSize,
+      end: widget.previewSizeCalculator.maxSize,
     );
   }
 
-  Size computeMaxSize() => widget.previewSizeCalculator.getMaxSize();
-
   @override
   Widget build(BuildContext context) {
-    maxSize = computeMaxSize();
     return TweenAnimationBuilder<Size>(
       builder: (context, currentSize, child) {
+        final ratio = widget.previewSizeCalculator.zoom;
         return PreviewFitWidget(
           previewFit: widget.previewFit,
           previewSize: widget.previewSizeCalculator.previewSize,
-          // ratio: 1,
-          ratio: widget.previewSizeCalculator.getZoom(),
+          ratio: ratio,
           maxSize: maxSize!,
           child: child!,
         );
@@ -90,25 +90,35 @@ class PreviewFitWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final RenderBox renderBox =
+          previewWidgetKey.currentContext?.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      // this contains the translations from the top left corner of the screen
+      debugPrint(
+          "==> position ${position.dx}, ${position.dy} | ${renderBox.size}");
+      debugPrint("==> maxSize $maxSize");
+    });
+
     final transformController = TransformationController();
+    // debugPrint(
+    //     "scaling preview ${previewSize.width} / ${previewSize.height} with ratio: $ratio");
+    // debugPrint("Area size: ${maxSize.width} / ${maxSize.height}");
     transformController.value = Matrix4.identity()..scale(ratio);
-    return Center(
-      child: SizedBox(
-        width: maxSize.width,
-        height: maxSize.height,
-        child: InteractiveViewer(
-          transformationController: transformController,
-          scaleEnabled: false,
-          constrained: false,
-          panEnabled: false,
-          alignment: FractionalOffset.topLeft,
-          child: Center(
-            child: SizedBox(
-              width: previewSize.width,
-              height: previewSize.height,
-              child: child,
-            ),
-          ),
+    return SizedBox(
+      width: maxSize.width,
+      height: maxSize.height,
+      child: InteractiveViewer(
+        key: previewWidgetKey,
+        transformationController: transformController,
+        scaleEnabled: false,
+        constrained: false,
+        panEnabled: true,
+        alignment: FractionalOffset.topLeft,
+        child: SizedBox(
+          width: previewSize.width,
+          height: previewSize.height,
+          child: child,
         ),
       ),
     );
@@ -121,16 +131,36 @@ class PreviewSizeCalculator {
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final BoxConstraints constraints;
-  final double ratio;
+
+  Size? _maxSize;
+  double? _zoom;
 
   PreviewSizeCalculator({
     required this.previewFit,
     required this.previewSize,
     required this.constraints,
-    required this.ratio,
   });
 
-  Size getMaxSize() {
+  void compute() {
+    _maxSize ??= _computeMaxSize();
+    _zoom ??= _computeZoom();
+  }
+
+  double get zoom {
+    if (_zoom == null) {
+      throw Exception("Call compute() before");
+    }
+    return _zoom!;
+  }
+
+  Size get maxSize {
+    if (_maxSize == null) {
+      throw Exception("Call compute() before");
+    }
+    return _maxSize!;
+  }
+
+  Size _computeMaxSize() {
     final size = Size(previewSize.width, previewSize.height);
 
     final ratioW = constraints.maxWidth / size.width;
@@ -155,14 +185,13 @@ class PreviewSizeCalculator {
   }
 
   PreviewSize getMaxPreviewSize() {
-    final maxSize = getMaxSize();
     return PreviewSize(
       width: maxSize.width,
       height: maxSize.height,
     );
   }
 
-  double getZoom() {
+  double _computeZoom() {
     late double ratio;
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
@@ -188,4 +217,16 @@ class PreviewSizeCalculator {
     }
     return ratio;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PreviewSizeCalculator &&
+          runtimeType == other.runtimeType &&
+          previewFit == other.previewFit &&
+          constraints == other.constraints &&
+          previewSize == other.previewSize;
+
+  @override
+  int get hashCode => previewSize.hashCode ^ previewSize.hashCode;
 }

@@ -161,7 +161,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               previewFit: widget.previewFit,
               previewSize: _previewSize!,
               constraints: constraints,
-              ratio: _aspectRatioValue!,
             );
             final maxLayoutSize = PreviewSize(
               width: constraints.maxWidth,

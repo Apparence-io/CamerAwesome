@@ -75,7 +75,7 @@ class CameraPage extends StatelessWidget {
           ),
           enablePhysicalButton: true,
           // filter: AwesomeFilter.AddictiveRed,
-          previewFit: CameraPreviewFit.fitWidth,
+          previewFit: CameraPreviewFit.contain,
           onMediaTap: (mediaCapture) {
             OpenFile.open(
               mediaCapture.captureRequest

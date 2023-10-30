@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 class BarcodePreviewOverlay extends StatefulWidget {
@@ -197,6 +198,8 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
       for (Barcode barcode in barcodes) {
         // Check if the barcode is within bounds
         if (barcode.cornerPoints != null) {
+          print(
+              "...barcode.cornerPoints: ${barcode.cornerPoints.first.x}, ${barcode.cornerPoints.first.y} // ${barcode.cornerPoints.last.x}, ${barcode.cornerPoints.last.y}");
           final topLeft = _croppedPosition(
             barcode.cornerPoints[0],
             analysisImageSize: imageSize,
@@ -218,31 +221,42 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
           // For simplicity we consider the barcode to be a Rect. Due to
           // perspective, it might not be in reality. You could build a Path
           // from the 4 corner points instead.
+          // _barcodeRect = Rect.fromLTRB(
+          //   topLeft.dx,
+          //   topLeft.dy,
+          //   bottomRight.dx,
+          //   bottomRight.dy,
+          // );
+
+          const scale = 0.35555555555555557;
           _barcodeRect = Rect.fromLTRB(
-            topLeft.dx,
-            topLeft.dy,
-            bottomRight.dx,
-            bottomRight.dy,
+            barcode.cornerPoints.first.x.toDouble() * scale,
+            barcode.cornerPoints.first.y.toDouble() * scale + 102,
+            barcode.cornerPoints[2].x.toDouble() * scale,
+            barcode.cornerPoints[2].y.toDouble() * scale + 102,
           );
+
+          print(
+              "   after.cornerPoints: ${_barcodeRect!.topLeft.dx}, ${_barcodeRect!.topLeft.dy} // ${_barcodeRect!.bottomRight.dx}, ${_barcodeRect!.bottomRight.dy}");
 
           // Approximately detect if the barcode is in the scan area by checking
           // if the center of the barcode is in the scan area.
-          if (_scanArea.contains(
-            _barcodeRect!.center.translate(
-              (_screenSize.width - widget.previewSize.width) / 2,
-              (_screenSize.height - widget.previewSize.height) / 2,
-            ),
-          )) {
-            // Note: for a better detection, you should calculate the area of the
-            // intersection between the barcode and the scan area and compare it
-            // with the area of the barcode. If the intersection is greater than
-            // a certain percentage, then the barcode is in the scan area.
-            _barcodeInArea = true;
-            // Only handle one good barcode in this example
-            break;
-          } else {
-            _barcodeInArea = false;
-          }
+          // if (_scanArea.contains(
+          //   _barcodeRect!.center.translate(
+          //     (_screenSize.width - widget.previewSize.width) / 2,
+          //     (_screenSize.height - widget.previewSize.height) / 2,
+          //   ),
+          // )) {
+          //   // Note: for a better detection, you should calculate the area of the
+          //   // intersection between the barcode and the scan area and compare it
+          //   // with the area of the barcode. If the intersection is greater than
+          //   // a certain percentage, then the barcode is in the scan area.
+          //   _barcodeInArea = true;
+          //   // Only handle one good barcode in this example
+          //   break;
+          // } else {
+          //   _barcodeInArea = false;
+          // }
         }
 
         if (_barcodeInArea != null && mounted) {
@@ -382,5 +396,12 @@ class BarcodeFocusAreaPainter extends CustomPainter {
         barcodeRect != oldDelegate.barcodeRect &&
         canvasScale != oldDelegate.canvasScale &&
         canvasTranslate != oldDelegate.canvasTranslate;
+  }
+}
+
+extension RenderObjectExtensions on RenderObject {
+  Offset localToGlobal(Offset localPosition) {
+    final transform = getTransformTo(null);
+    return MatrixUtils.transformPoint(transform, localPosition);
   }
 }
