@@ -157,11 +157,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       child: OrientationBuilder(
         builder: (context, orientation) => LayoutBuilder(
           builder: (context, constraints) {
-            final sizeCalculator = PreviewSizeCalculator(
-              previewFit: widget.previewFit,
-              previewSize: _previewSize!,
-              constraints: constraints,
-            );
             final maxLayoutSize = PreviewSize(
               width: constraints.maxWidth,
               height: constraints.maxHeight,
@@ -172,7 +167,20 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 Positioned.fill(
                   child: AnimatedPreviewFit(
                     previewFit: widget.previewFit,
-                    previewSizeCalculator: sizeCalculator,
+                    previewSize: _previewSize!,
+                    constraints: constraints,
+                    onPreviewCalculated: ({
+                      required nativePreviewSize,
+                      required offset,
+                      required previewSize,
+                      required scale,
+                    }) =>
+                        widget.state.analysisController?.preview = Preview(
+                      nativePreviewSize: nativePreviewSize,
+                      previewSize: previewSize,
+                      offset: offset,
+                      scale: scale,
+                    ),
                     child: AwesomeCameraGestureDetector(
                       onPreviewTapBuilder:
                           widget.onPreviewTap != null && _previewSize != null

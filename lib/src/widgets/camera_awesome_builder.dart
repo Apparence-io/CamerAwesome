@@ -35,7 +35,12 @@ typedef OnMediaTap = Function(MediaCapture mediaCapture)?;
 typedef OnPermissionsResult = void Function(bool result);
 
 /// Analysis image stream listener
-typedef OnImageForAnalysis = Future Function(AnalysisImage image);
+/// The Preview object will help you to convert a point from the preview to the
+/// to your screen
+typedef OnImageForAnalysis = Future Function(
+  AnalysisImage image, {
+  Preview? preview,
+});
 
 /// This is the entry point of the CameraAwesome plugin
 /// You can either

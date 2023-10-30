@@ -32,7 +32,7 @@ class CameraPage extends StatelessWidget {
           saveConfig: SaveConfig.photoAndVideo(
             initialCaptureMode: CaptureMode.video,
           ),
-          onImageForAnalysis: (image) async {
+          onImageForAnalysis: (image, {preview}) async {
             print('Image for analysis received: ${image.size}');
           },
           imageAnalysisConfig: AnalysisConfig(

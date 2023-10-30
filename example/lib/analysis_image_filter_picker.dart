@@ -47,7 +47,8 @@ class _CameraPageState extends State<CameraPage> {
           sensor: Sensor.position(SensorPosition.front),
           aspectRatio: CameraAspectRatios.ratio_1_1,
         ),
-        onImageForAnalysis: (img) async => _imageStreamController.add(img),
+        onImageForAnalysis: (img, {preview}) async =>
+            _imageStreamController.add(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.yuv420(
             width: 150,

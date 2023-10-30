@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 class BarcodePreviewOverlay extends StatefulWidget {
@@ -14,6 +13,7 @@ class BarcodePreviewOverlay extends StatefulWidget {
   final List<Barcode> barcodes;
   final AnalysisImage? analysisImage;
   final bool isBackCamera;
+  final Preview? preview;
 
   const BarcodePreviewOverlay({
     super.key,
@@ -22,6 +22,7 @@ class BarcodePreviewOverlay extends StatefulWidget {
     required this.previewRect,
     required this.barcodes,
     required this.analysisImage,
+    this.preview,
     this.isBackCamera = true,
   });
 
@@ -83,57 +84,48 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
     _screenSize = MediaQuery.of(context).size;
 
     return IgnorePointer(
-      ignoring: true,
-      child: Padding(
-        // Area within this padding is our Preview
-        padding: EdgeInsets.only(
-          top: widget.previewRect.top,
-          left: widget.previewRect.left,
-          right: _screenSize.width - widget.previewRect.right,
-          bottom: _screenSize.height - widget.previewRect.bottom,
-        ),
-        child: Stack(children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BarcodeFocusAreaPainter(
-                scanArea: _scanArea.size,
-                barcodeRect: _barcodeRect,
-                canvasScale: _canvasScale,
-                canvasTranslate: _canvasTranslate,
-              ),
+      ignoring: false,
+      child: Stack(children: [
+        Positioned.fill(
+          child: CustomPaint(
+            painter: BarcodeFocusAreaPainter(
+              scanArea: _scanArea.size,
+              barcodeRect: _barcodeRect,
+              canvasScale: _canvasScale,
+              canvasTranslate: _canvasTranslate,
             ),
           ),
-          // Place text indications around the scan area
-          Positioned(
-            top: widget.previewSize.height / 2 + _scanArea.size.height / 2 + 10,
-            left: 0,
-            right: 0,
-            child: Column(children: [
-              Text(
-                _barcodeRead ?? "",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
+        ),
+        // Place text indications around the scan area
+        Positioned(
+          top: widget.previewSize.height / 2 + _scanArea.size.height / 2,
+          left: 0,
+          right: 0,
+          child: Column(children: [
+            Text(
+              _barcodeRead ?? "",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
               ),
-              if (_barcodeInArea != null)
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  color: _barcodeInArea! ? Colors.green : Colors.red,
-                  child: Text(
-                    _barcodeInArea! ? "Barcode in area" : "Barcode not in area",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                    ),
+            ),
+            if (_barcodeInArea != null)
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                color: _barcodeInArea! ? Colors.green : Colors.red,
+                child: Text(
+                  _barcodeInArea! ? "Barcode in area" : "Barcode not in area",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
                   ),
                 ),
-            ]),
-          ),
-        ]),
-      ),
+              ),
+          ]),
+        ),
+      ]),
     );
   }
 
@@ -144,9 +136,10 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
     final croppedSize = img.croppedSize;
 
     try {
-      final ratioAnalysisToPreview =
-          widget.previewSize.width / croppedSize.width;
-
+      // final ratioAnalysisToPreview =
+      //     widget.previewSize.width / croppedSize.width;
+      var ratioAnalysisToPreview =
+          widget.preview!.nativePreviewSize.width / croppedSize.width;
       bool flipXY = false;
       _canvasScale = null;
       _canvasTranslate = null;
@@ -198,24 +191,24 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
       for (Barcode barcode in barcodes) {
         // Check if the barcode is within bounds
         if (barcode.cornerPoints != null) {
-          print(
-              "...barcode.cornerPoints: ${barcode.cornerPoints.first.x}, ${barcode.cornerPoints.first.y} // ${barcode.cornerPoints.last.x}, ${barcode.cornerPoints.last.y}");
-          final topLeft = _croppedPosition(
-            barcode.cornerPoints[0],
-            analysisImageSize: imageSize,
-            croppedSize: croppedSize,
-            screenSize: _screenSize,
-            ratio: ratioAnalysisToPreview,
-            flipXY: flipXY,
-          ).translate(-widget.previewRect.left, -widget.previewRect.top);
-          final bottomRight = _croppedPosition(
-            barcode.cornerPoints[2],
-            analysisImageSize: imageSize,
-            croppedSize: croppedSize,
-            screenSize: _screenSize,
-            ratio: ratioAnalysisToPreview,
-            flipXY: flipXY,
-          ).translate(-widget.previewRect.left, -widget.previewRect.top);
+          // print(
+          //     "...barcode.cornerPoints: ${barcode.cornerPoints.first.x}, ${barcode.cornerPoints.first.y} // ${barcode.cornerPoints.last.x}, ${barcode.cornerPoints.last.y}");
+          // final topLeft = _croppedPosition(
+          //   barcode.cornerPoints[0],
+          //   analysisImageSize: imageSize,
+          //   croppedSize: croppedSize,
+          //   screenSize: _screenSize,
+          //   ratio: ratioAnalysisToPreview,
+          //   flipXY: flipXY,
+          // ).translate(-widget.previewRect.left, -widget.previewRect.top);
+          // final bottomRight = _croppedPosition(
+          //   barcode.cornerPoints[2],
+          //   analysisImageSize: imageSize,
+          //   croppedSize: croppedSize,
+          //   screenSize: _screenSize,
+          //   ratio: ratioAnalysisToPreview,
+          //   flipXY: flipXY,
+          // ).translate(-widget.previewRect.left, -widget.previewRect.top);
 
           barcodeRead = "[${barcode.format.name}]: ${barcode.rawValue}";
           // For simplicity we consider the barcode to be a Rect. Due to
@@ -228,35 +221,79 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
           //   bottomRight.dy,
           // );
 
-          const scale = 0.35555555555555557;
-          _barcodeRect = Rect.fromLTRB(
-            barcode.cornerPoints.first.x.toDouble() * scale,
-            barcode.cornerPoints.first.y.toDouble() * scale + 102,
-            barcode.cornerPoints[2].x.toDouble() * scale,
-            barcode.cornerPoints[2].y.toDouble() * scale + 102,
-          );
+          // const scale = 0.35555555555555557;
+          // final crop = _croppedPosition(
+          //   barcode.cornerPoints[0],
+          //   analysisImageSize: imageSize,
+          //   croppedSize: croppedSize,
+          //   screenSize: _screenSize,
+          //   ratio: ratioAnalysisToPreview,
+          //   flipXY: flipXY,
+          // );
 
-          print(
-              "   after.cornerPoints: ${_barcodeRect!.topLeft.dx}, ${_barcodeRect!.topLeft.dy} // ${_barcodeRect!.bottomRight.dx}, ${_barcodeRect!.bottomRight.dy}");
+          // var ratioAnalysisToPreview =
+          //     widget.preview!.nativePreviewSize.width / croppedSize.width;
+          // ratioAnalysisToPreview = ratioAnalysisToPreview / 2;
+          debugPrint("...🌏 crop: ${ratioAnalysisToPreview}");
+          // final topLeft = widget.preview!.convertPoint(
+          //   Offset(
+          //     barcode.cornerPoints.first.x.toDouble() * ratioAnalysisToPreview,
+          //     barcode.cornerPoints.first.y.toDouble() * ratioAnalysisToPreview,
+          //   ),
+          // );
+          // final bottomRight = widget.preview!.convertPoint(
+          //   Offset(
+          //     barcode.cornerPoints[2].x.toDouble() * ratioAnalysisToPreview,
+          //     barcode.cornerPoints[2].y.toDouble() * ratioAnalysisToPreview,
+          //   ),
+          // );
+          final topLeftOffset = barcode.cornerPoints[0];
+          final bottomRightOffset = barcode.cornerPoints[2];
+          var topLeftOff = widget.preview!.convertFromImage(
+            Offset(topLeftOffset.x.toDouble(), topLeftOffset.y.toDouble()),
+            img,
+          );
+          var bottomRightOff = widget.preview!.convertFromImage(
+            Offset(
+                bottomRightOffset.x.toDouble(), bottomRightOffset.y.toDouble()),
+            img,
+          );
+          _barcodeRect = _barcodeRect = Rect.fromLTRB(
+            topLeftOff.dx,
+            topLeftOff.dy,
+            bottomRightOff.dx,
+            bottomRightOff.dy,
+          );
+          // var scale = 0.4083333333333333;
+          // var offset = 139.59183673469386;
+          // _barcodeRect = _barcodeRect = Rect.fromLTRB(
+          //   barcode.cornerPoints.first.x.toDouble() * scale,
+          //   barcode.cornerPoints.first.y.toDouble() * scale + offset,
+          //   barcode.cornerPoints[2].x.toDouble() * scale,
+          //   barcode.cornerPoints[2].y.toDouble() * scale + offset,
+          // );
+
+          // print(
+          //     "   after.cornerPoints: ${_barcodeRect!.topLeft.dx}, ${_barcodeRect!.topLeft.dy} // ${_barcodeRect!.bottomRight.dx}, ${_barcodeRect!.bottomRight.dy}");
 
           // Approximately detect if the barcode is in the scan area by checking
           // if the center of the barcode is in the scan area.
-          // if (_scanArea.contains(
-          //   _barcodeRect!.center.translate(
-          //     (_screenSize.width - widget.previewSize.width) / 2,
-          //     (_screenSize.height - widget.previewSize.height) / 2,
-          //   ),
-          // )) {
-          //   // Note: for a better detection, you should calculate the area of the
-          //   // intersection between the barcode and the scan area and compare it
-          //   // with the area of the barcode. If the intersection is greater than
-          //   // a certain percentage, then the barcode is in the scan area.
-          //   _barcodeInArea = true;
-          //   // Only handle one good barcode in this example
-          //   break;
-          // } else {
-          //   _barcodeInArea = false;
-          // }
+          if (_scanArea.contains(
+            _barcodeRect!.center.translate(
+              (_screenSize.width - widget.previewSize.width) / 2,
+              (_screenSize.height - widget.previewSize.height) / 2,
+            ),
+          )) {
+            // Note: for a better detection, you should calculate the area of the
+            // intersection between the barcode and the scan area and compare it
+            // with the area of the barcode. If the intersection is greater than
+            // a certain percentage, then the barcode is in the scan area.
+            _barcodeInArea = true;
+            // Only handle one good barcode in this example
+            break;
+          } else {
+            _barcodeInArea = false;
+          }
         }
 
         if (_barcodeInArea != null && mounted) {
@@ -265,8 +302,8 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
           });
         }
       }
-    } catch (error) {
-      debugPrint("...sending image resulted error $error");
+    } catch (error, stacktrace) {
+      debugPrint("...sending image resulted error $error $stacktrace");
     }
   }
 
@@ -345,14 +382,17 @@ class BarcodeFocusAreaPainter extends CustomPainter {
     // Draw the barcode rect for debugging purpose
     if (barcodeRect != null) {
       if (canvasScale != null) {
+        debugPrint("...canvasScale: $canvasScale");
         canvas.scale(canvasScale!.x.toDouble(), canvasScale!.y.toDouble());
       }
       if (canvasTranslate != null) {
+        debugPrint("...canvasTranslate: $canvasTranslate");
         canvas.translate(
           canvasTranslate!.x * size.width,
           canvasTranslate!.y.toDouble() * size.height,
         );
       }
+      // debugPrint("...barcodeRect: $barcodeRect");
       canvas.drawRect(
         barcodeRect!,
         Paint()

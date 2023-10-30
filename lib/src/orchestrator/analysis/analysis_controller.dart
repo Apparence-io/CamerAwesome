@@ -12,6 +12,8 @@ class AnalysisController {
   final AnalysisConfig conf;
 
   StreamSubscription? imageSubscription;
+  Preview? preview;
+
   bool _analysisEnabled;
 
   AnalysisController._({
@@ -74,7 +76,7 @@ class AnalysisController {
     }
     await CamerawesomePlugin.startAnalysis();
     imageSubscription = _images$?.listen((event) async {
-      await onImageListener!(AnalysisImage.from(event));
+      await onImageListener!(AnalysisImage.from(event), preview: preview);
       await CamerawesomePlugin.receivedImageFromStream();
     });
     _analysisEnabled = true;

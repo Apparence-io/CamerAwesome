@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.previewOnly(
-        onImageForAnalysis: (img) => _processImageBarcode(img),
+        onImageForAnalysis: (img, {preview}) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(
             width: 1024,

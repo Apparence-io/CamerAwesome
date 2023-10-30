@@ -6,16 +6,27 @@ import 'package:flutter/material.dart';
 
 final previewWidgetKey = GlobalKey();
 
+typedef OnPreviewCalculated = void Function({
+  required Size nativePreviewSize,
+  required Size previewSize,
+  required Offset offset,
+  required double scale,
+});
+
 class AnimatedPreviewFit extends StatefulWidget {
   final CameraPreviewFit previewFit;
-  final PreviewSizeCalculator previewSizeCalculator;
+  final PreviewSize previewSize;
+  final BoxConstraints constraints;
   final Widget child;
+  final OnPreviewCalculated? onPreviewCalculated;
 
   const AnimatedPreviewFit({
     super.key,
     required this.previewFit,
+    required this.previewSize,
+    required this.constraints,
     required this.child,
-    required this.previewSizeCalculator,
+    this.onPreviewCalculated,
   });
 
   @override
@@ -26,40 +37,81 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   late Tween<Size> animation;
   Size? maxSize;
 
+  PreviewSizeCalculator? sizeCalculator;
+
   @override
   void initState() {
     super.initState();
-    widget.previewSizeCalculator.compute();
-    maxSize = widget.previewSizeCalculator.maxSize;
+    sizeCalculator = PreviewSizeCalculator(
+      previewFit: widget.previewFit,
+      previewSize: widget.previewSize,
+      constraints: widget.constraints,
+    );
+    sizeCalculator!.compute();
+    maxSize = sizeCalculator!.maxSize;
 
     animation = Tween<Size>(
       begin: maxSize,
       end: maxSize,
     );
+    _handPreviewCalculated();
   }
 
   @override
   void didUpdateWidget(covariant AnimatedPreviewFit oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.previewSizeCalculator != oldWidget.previewSizeCalculator) {
-      widget.previewSizeCalculator.compute();
+    if (widget.previewFit != oldWidget.previewFit ||
+        widget.previewSize != oldWidget.previewSize ||
+        widget.constraints != oldWidget.constraints) {
+      var oldsizeCalculator = PreviewSizeCalculator(
+        previewFit: oldWidget.previewFit,
+        previewSize: oldWidget.previewSize,
+        constraints: oldWidget.constraints,
+      );
+      sizeCalculator = PreviewSizeCalculator(
+        previewFit: widget.previewFit,
+        previewSize: widget.previewSize,
+        constraints: widget.constraints,
+      );
+      oldsizeCalculator.compute();
+      sizeCalculator!.compute();
+      animation = Tween<Size>(
+        begin: oldsizeCalculator.maxSize,
+        end: sizeCalculator!.maxSize,
+      );
+      _handPreviewCalculated();
     }
+  }
 
-    animation = Tween<Size>(
-      begin: oldWidget.previewSizeCalculator.maxSize,
-      end: widget.previewSizeCalculator.maxSize,
-    );
+  void _handPreviewCalculated() {
+    if (widget.onPreviewCalculated != null) {
+      widget.onPreviewCalculated!(
+        nativePreviewSize: widget.previewSize.toSize(),
+        previewSize: sizeCalculator!.maxSize,
+        offset: sizeCalculator!.offset,
+        scale: sizeCalculator!.zoom,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      final RenderBox renderBox =
+          previewWidgetKey.currentContext?.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      // this contains the translations from the top left corner of the screen
+      // debugPrint(
+      //     "==> position ${position.dx}, ${position.dy} | ${renderBox.size}");
+    });
+
     return TweenAnimationBuilder<Size>(
       builder: (context, currentSize, child) {
-        final ratio = widget.previewSizeCalculator.zoom;
+        final ratio = sizeCalculator!.zoom;
         return PreviewFitWidget(
           previewFit: widget.previewFit,
-          previewSize: widget.previewSizeCalculator.previewSize,
-          ratio: ratio,
+          previewSize: widget.previewSize,
+          scale: ratio,
           maxSize: maxSize!,
           child: child!,
         );
@@ -76,7 +128,7 @@ class PreviewFitWidget extends StatelessWidget {
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final Widget child;
-  final double ratio;
+  final double scale;
   final Size maxSize;
 
   const PreviewFitWidget({
@@ -84,27 +136,15 @@ class PreviewFitWidget extends StatelessWidget {
     required this.previewFit,
     required this.previewSize,
     required this.child,
-    required this.ratio,
+    required this.scale,
     required this.maxSize,
   });
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final RenderBox renderBox =
-          previewWidgetKey.currentContext?.findRenderObject() as RenderBox;
-      final position = renderBox.localToGlobal(Offset.zero);
-      // this contains the translations from the top left corner of the screen
-      debugPrint(
-          "==> position ${position.dx}, ${position.dy} | ${renderBox.size}");
-      debugPrint("==> maxSize $maxSize");
-    });
-
     final transformController = TransformationController();
-    // debugPrint(
-    //     "scaling preview ${previewSize.width} / ${previewSize.height} with ratio: $ratio");
-    // debugPrint("Area size: ${maxSize.width} / ${maxSize.height}");
-    transformController.value = Matrix4.identity()..scale(ratio);
+    transformController.value = Matrix4.identity()..scale(scale);
+
     return SizedBox(
       width: maxSize.width,
       height: maxSize.height,
@@ -115,10 +155,14 @@ class PreviewFitWidget extends StatelessWidget {
         constrained: false,
         panEnabled: true,
         alignment: FractionalOffset.topLeft,
-        child: SizedBox(
-          width: previewSize.width,
-          height: previewSize.height,
-          child: child,
+        clipBehavior: Clip.antiAlias,
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: previewSize.width,
+            height: previewSize.height,
+            child: child,
+          ),
         ),
       ),
     );
@@ -134,6 +178,7 @@ class PreviewSizeCalculator {
 
   Size? _maxSize;
   double? _zoom;
+  Offset? _offset;
 
   PreviewSizeCalculator({
     required this.previewFit,
@@ -142,8 +187,8 @@ class PreviewSizeCalculator {
   });
 
   void compute() {
-    _maxSize ??= _computeMaxSize();
     _zoom ??= _computeZoom();
+    _maxSize ??= _computeMaxSize();
   }
 
   double get zoom {
@@ -160,25 +205,50 @@ class PreviewSizeCalculator {
     return _maxSize!;
   }
 
-  Size _computeMaxSize() {
-    final size = Size(previewSize.width, previewSize.height);
+  Offset get offset {
+    if (_offset == null) {
+      throw Exception("Call compute() before");
+    }
+    return _offset!;
+  }
 
-    final ratioW = constraints.maxWidth / size.width;
-    final ratioH = constraints.maxHeight / size.height;
+  Size _computeMaxSize() {
+    final nativePreviewSize = Size(previewSize.width, previewSize.height);
     Size maxSize;
+    final nativeWidthProjection = constraints.maxWidth * 1 / zoom;
+    final wDiff = nativePreviewSize.width - nativeWidthProjection;
+
+    final nativeHeightProjection = constraints.maxHeight * 1 / zoom;
+    final hDiff = nativePreviewSize.height - nativeHeightProjection;
+
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
-        maxSize = Size(constraints.maxWidth, size.height * ratioW);
+        maxSize = Size(constraints.maxWidth, nativePreviewSize.height * zoom);
+        _offset = Offset(0, constraints.maxHeight - maxSize.height);
         break;
       case CameraPreviewFit.fitHeight:
-        maxSize = Size(size.width * ratioH, constraints.maxHeight);
+        maxSize = Size(nativePreviewSize.width * zoom, constraints.maxHeight);
+        _offset = Offset(constraints.maxWidth - maxSize.width, 0);
         break;
       case CameraPreviewFit.cover:
         maxSize = Size(constraints.maxWidth, constraints.maxHeight);
+
+        if (constraints.maxWidth / constraints.maxHeight >
+            previewSize.width / previewSize.height) {
+          _offset = Offset((hDiff * zoom) * 2, 0);
+          // _offset = Offset(0, constraints.maxHeight - maxSize.height);
+        } else {
+          _offset = Offset(0, (wDiff * zoom));
+          // _offset = Offset(constraints.maxWidth - maxSize.width, 0);
+        }
         break;
       case CameraPreviewFit.contain:
-        final ratio = min(ratioW, ratioH);
-        maxSize = Size(size.width * ratio, size.height * ratio);
+        maxSize = Size(
+            nativePreviewSize.width * zoom, nativePreviewSize.height * zoom);
+        _offset = Offset(
+          constraints.maxWidth - maxSize.width,
+          constraints.maxHeight - maxSize.height,
+        );
         break;
     }
     return maxSize;
@@ -190,6 +260,10 @@ class PreviewSizeCalculator {
       height: maxSize.height,
     );
   }
+
+  double get offsetX => (constraints.maxWidth - maxSize.width);
+
+  double get offsetY => (constraints.maxHeight - maxSize.height);
 
   double _computeZoom() {
     late double ratio;

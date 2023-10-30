@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
+import 'package:camerawesome/src/orchestrator/analysis/analysis_to_image.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// This class handle the current state of the camera
