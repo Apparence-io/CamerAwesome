@@ -16,6 +16,8 @@ class PhotoFilterModel {
   final Filter filter;
 }
 
+typedef OnPhotoCallback = Function(String)?;
+
 /// When Camera is in Image mode
 class PhotoCameraState extends CameraState {
   PhotoCameraState({
@@ -23,7 +25,8 @@ class PhotoCameraState extends CameraState {
     required this.filePathBuilder,
     required this.exifPreferences,
   }) : super(cameraContext) {
-    _saveGpsLocationController = BehaviorSubject.seeded(exifPreferences.saveGPSLocation);
+    _saveGpsLocationController =
+        BehaviorSubject.seeded(exifPreferences.saveGPSLocation);
     saveGpsLocation$ = _saveGpsLocationController.stream;
   }
 
@@ -62,7 +65,7 @@ class PhotoCameraState extends CameraState {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> takePhoto(Function(String)? onCapture) async {
+  Future<String> takePhoto({OnPhotoCallback? onCapture}) async {
     String path = await filePathBuilder();
     if (!path.endsWith(".jpg")) {
       throw ("You can only capture .jpg files with CamerAwesome");

@@ -58,10 +58,11 @@ class CustomUiExample2 extends StatelessWidget {
           pathBuilder: () => path(CaptureMode.photo),
         ),
         onPreviewTapBuilder: (state) => OnPreviewTap(
-          onTap: (Offset position, PreviewSize flutterPreviewSize, PreviewSize pixelPreviewSize) {
+          onTap: (Offset position, PreviewSize flutterPreviewSize,
+              PreviewSize pixelPreviewSize) {
             state.when(
               onPhotoMode: (PhotoCameraState picState) => picState.takePhoto(
-                (path) {
+                onCapture: (path) {
                   // ignore: avoid_print
                   print("Photo saved to $path");
                 },
