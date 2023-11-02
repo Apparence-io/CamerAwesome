@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
           maxFramesPerSecond: 5,
           autoStart: false,
         ),
-        builder: (cameraModeState, previewSize, previewRect) {
+        builder: (cameraModeState, preview) {
           return _BarcodeDisplayWidget(
             barcodesStream: _barcodesStream,
             scrollController: _scrollController,

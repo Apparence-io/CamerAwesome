@@ -12,6 +12,7 @@ class AnalysisController {
   final AnalysisConfig conf;
 
   StreamSubscription? imageSubscription;
+
   bool _analysisEnabled;
 
   AnalysisController._({
@@ -68,8 +69,9 @@ class AnalysisController {
 
   get enabled => onImageListener != null && _analysisEnabled;
 
+  // this should not return a bool but just throw an exception if something goes wrong
   Future<bool> start() async {
-    if (onImageListener == null) {
+    if (onImageListener == null || imageSubscription != null) {
       return false;
     }
     await CamerawesomePlugin.startAnalysis();
@@ -79,16 +81,15 @@ class AnalysisController {
     });
     _analysisEnabled = true;
     printLog("...AnalysisController started");
-    return true;
+    return _analysisEnabled;
   }
 
   Future<void> stop() async {
+    if (onImageListener == null || imageSubscription == null) {
+      return;
+    }
     _analysisEnabled = false;
     await CamerawesomePlugin.stopAnalysis();
-    close();
-  }
-
-  close() {
     imageSubscription?.cancel();
     imageSubscription = null;
   }

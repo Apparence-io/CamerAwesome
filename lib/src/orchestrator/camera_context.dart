@@ -156,7 +156,7 @@ class CameraContext {
     sensorConfigController.close();
     mediaCaptureController.close();
     stateController.close();
-    analysisController?.close();
+    analysisController?.stop();
     state.dispose();
     CamerawesomePlugin.stop();
   }

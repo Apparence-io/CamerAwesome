@@ -38,64 +38,61 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: Colors.white,
-        child: CameraAwesomeBuilder.awesome(
-          saveConfig: SaveConfig.photoAndVideo(
-            initialCaptureMode: CaptureMode.photo,
-          ),
-          sensorConfig: SensorConfig.single(
-            flashMode: FlashMode.auto,
-            aspectRatio: CameraAspectRatios.ratio_16_9,
-          ),
-          previewFit: CameraPreviewFit.fitWidth,
-          onMediaTap: (mediaCapture) {
-            OpenFile.open(
-              mediaCapture.captureRequest
-                  .when(single: (single) => single.file?.path),
-            );
-          },
-          previewDecoratorBuilder: (state, previewSize, previewRect) {
-            return BarcodePreviewOverlay(
-              state: state,
-              previewSize: previewSize,
-              previewRect: previewRect,
-              barcodes: _barcodes,
-              analysisImage: _image,
-            );
-          },
-          topActionsBuilder: (state) {
-            return AwesomeTopActions(
-              state: state,
-              children: [
-                AwesomeFlashButton(state: state),
-                if (state is PhotoCameraState)
-                  AwesomeAspectRatioButton(state: state),
-              ],
-            );
-          },
-          middleContentBuilder: (state) {
-            return const SizedBox.shrink();
-          },
-          bottomActionsBuilder: (state) {
-            return const Padding(
-              padding: EdgeInsets.only(bottom: 20),
-              child: Text(
-                "Scan your barcodes",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30,
-                ),
+      extendBodyBehindAppBar: true,
+      body: CameraAwesomeBuilder.awesome(
+        saveConfig: SaveConfig.photoAndVideo(
+          initialCaptureMode: CaptureMode.photo,
+        ),
+        sensorConfig: SensorConfig.single(
+          flashMode: FlashMode.auto,
+          aspectRatio: CameraAspectRatios.ratio_16_9,
+        ),
+        previewFit: CameraPreviewFit.fitWidth,
+        onMediaTap: (mediaCapture) {
+          OpenFile.open(
+            mediaCapture.captureRequest
+                .when(single: (single) => single.file?.path),
+          );
+        },
+        previewDecoratorBuilder: (state, preview) {
+          return BarcodePreviewOverlay(
+            state: state,
+            barcodes: _barcodes,
+            analysisImage: _image,
+            preview: preview,
+          );
+        },
+        topActionsBuilder: (state) {
+          return AwesomeTopActions(
+            state: state,
+            children: [
+              AwesomeFlashButton(state: state),
+              if (state is PhotoCameraState)
+                AwesomeAspectRatioButton(state: state),
+            ],
+          );
+        },
+        middleContentBuilder: (state) {
+          return const SizedBox.shrink();
+        },
+        bottomActionsBuilder: (state) {
+          return const Padding(
+            padding: EdgeInsets.only(bottom: 20),
+            child: Text(
+              "Scan your barcodes",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30,
               ),
-            );
-          },
-          onImageForAnalysis: (img) => _processImageBarcode(img),
-          imageAnalysisConfig: AnalysisConfig(
-            androidOptions: const AndroidAnalysisOptions.nv21(
-              width: 256,
             ),
-            maxFramesPerSecond: 3,
+          );
+        },
+        onImageForAnalysis: (img) => _processImageBarcode(img),
+        imageAnalysisConfig: AnalysisConfig(
+          androidOptions: const AndroidAnalysisOptions.nv21(
+            width: 256,
           ),
+          maxFramesPerSecond: 3,
         ),
       ),
     );

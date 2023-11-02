@@ -16,6 +16,8 @@ export 'src/orchestrator/models/sensor_type.dart';
 export 'src/orchestrator/models/sensors.dart';
 export 'src/orchestrator/states/states.dart';
 export 'src/widgets/camera_awesome_builder.dart';
+export 'src/orchestrator/analysis/analysis_to_image.dart';
+export 'src/orchestrator/models/analysis/analysis_canvas.dart';
 
 // built in widgets
 export 'src/widgets/widgets.dart';

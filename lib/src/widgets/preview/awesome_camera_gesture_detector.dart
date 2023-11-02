@@ -92,7 +92,6 @@ class _AwesomeCameraGestureDetector
               }
               ..onUpdate = (ScaleUpdateDetails details) {
                 _lastScale ??= details.scale;
-
                 if (details.scale < (_lastScale! + 0.01) &&
                     details.scale > (_lastScale! - 0.01)) {
                   return;

@@ -54,7 +54,7 @@ class _CameraPageState extends State<CameraPage> {
           ),
           maxFramesPerSecond: 30,
         ),
-        builder: (state, previewSize, previewRect) {
+        builder: (state, preview) {
           return CameraPreviewDisplayer(
             analysisImageStream: _imageStreamController.stream,
           );

@@ -20,12 +20,14 @@ typedef CameraLayoutBuilder = Widget Function(
   CameraState state,
 
   /// [previewSize] not clipped
-  PreviewSize previewSize,
+  //PreviewSize previewSize,
 
   /// [previewRect] size might be different than [previewSize] if it has been
   /// clipped. It is often clipped in 1:1 ratio. Use it to show elements
   /// relative to the preview (inside or outside for instance)
-  Rect previewRect,
+  //Rect previewRect,
+
+  Preview preview,
 );
 
 /// Callback when a video or photo has been saved and user click on thumbnail
@@ -35,7 +37,11 @@ typedef OnMediaTap = Function(MediaCapture mediaCapture)?;
 typedef OnPermissionsResult = void Function(bool result);
 
 /// Analysis image stream listener
-typedef OnImageForAnalysis = Future Function(AnalysisImage image);
+/// The Preview object will help you to convert a point from the preview to the
+/// to your screen
+typedef OnImageForAnalysis = Future Function(
+  AnalysisImage image,
+);
 
 /// This is the entry point of the CameraAwesome plugin
 /// You can either
@@ -171,7 +177,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               ),
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
-          builder: (cameraModeState, previewSize, previewRect) {
+          builder: (cameraModeState, preview) {
             return AwesomeCameraLayout(
               state: cameraModeState,
               onMediaTap: onMediaTap,
@@ -347,8 +353,11 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
-        _cameraContext.state
+        _cameraContext //
+            .state
             .when(onVideoRecordingMode: (mode) => mode.stopRecording());
+        break;
+      case AppLifecycleState.hidden:
         break;
     }
     super.didChangeAppLifecycleState(state);
@@ -402,8 +411,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                 child: !widget.showPreview
                     ? widget.builder(
                         snapshot.requireData,
-                        PreviewSize(width: 0, height: 0),
-                        Rect.zero,
+                        Preview.hidden(),
                       )
                     : AwesomeCameraPreview(
                         key: _cameraPreviewKey,

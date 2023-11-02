@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:rxdart/rxdart.dart';
@@ -42,6 +40,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   final _faceDetectionController = BehaviorSubject<FaceDetectionModel>();
+  Preview? _preview;
 
   final options = FaceDetectorOptions(
     enableContours: true,
@@ -75,14 +74,14 @@ class _CameraPageState extends State<CameraPage> {
           androidOptions: const AndroidAnalysisOptions.nv21(
             width: 250,
           ),
-          maxFramesPerSecond: 30,
+          maxFramesPerSecond: 5,
         ),
-        builder: (state, previewSize, previewRect) {
+        builder: (state, preview) {
+          _preview = preview;
           return _MyPreviewDecoratorWidget(
             cameraState: state,
             faceDetectionStream: _faceDetectionController,
-            previewSize: previewSize,
-            previewRect: previewRect,
+            preview: _preview!,
           );
         },
       ),
@@ -96,10 +95,10 @@ class _CameraPageState extends State<CameraPage> {
       _faceDetectionController.add(
         FaceDetectionModel(
           faces: await faceDetector.processImage(inputImage),
-          absoluteImageSize: inputImage.inputImageData!.size,
+          absoluteImageSize: inputImage.metadata!.size,
           rotation: 0,
           imageRotation: img.inputImageRotation,
-          croppedSize: img.croppedSize,
+          img: img,
         ),
       );
       // debugPrint("...sending image resulted with : ${faces?.length} faces");
@@ -112,14 +111,12 @@ class _CameraPageState extends State<CameraPage> {
 class _MyPreviewDecoratorWidget extends StatelessWidget {
   final CameraState cameraState;
   final Stream<FaceDetectionModel> faceDetectionStream;
-  final PreviewSize previewSize;
-  final Rect previewRect;
+  final Preview preview;
 
   const _MyPreviewDecoratorWidget({
     required this.cameraState,
     required this.faceDetectionStream,
-    required this.previewSize,
-    required this.previewRect,
+    required this.preview,
   });
 
   @override
@@ -135,13 +132,15 @@ class _MyPreviewDecoratorWidget extends StatelessWidget {
               stream: faceDetectionStream,
               builder: (_, faceModelSnapshot) {
                 if (!faceModelSnapshot.hasData) return const SizedBox();
+                // this is the transformation needed to convert the image to the preview
+                // Android mirrors the preview but the analysis image is not
+                final canvasTransformation = faceModelSnapshot.data!.img
+                    ?.getCanvasTransformation(preview);
                 return CustomPaint(
                   painter: FaceDetectorPainter(
                     model: faceModelSnapshot.requireData,
-                    previewSize: previewSize,
-                    previewRect: previewRect,
-                    isBackCamera: snapshot.requireData.sensors.first.position ==
-                        SensorPosition.back,
+                    canvasTransformation: canvasTransformation,
+                    preview: preview,
                   ),
                 );
               },
@@ -155,68 +154,26 @@ class _MyPreviewDecoratorWidget extends StatelessWidget {
 
 class FaceDetectorPainter extends CustomPainter {
   final FaceDetectionModel model;
-  final PreviewSize previewSize;
-  final Rect previewRect;
-  final bool isBackCamera;
+  final CanvasTransformation? canvasTransformation;
+  final Preview? preview;
 
   FaceDetectorPainter({
     required this.model,
-    required this.previewSize,
-    required this.previewRect,
-    required this.isBackCamera,
+    this.canvasTransformation,
+    this.preview,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final croppedSize = model.croppedSize;
-
-    final ratioAnalysisToPreview = previewSize.width / croppedSize.width;
-
-    bool flipXY = false;
-    if (Platform.isAndroid) {
-      // Symmetry for Android since native image analysis is not mirrored but preview is
-      // It also handles device rotation
-      switch (model.imageRotation) {
-        case InputImageRotation.rotation0deg:
-          if (isBackCamera) {
-            flipXY = true;
-            canvas.scale(-1, 1);
-            canvas.translate(-size.width, 0);
-          } else {
-            flipXY = true;
-            canvas.scale(-1, -1);
-            canvas.translate(-size.width, -size.height);
-          }
-          break;
-        case InputImageRotation.rotation90deg:
-          if (isBackCamera) {
-            // No changes
-          } else {
-            canvas.scale(1, -1);
-            canvas.translate(0, -size.height);
-          }
-          break;
-        case InputImageRotation.rotation180deg:
-          if (isBackCamera) {
-            flipXY = true;
-            canvas.scale(1, -1);
-            canvas.translate(0, -size.height);
-          } else {
-            flipXY = true;
-          }
-          break;
-        default:
-          // 270 or null
-          if (isBackCamera) {
-            canvas.scale(-1, -1);
-            canvas.translate(-size.width, -size.height);
-          } else {
-            canvas.scale(-1, 1);
-            canvas.translate(-size.width, 0);
-          }
-      }
+    if (preview == null || model.img == null) {
+      return;
     }
-
+    // We apply the canvas transformation to the canvas so that the barcode
+    // rect is drawn in the correct orientation. (Android only)
+    if (canvasTransformation != null) {
+      canvas.save();
+      canvas.applyTransformation(canvasTransformation!, size);
+    }
     for (final Face face in model.faces) {
       Map<FaceContourType, Path> paths = {
         for (var fct in FaceContourType.values) fct: Path()
@@ -226,25 +183,20 @@ class FaceDetectorPainter extends CustomPainter {
           paths[contourType]!.addPolygon(
               faceContour.points
                   .map(
-                    (element) => _croppedPosition(
-                      element,
-                      croppedSize: croppedSize,
-                      painterSize: size,
-                      ratio: ratioAnalysisToPreview,
-                      flipXY: flipXY,
+                    (element) => preview!.convertFromImage(
+                      Offset(element.x.toDouble(), element.y.toDouble()),
+                      model.img!,
                     ),
                   )
                   .toList(),
               true);
           for (var element in faceContour.points) {
+            var position = preview!.convertFromImage(
+              Offset(element.x.toDouble(), element.y.toDouble()),
+              model.img!,
+            );
             canvas.drawCircle(
-              _croppedPosition(
-                element,
-                croppedSize: croppedSize,
-                painterSize: size,
-                ratio: ratioAnalysisToPreview,
-                flipXY: flipXY,
-              ),
+              position,
               4,
               Paint()..color = Colors.blue,
             );
@@ -261,43 +213,15 @@ class FaceDetectorPainter extends CustomPainter {
               ..style = PaintingStyle.stroke);
       }
     }
+    // if you want to draw without canvas transformation, use this:
+    if (canvasTransformation != null) {
+      canvas.restore();
+    }
   }
 
   @override
   bool shouldRepaint(FaceDetectorPainter oldDelegate) {
-    return oldDelegate.isBackCamera != isBackCamera ||
-        oldDelegate.previewSize.width != previewSize.width ||
-        oldDelegate.previewSize.height != previewSize.height ||
-        oldDelegate.previewRect != previewRect ||
-        oldDelegate.model != model;
-  }
-
-  Offset _croppedPosition(
-    Point<int> element, {
-    required Size croppedSize,
-    required Size painterSize,
-    required double ratio,
-    required bool flipXY,
-  }) {
-    num imageDiffX;
-    num imageDiffY;
-    if (Platform.isIOS) {
-      imageDiffX = model.absoluteImageSize.width - croppedSize.width;
-      imageDiffY = model.absoluteImageSize.height - croppedSize.height;
-    } else {
-      imageDiffX = model.absoluteImageSize.height - croppedSize.width;
-      imageDiffY = model.absoluteImageSize.width - croppedSize.height;
-    }
-
-    return (Offset(
-              (flipXY ? element.y : element.x).toDouble() - (imageDiffX / 2),
-              (flipXY ? element.x : element.y).toDouble() - (imageDiffY / 2),
-            ) *
-            ratio)
-        .translate(
-      (painterSize.width - (croppedSize.width * ratio)) / 2,
-      (painterSize.height - (croppedSize.height * ratio)) / 2,
-    );
+    return oldDelegate.model != model;
   }
 }
 
@@ -326,15 +250,17 @@ class FaceDetectionModel {
   final Size absoluteImageSize;
   final int rotation;
   final InputImageRotation imageRotation;
-  final Size croppedSize;
+  final AnalysisImage? img;
 
   FaceDetectionModel({
     required this.faces,
     required this.absoluteImageSize,
     required this.rotation,
     required this.imageRotation,
-    required this.croppedSize,
+    this.img,
   });
+
+  Size get croppedSize => img!.croppedSize;
 
   @override
   bool operator ==(Object other) =>

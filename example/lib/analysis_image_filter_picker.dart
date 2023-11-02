@@ -55,7 +55,7 @@ class _CameraPageState extends State<CameraPage> {
           cupertinoOptions: const CupertinoAnalysisOptions.bgra8888(),
           maxFramesPerSecond: 30,
         ),
-        builder: (state, previewSize, previewRect) {
+        builder: (state, preview) {
           return _MyPreviewDecoratorWidget(
             analysisImageStream: _imageStreamController.stream,
           );

@@ -44,7 +44,7 @@ class CameraPage extends StatelessWidget {
           sensorConfig: SensorConfig.single(
             sensor: sensor,
           ),
-          previewDecoratorBuilder: (state, _, __) {
+          previewDecoratorBuilder: (state, _) {
             return Center(
               child: FutureBuilder<bool>(
                   future: CameraCharacteristics

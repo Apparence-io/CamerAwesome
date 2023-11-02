@@ -1,26 +1,20 @@
-import 'dart:io';
-import 'dart:math';
-
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 
 class BarcodePreviewOverlay extends StatefulWidget {
   final CameraState state;
-  final PreviewSize previewSize;
-  final Rect previewRect;
   final List<Barcode> barcodes;
   final AnalysisImage? analysisImage;
   final bool isBackCamera;
+  final Preview preview;
 
   const BarcodePreviewOverlay({
     super.key,
     required this.state,
-    required this.previewSize,
-    required this.previewRect,
     required this.barcodes,
     required this.analysisImage,
+    required this.preview,
     this.isBackCamera = true,
   });
 
@@ -35,15 +29,16 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
   // The barcode that is currently in the scan area (one at a time)
   String? _barcodeRead;
 
-  // Detected barcode Rect
   Rect? _barcodeRect;
 
   // Whether the barcode is in the scan area
   bool? _barcodeInArea;
 
-  // Scale and transition to apply to the canvas to draw correctly your shapes
-  Point<int>? _canvasScale;
-  Point<int>? _canvasTranslate;
+  // The image that was used to detect the barcode
+  AnalysisImage? img;
+
+  // The transformation that was used to display the image correctly (Android only)
+  CanvasTransformation? canvasTransformation;
 
   @override
   void initState() {
@@ -69,11 +64,11 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
     // including the clipping that may be needed to respect the current
     // aspectRatio.
     _scanArea = Rect.fromCenter(
-      center: widget.previewRect.center,
+      center: widget.preview.rect.center,
       // In this example, we want the barcode scan area to be a fraction
       // of the preview that is seen by the user, so we use previewRect
-      width: widget.previewRect.width * 0.7,
-      height: widget.previewRect.height * 0.3,
+      width: widget.preview.rect.width * 0.7,
+      height: widget.preview.rect.height * 0.3,
     );
   }
 
@@ -83,166 +78,105 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
 
     return IgnorePointer(
       ignoring: true,
-      child: Padding(
-        // Area within this padding is our Preview
-        padding: EdgeInsets.only(
-          top: widget.previewRect.top,
-          left: widget.previewRect.left,
-          right: _screenSize.width - widget.previewRect.right,
-          bottom: _screenSize.height - widget.previewRect.bottom,
-        ),
-        child: Stack(children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: BarcodeFocusAreaPainter(
-                scanArea: _scanArea.size,
-                barcodeRect: _barcodeRect,
-                canvasScale: _canvasScale,
-                canvasTranslate: _canvasTranslate,
-              ),
+      child: Stack(children: [
+        Positioned.fill(
+          child: CustomPaint(
+            painter: BarcodeFocusAreaPainter(
+              scanArea: _scanArea.size,
+              barcodeRect: _barcodeRect,
+              canvasTransformation: canvasTransformation,
             ),
           ),
-          // Place text indications around the scan area
-          Positioned(
-            top: widget.previewSize.height / 2 + _scanArea.size.height / 2 + 10,
-            left: 0,
-            right: 0,
-            child: Column(children: [
-              Text(
-                _barcodeRead ?? "",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
+        ),
+
+        // Place text indications around the scan area
+        Positioned(
+          top:
+              widget.preview.previewSize.height / 2 + _scanArea.size.height / 2,
+          left: 0,
+          right: 0,
+          child: Column(children: [
+            Text(
+              _barcodeRead ?? "",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
               ),
-              if (_barcodeInArea != null)
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  color: _barcodeInArea! ? Colors.green : Colors.red,
-                  child: Text(
-                    _barcodeInArea! ? "Barcode in area" : "Barcode not in area",
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                    ),
+            ),
+            if (_barcodeInArea != null)
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                color: _barcodeInArea! ? Colors.green : Colors.red,
+                child: Text(
+                  _barcodeInArea! ? "Barcode in area" : "Barcode not in area",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
                   ),
                 ),
-            ]),
-          ),
-        ]),
-      ),
+              ),
+          ]),
+        ),
+      ]),
     );
   }
 
   /// Detects if one of the [barcodes] is in the [_scanArea] and updates UI
   /// accordingly.
   Future _detectBarcodeInArea(AnalysisImage img, List<Barcode> barcodes) async {
-    final Size imageSize = img.size;
-    final croppedSize = img.croppedSize;
-
     try {
-      final ratioAnalysisToPreview =
-          widget.previewSize.width / croppedSize.width;
-
-      bool flipXY = false;
-      _canvasScale = null;
-      _canvasTranslate = null;
-      if (Platform.isAndroid) {
-        // Symmetry for Android since native image analysis is not mirrored but preview is
-        // It also handles device rotation
-        switch (InputImageRotation.values.byName(img.rotation.name)) {
-          case InputImageRotation.rotation0deg:
-            if (widget.isBackCamera) {
-              flipXY = true;
-              _canvasScale = const Point(-1, 1);
-              _canvasTranslate = const Point(-1, 0);
-            } else {
-              flipXY = true;
-              _canvasScale = const Point(-1, -1);
-              _canvasTranslate = const Point(-1, -1);
-            }
-            break;
-          case InputImageRotation.rotation90deg:
-            if (widget.isBackCamera) {
-              // No changes
-            } else {
-              _canvasScale = const Point(1, -1);
-              _canvasTranslate = const Point(0, -1);
-            }
-            break;
-          case InputImageRotation.rotation180deg:
-            if (widget.isBackCamera) {
-              flipXY = true;
-              _canvasScale = const Point(1, -1);
-              _canvasTranslate = const Point(0, -1);
-            } else {
-              flipXY = true;
-            }
-            break;
-          default:
-            // 270 or null
-            if (widget.isBackCamera) {
-              _canvasScale = const Point(-1, -1);
-              _canvasTranslate = const Point(-1, -1);
-            } else {
-              _canvasScale = const Point(-1, 1);
-              _canvasTranslate = const Point(-1, 0);
-            }
-        }
-      }
       String? barcodeRead;
       _barcodeInArea = null;
+
+      // The canvas transformation is needed to display the barcode rect correctly on android
+      canvasTransformation = img.getCanvasTransformation(widget.preview);
+
       for (Barcode barcode in barcodes) {
-        // Check if the barcode is within bounds
-        if (barcode.cornerPoints != null) {
-          final topLeft = _croppedPosition(
-            barcode.cornerPoints![0],
-            analysisImageSize: imageSize,
-            croppedSize: croppedSize,
-            screenSize: _screenSize,
-            ratio: ratioAnalysisToPreview,
-            flipXY: flipXY,
-          ).translate(-widget.previewRect.left, -widget.previewRect.top);
-          final bottomRight = _croppedPosition(
-            barcode.cornerPoints![2],
-            analysisImageSize: imageSize,
-            croppedSize: croppedSize,
-            screenSize: _screenSize,
-            ratio: ratioAnalysisToPreview,
-            flipXY: flipXY,
-          ).translate(-widget.previewRect.left, -widget.previewRect.top);
+        if (barcode.cornerPoints.isEmpty) {
+          continue;
+        }
 
-          barcodeRead = "[${barcode.format.name}]: ${barcode.rawValue}";
-          // For simplicity we consider the barcode to be a Rect. Due to
-          // perspective, it might not be in reality. You could build a Path
-          // from the 4 corner points instead.
-          _barcodeRect = Rect.fromLTRB(
-            topLeft.dx,
-            topLeft.dy,
-            bottomRight.dx,
-            bottomRight.dy,
-          );
+        barcodeRead = "[${barcode.format.name}]: ${barcode.rawValue}";
+        // For simplicity we consider the barcode to be a Rect. Due to
+        // perspective, it might not be in reality. You could build a Path
+        // from the 4 corner points instead.
+        final topLeftOffset = barcode.cornerPoints[0];
+        final bottomRightOffset = barcode.cornerPoints[2];
+        var topLeftOff = widget.preview.convertFromImage(
+          topLeftOffset.toOffset(),
+          img,
+        );
+        var bottomRightOff = widget.preview.convertFromImage(
+          bottomRightOffset.toOffset(),
+          img,
+        );
 
-          // Approximately detect if the barcode is in the scan area by checking
-          // if the center of the barcode is in the scan area.
-          if (_scanArea.contains(
-            _barcodeRect!.center.translate(
-              (_screenSize.width - widget.previewSize.width) / 2,
-              (_screenSize.height - widget.previewSize.height) / 2,
-            ),
-          )) {
-            // Note: for a better detection, you should calculate the area of the
-            // intersection between the barcode and the scan area and compare it
-            // with the area of the barcode. If the intersection is greater than
-            // a certain percentage, then the barcode is in the scan area.
-            _barcodeInArea = true;
-            // Only handle one good barcode in this example
-            break;
-          } else {
-            _barcodeInArea = false;
-          }
+        _barcodeRect = Rect.fromLTRB(
+          topLeftOff.dx,
+          topLeftOff.dy,
+          bottomRightOff.dx,
+          bottomRightOff.dy,
+        );
+
+        // Approximately detect if the barcode is in the scan area by checking
+        // if the center of the barcode is in the scan area.
+        if (_scanArea.contains(
+          _barcodeRect!.center.translate(
+            (_screenSize.width - widget.preview.previewSize.width) / 2,
+            (_screenSize.height - widget.preview.previewSize.height) / 2,
+          ),
+        )) {
+          // Note: for a better detection, you should calculate the area of the
+          // intersection between the barcode and the scan area and compare it
+          // with the area of the barcode. If the intersection is greater than
+          // a certain percentage, then the barcode is in the scan area.
+          _barcodeInArea = true;
+          // Only handle one good barcode in this example
+          break;
+        } else {
+          _barcodeInArea = false;
         }
 
         if (_barcodeInArea != null && mounted) {
@@ -251,57 +185,21 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
           });
         }
       }
-    } catch (error) {
-      debugPrint("...sending image resulted error $error");
+    } catch (error, stacktrace) {
+      debugPrint("...sending image resulted error $error $stacktrace");
     }
-  }
-
-  Offset _croppedPosition(
-    Point<int> element, {
-    required Size analysisImageSize,
-    required Size croppedSize,
-    required Size screenSize,
-    // ratio between croppedSize and previewSize
-    required double ratio,
-    required bool flipXY,
-  }) {
-    // Determine how much the image is cropped
-    num imageDiffX;
-    num imageDiffY;
-    if (Platform.isIOS) {
-      imageDiffX = analysisImageSize.width - croppedSize.width;
-      imageDiffY = analysisImageSize.height - croppedSize.height;
-    } else {
-      // Width and height are inverted on Android
-      imageDiffX = analysisImageSize.height - croppedSize.width;
-      imageDiffY = analysisImageSize.width - croppedSize.height;
-    }
-
-    // Apply the imageDiff to the element position
-    return (Offset(
-              (flipXY ? element.y : element.x).toDouble() - (imageDiffX / 2),
-              (flipXY ? element.x : element.y).toDouble() - (imageDiffY / 2),
-            ) *
-            ratio)
-        .translate(
-      // If screenSize is bigger than croppedSize, move the element to half the difference
-      (screenSize.width - (croppedSize.width * ratio)) / 2,
-      (screenSize.height - (croppedSize.height * ratio)) / 2,
-    );
   }
 }
 
 class BarcodeFocusAreaPainter extends CustomPainter {
   final Size scanArea;
   final Rect? barcodeRect;
-  final Point<int>? canvasScale;
-  final Point<int>? canvasTranslate;
+  final CanvasTransformation? canvasTransformation;
 
   BarcodeFocusAreaPainter({
     required this.scanArea,
     required this.barcodeRect,
-    this.canvasScale,
-    this.canvasTranslate,
+    this.canvasTransformation,
   });
 
   @override
@@ -328,17 +226,16 @@ class BarcodeFocusAreaPainter extends CustomPainter {
         ..strokeWidth = 3,
     );
 
+    // We apply the canvas transformation to the canvas so that the barcode
+    // rect is drawn in the correct orientation. (Android only)
+    if (canvasTransformation != null) {
+      canvas.save();
+      canvas.applyTransformation(canvasTransformation!, size);
+    }
+
     // Draw the barcode rect for debugging purpose
     if (barcodeRect != null) {
-      if (canvasScale != null) {
-        canvas.scale(canvasScale!.x.toDouble(), canvasScale!.y.toDouble());
-      }
-      if (canvasTranslate != null) {
-        canvas.translate(
-          canvasTranslate!.x * size.width,
-          canvasTranslate!.y.toDouble() * size.height,
-        );
-      }
+      // apply canvas transformation
       canvas.drawRect(
         barcodeRect!,
         Paint()
@@ -346,6 +243,11 @@ class BarcodeFocusAreaPainter extends CustomPainter {
           ..color = Colors.blue
           ..strokeWidth = 2,
       );
+    }
+
+    // if you want to draw without canvas transformation, use this:
+    if (canvasTransformation != null) {
+      canvas.restore();
     }
   }
 
@@ -379,8 +281,14 @@ class BarcodeFocusAreaPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant BarcodeFocusAreaPainter oldDelegate) {
     return scanArea != oldDelegate.scanArea &&
-        barcodeRect != oldDelegate.barcodeRect &&
-        canvasScale != oldDelegate.canvasScale &&
-        canvasTranslate != oldDelegate.canvasTranslate;
+        canvasTransformation != oldDelegate.canvasTransformation &&
+        barcodeRect != oldDelegate.barcodeRect;
+  }
+}
+
+extension RenderObjectExtensions on RenderObject {
+  Offset localToGlobal(Offset localPosition) {
+    final transform = getTransformTo(null);
+    return MatrixUtils.transformPoint(transform, localPosition);
   }
 }
