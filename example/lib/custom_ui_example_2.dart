@@ -12,7 +12,7 @@ class CustomUiExample2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
-        builder: (cameraState, previewSize, previewRect) {
+        builder: (cameraState, preview) {
           return Stack(
             children: [
               const Positioned.fill(

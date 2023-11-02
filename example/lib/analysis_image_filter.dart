@@ -47,15 +47,14 @@ class _CameraPageState extends State<CameraPage> {
           sensor: Sensor.position(SensorPosition.front),
           aspectRatio: CameraAspectRatios.ratio_1_1,
         ),
-        onImageForAnalysis: (img, {preview}) async =>
-            _imageStreamController.add(img),
+        onImageForAnalysis: (img) async => _imageStreamController.add(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.yuv420(
             width: 150,
           ),
           maxFramesPerSecond: 30,
         ),
-        builder: (state, previewSize, previewRect) {
+        builder: (state, preview) {
           return CameraPreviewDisplayer(
             analysisImageStream: _imageStreamController.stream,
           );

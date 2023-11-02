@@ -11,7 +11,7 @@ class CustomUiExample3 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
-        builder: (cameraState, previewSize, previewRect) {
+        builder: (cameraState, preview) {
           return cameraState.when(
             onPreparingCamera: (state) =>
                 const Center(child: CircularProgressIndicator()),

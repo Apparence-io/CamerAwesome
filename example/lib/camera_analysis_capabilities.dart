@@ -32,7 +32,7 @@ class CameraPage extends StatelessWidget {
           saveConfig: SaveConfig.photoAndVideo(
             initialCaptureMode: CaptureMode.video,
           ),
-          onImageForAnalysis: (image, {preview}) async {
+          onImageForAnalysis: (image) async {
             print('Image for analysis received: ${image.size}');
           },
           imageAnalysisConfig: AnalysisConfig(
@@ -44,7 +44,7 @@ class CameraPage extends StatelessWidget {
           sensorConfig: SensorConfig.single(
             sensor: sensor,
           ),
-          previewDecoratorBuilder: (state, _, __) {
+          previewDecoratorBuilder: (state, _) {
             return Center(
               child: FutureBuilder<bool>(
                   future: CameraCharacteristics

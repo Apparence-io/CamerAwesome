@@ -34,7 +34,6 @@ class _CameraPageState extends State<CameraPage> {
   final _barcodeScanner = BarcodeScanner(formats: [BarcodeFormat.all]);
   List<Barcode> _barcodes = [];
   AnalysisImage? _image;
-  Preview? _preview;
 
   @override
   Widget build(BuildContext context) {
@@ -55,14 +54,12 @@ class _CameraPageState extends State<CameraPage> {
                 .when(single: (single) => single.file?.path),
           );
         },
-        previewDecoratorBuilder: (state, previewSize, previewRect) {
+        previewDecoratorBuilder: (state, preview) {
           return BarcodePreviewOverlay(
             state: state,
-            previewSize: previewSize, // delete
-            previewRect: previewRect, // delete
             barcodes: _barcodes,
             analysisImage: _image,
-            preview: _preview,
+            preview: preview,
           );
         },
         topActionsBuilder: (state) {
@@ -90,8 +87,7 @@ class _CameraPageState extends State<CameraPage> {
             ),
           );
         },
-        onImageForAnalysis: (img, {preview}) =>
-            _processImageBarcode(img, preview),
+        onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(
             width: 256,
@@ -102,9 +98,8 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
-  Future _processImageBarcode(AnalysisImage img, Preview? preview) async {
+  Future _processImageBarcode(AnalysisImage img) async {
     try {
-      _preview = preview;
       var recognizedBarCodes =
           await _barcodeScanner.processImage(img.toInputImage());
       setState(() {

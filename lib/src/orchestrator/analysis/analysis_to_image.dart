@@ -8,29 +8,37 @@ class Preview {
   final Size previewSize;
   final Offset offset;
   final double scale;
+  final Sensor? sensor;
 
   Preview({
     required this.nativePreviewSize,
     required this.previewSize,
     required this.offset,
     required this.scale,
+    required this.sensor,
   });
 
+  factory Preview.hidden() => Preview(
+        nativePreviewSize: Size.zero,
+        previewSize: Size.zero,
+        offset: Offset.zero,
+        scale: 1,
+        sensor: null,
+      );
+
   Offset convertPoint(Offset point) {
-    debugPrint(
-        '   nativePreviewSize $nativePreviewSize /  previewSize $previewSize');
-    debugPrint('convertPoint: $point with $offset (scale: $scale))');
-    return Offset(point.dx * scale, point.dy * scale);
-    // .translate(offset.dx, offset.dy);
+    return Offset(point.dx * scale, point.dy * scale)
+        .translate(offset.dx, offset.dy);
   }
 
   Offset convertFromImage(
     Offset point,
     AnalysisImage img, {
-    bool flipXY = false,
+    bool? flipXY,
   }) {
     num imageDiffX;
     num imageDiffY;
+    final shouldflipXY = flipXY ?? img.flipXY();
     if (Platform.isIOS) {
       imageDiffX = img.size.width - img.croppedSize.width;
       imageDiffY = img.size.height - img.croppedSize.height;
@@ -40,8 +48,10 @@ class Preview {
       imageDiffY = img.size.width - img.croppedSize.height;
     }
     var offset = (Offset(
-              (flipXY ? point.dy : point.dx).toDouble() - (imageDiffX / 2),
-              (flipXY ? point.dx : point.dy).toDouble() - (imageDiffY / 2),
+              (shouldflipXY ? point.dy : point.dx).toDouble() -
+                  (imageDiffX / 2),
+              (shouldflipXY ? point.dx : point.dy).toDouble() -
+                  (imageDiffY / 2),
             ) *
             scale)
         .translate(
@@ -51,4 +61,12 @@ class Preview {
     );
     return offset;
   }
+
+  Rect get rect => Rect.fromCenter(
+        center: previewSize.center(Offset.zero),
+        width: previewSize.width,
+        height: previewSize.height,
+      );
+
+  bool get isBackCamera => sensor?.position == SensorPosition.back;
 }

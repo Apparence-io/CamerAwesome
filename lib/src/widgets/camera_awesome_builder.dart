@@ -20,12 +20,14 @@ typedef CameraLayoutBuilder = Widget Function(
   CameraState state,
 
   /// [previewSize] not clipped
-  PreviewSize previewSize,
+  //PreviewSize previewSize,
 
   /// [previewRect] size might be different than [previewSize] if it has been
   /// clipped. It is often clipped in 1:1 ratio. Use it to show elements
   /// relative to the preview (inside or outside for instance)
-  Rect previewRect,
+  //Rect previewRect,
+
+  Preview preview,
 );
 
 /// Callback when a video or photo has been saved and user click on thumbnail
@@ -38,9 +40,8 @@ typedef OnPermissionsResult = void Function(bool result);
 /// The Preview object will help you to convert a point from the preview to the
 /// to your screen
 typedef OnImageForAnalysis = Future Function(
-  AnalysisImage image, {
-  Preview? preview,
-});
+  AnalysisImage image,
+);
 
 /// This is the entry point of the CameraAwesome plugin
 /// You can either
@@ -176,7 +177,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               ),
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
-          builder: (cameraModeState, previewSize, previewRect) {
+          builder: (cameraModeState, preview) {
             return AwesomeCameraLayout(
               state: cameraModeState,
               onMediaTap: onMediaTap,
@@ -410,8 +411,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                 child: !widget.showPreview
                     ? widget.builder(
                         snapshot.requireData,
-                        PreviewSize(width: 0, height: 0),
-                        Rect.zero,
+                        Preview.hidden(),
                       )
                     : AwesomeCameraPreview(
                         key: _cameraPreviewKey,

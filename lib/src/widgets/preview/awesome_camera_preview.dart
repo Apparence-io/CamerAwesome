@@ -60,6 +60,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   StreamSubscription? _aspectRatioSubscription;
   CameraAspectRatios? _aspectRatio;
   double? _aspectRatioValue;
+  Preview? _preview;
 
   // TODO: fetch this value from the native side
   final int kMaximumSupportedFloatingPreview = 3;
@@ -154,91 +155,73 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
     return Container(
       color: Colors.black,
-      child: OrientationBuilder(
-        builder: (context, orientation) => LayoutBuilder(
-          builder: (context, constraints) {
-            final maxLayoutSize = PreviewSize(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-            );
-
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: AnimatedPreviewFit(
-                    previewFit: widget.previewFit,
-                    previewSize: _previewSize!,
-                    constraints: constraints,
-                    onPreviewCalculated: ({
-                      required nativePreviewSize,
-                      required offset,
-                      required previewSize,
-                      required scale,
-                    }) =>
-                        widget.state.analysisController?.preview = Preview(
-                      nativePreviewSize: nativePreviewSize,
-                      previewSize: previewSize,
-                      offset: offset,
-                      scale: scale,
-                    ),
-                    child: AwesomeCameraGestureDetector(
-                      onPreviewTapBuilder:
-                          widget.onPreviewTap != null && _previewSize != null
-                              ? OnPreviewTapBuilder(
-                                  pixelPreviewSizeGetter: () => _previewSize!,
-                                  flutterPreviewSizeGetter: () =>
-                                      _previewSize!, //croppedPreviewSize,
-                                  onPreviewTap: widget.onPreviewTap!,
-                                )
-                              : null,
-                      onPreviewScale: widget.onPreviewScale,
-                      initialZoom: widget.state.sensorConfig.zoom,
-                      child: StreamBuilder<AwesomeFilter>(
-                        //FIX performances
-                        stream: widget.state.filter$,
-                        builder: (context, snapshot) {
-                          return snapshot.hasData &&
-                                  snapshot.data != AwesomeFilter.None
-                              ? ColorFiltered(
-                                  colorFilter: snapshot.data!.preview,
-                                  child: _textures.first,
-                                )
-                              : _textures.first;
-                        },
-                      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: AnimatedPreviewFit(
+                  previewFit: widget.previewFit,
+                  previewSize: _previewSize!,
+                  constraints: constraints, // FIXME remove this
+                  sensor: widget.state.sensorConfig.sensors.first,
+                  onPreviewCalculated: (preview) {
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      if (mounted) {
+                        setState(() {
+                          _preview = preview;
+                        });
+                      }
+                    });
+                  },
+                  child: AwesomeCameraGestureDetector(
+                    onPreviewTapBuilder:
+                        widget.onPreviewTap != null && _previewSize != null
+                            ? OnPreviewTapBuilder(
+                                pixelPreviewSizeGetter: () => _previewSize!,
+                                flutterPreviewSizeGetter: () =>
+                                    _previewSize!, //croppedPreviewSize,
+                                onPreviewTap: widget.onPreviewTap!,
+                              )
+                            : null,
+                    onPreviewScale: widget.onPreviewScale,
+                    initialZoom: widget.state.sensorConfig.zoom,
+                    child: StreamBuilder<AwesomeFilter>(
+                      //FIX performances
+                      stream: widget.state.filter$,
+                      builder: (context, snapshot) {
+                        return snapshot.hasData &&
+                                snapshot.data != AwesomeFilter.None
+                            ? ColorFiltered(
+                                colorFilter: snapshot.data!.preview,
+                                child: _textures.first,
+                              )
+                            : _textures.first;
+                      },
                     ),
                   ),
                 ),
-                if (widget.previewDecoratorBuilder != null)
-                  Positioned.fill(
-                    child: widget.previewDecoratorBuilder!(
-                      widget.state,
-                      maxLayoutSize,
-                      Rect.fromCenter(
-                        center: maxLayoutSize.toSize().center(Offset.zero),
-                        width: maxLayoutSize.width,
-                        height: maxLayoutSize.height,
-                      ),
-                    ),
+              ),
+              if (widget.previewDecoratorBuilder != null && _preview != null)
+                Positioned.fill(
+                  child: widget.previewDecoratorBuilder!(
+                    widget.state,
+                    _preview!,
                   ),
+                ),
+              if (_preview != null)
                 Positioned.fill(
                   child: widget.interfaceBuilder(
                     widget.state,
-                    maxLayoutSize,
-                    Rect.fromCenter(
-                      center: maxLayoutSize.toSize().center(Offset.zero),
-                      width: maxLayoutSize.width,
-                      height: maxLayoutSize.height,
-                    ),
+                    _preview!,
                   ),
                 ),
-                // TODO: be draggable
-                // TODO: add shadow & border
-                ..._buildPreviewTextures(),
-              ],
-            );
-          },
-        ),
+              // TODO: be draggable
+              // TODO: add shadow & border
+              ..._buildPreviewTextures(),
+            ],
+          );
+        },
       ),
     );
   }

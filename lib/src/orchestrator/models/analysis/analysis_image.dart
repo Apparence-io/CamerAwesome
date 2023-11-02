@@ -1,8 +1,9 @@
+import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/analysis/image_plane.dart';
-import 'package:camerawesome/src/orchestrator/models/analysis/input_analysis.dart';
 import 'package:flutter/foundation.dart';
 
 part 'analysis_image_ext.dart';
@@ -66,6 +67,60 @@ abstract class AnalysisImage {
     } else {
       throw "Unsupported AnalysisImage format: $format";
     }
+  }
+
+  // Symmetry for Android since native image analysis is not mirrored but preview is
+  // if true when drawing the image on the preview, flip x and y
+  bool flipXY() {
+    if (Platform.isAndroid) {
+      switch (rotation) {
+        case InputAnalysisImageRotation.rotation0deg:
+        case InputAnalysisImageRotation.rotation180deg:
+          return true;
+        case InputAnalysisImageRotation.rotation90deg:
+        default:
+          return false;
+      }
+    }
+    return false;
+  }
+
+  // Symmetry for Android since native image analysis is not mirrored but preview is
+  // It also handles device rotation
+  CanvasTransformation? getCanvasTransformation(
+    Preview preview,
+  ) {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+
+    return switch ((rotation, preview.sensor?.position)) {
+      (InputAnalysisImageRotation.rotation0deg, SensorPosition.back) =>
+        const CanvasTransformation(
+          scale: Point(-1, 1),
+          translate: Point(-1, 0),
+        ),
+      (InputAnalysisImageRotation.rotation180deg, SensorPosition.back) =>
+        const CanvasTransformation(
+          scale: Point(1, -1),
+          translate: Point(0, -1),
+        ),
+      (InputAnalysisImageRotation.rotation90deg, SensorPosition.back) => null,
+      // const CanvasTransformation(
+      //   scale: Point(1, -1),
+      //   translate: Point(0, -1),
+      // ),
+      (InputAnalysisImageRotation.rotation0deg, _) ||
+      (_, SensorPosition.back) =>
+        const CanvasTransformation(
+          scale: Point(-1, -1),
+          translate: Point(-1, -1),
+        ),
+      (_, _) => const CanvasTransformation(
+          scale: Point(-1, 1),
+          translate: Point(-1, 0),
+        ),
+    };
   }
 }
 

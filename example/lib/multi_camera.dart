@@ -139,7 +139,7 @@ class _CameraPageState extends State<CameraPage> {
                     },
                   );
                 },
-                previewDecoratorBuilder: (state, _, __) {
+                previewDecoratorBuilder: (state, _) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,

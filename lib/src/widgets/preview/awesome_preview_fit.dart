@@ -6,12 +6,7 @@ import 'package:flutter/material.dart';
 
 final previewWidgetKey = GlobalKey();
 
-typedef OnPreviewCalculated = void Function({
-  required Size nativePreviewSize,
-  required Size previewSize,
-  required Offset offset,
-  required double scale,
-});
+typedef OnPreviewCalculated = void Function(Preview preview);
 
 class AnimatedPreviewFit extends StatefulWidget {
   final CameraPreviewFit previewFit;
@@ -19,12 +14,14 @@ class AnimatedPreviewFit extends StatefulWidget {
   final BoxConstraints constraints;
   final Widget child;
   final OnPreviewCalculated? onPreviewCalculated;
+  final Sensor sensor;
 
   const AnimatedPreviewFit({
     super.key,
     required this.previewFit,
     required this.previewSize,
     required this.constraints,
+    required this.sensor,
     required this.child,
     this.onPreviewCalculated,
   });
@@ -86,24 +83,27 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   void _handPreviewCalculated() {
     if (widget.onPreviewCalculated != null) {
       widget.onPreviewCalculated!(
-        nativePreviewSize: widget.previewSize.toSize(),
-        previewSize: sizeCalculator!.maxSize,
-        offset: sizeCalculator!.offset,
-        scale: sizeCalculator!.zoom,
+        Preview(
+          nativePreviewSize: widget.previewSize.toSize(),
+          previewSize: sizeCalculator!.maxSize,
+          offset: sizeCalculator!.offset,
+          scale: sizeCalculator!.zoom,
+          sensor: widget.sensor,
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final RenderBox renderBox =
-          previewWidgetKey.currentContext?.findRenderObject() as RenderBox;
-      final position = renderBox.localToGlobal(Offset.zero);
-      // this contains the translations from the top left corner of the screen
-      // debugPrint(
-      //     "==> position ${position.dx}, ${position.dy} | ${renderBox.size}");
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    // final RenderBox renderBox =
+    //     previewWidgetKey.currentContext?.findRenderObject() as RenderBox;
+    // final position = renderBox.localToGlobal(Offset.zero);
+    // this contains the translations from the top left corner of the screen
+    // debugPrint(
+    //     "==> position ${position.dx}, ${position.dy} | ${renderBox.size}");
+    // });
 
     return TweenAnimationBuilder<Size>(
       builder: (context, currentSize, child) {
@@ -260,10 +260,6 @@ class PreviewSizeCalculator {
       height: maxSize.height,
     );
   }
-
-  double get offsetX => (constraints.maxWidth - maxSize.width);
-
-  double get offsetY => (constraints.maxHeight - maxSize.height);
 
   double _computeZoom() {
     late double ratio;

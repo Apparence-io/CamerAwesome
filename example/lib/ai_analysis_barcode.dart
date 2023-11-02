@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.previewOnly(
-        onImageForAnalysis: (img, {preview}) => _processImageBarcode(img),
+        onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
           androidOptions: const AndroidAnalysisOptions.nv21(
             width: 1024,
@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
           maxFramesPerSecond: 5,
           autoStart: false,
         ),
-        builder: (cameraModeState, previewSize, previewRect) {
+        builder: (cameraModeState, preview) {
           return _BarcodeDisplayWidget(
             barcodesStream: _barcodesStream,
             scrollController: _scrollController,
