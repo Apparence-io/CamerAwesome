@@ -31,6 +31,9 @@ class Preview {
         .translate(offset.dx, offset.dy);
   }
 
+  /// this method is used to convert a point from an image to the preview
+  /// according to the current preview size and the image size
+  /// also in case of Android, it will flip the point if required
   Offset convertFromImage(
     Offset point,
     AnalysisImage img, {

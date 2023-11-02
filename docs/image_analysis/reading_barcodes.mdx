@@ -36,7 +36,7 @@ CameraAwesomeBuilder.previewOnly(
   // 3.
   onImageForAnalysis: (img) => _processImageBarcode(img),
   // 4.
-  builder: (cameraModeState, previewSize, previewRect) {
+  builder: (cameraModeState, preview) {
     return _BarcodeDisplayWidget(
       barcodesStream: _barcodesStream,
       scrollController: _scrollController,
@@ -108,11 +108,11 @@ extension MLKitUtils on AnalysisImage {
       // 3.
       return InputImage.fromBytes(
         bytes: image.bytes,
-        inputImageData: InputImageData(
-          imageRotation: inputImageRotation,
-          inputImageFormat: InputImageFormat.nv21,
-          planeData: planeData,
-          size: image.size,
+        metadata: InputImageMetadata(
+            rotation: inputImageRotation,
+            format: InputImageFormat.nv21,
+            size: image.size,
+            bytesPerRow: image.planes.first.bytesPerRow,
         ),
       );
     }, bgra8888: (image) {
@@ -168,7 +168,7 @@ To do that, CamerAwesome provides an `AnalysisController` through `CameraState`:
 ```dart
 // 1.
 CameraAwesomeBuilder.custom(
-    builder: (cameraState, previewSize, previewRect) {
+    builder: (cameraState, preview) {
         // 2.
         print("Image analysis enabled: ${cameraState.analysisController?.enabled}");
 
@@ -377,119 +377,67 @@ Let's see the code:
 
 ```dart
  Future _detectBarcodeInArea(AnalysisImage img, List<Barcode> barcodes) async {
-    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
-    final croppedSize = img.cropRect == null
-        ? imageSize
-        : Size(
-            // Width and height of cropRect are inverted
-            img.cropRect!.size.height,
-            img.cropRect!.size.width,
-          );
-
     try {
-      final ratioAnalysisToPreview =
-          widget.previewSize.width / croppedSize.width;
-
-      // 1.
-      bool flipXY = false;
-      _canvasScale = null;
-      _canvasTranslate = null;
-      if (Platform.isAndroid) {
-        switch (InputImageRotation.values.byName(img.rotation.name)) {
-          case InputImageRotation.rotation0deg:
-            if (widget.isBackCamera) {
-              flipXY = true;
-              _canvasScale = const Point(-1, 1);
-              _canvasTranslate = const Point(-1, 0);
-            } else {
-              flipXY = true;
-              _canvasScale = const Point(-1, -1);
-              _canvasTranslate = const Point(-1, -1);
-            }
-            break;
-          case InputImageRotation.rotation90deg:
-            if (widget.isBackCamera) {
-              // No changes
-            } else {
-              _canvasScale = const Point(1, -1);
-              _canvasTranslate = const Point(0, -1);
-            }
-            break;
-          case InputImageRotation.rotation180deg:
-            if (widget.isBackCamera) {
-              flipXY = true;
-              _canvasScale = const Point(1, -1);
-              _canvasTranslate = const Point(0, -1);
-            } else {
-              flipXY = true;
-            }
-            break;
-          default:
-            if (widget.isBackCamera) {
-              _canvasScale = const Point(-1, -1);
-              _canvasTranslate = const Point(-1, -1);
-            } else {
-              _canvasScale = const Point(-1, 1);
-              _canvasTranslate = const Point(-1, 0);
-            }
-        }
-      }
-
-      // 2.
       String? barcodeRead;
       _barcodeInArea = null;
+
+      // The canvas transformation is needed to display the barcode rect correctly on android
+      canvasTransformation = img.getCanvasTransformation(widget.preview);
+
       for (Barcode barcode in barcodes) {
-        if (barcode.cornerPoints != null) {
-          // 3.
-          final topLeft = _croppedPosition(
-            barcode.cornerPoints![0],
-            analysisImageSize: imageSize,
-            croppedSize: croppedSize,
-            screenSize: _screenSize,
-            ratio: ratioAnalysisToPreview,
-            flipXY: flipXY,
-          ).translate(-widget.previewRect.left, -widget.previewRect.top);
-          final bottomRight = _croppedPosition(
-            barcode.cornerPoints![2],
-            analysisImageSize: imageSize,
-            croppedSize: croppedSize,
-            screenSize: _screenSize,
-            ratio: ratioAnalysisToPreview,
-            flipXY: flipXY,
-          ).translate(-widget.previewRect.left, -widget.previewRect.top);
+        if (barcode.cornerPoints.isEmpty) {
+          continue;
+        }
 
-          barcodeRead = "[${barcode.format.name}]: ${barcode.rawValue}";
-          // 4.
-          _barcodeRect = Rect.fromLTRB(
-            topLeft.dx,
-            topLeft.dy,
-            bottomRight.dx,
-            bottomRight.dy,
-          );
+        barcodeRead = "[${barcode.format.name}]: ${barcode.rawValue}";
+        // For simplicity we consider the barcode to be a Rect. Due to
+        // perspective, it might not be in reality. You could build a Path
+        // from the 4 corner points instead.
+        final topLeftOffset = barcode.cornerPoints[0];
+        final bottomRightOffset = barcode.cornerPoints[2];
+        var topLeftOff = widget.preview.convertFromImage(
+          topLeftOffset.toOffset(),
+          img,
+        );
+        var bottomRightOff = widget.preview.convertFromImage(
+          bottomRightOffset.toOffset(),
+          img,
+        );
 
-          // 5
-          if (_scanArea.contains(
-            _barcodeRect!.center.translate(
-              (_screenSize.width - widget.previewSize.width) / 2,
-              (_screenSize.height - widget.previewSize.height) / 2,
-            ),
-          )) {
-            _barcodeInArea = true;
-            break;
-          } else {
-            _barcodeInArea = false;
-          }
+        _barcodeRect = Rect.fromLTRB(
+          topLeftOff.dx,
+          topLeftOff.dy,
+          bottomRightOff.dx,
+          bottomRightOff.dy,
+        );
+
+        // Approximately detect if the barcode is in the scan area by checking
+        // if the center of the barcode is in the scan area.
+        if (_scanArea.contains(
+          _barcodeRect!.center.translate(
+            (_screenSize.width - widget.preview.previewSize.width) / 2,
+            (_screenSize.height - widget.preview.previewSize.height) / 2,
+          ),
+        )) {
+          // Note: for a better detection, you should calculate the area of the
+          // intersection between the barcode and the scan area and compare it
+          // with the area of the barcode. If the intersection is greater than
+          // a certain percentage, then the barcode is in the scan area.
+          _barcodeInArea = true;
+          // Only handle one good barcode in this example
+          break;
+        } else {
+          _barcodeInArea = false;
         }
 
         if (_barcodeInArea != null && mounted) {
-          // 6.
           setState(() {
             _barcodeRead = barcodeRead;
           });
         }
       }
-    } catch (error) {
-      debugPrint("...sending image resulted error $error");
+    } catch (error, stacktrace) {
+      debugPrint("...sending image resulted error $error $stacktrace");
     }
   }
 ```
@@ -500,6 +448,33 @@ Let's see the code:
 4. We create a `Rect` from these two points.
 5. We check if the center of the barcode is within the scan area.
 6. If a barcode is within the scan area, we update the state to show it.
+
+To help you converting an analysis image to the preview coordinates we provides functions. 
+
+```dart
+/// this method is used to convert a point from an image to the preview
+/// according to the current preview size and the image size
+/// also in case of Android, it will flip the point if required
+Offset convertFromImage(
+    Offset point,
+    AnalysisImage img,
+);
+```
+
+The AnalysisImage also provide you the required transformation 
+(It seems that the 180 / 270 cases are not working on all phones right now)
+```dart
+abstract class AnalysisImage {
+    ...
+  // Symmetry for Android since native image analysis is not mirrored but preview is
+  // It also handles device rotation
+  CanvasTransformation? getCanvasTransformation(
+    Preview preview,
+  );
+```
+
+With those two functions you can just draw your points without doing any math. 
+
 
 ### From MLKit coordinates to screen coordinates
 
