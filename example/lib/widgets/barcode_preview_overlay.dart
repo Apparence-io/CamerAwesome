@@ -145,12 +145,11 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
         final topLeftOffset = barcode.cornerPoints[0];
         final bottomRightOffset = barcode.cornerPoints[2];
         var topLeftOff = widget.preview.convertFromImage(
-          Offset(topLeftOffset.x.toDouble(), topLeftOffset.y.toDouble()),
+          topLeftOffset.toOffset(),
           img,
         );
         var bottomRightOff = widget.preview.convertFromImage(
-          Offset(
-              bottomRightOffset.x.toDouble(), bottomRightOffset.y.toDouble()),
+          bottomRightOffset.toOffset(),
           img,
         );
 
@@ -230,9 +229,7 @@ class BarcodeFocusAreaPainter extends CustomPainter {
     // We apply the canvas transformation to the canvas so that the barcode
     // rect is drawn in the correct orientation. (Android only)
     if (canvasTransformation != null) {
-      // canvas.save();
-      print("no apply canvas transformation");
-      // print("apply canvas transformation");
+      canvas.save();
       canvas.applyTransformation(canvasTransformation!, size);
     }
 
@@ -249,9 +246,9 @@ class BarcodeFocusAreaPainter extends CustomPainter {
     }
 
     // if you want to draw without canvas transformation, use this:
-    // if (canvasTransformation != null) {
-    //   canvas.restore();
-    // }
+    if (canvasTransformation != null) {
+      canvas.restore();
+    }
   }
 
   Path getInnerRect(Size size) {

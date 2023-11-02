@@ -29,3 +29,7 @@ extension CanvasTransformationExt on Canvas {
     }
   }
 }
+
+extension PointExt on Point {
+  Offset toOffset() => Offset(x.toDouble(), y.toDouble());
+}
