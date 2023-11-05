@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/src/orchestrator/analysis/analysis_controller.dart';
 import 'package:camerawesome/src/orchestrator/states/camera_state.dart';
 import 'package:flutter/material.dart';
@@ -7,10 +8,12 @@ import 'package:flutter/services.dart';
 
 class AwesomeCaptureButton extends StatefulWidget {
   final CameraState state;
+  final OnPhotoCallback? onCapture;
 
   const AwesomeCaptureButton({
     super.key,
     required this.state,
+    this.onCapture,
   });
 
   @override
@@ -93,7 +96,8 @@ class _AwesomeCaptureButtonState extends State<AwesomeCaptureButton>
 
   get onTap => () {
         widget.state.when(
-          onPhotoMode: (photoState) => photoState.takePhoto(),
+          onPhotoMode: (photoState) =>
+              photoState.takePhoto(onCapture: widget.onCapture),
           onVideoMode: (videoState) => videoState.startRecording(),
           onVideoRecordingMode: (videoState) => videoState.stopRecording(),
         );
