@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  better_open_file:
+    dependency: "direct main"
+    description:
+      name: better_open_file
+      sha256: aa67d9bc38160401e48023833f93c789b4e2b1c0eb8b6643bd5816d0c1c65dbd
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.4"
   boolean_selector:
     dependency: transitive
     description:

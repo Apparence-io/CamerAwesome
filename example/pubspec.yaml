@@ -8,6 +8,7 @@ environment:
   flutter: '>=3.3.0'
 
 dependencies:
+  better_open_file: ^3.6.4
   cross_file: ^0.3.3+6
   flutter:
     sdk: flutter
