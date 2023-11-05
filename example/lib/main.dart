@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:better_open_file/better_open_file.dart';
+// import 'package:better_open_file/better_open_file.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
@@ -76,10 +76,10 @@ class CameraPage extends StatelessWidget {
           // filter: AwesomeFilter.AddictiveRed,
           previewFit: CameraPreviewFit.contain,
           onMediaTap: (mediaCapture) {
-            OpenFile.open(
-              mediaCapture.captureRequest
-                  .when(single: (single) => single.file?.path),
-            );
+            // OpenFile.open(
+            //   mediaCapture.captureRequest
+            //       .when(single: (single) => single.file?.path),
+            // );
           },
         ),
       ),
