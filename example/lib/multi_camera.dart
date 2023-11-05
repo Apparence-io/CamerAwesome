@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:better_open_file/better_open_file.dart';
+import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -101,7 +101,7 @@ class _CameraPageState extends State<CameraPage> {
                 previewFit: CameraPreviewFit.fitWidth,
                 onMediaTap: (mediaCapture) {
                   mediaCapture.captureRequest.when(
-                    single: (single) => OpenFile.open(single.file?.path),
+                    single: (single) => single.file?.open(),
                     multiple: (multiple) => Navigator.of(context).pushNamed(
                       '/gallery',
                       arguments: multiple,
@@ -302,7 +302,7 @@ class _GalleryPageState extends State<GalleryPage> {
               widget.multipleCaptureRequest.fileBySensor.keys.toList()[index];
           final file = widget.multipleCaptureRequest.fileBySensor[sensor];
           return GestureDetector(
-            onTap: () => OpenFile.open(file.path),
+            onTap: () => file.open(),
             child: file!.path.endsWith("jpg")
                 ? Image.file(
                     File(file.path),
