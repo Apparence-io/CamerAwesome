@@ -461,6 +461,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                     : AwesomeCameraPreview(
                         key: _cameraPreviewKey,
                         previewFit: widget.previewFit,
+                        loadingWidget: widget.progressIndicator,
                         state: snapshot.requireData,
                         padding: widget.previewPadding,
                         alignment: widget.previewAlignment,
