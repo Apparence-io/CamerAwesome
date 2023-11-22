@@ -15,6 +15,11 @@ class PhotoFilterModel {
   final Filter filter;
 }
 
+/// Callback to get the CaptureRequest after the photo has been taken
+typedef OnPhotoCallback = Function(CaptureRequest request);
+
+typedef OnPhotoFailedCallback = Function(Exception exception);
+
 /// When Camera is in Image mode
 class PhotoCameraState extends CameraState {
   PhotoCameraState({
@@ -62,7 +67,10 @@ class PhotoCameraState extends CameraState {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<CaptureRequest> takePhoto() async {
+  Future<CaptureRequest> takePhoto({
+    OnPhotoCallback? onPhoto,
+    OnPhotoFailedCallback? onPhotoFailed,
+  }) async {
     CaptureRequest captureRequest =
         await filePathBuilder(sensorConfig.sensors.whereNotNull().toList());
     final mediaCapture = MediaCapture.capturing(captureRequest: captureRequest);
@@ -76,16 +84,22 @@ class PhotoCameraState extends CameraState {
     try {
       final succeeded = await CamerawesomePlugin.takePhoto(captureRequest);
       if (succeeded) {
-        await FilterHandler()
-            .apply(captureRequest: captureRequest, filter: filter);
+        await FilterHandler().apply(
+          captureRequest: captureRequest,
+          filter: filter,
+        );
 
         _mediaCapture = MediaCapture.success(captureRequest: captureRequest);
+        onPhoto?.call(captureRequest);
       } else {
         _mediaCapture = MediaCapture.failure(captureRequest: captureRequest);
+        onPhotoFailed?.call(Exception("Failed to take photo"));
       }
     } on Exception catch (e) {
-      _mediaCapture =
-          MediaCapture.failure(captureRequest: captureRequest, exception: e);
+      _mediaCapture = MediaCapture.failure(
+        captureRequest: captureRequest,
+        exception: e,
+      );
     }
     return captureRequest;
   }

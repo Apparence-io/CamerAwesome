@@ -25,7 +25,6 @@ abstract class CameraState {
 
   abstract final CaptureMode? captureMode;
 
-  // TODO return a generic type T instead of dynamic (will need to remove typedefs)
   when({
     OnVideoMode? onVideoMode,
     OnPhotoMode? onPhotoMode,
@@ -34,24 +33,15 @@ abstract class CameraState {
     OnPreviewMode? onPreviewMode,
     OnAnalysisOnlyMode? onAnalysisOnlyMode,
   }) {
-    if (this is VideoCameraState && onVideoMode != null) {
-      return onVideoMode(this as VideoCameraState);
-    }
-    if (this is PhotoCameraState && onPhotoMode != null) {
-      return onPhotoMode(this as PhotoCameraState);
-    }
-    if (this is PreparingCameraState && onPreparingCamera != null) {
-      return onPreparingCamera(this as PreparingCameraState);
-    }
-    if (this is VideoRecordingCameraState && onVideoRecordingMode != null) {
-      return onVideoRecordingMode(this as VideoRecordingCameraState);
-    }
-    if (this is PreviewCameraState && onPreviewMode != null) {
-      return onPreviewMode(this as PreviewCameraState);
-    }
-    if (this is AnalysisCameraState && onAnalysisOnlyMode != null) {
-      return onAnalysisOnlyMode(this as AnalysisCameraState);
-    }
+    return switch (this) {
+      (VideoCameraState state) => onVideoMode?.call(state),
+      (PhotoCameraState state) => onPhotoMode?.call(state),
+      (PreparingCameraState state) => onPreparingCamera?.call(state),
+      (VideoRecordingCameraState state) => onVideoRecordingMode?.call(state),
+      (PreviewCameraState state) => onPreviewMode?.call(state),
+      (AnalysisCameraState state) => onAnalysisOnlyMode?.call(state),
+      CameraState() => null,
+    };
   }
 
   /// Closes streams depending on the current state
