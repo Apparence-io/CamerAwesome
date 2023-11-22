@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:camera_app/utils/file_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 // this example is based on the camerawesome issue
 // check if memory increase when showing and hiding the camera multiple times
@@ -68,17 +65,6 @@ class CameraPage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<String> _path(CaptureMode captureMode) async {
-    final Directory extDir = await getTemporaryDirectory();
-    final testDir =
-        await Directory('${extDir.path}/test').create(recursive: true);
-    final String fileExtension =
-        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
-    final String filePath =
-        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
-    return filePath;
   }
 }
 

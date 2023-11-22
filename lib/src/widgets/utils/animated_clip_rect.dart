@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AnimatedClipRect extends StatefulWidget {
   @override
-  _AnimatedClipRectState createState() => _AnimatedClipRectState();
+  AnimatedClipRectState createState() => AnimatedClipRectState();
 
   final Widget child;
   final bool open;
@@ -32,7 +32,7 @@ class AnimatedClipRect extends StatefulWidget {
   });
 }
 
-class _AnimatedClipRectState extends State<AnimatedClipRect>
+class AnimatedClipRectState extends State<AnimatedClipRect>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation _animation;

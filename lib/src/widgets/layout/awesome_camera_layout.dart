@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:io';
 
 import 'package:camerawesome/src/orchestrator/models/capture_modes.dart';

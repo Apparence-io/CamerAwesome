@@ -70,9 +70,9 @@ class _MyHomePageState extends State<MyHomePage> {
       // final String text = block.text;
       // final List<String> languages = block.recognizedLanguages;
       for (TextLine line in block.lines) {
-        print("[${line.text}]");
+        debugPrint("[${line.text}]");
         for (TextElement element in line.elements) {
-          print("   ${element.text}");
+          debugPrint("   ${element.text}");
         }
       }
     }

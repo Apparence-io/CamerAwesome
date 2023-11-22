@@ -33,7 +33,7 @@ class CameraPage extends StatelessWidget {
             initialCaptureMode: CaptureMode.video,
           ),
           onImageForAnalysis: (image) async {
-            print('Image for analysis received: ${image.size}');
+            debugPrint('Image for analysis received: ${image.size}');
           },
           imageAnalysisConfig: AnalysisConfig(
             androidOptions: const AndroidAnalysisOptions.jpeg(
@@ -51,7 +51,7 @@ class CameraPage extends StatelessWidget {
                       .isVideoRecordingAndImageAnalysisSupported(
                           sensor.position!),
                   builder: (_, snapshot) {
-                    print("___---___--- received result ${snapshot.data}");
+                    debugPrint("___---___--- received result ${snapshot.data}");
                     if (snapshot.data == null) {
                       return const CircularProgressIndicator();
                     }

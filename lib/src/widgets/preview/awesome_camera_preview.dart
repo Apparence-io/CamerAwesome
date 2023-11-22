@@ -163,7 +163,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 child: AnimatedPreviewFit(
                   previewFit: widget.previewFit,
                   previewSize: _previewSize!,
-                  constraints: constraints, // FIXME remove this
+                  constraints: constraints,
                   sensor: widget.state.sensorConfig.sensors.first,
                   onPreviewCalculated: (preview) {
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
