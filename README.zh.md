@@ -1,16 +1,16 @@
 <a href="https://apparence.io">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/apparence.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
     width="100%"
   />
 </a>
 <div style="margin-top:40px">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/preview.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/preview.png"
     width="100%"
   />
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/features.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/features.png"
     width="100%"
     style="margin-top:32px"
   />
@@ -18,7 +18,7 @@
 
 <a href="https://apparencekit.dev" style="margin-top:32px">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/flutter_template.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/flutter_template.png"
     width="100%"
     alt="ApparenceKit Flutter template to bootstrap your next app"
   />
@@ -56,7 +56,7 @@ This plugin is also available as a template in [ApparenceKit](https://apparencek
 <div style="margin-top:16px;margin-bottom:16px">
   <a href="https://doc.page/Apparence-io/camera_awesome" style="">
     <img
-      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/doc.png"
+      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/doc.png"
       width="100%"
     />
   </a>
@@ -207,7 +207,7 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
-![CamerAwesome default UI](doc/img/base_awesome_ui.jpg)
+![CamerAwesome default UI](docs/img/base_awesome_ui.jpg)
 
 可以使用各种设置自定义此构建器：
 
@@ -220,7 +220,7 @@ CameraAwesomeBuilder.awesome(
 
 这是一个例子：
 
-![Customized UI](doc/img/custom_awesome_ui.jpg)
+![Customized UI](docs/img/custom_awesome_ui.jpg)
 
 查看 [完整文档](https://doc.page/Apparence-io/camera_awesome/getting_started/awesome-ui) 以了解更多信息。
 
@@ -293,14 +293,14 @@ state.when(
 - 实时视频聊天。
 - 还有更多🤩
 
-![Face AI](doc/img/face_ai.gif)
+![Face AI](docs/img/face_ai.gif)
 
 您可以在 `example` 目录中使用 MLKit 示例。
 上面的例子来自 `ai_analysis_faces.dart`。 它检测人脸并绘制他们的轮廓。
 
 也可以使用 MLKit 读取条形码：
 
-![Barcode scanning](doc/img/barcode_overlay.gif)
+![Barcode scanning](docs/img/barcode_overlay.gif)
 
 检查 `ai_analysis_barcode.dart` 和 `preview_overlay_example.dart` 以获取示例或查看 [文档](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)。
 
@@ -360,7 +360,7 @@ CameraAwesomeBuilder.awesome(
 
 使用内置界面将实时滤镜应用于您的图片：
 
-![Built-in live filters](doc/img/filters.gif)
+![Built-in live filters](docs/img/filters.gif)
 
 您还可以选择从一开始就使用特定的过滤器：
 
@@ -397,7 +397,7 @@ CameraAwesomeBuilder.custom(
 
 <a href="https://apparence.io">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/apparence.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
     width="100%"
   />
 </a>
@@ -408,7 +408,7 @@ This plugin is also available as a template in [ApparenceKit](https://apparencek
 
 <a href="https://apparencekit.dev">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/flutter_template.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/flutter_template.png"
     width="100%"
     alt="ApparenceKit Flutter template to bootstrap your next app"
   />

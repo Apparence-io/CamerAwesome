@@ -1,16 +1,16 @@
 <a href="https://apparence.io">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/apparence.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
     width="100%"
   />
 </a>
 <div style="margin-top:40px">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/preview.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/preview.png"
     width="100%"
   />
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/features.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/features.png"
     width="100%"
     style="margin-top:32px"
   />
@@ -18,7 +18,7 @@
 
 <a href="https://apparencekit.dev" style="margin-top:32px">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/flutter_template.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/flutter_template.png"
     width="100%"
     alt="ApparenceKit Flutter template to bootstrap your next app"
   />
@@ -57,7 +57,7 @@ Use our awesome built-in interface or customize it as you want.
 <div style="margin-top:16px;margin-bottom:16px">
   <a href="https://doc.page/Apparence-io/camera_awesome" style="">
     <img
-      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/doc.png"
+      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/doc.png"
       width="100%"
     />
   </a>
@@ -215,7 +215,7 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
-![CamerAwesome default UI](doc/img/base_awesome_ui.jpg)
+![CamerAwesome default UI](docs/img/base_awesome_ui.jpg)
 
 This builder can be customized with various settings:
 
@@ -228,7 +228,7 @@ This builder can be customized with various settings:
 
 Here is an example:
 
-![Customized UI](doc/img/custom_awesome_ui.jpg)
+![Customized UI](docs/img/custom_awesome_ui.jpg)
 
 Check the [full documentation](https://doc.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
 
@@ -304,14 +304,14 @@ Use this to achieve:
 - Realtime video chats.
 - And much more 🤩
 
-![Face AI](doc/img/face_ai.gif)
+![Face AI](docs/img/face_ai.gif)
 
 You can check examples using MLKit inside the `example` directory.
 The above example is from `ai_analysis_faces.dart`. It detects faces and draw their contours.
 
 It's also possible to use MLKit to read barcodes:
 
-![Barcode scanning](doc/img/barcode_overlay.gif)
+![Barcode scanning](docs/img/barcode_overlay.gif)
 
 Check `ai_analysis_barcode.dart` and `preview_overlay_example.dart` for examples or
 the [documentation](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
@@ -377,7 +377,7 @@ All of these configurations are listenable through a stream so your UI can autom
 
 Apply live filters to your pictures using the built-in interface:
 
-![Built-in live filters](doc/img/filters.gif)
+![Built-in live filters](docs/img/filters.gif)
 
 You can also choose to use a specific filter from the start:
 
@@ -416,7 +416,7 @@ See all available filters in the [documentation](https://doc.page/Apparence-io/c
 
 ## 📷 📷 Concurrent cameras
 
-![Concurrent cameras](doc/img/concurrent_cameras.gif)
+![Concurrent cameras](docs/img/concurrent_cameras.gif)
 
 > 🚧 Feature in beta 🚧
 > Any feedback is welcome! 
@@ -446,7 +446,7 @@ Check the details in the [dedicated documentation](https://doc.page/Apparence-io
 
 <a href="https://apparence.io">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/apparence.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
     width="100%"
   />
 </a>
