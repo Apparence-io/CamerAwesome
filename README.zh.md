@@ -391,3 +391,13 @@ CameraAwesomeBuilder.custom(
     width="100%"
   />
 </a>
+
+<br>
+
+<a href="https://apparencekit.dev">
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/flutter_template.png"
+    width="100%"
+    alt="ApparenceKit Flutter template to bootstrap your next app"
+  />
+</a>

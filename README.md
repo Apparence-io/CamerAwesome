@@ -428,7 +428,15 @@ This feature is not supported by all devices and even when it is, there are limi
 Check the details in the [dedicated documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/multicam).
 
 
+<a href="https://apparencekit.dev">
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/flutter_template.png"
+    width="100%"
+    alt="ApparenceKit Flutter template to bootstrap your next app"
+  />
+</a>
 
+This plugin is also available as a template in [ApparenceKit](https://apparencekit.dev).<br>
 
 <br>
 

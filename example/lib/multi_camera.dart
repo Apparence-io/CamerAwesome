@@ -143,50 +143,50 @@ class _CameraPageState extends State<CameraPage> {
                     },
                   );
                 },
-                // previewDecoratorBuilder: (state, _) {
-                //   return Column(
-                //     mainAxisSize: MainAxisSize.min,
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Container(
-                //         color: Colors.white70,
-                //         margin: const EdgeInsets.only(left: 8),
-                //         child: const Text("Change picture in picture's shape:"),
-                //       ),
-                //       GridView.builder(
-                //         gridDelegate:
-                //             const SliverGridDelegateWithFixedCrossAxisCount(
-                //           crossAxisCount: 3,
-                //           childAspectRatio: 16 / 9,
-                //         ),
-                //         shrinkWrap: true,
-                //         padding: EdgeInsets.zero,
-                //         itemCount: PipShape.values.length,
-                //         itemBuilder: (context, index) {
-                //           final shape = PipShape.values[index];
-                //           return GestureDetector(
-                //             onTap: () {
-                //               setState(() {
-                //                 this.shape = shape;
-                //               });
-                //             },
-                //             child: Container(
-                //               color: Colors.red.withOpacity(0.5),
-                //               margin: const EdgeInsets.all(8.0),
-                //               child: Center(
-                //                 child: Text(
-                //                   shape.name,
-                //                   textAlign: TextAlign.center,
-                //                 ),
-                //               ),
-                //             ),
-                //           );
-                //         },
-                //       ),
-                //     ],
-                //   );
-                // },
+                previewDecoratorBuilder: (state, _) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        color: Colors.white70,
+                        margin: const EdgeInsets.only(left: 8),
+                        child: const Text("Change picture in picture's shape:"),
+                      ),
+                      GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: 16 / 9,
+                        ),
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: PipShape.values.length,
+                        itemBuilder: (context, index) {
+                          final shape = PipShape.values[index];
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                this.shape = shape;
+                              });
+                            },
+                            child: Container(
+                              color: Colors.red.withOpacity(0.5),
+                              margin: const EdgeInsets.all(8.0),
+                              child: Center(
+                                child: Text(
+                                  shape.name,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
               )
             : const SizedBox.shrink(),
       ),
