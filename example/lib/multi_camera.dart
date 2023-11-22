@@ -81,12 +81,15 @@ class _CameraPageState extends State<CameraPage> {
                     ),
                 sensorConfig: isMultiCamSupported == true
                     ? SensorConfig.multiple(
-                        sensors: [
-                          // Android only supports two sensors at a time
-                          Sensor.position(SensorPosition.back),
-                          Sensor.position(SensorPosition.front),
-                          if (Platform.isIOS) Sensor.type(SensorType.telephoto),
-                        ],
+                        sensors: (Platform.isIOS)
+                            ? [
+                                Sensor.type(SensorType.telephoto),
+                                Sensor.position(SensorPosition.front),
+                              ]
+                            : [
+                                Sensor.position(SensorPosition.back),
+                                Sensor.position(SensorPosition.front),
+                              ],
                         flashMode: FlashMode.auto,
                         aspectRatio: CameraAspectRatios.ratio_16_9,
                       )
@@ -110,12 +113,12 @@ class _CameraPageState extends State<CameraPage> {
                   );
                 },
                 pictureInPictureConfigBuilder: (index, sensor) {
-                  const width = 200.0;
+                  const width = 300.0;
                   return PictureInPictureConfig(
-                    isDraggable: false,
+                    isDraggable: true,
                     startingPosition: Offset(
-                      screenSize.width - width - 20.0 * index,
-                      screenSize.height - 356,
+                      -50,
+                      screenSize.height - 420,
                     ),
                     onTap: () {
                       debugPrint('on preview tap');
@@ -140,50 +143,50 @@ class _CameraPageState extends State<CameraPage> {
                     },
                   );
                 },
-                previewDecoratorBuilder: (state, _) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        color: Colors.white70,
-                        margin: const EdgeInsets.only(left: 8),
-                        child: const Text("Change picture in picture's shape:"),
-                      ),
-                      GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          childAspectRatio: 16 / 9,
-                        ),
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        itemCount: PipShape.values.length,
-                        itemBuilder: (context, index) {
-                          final shape = PipShape.values[index];
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                this.shape = shape;
-                              });
-                            },
-                            child: Container(
-                              color: Colors.red.withOpacity(0.5),
-                              margin: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: Text(
-                                  shape.name,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
+                // previewDecoratorBuilder: (state, _) {
+                //   return Column(
+                //     mainAxisSize: MainAxisSize.min,
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Container(
+                //         color: Colors.white70,
+                //         margin: const EdgeInsets.only(left: 8),
+                //         child: const Text("Change picture in picture's shape:"),
+                //       ),
+                //       GridView.builder(
+                //         gridDelegate:
+                //             const SliverGridDelegateWithFixedCrossAxisCount(
+                //           crossAxisCount: 3,
+                //           childAspectRatio: 16 / 9,
+                //         ),
+                //         shrinkWrap: true,
+                //         padding: EdgeInsets.zero,
+                //         itemCount: PipShape.values.length,
+                //         itemBuilder: (context, index) {
+                //           final shape = PipShape.values[index];
+                //           return GestureDetector(
+                //             onTap: () {
+                //               setState(() {
+                //                 this.shape = shape;
+                //               });
+                //             },
+                //             child: Container(
+                //               color: Colors.red.withOpacity(0.5),
+                //               margin: const EdgeInsets.all(8.0),
+                //               child: Center(
+                //                 child: Text(
+                //                   shape.name,
+                //                   textAlign: TextAlign.center,
+                //                 ),
+                //               ),
+                //             ),
+                //           );
+                //         },
+                //       ),
+                //     ],
+                //   );
+                // },
               )
             : const SizedBox.shrink(),
       ),

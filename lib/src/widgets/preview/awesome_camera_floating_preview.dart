@@ -1,4 +1,6 @@
+import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/models/sensors.dart';
+import 'package:camerawesome/src/widgets/preview/awesome_preview_fit.dart';
 import 'package:camerawesome/src/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -55,14 +57,20 @@ class _AwesomeCameraFloatingPreviewState
                 }
               : null,
           child: widget.pictureInPictureConfig.pictureInPictureBuilder(
-            Center(
-              child: AspectRatio(
-                aspectRatio: widget.aspectRatio,
+              AnimatedPreviewFit(
+                previewFit: CameraPreviewFit.cover,
+                previewSize: PreviewSize(
+                  width: 1000,
+                  height: 1000 / widget.aspectRatio,
+                ), // FIXME  we don't know preview size of other sensors
+                constraints: const BoxConstraints(
+                  maxWidth: 300,
+                  maxHeight: 300,
+                ),
+                sensor: widget.sensor,
                 child: widget.texture,
               ),
-            ),
-            widget.aspectRatio,
-          ),
+              widget.aspectRatio),
         ),
       ),
     );

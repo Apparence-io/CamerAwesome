@@ -454,10 +454,10 @@ CameraAwesomeBuilder.awesome(
   // Alignment of the preview
   previewAlignment: Alignment.center,
     // Add your own decoration on top of the preview
-  previewDecoratorBuilder: (state, previewSize, previewRect) {
+  previewDecoratorBuilder: (state, preview) {
     // This will be shown above the preview (in a Stack)
     // It could be used in combination with MLKit to draw filters on faces for example
-    return PreviewDecorationWiget(previewRect);
+    return PreviewDecorationWiget(preview.rect);
   },
   // Preview fit of the camera
   previewFit: CameraPreviewFit.fitWidth,
@@ -526,6 +526,11 @@ CameraAwesomeBuilder.awesome(
   topActionsBuilder: (state) {
     return AwesomeTopActions(state: state);
   },
+  // default filter
+  defaultFilter: AwesomeFilter.None,
+  // list of photo filters (default to awesome filter) 
+  // put null or empty list for hiding filters 
+  availableFilters: awesomePresetFiltersList,
 )
 ```
 

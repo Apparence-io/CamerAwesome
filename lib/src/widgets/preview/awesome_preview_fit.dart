@@ -149,11 +149,11 @@ class PreviewFitWidget extends StatelessWidget {
       width: maxSize.width,
       height: maxSize.height,
       child: InteractiveViewer(
-        key: previewWidgetKey,
+        // key: previewWidgetKey,
         transformationController: transformController,
         scaleEnabled: false,
         constrained: false,
-        panEnabled: true,
+        panEnabled: false,
         alignment: FractionalOffset.topLeft,
         clipBehavior: Clip.antiAlias,
         child: Align(

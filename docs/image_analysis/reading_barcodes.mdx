@@ -225,11 +225,11 @@ You can use `CameraAwesomeBuilder.awesome()` to do that thanks to the `previewDe
 
 ```dart
 CameraAwesomeBuilder.awesome(
-    previewDecoratorBuilder: (state, previewSize, previewRect) {
+    previewDecoratorBuilder: (state, preview) {
         return BarcodePreviewOverlay(
           state: state,
-          previewSize: previewSize,
-          previewRect: previewRect,
+          previewSize: preview.size,
+          previewRect: preview.rect,
           barcodes: _barcodes,
           analysisImage: _image,
         );
