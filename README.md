@@ -16,6 +16,16 @@
   />
 </div>
 
+<a href="https://apparencekit.dev" style="margin-top:32px">
+  <img
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/flutter_template.png"
+    width="100%"
+    alt="ApparenceKit Flutter template to bootstrap your next app"
+  />
+</a>
+
+This plugin is also available as a template in [ApparenceKit](https://apparencekit.dev).<br>
+
 <br>
 
 # CamerAwesome
@@ -33,6 +43,7 @@
 </div>
 
 [![en](https://img.shields.io/badge/language-english-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.md) [![zh](https://img.shields.io/badge/language-chinese-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.zh.md)
+
 
 📸 Embedding a camera experience within your own app shouldn't be that hard. <br>
 A flutter plugin to integrate awesome Android / iOS camera experience.<br>
@@ -374,6 +385,7 @@ You can also choose to use a specific filter from the start:
 CameraAwesomeBuilder.awesome(
   // other params
   filter: AwesomeFilter.AddictiveRed,
+  availableFilters: ...
 )
 ```
 
@@ -399,13 +411,15 @@ CameraAwesomeBuilder.custom(
 
 See all available filters in the [documentation](https://doc.page/Apparence-io/camera_awesome/widgets/awesome_filters).
 
+> [!TIP]
+> By default the awesome ui setup has a filter list but you can pass an empty list to remove it
 
 ## 📷 📷 Concurrent cameras
 
 ![Concurrent cameras](doc/img/concurrent_cameras.gif)
 
 > 🚧 Feature in beta 🚧
-> Any feedback is welcome!
+> Any feedback is welcome! 
 
 In order to start using CamerAwesome with multiple cameras simulatenously, you need to define a `SensorConfig` that uses several sensors. You can use the `SensorConfig.multiple()` constructor for this:
 
@@ -427,16 +441,6 @@ This feature is not supported by all devices and even when it is, there are limi
 
 Check the details in the [dedicated documentation](https://doc.page/Apparence-io/camera_awesome/getting_started/multicam).
 
-
-<a href="https://apparencekit.dev">
-  <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/flutter_template.png"
-    width="100%"
-    alt="ApparenceKit Flutter template to bootstrap your next app"
-  />
-</a>
-
-This plugin is also available as a template in [ApparenceKit](https://apparencekit.dev).<br>
 
 <br>
 

@@ -23,6 +23,7 @@ Here is the complete changelog:
 - 🐛 Fixed patrol tests.
 - 🐛 Fixed the use of capture button parameter in awesome bottom actions (thanks to @juliuszmandrosz).
 - 📝 Added Chinese README.md (thanks to @chyiiiiiiiiiiii).
+- ↗️ Android CameraX version is now 1.3.0 
 - takePhoto ans stopVideoRecording now have callbacks for success and error.
 - by default the awesome builder has a filter list but you can pass an empty list to remove it
 
