@@ -55,7 +55,7 @@ Use our awesome built-in interface or customize it as you want.
 ---
 
 <div style="margin-top:16px;margin-bottom:16px">
-  <a href="https://doc.page/Apparence-io/camera_awesome" style="">
+  <a href="https://docs.page/Apparence-io/camera_awesome" style="">
     <img
       src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/doc.png"
       width="100%"
@@ -65,7 +65,7 @@ Use our awesome built-in interface or customize it as you want.
 
 ## Migration guide
 
-If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](https://doc.page/Apparence-io/camera_awesome/migration_guides/from_1_to_2).
+If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](https://docs.page/Apparence-io/camera_awesome/migration_guides/from_1_to_2).
 
 
 ## Native features
@@ -230,7 +230,7 @@ Here is an example:
 
 ![Customized UI](docs/img/custom_awesome_ui.jpg)
 
-Check the [full documentation](https://doc.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
+Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
 
 ---
 
@@ -251,7 +251,7 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-> See more in [documentation](https://doc.page/Apparence-io/camera_awesome/getting_started/custom-ui)
+> See more in [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
 
 ### Working with the custom builder
 
@@ -288,7 +288,7 @@ state.when(
 );
 ```
 
-> See more in [documentation](https://doc.page/Apparence-io/camera_awesome/getting_started/custom-ui)
+> See more in [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
 
 <br>
 
@@ -314,7 +314,7 @@ It's also possible to use MLKit to read barcodes:
 ![Barcode scanning](docs/img/barcode_overlay.gif)
 
 Check `ai_analysis_barcode.dart` and `preview_overlay_example.dart` for examples or
-the [documentation](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
+the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
 
 ### How to use it
 
@@ -341,12 +341,12 @@ CameraAwesomeBuilder.awesome(
 > For machine learning you don't need full-resolution images (720 or lower should be enough and makes computation easier)
 
 Learn more about the image analysis configuration in
-the [documentation](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
+the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
 .
 
 Check also detailed explanations on how to use MLKit
-to [read barcodes](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)
-and [detect faces](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
+to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)
+and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
 
 ⚠️ On Android, some devices don't support video recording and image analysis at the same time.
 
@@ -409,7 +409,7 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-See all available filters in the [documentation](https://doc.page/Apparence-io/camera_awesome/widgets/awesome_filters).
+See all available filters in the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
 
 > [!TIP]
 > By default the awesome ui setup has a filter list but you can pass an empty list to remove it
@@ -439,7 +439,7 @@ CameraAwesomeBuilder.awesome(
 
 This feature is not supported by all devices and even when it is, there are limitations that you must be aware of.
 
-Check the details in the [dedicated documentation](https://doc.page/Apparence-io/camera_awesome/getting_started/multicam).
+Check the details in the [dedicated documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/multicam).
 
 
 <br>
