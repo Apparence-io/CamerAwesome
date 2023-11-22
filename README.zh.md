@@ -1,16 +1,16 @@
 <a href="https://apparence.io">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/apparence.png"
     width="100%"
   />
 </a>
 <div style="margin-top:40px">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/preview.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/preview.png"
     width="100%"
   />
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/features.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/features.png"
     width="100%"
     style="margin-top:32px"
   />
@@ -44,9 +44,9 @@
 ---
 
 <div style="margin-top:16px;margin-bottom:16px">
-  <a href="https://docs.page/Apparence-io/camera_awesome" style="">
+  <a href="https://doc.page/Apparence-io/camera_awesome" style="">
     <img
-      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/doc.png"
+      src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/doc.png"
       width="100%"
     />
   </a>
@@ -197,7 +197,7 @@ CameraAwesomeBuilder.awesome(
 ),
 ```
 
-![CamerAwesome default UI](docs/img/base_awesome_ui.jpg)
+![CamerAwesome default UI](doc/img/base_awesome_ui.jpg)
 
 可以使用各种设置自定义此构建器：
 
@@ -210,9 +210,9 @@ CameraAwesomeBuilder.awesome(
 
 这是一个例子：
 
-![Customized UI](docs/img/custom_awesome_ui.jpg)
+![Customized UI](doc/img/custom_awesome_ui.jpg)
 
-查看 [完整文档](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) 以了解更多信息。
+查看 [完整文档](https://doc.page/Apparence-io/camera_awesome/getting_started/awesome-ui) 以了解更多信息。
 
 ---
 
@@ -233,7 +233,7 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-> 在 [文档](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui) 中查看更多信息
+> 在 [文档](https://doc.page/Apparence-io/camera_awesome/getting_started/custom-ui) 中查看更多信息
 
 ### 使用自定义构建器
 
@@ -267,7 +267,7 @@ state.when(
 );
 ```
 
-> 在 [文档](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui) 查看更多信息
+> 在 [文档](https://doc.page/Apparence-io/camera_awesome/getting_started/custom-ui) 查看更多信息
 
 <br>
 
@@ -283,16 +283,16 @@ state.when(
 - 实时视频聊天。
 - 还有更多🤩
 
-![Face AI](docs/img/face_ai.gif)
+![Face AI](doc/img/face_ai.gif)
 
 您可以在 `example` 目录中使用 MLKit 示例。
 上面的例子来自 `ai_analysis_faces.dart`。 它检测人脸并绘制他们的轮廓。
 
 也可以使用 MLKit 读取条形码：
 
-![Barcode scanning](docs/img/barcode_overlay.gif)
+![Barcode scanning](doc/img/barcode_overlay.gif)
 
-检查 `ai_analysis_barcode.dart` 和 `preview_overlay_example.dart` 以获取示例或查看 [文档](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)。
+检查 `ai_analysis_barcode.dart` 和 `preview_overlay_example.dart` 以获取示例或查看 [文档](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)。
 
 ### 如何使用它
 
@@ -319,9 +319,9 @@ CameraAwesomeBuilder.awesome(
 > bgra8888 是 iOS 格式
 > 对于机器学习，您不需要全分辨率图像（720 或更低的图像就足够了，并且使计算更容易）
 
-在 [文档](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration) 中了解有关图像分析配置的更多信息.
+在 [文档](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration) 中了解有关图像分析配置的更多信息.
 
-另请查看有关如何使用 MLKit [读取条形码](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes) 和 [检测人脸](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces) 的详细说明.
+另请查看有关如何使用 MLKit [读取条形码](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes) 和 [检测人脸](https://doc.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces) 的详细说明.
 
 ⚠️ 在Android 上，部分设备不支持同时进行视频录制和图像分析。
 
@@ -350,7 +350,7 @@ CameraAwesomeBuilder.awesome(
 
 使用内置界面将实时滤镜应用于您的图片：
 
-![Built-in live filters](docs/img/filters.gif)
+![Built-in live filters](doc/img/filters.gif)
 
 您还可以选择从一开始就使用特定的过滤器：
 
@@ -381,22 +381,24 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-查看 [文档](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters) 中的所有可用过滤器.
+查看 [文档](https://doc.page/Apparence-io/camera_awesome/widgets/awesome_filters) 中的所有可用过滤器.
 
 <br>
 
 <a href="https://apparence.io">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/apparence.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/apparence.png"
     width="100%"
   />
 </a>
+
+This plugin is also available as a template in [ApparenceKit](https://apparencekit.dev).<br>
 
 <br>
 
 <a href="https://apparencekit.dev">
   <img
-    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/docs/img/flutter_template.png"
+    src="https://raw.githubusercontent.com/Apparence-io/camera_awesome/master/doc/img/flutter_template.png"
     width="100%"
     alt="ApparenceKit Flutter template to bootstrap your next app"
   />
