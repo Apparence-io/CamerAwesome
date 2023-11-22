@@ -39,6 +39,9 @@ class CameraContext {
   /// Image analysis controller. You may use it to start or stop image analysis.
   final AnalysisController? analysisController;
 
+  /// List of available filters
+  final List<AwesomeFilter>? availableFilters;
+
   /// Preferences concerning Exif (photos metadata)
   ExifPreferences exifPreferences;
 
@@ -66,6 +69,7 @@ class CameraContext {
     required this.exifPreferences,
     required this.filterController,
     required this.enablePhysicalButton,
+    required this.availableFilters,
     this.onPermissionsResult,
   }) {
     var preparingState = PreparingCameraState(
@@ -87,6 +91,7 @@ class CameraContext {
     required ExifPreferences exifPreferences,
     required AwesomeFilter filter,
     required bool enablePhysicalButton,
+    List<AwesomeFilter>? availableFilters,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
@@ -101,6 +106,7 @@ class CameraContext {
                 )
               : null,
           exifPreferences: exifPreferences,
+          availableFilters: availableFilters,
         );
 
   changeState(CameraState newState) async {

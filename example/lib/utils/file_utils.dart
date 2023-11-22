@@ -17,7 +17,6 @@ Future<String> path(CaptureMode captureMode) async {
 
 extension XfileOpen on XFile {
   Future<void> open() async {
-    print("open file: $path requested");
     final spath = this.path;
     await OpenFile.open(spath);
   }

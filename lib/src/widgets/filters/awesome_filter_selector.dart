@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class AwesomeFilterSelector extends StatefulWidget {
-  final CameraState state;
+  final PhotoCameraState state;
   final FilterListPosition filterListPosition;
   final Widget indicator;
   final EdgeInsets? filterListPadding;
@@ -30,7 +30,7 @@ class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
   int _selected = 0;
 
   List<String> get presetsIds =>
-      awesomePresetFiltersList.map((e) => e.id).toList();
+      widget.state.availableFilters!.map((e) => e.id).toList();
 
   @override
   void initState() {

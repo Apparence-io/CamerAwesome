@@ -33,7 +33,6 @@ class AwesomeFilter {
   String get id => _name.toUpperCase().replaceAll(' ', '_');
 
   static AwesomeFilter get None => AwesomeFilter(
-        // TODO: add translation
         name: 'Original',
         outputFilter: preset_filters.NoFilter(),
         matrix: PresetFilters.none.matrix,

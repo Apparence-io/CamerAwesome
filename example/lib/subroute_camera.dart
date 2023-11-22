@@ -46,7 +46,7 @@ class CameraPage extends StatelessWidget {
               saveConfig: SaveConfig.photoAndVideo(
                 initialCaptureMode: CaptureMode.photo,
               ),
-              filter: AwesomeFilter.AddictiveRed,
+              defaultFilter: AwesomeFilter.AddictiveRed,
               sensorConfig: SensorConfig.single(
                 flashMode: FlashMode.auto,
                 aspectRatio: CameraAspectRatios.ratio_16_9,

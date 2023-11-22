@@ -104,6 +104,11 @@ class PhotoCameraState extends CameraState {
     return captureRequest;
   }
 
+  bool get hasFilters => cameraContext.availableFilters?.isNotEmpty ?? false;
+
+  List<AwesomeFilter>? get availableFilters =>
+      cameraContext.availableFilters?.toList();
+
   /// PRIVATES
 
   set _mediaCapture(MediaCapture media) {
