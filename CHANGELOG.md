@@ -6,6 +6,7 @@ We are proud to announce the two most requested features on the official camera 
 
 - Multi-camera 📹
 - Video settings 🎥
+- Preview rework 📸
 
 This release introduces breaking changes in order to support above features.
 See the [migration guide](https://docs.page/Apparence-io/camera_awesome/migration_guides/from_1_to_2) for details.
