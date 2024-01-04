@@ -170,8 +170,8 @@ class PreviewFitWidget extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: SizedBox(
-        width: constraints.maxWidth,
-        height: constraints.maxHeight,
+        width: maxSize.width,
+        height: maxSize.height,
         child: InteractiveViewer(
           // key: previewWidgetKey,
           transformationController: transformController,
@@ -249,10 +249,10 @@ class PreviewSizeCalculator {
     final hDiff = nativePreviewSize.height - nativeHeightProjection;
 
     if (inverted) {
-      nativePreviewSize = Size(
-        nativePreviewSize.height,
-        nativePreviewSize.width,
-      );
+      // nativePreviewSize = Size(
+      //   nativePreviewSize.height,
+      //   nativePreviewSize.width,
+      // );
     }
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
