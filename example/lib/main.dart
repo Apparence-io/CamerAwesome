@@ -75,8 +75,8 @@ class CameraPage extends StatelessWidget {
           ),
           enablePhysicalButton: true,
           // filter: AwesomeFilter.AddictiveRed,
-          previewAlignment: Alignment.bottomCenter,
-          previewFit: CameraPreviewFit.cover,
+          previewAlignment: Alignment.topLeft,
+          previewFit: CameraPreviewFit.contain,
           onMediaTap: (mediaCapture) {
             mediaCapture.captureRequest.when(
               single: (single) {
