@@ -161,6 +161,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             children: [
               Positioned.fill(
                 child: AnimatedPreviewFit(
+                  alignment: widget.alignment,
                   previewFit: widget.previewFit,
                   previewSize: _previewSize!,
                   constraints: constraints,
