@@ -124,6 +124,12 @@ class PreviewSize {
   }
 
   Size toSize() => Size(width, height);
+
+  /// Returns a new [PreviewSize] with [width] and [height] inverted.
+  /// Useful when the preview size is given in portrait mode but the camera
+  /// is in landscape mode.
+  /// Ex : for tablets, the preview size is given in landscape mode but the device is in portrait mode.
+  inverted() => PreviewSize(width: height, height: width);
 }
 
 class ExifPreferences {

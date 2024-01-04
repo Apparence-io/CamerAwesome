@@ -16,6 +16,7 @@ class AnimatedPreviewFit extends StatefulWidget {
   final Widget child;
   final OnPreviewCalculated? onPreviewCalculated;
   final Sensor sensor;
+  final bool invertedPreview;
 
   const AnimatedPreviewFit({
     super.key,
@@ -25,6 +26,7 @@ class AnimatedPreviewFit extends StatefulWidget {
     required this.constraints,
     required this.sensor,
     required this.child,
+    this.invertedPreview = false,
     this.onPreviewCalculated,
   });
 
@@ -45,6 +47,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
       previewFit: widget.previewFit,
       previewSize: widget.previewSize,
       constraints: widget.constraints,
+      inverted: widget.invertedPreview,
     );
     sizeCalculator!.compute();
     maxSize = sizeCalculator!.maxSize;
@@ -66,11 +69,13 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
         previewFit: oldWidget.previewFit,
         previewSize: oldWidget.previewSize,
         constraints: oldWidget.constraints,
+        inverted: widget.invertedPreview,
       );
       sizeCalculator = PreviewSizeCalculator(
         previewFit: widget.previewFit,
         previewSize: widget.previewSize,
         constraints: widget.constraints,
+        inverted: widget.invertedPreview,
       );
       oldsizeCalculator.compute();
       sizeCalculator!.compute();
@@ -117,6 +122,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
           previewSize: widget.previewSize,
           scale: ratio,
           maxSize: maxSize!,
+          invertedPreview: widget.invertedPreview,
           child: child!,
         );
       },
@@ -136,6 +142,7 @@ class PreviewFitWidget extends StatelessWidget {
   final Widget child;
   final double scale;
   final Size maxSize;
+  final bool invertedPreview;
 
   const PreviewFitWidget({
     super.key,
@@ -146,16 +153,25 @@ class PreviewFitWidget extends StatelessWidget {
     required this.child,
     required this.scale,
     required this.maxSize,
+    required this.invertedPreview,
   });
 
   @override
   Widget build(BuildContext context) {
     final transformController = TransformationController();
-    transformController.value = Matrix4.identity()..scale(scale);
-
-    return Container(
+    if (invertedPreview) {
+      final centerX = previewSize.width / 2;
+      final centerY = previewSize.height / 2;
+      transformController.value = Matrix4.identity()
+        ..translate(centerY, centerX)
+        ..rotateZ(pi / 2)
+        ..translate(-centerX, -centerY)
+        ..scale(scale);
+    } else {
+      transformController.value = Matrix4.identity()..scale(scale);
+    }
+    return Align(
       alignment: alignment,
-      constraints: constraints,
       child: SizedBox(
         width: maxSize.width,
         height: maxSize.height,
@@ -170,8 +186,8 @@ class PreviewFitWidget extends StatelessWidget {
           child: Align(
             alignment: Alignment.topLeft,
             child: SizedBox(
-              width: previewSize.width,
-              height: previewSize.height,
+              width: invertedPreview ? previewSize.height : previewSize.width,
+              height: invertedPreview ? previewSize.width : previewSize.height,
               child: child,
             ),
           ),
@@ -187,6 +203,7 @@ class PreviewSizeCalculator {
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final BoxConstraints constraints;
+  final bool inverted;
 
   Size? _maxSize;
   double? _zoom;
@@ -196,6 +213,7 @@ class PreviewSizeCalculator {
     required this.previewFit,
     required this.previewSize,
     required this.constraints,
+    required this.inverted,
   });
 
   void compute() {
@@ -225,7 +243,7 @@ class PreviewSizeCalculator {
   }
 
   Size _computeMaxSize() {
-    final nativePreviewSize = Size(previewSize.width, previewSize.height);
+    var nativePreviewSize = previewSize.toSize();
     Size maxSize;
     final nativeWidthProjection = constraints.maxWidth * 1 / zoom;
     final wDiff = nativePreviewSize.width - nativeWidthProjection;
@@ -233,6 +251,12 @@ class PreviewSizeCalculator {
     final nativeHeightProjection = constraints.maxHeight * 1 / zoom;
     final hDiff = nativePreviewSize.height - nativeHeightProjection;
 
+    if (inverted) {
+      nativePreviewSize = Size(
+        nativePreviewSize.height,
+        nativePreviewSize.width,
+      );
+    }
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
         maxSize = Size(constraints.maxWidth, nativePreviewSize.height * zoom);
@@ -263,6 +287,7 @@ class PreviewSizeCalculator {
         );
         break;
     }
+
     return maxSize;
   }
 
@@ -275,24 +300,25 @@ class PreviewSizeCalculator {
 
   double _computeZoom() {
     late double ratio;
+    var nativePreviewSize = previewSize.toSize();
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
-        ratio = constraints.maxWidth / previewSize.width;
+        ratio = constraints.maxWidth / nativePreviewSize.width;
         break;
       case CameraPreviewFit.fitHeight:
-        ratio = constraints.maxHeight / previewSize.height;
+        ratio = constraints.maxHeight / nativePreviewSize.height;
         break;
       case CameraPreviewFit.cover:
         if (constraints.maxWidth / constraints.maxHeight >
-            previewSize.width / previewSize.height) {
-          ratio = constraints.maxWidth / previewSize.width;
+            nativePreviewSize.width / nativePreviewSize.height) {
+          ratio = constraints.maxWidth / nativePreviewSize.width;
         } else {
-          ratio = constraints.maxHeight / previewSize.height;
+          ratio = constraints.maxHeight / nativePreviewSize.height;
         }
         break;
       case CameraPreviewFit.contain:
-        final ratioW = constraints.maxWidth / previewSize.width;
-        final ratioH = constraints.maxHeight / previewSize.height;
+        final ratioW = constraints.maxWidth / nativePreviewSize.width;
+        final ratioH = constraints.maxHeight / nativePreviewSize.height;
         final minRatio = min(ratioW, ratioH);
         ratio = minRatio;
         break;

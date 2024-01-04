@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -409,10 +407,8 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
               snapshot.data!.captureMode == null ||
               snapshot.requireData is PreparingCameraState) {
             return widget.progressIndicator ??
-                Center(
-                  child: Platform.isIOS
-                      ? const CupertinoActivityIndicator()
-                      : const CircularProgressIndicator(),
+                const Center(
+                  child: CircularProgressIndicator.adaptive(),
                 );
           }
           return Stack(
@@ -433,8 +429,11 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                         onPreviewTap: widget.onPreviewTapBuilder
                                 ?.call(snapshot.requireData) ??
                             OnPreviewTap(
-                              onTap: (position, flutterPreviewSize,
-                                  pixelPreviewSize) {
+                              onTap: (
+                                position,
+                                flutterPreviewSize,
+                                pixelPreviewSize,
+                              ) {
                                 snapshot.requireData.when(
                                   onPhotoMode: (photoState) =>
                                       photoState.focusOnPoint(
