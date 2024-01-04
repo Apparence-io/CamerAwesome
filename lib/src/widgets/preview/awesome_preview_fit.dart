@@ -9,6 +9,7 @@ final previewWidgetKey = GlobalKey();
 typedef OnPreviewCalculated = void Function(Preview preview);
 
 class AnimatedPreviewFit extends StatefulWidget {
+  final Alignment alignment;
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final BoxConstraints constraints;
@@ -18,6 +19,7 @@ class AnimatedPreviewFit extends StatefulWidget {
 
   const AnimatedPreviewFit({
     super.key,
+    required this.alignment,
     required this.previewFit,
     required this.previewSize,
     required this.constraints,
@@ -109,6 +111,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
       builder: (context, currentSize, child) {
         final ratio = sizeCalculator!.zoom;
         return PreviewFitWidget(
+          alignment: widget.alignment,
           previewFit: widget.previewFit,
           previewSize: widget.previewSize,
           scale: ratio,
@@ -125,6 +128,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
 }
 
 class PreviewFitWidget extends StatelessWidget {
+  final Alignment alignment;
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final Widget child;
@@ -133,6 +137,7 @@ class PreviewFitWidget extends StatelessWidget {
 
   const PreviewFitWidget({
     super.key,
+    required this.alignment,
     required this.previewFit,
     required this.previewSize,
     required this.child,
@@ -145,23 +150,27 @@ class PreviewFitWidget extends StatelessWidget {
     final transformController = TransformationController();
     transformController.value = Matrix4.identity()..scale(scale);
 
-    return SizedBox(
-      width: maxSize.width,
-      height: maxSize.height,
-      child: InteractiveViewer(
-        // key: previewWidgetKey,
-        transformationController: transformController,
-        scaleEnabled: false,
-        constrained: false,
-        panEnabled: false,
-        alignment: FractionalOffset.topLeft,
-        clipBehavior: Clip.antiAlias,
-        child: Align(
-          alignment: Alignment.topLeft,
-          child: SizedBox(
-            width: previewSize.width,
-            height: previewSize.height,
-            child: child,
+    return Container(
+      alignment: alignment,
+      constraints: constraints,
+      child: SizedBox(
+        width: maxSize.width,
+        height: maxSize.height,
+        child: InteractiveViewer(
+          // key: previewWidgetKey,
+          transformationController: transformController,
+          scaleEnabled: false,
+          constrained: false,
+          panEnabled: false,
+          alignment: FractionalOffset.topLeft,
+          clipBehavior: Clip.antiAlias,
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: previewSize.width,
+              height: previewSize.height,
+              child: child,
+            ),
           ),
         ),
       ),
