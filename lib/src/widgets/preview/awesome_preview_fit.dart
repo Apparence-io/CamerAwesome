@@ -19,7 +19,7 @@ class AnimatedPreviewFit extends StatefulWidget {
 
   const AnimatedPreviewFit({
     super.key,
-    required this.alignment,
+    this.alignment = Alignment.center,
     required this.previewFit,
     required this.previewSize,
     required this.constraints,
@@ -112,6 +112,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
         final ratio = sizeCalculator!.zoom;
         return PreviewFitWidget(
           alignment: widget.alignment,
+          constraints: widget.constraints,
           previewFit: widget.previewFit,
           previewSize: widget.previewSize,
           scale: ratio,
@@ -129,6 +130,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
 
 class PreviewFitWidget extends StatelessWidget {
   final Alignment alignment;
+  final BoxConstraints constraints;
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final Widget child;
@@ -138,6 +140,7 @@ class PreviewFitWidget extends StatelessWidget {
   const PreviewFitWidget({
     super.key,
     required this.alignment,
+    required this.constraints,
     required this.previewFit,
     required this.previewSize,
     required this.child,
