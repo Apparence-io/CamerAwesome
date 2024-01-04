@@ -160,21 +160,18 @@ class PreviewFitWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final transformController = TransformationController();
     if (invertedPreview) {
-      final centerX = previewSize.width / 2;
-      final centerY = previewSize.height / 2;
       transformController.value = Matrix4.identity()
-        ..translate(centerY, centerX)
+        ..scale(scale)
         ..rotateZ(pi / 2)
-        ..translate(-centerX, -centerY)
-        ..scale(scale);
+        ..translate(0.0, -previewSize.width);
     } else {
       transformController.value = Matrix4.identity()..scale(scale);
     }
     return Align(
       alignment: alignment,
       child: SizedBox(
-        width: maxSize.width,
-        height: maxSize.height,
+        width: constraints.maxWidth,
+        height: constraints.maxHeight,
         child: InteractiveViewer(
           // key: previewWidgetKey,
           transformationController: transformController,
@@ -301,12 +298,18 @@ class PreviewSizeCalculator {
   double _computeZoom() {
     late double ratio;
     var nativePreviewSize = previewSize.toSize();
+    if (inverted) {
+      nativePreviewSize = Size(
+        nativePreviewSize.width,
+        nativePreviewSize.height,
+      );
+    }
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
-        ratio = constraints.maxWidth / nativePreviewSize.width;
+        ratio = constraints.maxWidth / nativePreviewSize.width; // 800 / 960
         break;
       case CameraPreviewFit.fitHeight:
-        ratio = constraints.maxHeight / nativePreviewSize.height;
+        ratio = constraints.maxHeight / nativePreviewSize.height; // 1220 / 1280
         break;
       case CameraPreviewFit.cover:
         if (constraints.maxWidth / constraints.maxHeight >
