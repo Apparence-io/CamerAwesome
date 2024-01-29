@@ -361,7 +361,9 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       case AppLifecycleState.resumed:
         break;
       case AppLifecycleState.inactive:
+        break;
       case AppLifecycleState.paused:
+        break;
       case AppLifecycleState.detached:
         _cameraContext //
             .state
