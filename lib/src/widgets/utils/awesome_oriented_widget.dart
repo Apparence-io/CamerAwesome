@@ -50,19 +50,15 @@ class AwesomeOrientedWidgetState extends State<AwesomeOrientedWidget> {
   }
 
   double getTurns(CameraOrientations orientation) {
-    var delta = 0.0;
-    if (context.isTablet()) {
-      delta = 0.25;
-    }
     switch (orientation) {
       case CameraOrientations.landscape_left:
-        return 0.75 + delta;
+        return 0.75;
       case CameraOrientations.landscape_right:
-        return 0.25 + delta;
+        return 0.25;
       case CameraOrientations.portrait_up:
-        return 0 + delta;
+        return 0;
       case CameraOrientations.portrait_down:
-        return 0.5 + delta;
+        return 0.5;
     }
   }
 
