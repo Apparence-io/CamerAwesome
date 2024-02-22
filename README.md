@@ -24,7 +24,8 @@
   />
 </a>
 
-This plugin is also available as a template in [ApparenceKit](https://apparencekit.dev).<br>
+This plugin is also available as a template in
+[ApparenceKit](https://apparencekit.dev).<br>
 
 <br>
 
@@ -42,11 +43,11 @@ This plugin is also available as a template in [ApparenceKit](https://apparencek
     </a>
 </div>
 
-[![en](https://img.shields.io/badge/language-english-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.md) [![zh](https://img.shields.io/badge/language-chinese-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.zh.md)
+[![en](https://img.shields.io/badge/language-english-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.md)
+[![zh](https://img.shields.io/badge/language-chinese-cyan.svg)](https://github.com/Apparence-io/CamerAwesome/blob/master/README.zh.md)
 
-
-📸 Embedding a camera experience within your own app shouldn't be that hard. <br>
-A flutter plugin to integrate awesome Android / iOS camera experience.<br>
+📸 Embedding a camera experience within your own app shouldn't be that hard.
+<br> A flutter plugin to integrate awesome Android / iOS camera experience.<br>
 
 <br>
 This package provides you with a fully customizable camera experience that you can use within your app.<br>
@@ -65,32 +66,32 @@ Use our awesome built-in interface or customize it as you want.
 
 ## Migration guide
 
-If you are migrating from version 1.x.x to 2.x.x, please read the [migration guide](https://docs.page/Apparence-io/camera_awesome/migration_guides/from_1_to_2).
-
+If you are migrating from version 1.x.x to 2.x.x, please read the
+[migration guide](https://docs.page/Apparence-io/camera_awesome/migration_guides/from_1_to_2).
 
 ## Native features
 
 Here's all native features that cameraAwesome provides to the flutter side.
 
-| Features                                 | Android  |  iOS   |
-| :--------------------------------------- | :-----:  | :---:  |
-| 🔖 Ask permissions                       |    ✅    |   ✅   |
-| 🎥 Record video                          |    ✅    |   ✅   |
-| 📹 Multi camera  (🚧 BETA)               |    ✅    |   ✅   |
-| 🔈 Enable/disable audio                  |    ✅    |   ✅   |
-| 🎞 Take photos                           |    ✅    |   ✅   |
-| 🌆 Photo live filters                    |    ✅    |   ✅   |
-| 🌤 Exposure level                        |    ✅    |   ✅   |
-| 📡 Broadcast live image stream           |    ✅    |   ✅   |
-| 🧪 Image analysis (barcode scan & more.) |    ✅    |   ✅   |
-| 👁 Zoom                                  |    ✅    |   ✅   |
-| 📸 Device flash support                  |    ✅    |   ✅   |
-| ⌛️ Auto focus                            |    ✅    |   ✅   |
-| 📲 Live switching camera                 |    ✅    |   ✅   |
-| 😵‍💫 Camera rotation stream                |    ✅    |   ✅   |
-| 🤐 Background auto stop                  |    ✅    |   ✅   |
-| 🔀 Sensor type switching                 |    ⛔️    |   ✅   |
-| 🪞 Enable/disable front camera mirroring |    ✅    |   ✅   |
+| Features                                 | Android | iOS |
+| :--------------------------------------- | :-----: | :-: |
+| 🔖 Ask permissions                       |   ✅    | ✅  |
+| 🎥 Record video                          |   ✅    | ✅  |
+| 📹 Multi camera (🚧 BETA)                |   ✅    | ✅  |
+| 🔈 Enable/disable audio                  |   ✅    | ✅  |
+| 🎞 Take photos                            |   ✅    | ✅  |
+| 🌆 Photo live filters                    |   ✅    | ✅  |
+| 🌤 Exposure level                         |   ✅    | ✅  |
+| 📡 Broadcast live image stream           |   ✅    | ✅  |
+| 🧪 Image analysis (barcode scan & more.) |   ✅    | ✅  |
+| 👁 Zoom                                   |   ✅    | ✅  |
+| 📸 Device flash support                  |   ✅    | ✅  |
+| ⌛️ Auto focus                            |   ✅    | ✅  |
+| 📲 Live switching camera                 |   ✅    | ✅  |
+| 😵‍💫 Camera rotation stream              |   ✅    | ✅  |
+| 🤐 Background auto stop                  |   ✅    | ✅  |
+| 🔀 Sensor type switching                 |   ⛔️    | ✅  |
+| 🪞 Enable/disable front camera mirroring |   ✅    | ✅  |
 
 ---
 
@@ -111,7 +112,6 @@ dependencies:
 Add these on `ios/Runner/Info.plist`:
 
 ```xml
-
 <key>NSCameraUsageDescription</key>
 <string>Your own description</string>
 
@@ -130,14 +130,16 @@ Change the minimum SDK version to 21 (or higher) in `android/app/build.gradle`:
 minSdkVersion 21
 ```
 
-In order to be able to take pictures or record videos, you may need additional permissions depending
-on the Android version and where you want to save them.
-Read more about it in
-the [official documentation](https://developer.android.com/training/data-storage).
-> `WRITE_EXTERNAL_STORAGE` is not included in the plugin starting with version 1.4.0.
+In order to be able to take pictures or record videos, you may need additional
+permissions depending on the Android version and where you want to save them.
+Read more about it in the
+[official documentation](https://developer.android.com/training/data-storage).
 
+> `WRITE_EXTERNAL_STORAGE` is not included in the plugin starting with version
+> 1.4.0.
 
-If you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
+If you want to record videos with audio, add this permission to your
+`AndroidManifest.xml`:
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -148,8 +150,8 @@ If you want to record videos with audio, add this permission to your `AndroidMan
 </manifest>
 ```
 
-You may also want to save location of your pictures in exif metadata. In this case, add below
-permissions:
+You may also want to save location of your pictures in exif metadata. In this
+case, add below permissions:
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -164,8 +166,8 @@ permissions:
 <details>
 <summary>⚠️ Overriding Android dependencies</summary>
 
-Some of the dependencies used by CamerAwesome can be overriden if you have a conflict.
-Change these variables to define which version you want to use:
+Some of the dependencies used by CamerAwesome can be overriden if you have a
+conflict. Change these variables to define which version you want to use:
 
 ```gradle
 buildscript {
@@ -183,9 +185,9 @@ buildscript {
 
 Only change these variables if you are sure of what you are doing.
 
-For example, setting the Play Services Location version might help you when you have conflicts with
-other plugins.
-The below line shows an example of these conflicts:
+For example, setting the Play Services Location version might help you when you
+have conflicts with other plugins. The below line shows an example of these
+conflicts:
 
 ```
 java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.location.ActivityRecognitionClient, but class was expected
@@ -203,8 +205,8 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 
 ## 👌 Awesome built-in interface
 
-Just use our builder. <br>
-That's all you need to create a complete camera experience within your app.
+Just use our builder. <br> That's all you need to create a complete camera
+experience within your app.
 
 ```dart
 CameraAwesomeBuilder.awesome(
@@ -230,7 +232,9 @@ Here is an example:
 
 ![Customized UI](docs/img/custom_awesome_ui.jpg)
 
-Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui) to learn more.
+Check the
+[full documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/awesome-ui)
+to learn more.
 
 ---
 
@@ -238,7 +242,8 @@ Check the [full documentation](https://docs.page/Apparence-io/camera_awesome/get
 
 If the `awesome()` factory is not enough, you can use `custom()` instead.
 
-It provides a `builder` property that lets you create your own camera experience. <br>
+It provides a `builder` property that lets you create your own camera
+experience. <br>
 
 The camera preview will be visible behind what you will provide to the builder.
 
@@ -251,7 +256,8 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-> See more in [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
+> See more in
+> [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
 
 ### Working with the custom builder
 
@@ -269,16 +275,16 @@ Depending on which state is our camera experience you will have access to some d
 
 #### How do CamerAwesome states work ?
 
-Using the state you can do anything you need without having to think about the camera flow<br><br>
+Using the state you can do anything you need without having to think about the
+camera flow<br><br>
 
 - On app start we are in `PreparingCameraState`<br>
-- Then depending on the initialCaptureMode you set you will be `PhotoCameraState`
-  or `VideoCameraState`<br>
+- Then depending on the initialCaptureMode you set you will be
+  `PhotoCameraState` or `VideoCameraState`<br>
 - Starting a video will push a `VideoRecordingCameraState`<br>
 - Stopping the video will push back the `VideoCameraState`<br>
-  <br>
-  Also if you want to use some specific function you can use the when method so you can write like
-  this.<br>
+  <br> Also if you want to use some specific function you can use the when
+  method so you can write like this.<br>
 
 ```dart
 state.when(
@@ -288,9 +294,56 @@ state.when(
 );
 ```
 
-> See more in [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
+> See more in
+> [documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/custom-ui)
 
 <br>
+
+---
+
+## 🐝 Listen to picture or video event
+
+Using the onMediaCaptureEvent you can listen to any media capture event and do
+whatever you want with it.
+
+```dart
+onMediaCaptureEvent: (event) {
+    switch ((event.status, event.isPicture, event.isVideo)) {
+        case (MediaCaptureStatus.capturing, true, false):
+            debugPrint('Capturing picture...');
+        case (MediaCaptureStatus.success, true, false):
+            event.captureRequest.when(
+                single: (single) {
+                debugPrint('Picture saved: ${single.file?.path}');
+                },
+                multiple: (multiple) {
+                multiple.fileBySensor.forEach((key, value) {
+                    debugPrint('multiple image taken: $key ${value?.path}');
+                });
+                },
+            );
+        case (MediaCaptureStatus.failure, true, false):
+            debugPrint('Failed to capture picture: ${event.exception}');
+        case (MediaCaptureStatus.capturing, false, true):
+            debugPrint('Capturing video...');
+        case (MediaCaptureStatus.success, false, true):
+            event.captureRequest.when(
+                single: (single) {
+                    debugPrint('Video saved: ${single.file?.path}');
+                },
+                multiple: (multiple) {
+                    multiple.fileBySensor.forEach((key, value) {
+                        debugPrint('multiple video taken: $key ${value?.path}');
+                    });
+                },
+            );
+        case (MediaCaptureStatus.failure, false, true):
+            debugPrint('Failed to capture video: ${event.exception}');
+        default:
+            debugPrint('Unknown event: $event');
+    }
+},
+```
 
 ---
 
@@ -306,15 +359,17 @@ Use this to achieve:
 
 ![Face AI](docs/img/face_ai.gif)
 
-You can check examples using MLKit inside the `example` directory.
-The above example is from `ai_analysis_faces.dart`. It detects faces and draw their contours.
+You can check examples using MLKit inside the `example` directory. The above
+example is from `ai_analysis_faces.dart`. It detects faces and draw their
+contours.
 
 It's also possible to use MLKit to read barcodes:
 
 ![Barcode scanning](docs/img/barcode_overlay.gif)
 
-Check `ai_analysis_barcode.dart` and `preview_overlay_example.dart` for examples or
-the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
+Check `ai_analysis_barcode.dart` and `preview_overlay_example.dart` for examples
+or the
+[documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes).
 
 ### How to use it
 
@@ -336,23 +391,25 @@ CameraAwesomeBuilder.awesome(
 )
 ```
 
-> MLkit recommends using nv21 format for Android. <br>
-> bgra8888 is the iOS format
-> For machine learning you don't need full-resolution images (720 or lower should be enough and makes computation easier)
+> MLkit recommends using nv21 format for Android. <br> bgra8888 is the iOS
+> format For machine learning you don't need full-resolution images (720 or
+> lower should be enough and makes computation easier)
 
-Learn more about the image analysis configuration in
-the [documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
+Learn more about the image analysis configuration in the
+[documentation](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/image_analysis_configuration)
 .
 
-Check also detailed explanations on how to use MLKit
-to [read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)
-and [detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
+Check also detailed explanations on how to use MLKit to
+[read barcodes](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/reading_barcodes)
+and
+[detect faces](https://docs.page/Apparence-io/camera_awesome/ai_with_mlkit/detecting_faces).
 
-⚠️ On Android, some devices don't support video recording and image analysis at the same time.
+⚠️ On Android, some devices don't support video recording and image analysis at
+the same time.
 
 - If they don't, image analysis will be ignored.
-- You can check if a device has this capability by
-  using `CameraCharacteristics .isVideoRecordingAndImageAnalysisSupported(Sensors.back)`.
+- You can check if a device has this capability by using
+  `CameraCharacteristics .isVideoRecordingAndImageAnalysisSupported(Sensors.back)`.
 
 ---
 
@@ -369,7 +426,8 @@ Through state you can access to a `SensorConfig` class.
 | `setBrightness`        | change brightness level manually (better to let this auto) |
 | `setMirrorFrontCamera` | set mirroring for front camera                             |
 
-All of these configurations are listenable through a stream so your UI can automatically get updated according to the actual configuration.
+All of these configurations are listenable through a stream so your UI can
+automatically get updated according to the actual configuration.
 
 <br>
 
@@ -409,19 +467,21 @@ CameraAwesomeBuilder.custom(
 )
 ```
 
-See all available filters in the [documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
+See all available filters in the
+[documentation](https://docs.page/Apparence-io/camera_awesome/widgets/awesome_filters).
 
-> [!TIP]
-> By default the awesome ui setup has a filter list but you can pass an empty list to remove it
+> [!TIP] By default the awesome ui setup has a filter list but you can pass an
+> empty list to remove it
 
 ## 📷 📷 Concurrent cameras
 
 ![Concurrent cameras](docs/img/concurrent_cameras.gif)
 
-> 🚧 Feature in beta 🚧
-> Any feedback is welcome! 
+> 🚧 Feature in beta 🚧 Any feedback is welcome!
 
-In order to start using CamerAwesome with multiple cameras simulatenously, you need to define a `SensorConfig` that uses several sensors. You can use the `SensorConfig.multiple()` constructor for this:
+In order to start using CamerAwesome with multiple cameras simulatenously, you
+need to define a `SensorConfig` that uses several sensors. You can use the
+`SensorConfig.multiple()` constructor for this:
 
 ```dart
 CameraAwesomeBuilder.awesome(
@@ -437,10 +497,11 @@ CameraAwesomeBuilder.awesome(
 )
 ```
 
-This feature is not supported by all devices and even when it is, there are limitations that you must be aware of.
+This feature is not supported by all devices and even when it is, there are
+limitations that you must be aware of.
 
-Check the details in the [dedicated documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/multicam).
-
+Check the details in the
+[dedicated documentation](https://docs.page/Apparence-io/camera_awesome/getting_started/multicam).
 
 <br>
 

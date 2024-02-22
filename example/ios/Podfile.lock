@@ -119,8 +119,6 @@ PODS:
     - Flutter
     - gRPC-Swift (~> 1.8.0)
   - PromisesObjC (2.3.1)
-  - sensors_plus (0.0.1):
-    - Flutter
   - SwiftNIO (2.40.0):
     - _NIODataStructures (= 2.40.0)
     - CNIOAtomics (= 2.40.0)
@@ -267,7 +265,6 @@ DEPENDENCIES:
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - patrol (from `.symlinks/plugins/patrol/ios`)
-  - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
 
 SPEC REPOS:
@@ -335,8 +332,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   patrol:
     :path: ".symlinks/plugins/patrol/ios"
-  sensors_plus:
-    :path: ".symlinks/plugins/sensors_plus/ios"
   video_player_avfoundation:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
@@ -378,7 +373,6 @@ SPEC CHECKSUMS:
   path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
   patrol: a7622350c42b3a944962fbfe052d07e3691789e5
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
-  sensors_plus: 42b9de1b8237675fa8d8121e4bb93be0f79fa61d
   SwiftNIO: 829958aab300642625091f82fc2f49cb7cf4ef24
   SwiftNIOConcurrencyHelpers: 697370136789b1074e4535eaae75cbd7f900370e
   SwiftNIOCore: 473fdfe746534d7aa25766916459eeaf6f92ef49
@@ -397,4 +391,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: a8b143db2d88d9458665bb11a320e286001a8119
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.14.3
