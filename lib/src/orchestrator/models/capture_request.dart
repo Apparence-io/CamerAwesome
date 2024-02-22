@@ -16,6 +16,8 @@ abstract class CaptureRequest {
       throw Exception("Unknown CaptureResult type");
     }
   }
+
+  String? get path;
 }
 
 class SingleCaptureRequest extends CaptureRequest {
@@ -24,6 +26,9 @@ class SingleCaptureRequest extends CaptureRequest {
 
   SingleCaptureRequest(String? filePath, this.sensor)
       : file = filePath == null ? null : XFile(filePath);
+
+  @override
+  String? get path => file?.path;
 }
 
 class MultipleCaptureRequest extends CaptureRequest {
@@ -36,4 +41,8 @@ class MultipleCaptureRequest extends CaptureRequest {
                 ? XFile(filePathBySensor[sensor]!)
                 : null,
         };
+
+  @override
+  String? get path =>
+      fileBySensor.values.firstWhere((element) => element != null)?.path;
 }

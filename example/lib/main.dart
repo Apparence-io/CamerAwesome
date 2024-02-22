@@ -34,7 +34,6 @@ class CameraPage extends StatelessWidget {
         child: CameraAwesomeBuilder.awesome(
           saveConfig: SaveConfig.photoAndVideo(
             initialCaptureMode: CaptureMode.photo,
-            mirrorFrontCamera: true,
             photoPathBuilder: (sensors) async {
               final Directory extDir = await getTemporaryDirectory();
               final testDir = await Directory(
@@ -75,6 +74,7 @@ class CameraPage extends StatelessWidget {
           ),
           enablePhysicalButton: true,
           // filter: AwesomeFilter.AddictiveRed,
+          previewAlignment: Alignment.center,
           previewFit: CameraPreviewFit.contain,
           onMediaTap: (mediaCapture) {
             mediaCapture.captureRequest.when(
