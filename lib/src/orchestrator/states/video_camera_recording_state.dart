@@ -28,7 +28,7 @@ class VideoRecordingCameraState extends CameraState {
 
   @override
   void setState(CaptureMode captureMode) {
-    printLog(''' 
+    printLog('''
       warning: You must stop recording before changing state.  
     ''');
   }
@@ -102,7 +102,7 @@ class VideoRecordingCameraState extends CameraState {
 
   /// If video recording should [enableAudio].
   Future<void> enableAudio(bool enableAudio) async {
-    printLog(''' 
+    printLog('''
       warning: EnableAudio has no effect when recording 
     ''');
   }

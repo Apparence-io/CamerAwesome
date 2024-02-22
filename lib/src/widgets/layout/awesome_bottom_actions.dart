@@ -23,9 +23,10 @@ class AwesomeBottomActions extends StatelessWidget {
     Widget? captureButton,
     OnMediaTap? onMediaTap,
     this.padding = const EdgeInsets.symmetric(vertical: 8),
-  })  : captureButton = captureButton ?? AwesomeCaptureButton(
-          state: state,
-        ),
+  })  : captureButton = captureButton ??
+            AwesomeCaptureButton(
+              state: state,
+            ),
         left = left ??
             (state is VideoRecordingCameraState
                 ? AwesomePauseResumeButton(

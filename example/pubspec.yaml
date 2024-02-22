@@ -1,11 +1,11 @@
 name: camera_app
 description: A Camera App using CameraAwesome.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+1
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+version: 1.0.1
 
 environment:
-  sdk: '>=2.18.2 <3.0.0'
-  flutter: '>=3.3.0'
+  sdk: ">=2.18.2 <3.0.0"
+  flutter: ">=3.3.0"
 
 dependencies:
   better_open_file: ^3.6.4
