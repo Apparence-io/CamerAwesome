@@ -1264,6 +1264,14 @@ class CameraInterface {
     }
   }
 
+  double safelyRetrieveAndCastFirstValue(List<Object?> replyList) {
+    if (replyList[0] is int) {
+      return (replyList[0] as int).toDouble();
+    } else {
+      return (replyList[0] as double?)!;
+    }
+  }
+  
   Future<double> getMinZoom() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.CameraInterface.getMinZoom', codec,
@@ -1286,7 +1294,7 @@ class CameraInterface {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (replyList[0] as double?)!;
+      return (safelyRetrieveAndCastFirstValue(replyList))!;
     }
   }
 
@@ -1312,7 +1320,7 @@ class CameraInterface {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (replyList[0] as double?)!;
+      return (safelyRetrieveAndCastFirstValue(replyList))!;
     }
   }
 
