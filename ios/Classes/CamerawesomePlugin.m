@@ -65,7 +65,7 @@ FlutterEventSink physicalButtonEventSink;
 
 #pragma mark - Camera engine methods
 
-- (void)setupCameraSensors:(nonnull NSArray<PigeonSensor *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences videoOptions:(nullable VideoOptions *)videoOptions completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+- (void)setupCameraSensors:(nonnull NSArray<PigeonSensor *> *)sensors aspectRatio:(nonnull NSString *)aspectRatio zoom:(nonnull NSNumber *)zoom mirrorFrontCamera:(nonnull NSNumber *)mirrorFrontCamera enablePhysicalButton:(nonnull NSNumber *)enablePhysicalButton enableRotation:(nonnull NSNumber *)enableRotation flashMode:(nonnull NSString *)flashMode captureMode:(nonnull NSString *)captureMode enableImageStream:(nonnull NSNumber *)enableImageStream exifPreferences:(nonnull ExifPreferences *)exifPreferences videoOptions:(nullable VideoOptions *)videoOptions completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   
   CaptureModes captureModeType = [CaptureModeUtils captureModeFromCaptureModeType:captureMode];
   if (![CameraPermissionsController checkAndRequestPermission]) {
@@ -128,6 +128,7 @@ FlutterEventSink physicalButtonEventSink;
                                                        streamImages:[enableImageStream boolValue]
                                                   mirrorFrontCamera:[mirrorFrontCamera boolValue]
                                                enablePhysicalButton:[enablePhysicalButton boolValue]
+                                                     enableRotation:[enableRotation boolValue]
                                                     aspectRatioMode:aspectRatioMode
                                                         captureMode:captureModeType
                                                          completion:completion

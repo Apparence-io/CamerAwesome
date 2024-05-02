@@ -180,7 +180,8 @@ class CamerawesomePlugin {
   static Future<bool?> init(
     SensorConfig sensorConfig,
     bool enableImageStream,
-    bool enablePhysicalButton, {
+    bool enablePhysicalButton,
+    bool enableRotation, {
     CaptureMode captureMode = CaptureMode.photo,
     required ExifPreferences exifPreferences,
     required VideoOptions? videoOptions,
@@ -195,6 +196,7 @@ class CamerawesomePlugin {
           sensorConfig.zoom,
           mirrorFrontCamera,
           enablePhysicalButton,
+          enableRotation,
           sensorConfig.flashMode.name.toUpperCase(),
           captureMode.name.toUpperCase(),
           enableImageStream,

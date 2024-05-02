@@ -672,7 +672,7 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         binaryMessenger:binaryMessenger
         codec:CameraInterfaceGetCodec()];
     if (api) {
-      NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:videoOptions:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:flashMode:captureMode:enableImageStream:exifPreferences:videoOptions:completion:)", api);
+      NSCAssert([api respondsToSelector:@selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:enableRotation:flashMode:captureMode:enableImageStream:exifPreferences:videoOptions:completion:)], @"CameraInterface api (%@) doesn't respond to @selector(setupCameraSensors:aspectRatio:zoom:mirrorFrontCamera:enablePhysicalButton:enableRotation:flashMode:captureMode:enableImageStream:exifPreferences:videoOptions:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
         NSArray<PigeonSensor *> *arg_sensors = GetNullableObjectAtIndex(args, 0);
@@ -680,12 +680,13 @@ void CameraInterfaceSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<C
         NSNumber *arg_zoom = GetNullableObjectAtIndex(args, 2);
         NSNumber *arg_mirrorFrontCamera = GetNullableObjectAtIndex(args, 3);
         NSNumber *arg_enablePhysicalButton = GetNullableObjectAtIndex(args, 4);
-        NSString *arg_flashMode = GetNullableObjectAtIndex(args, 5);
-        NSString *arg_captureMode = GetNullableObjectAtIndex(args, 6);
-        NSNumber *arg_enableImageStream = GetNullableObjectAtIndex(args, 7);
-        ExifPreferences *arg_exifPreferences = GetNullableObjectAtIndex(args, 8);
-        VideoOptions *arg_videoOptions = GetNullableObjectAtIndex(args, 9);
-        [api setupCameraSensors:arg_sensors aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera enablePhysicalButton:arg_enablePhysicalButton flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences videoOptions:arg_videoOptions completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
+        NSNumber *arg_enableRotation = GetNullableObjectAtIndex(args, 5);
+        NSString *arg_flashMode = GetNullableObjectAtIndex(args, 6);
+        NSString *arg_captureMode = GetNullableObjectAtIndex(args, 7);
+        NSNumber *arg_enableImageStream = GetNullableObjectAtIndex(args, 8);
+        ExifPreferences *arg_exifPreferences = GetNullableObjectAtIndex(args, 9);
+        VideoOptions *arg_videoOptions = GetNullableObjectAtIndex(args, 10);
+        [api setupCameraSensors:arg_sensors aspectRatio:arg_aspectRatio zoom:arg_zoom mirrorFrontCamera:arg_mirrorFrontCamera enablePhysicalButton:arg_enablePhysicalButton enableRotation:arg_enableRotation flashMode:arg_flashMode captureMode:arg_captureMode enableImageStream:arg_enableImageStream exifPreferences:arg_exifPreferences videoOptions:arg_videoOptions completion:^(NSNumber *_Nullable output, FlutterError *_Nullable error) {
           callback(wrapResult(output, error));
         }];
       }];

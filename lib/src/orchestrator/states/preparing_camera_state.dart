@@ -65,6 +65,7 @@ class PreparingCameraState extends CameraState {
     SensorConfig sensorConfig, {
     required bool enableImageStream,
     required bool enablePhysicalButton,
+    required bool enableRotation,
   }) async {
     // wait user accept permissions to init widget completely on android
     if (Platform.isAndroid) {
@@ -75,6 +76,7 @@ class PreparingCameraState extends CameraState {
             _init(
               enableImageStream: enableImageStream,
               enablePhysicalButton: enablePhysicalButton,
+              enableRotation: enableRotation,
             );
           }
           if (onPermissionsResult != null) {
@@ -137,6 +139,7 @@ class PreparingCameraState extends CameraState {
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
+      enableRotation: cameraContext.enableRotation,
     );
     cameraContext.changeState(VideoCameraState.from(cameraContext));
 
@@ -148,6 +151,7 @@ class PreparingCameraState extends CameraState {
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
+      enableRotation: cameraContext.enableRotation,
     );
     cameraContext.changeState(PhotoCameraState.from(cameraContext));
 
@@ -159,6 +163,7 @@ class PreparingCameraState extends CameraState {
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
+      enableRotation: cameraContext.enableRotation,
     );
     cameraContext.changeState(PreviewCameraState.from(cameraContext));
 
@@ -170,6 +175,7 @@ class PreparingCameraState extends CameraState {
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
+      enableRotation: cameraContext.enableRotation,
     );
 
     // On iOS, we need to start the camera to get the first frame because there
@@ -185,16 +191,19 @@ class PreparingCameraState extends CameraState {
   Future<bool> _init({
     required bool enableImageStream,
     required bool enablePhysicalButton,
+    required bool enableRotation,
   }) async {
     initPermissions(
       sensorConfig,
       enableImageStream: enableImageStream,
       enablePhysicalButton: enablePhysicalButton,
+      enableRotation: enableRotation,
     );
     await CamerawesomePlugin.init(
       sensorConfig,
       enableImageStream,
       enablePhysicalButton,
+      enableRotation,
       captureMode: nextCaptureMode,
       exifPreferences: cameraContext.exifPreferences,
       videoOptions: saveConfig?.videoOptions,

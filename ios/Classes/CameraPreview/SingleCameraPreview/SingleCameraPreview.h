@@ -54,6 +54,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) CupertinoVideoOptions *videoOptions;
 @property(readonly, nonatomic) VideoRecordingQuality recordingQuality;
+@property(readonly, nonatomic) bool enableRotation;
 @property(readonly, nonatomic) CameraPreviewTexture* previewTexture;
 @property(readonly, nonatomic) bool saveGPSLocation;
 @property(readonly, nonatomic) bool mirrorFrontCamera;
@@ -72,6 +73,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
+                      enableRotation:(BOOL)enableRotation
                      aspectRatioMode:(AspectRatio)aspectRatioMode
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
