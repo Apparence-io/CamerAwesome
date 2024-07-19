@@ -48,6 +48,7 @@ class _CameraPageState extends State<CameraPage> {
           aspectRatio: CameraAspectRatios.ratio_16_9,
         ),
         previewFit: CameraPreviewFit.fitWidth,
+        previewAlignment: Alignment.center,
         onMediaTap: (mediaCapture) {
           mediaCapture.captureRequest
               .when(single: (single) => single.file?.open());

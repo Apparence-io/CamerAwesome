@@ -64,7 +64,7 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
     // including the clipping that may be needed to respect the current
     // aspectRatio.
     _scanArea = Rect.fromCenter(
-      center: widget.preview.rect.center,
+      center: widget.preview.rect.center + widget.preview.offset,
       // In this example, we want the barcode scan area to be a fraction
       // of the preview that is seen by the user, so we use previewRect
       width: widget.preview.rect.width * 0.7,
@@ -152,6 +152,9 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
           bottomRightOffset.toOffset(),
           img,
         );
+        debugPrint(
+            'BARCODE $topLeftOffset $bottomRightOffset, $topLeftOff, $bottomRightOff');
+        debugPrint('SCAN AREA ${widget.preview.rect.top}');
 
         _barcodeRect = Rect.fromLTRB(
           topLeftOff.dx,
@@ -163,10 +166,7 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
         // Approximately detect if the barcode is in the scan area by checking
         // if the center of the barcode is in the scan area.
         if (_scanArea.contains(
-          _barcodeRect!.center.translate(
-            (_screenSize.width - widget.preview.previewSize.width) / 2,
-            (_screenSize.height - widget.preview.previewSize.height) / 2,
-          ),
+          _barcodeRect!.center,
         )) {
           // Note: for a better detection, you should calculate the area of the
           // intersection between the barcode and the scan area and compare it

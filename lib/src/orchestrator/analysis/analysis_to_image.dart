@@ -41,27 +41,32 @@ class Preview {
   }) {
     num imageDiffX;
     num imageDiffY;
+    num imgToNativeScaleX;
+    num imgToNativeScaleY;
     final shouldflipXY = flipXY ?? img.flipXY();
     if (Platform.isIOS) {
       imageDiffX = img.size.width - img.croppedSize.width;
       imageDiffY = img.size.height - img.croppedSize.height;
+      imgToNativeScaleX = nativePreviewSize.width / img.croppedSize.width;
+      imgToNativeScaleY = nativePreviewSize.height / img.croppedSize.height;
     } else {
       // Width and height are inverted on Android
       imageDiffX = img.size.height - img.croppedSize.width;
       imageDiffY = img.size.width - img.croppedSize.height;
+      imgToNativeScaleX = nativePreviewSize.width / img.croppedSize.width;
+      imgToNativeScaleY = nativePreviewSize.height / img.croppedSize.height;
     }
-    var offset = (Offset(
-              (shouldflipXY ? point.dy : point.dx).toDouble() -
-                  (imageDiffX / 2),
-              (shouldflipXY ? point.dx : point.dy).toDouble() -
-                  (imageDiffY / 2),
-            ) *
-            scale)
-        .translate(
-      // If screenSize is bigger than croppedSize, move the element to half the difference
-      (previewSize.width - (img.croppedSize.width * scale)) / 2,
-      (previewSize.height - (img.croppedSize.height * scale)) / 2,
-    );
+    debugPrint('IMAGE DIFF X: $imageDiffX Y: $imageDiffY');
+    debugPrint('PREVIEW SCALE: $scale $previewSize $nativePreviewSize');
+    debugPrint(
+        'IMAGE TO NATIVE SCALE X: $imgToNativeScaleX, Y: $imgToNativeScaleY');
+    debugPrint('PREVIEW OFFSET: ${this.offset.dx}x${this.offset.dy}');
+    var offset = Offset(
+      (shouldflipXY ? point.dy : point.dx).toDouble() - (imageDiffX / 2),
+      (shouldflipXY ? point.dx : point.dy).toDouble() - (imageDiffY / 2),
+    )
+        .scale(imgToNativeScaleX * scale, imgToNativeScaleY * scale)
+        .translate(this.offset.dx, this.offset.dy);
     return offset;
   }
 
