@@ -56,11 +56,6 @@ class Preview {
       imgToNativeScaleX = nativePreviewSize.width / img.croppedSize.width;
       imgToNativeScaleY = nativePreviewSize.height / img.croppedSize.height;
     }
-    debugPrint('IMAGE DIFF X: $imageDiffX Y: $imageDiffY');
-    debugPrint('PREVIEW SCALE: $scale $previewSize $nativePreviewSize');
-    debugPrint(
-        'IMAGE TO NATIVE SCALE X: $imgToNativeScaleX, Y: $imgToNativeScaleY');
-    debugPrint('PREVIEW OFFSET: ${this.offset.dx}x${this.offset.dy}');
     var offset = Offset(
       (shouldflipXY ? point.dy : point.dx).toDouble() - (imageDiffX / 2),
       (shouldflipXY ? point.dx : point.dy).toDouble() - (imageDiffY / 2),

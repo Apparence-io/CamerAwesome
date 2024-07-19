@@ -54,7 +54,6 @@ class ImageAnalysisBuilder private constructor(
                 AspectRatio.RATIO_4_3 -> 4f / 3
                 else -> 16f / 9
             }
-            Log.d("KOTLIN", "Analysis Aspect Ratio: $aspectRatio ($analysisAspectRatio)")
             val height = widthOrDefault * (1 / analysisAspectRatio)
             val maxFps = if (maxFramesPerSecond == 0.0) null else maxFramesPerSecond
             return ImageAnalysisBuilder(
@@ -71,7 +70,6 @@ class ImageAnalysisBuilder private constructor(
     @SuppressLint("RestrictedApi")
     fun build(): ImageAnalysis {
         countDownLatch.reset()
-        Log.d("KOTLIN", "Building image analysis at target resolution ${width}x${height}")
         val imageAnalysisResolutionSelector = ResolutionSelector.Builder()
             .setAspectRatioStrategy(
                 AspectRatioStrategy(aspectRatio, AspectRatioStrategy.FALLBACK_RULE_AUTO)
@@ -143,7 +141,6 @@ class ImageAnalysisBuilder private constructor(
                 AspectRatio.RATIO_4_3 -> 4f / 3
                 else -> 16f / 9
             }
-        Log.d("KOTLIN", "Analysis Aspect Ratio: $aspectRatio ($analysisAspectRatio)")
         height = (width * (1 / analysisAspectRatio)).toInt()
     }
 

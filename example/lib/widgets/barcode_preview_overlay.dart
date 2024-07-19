@@ -152,9 +152,6 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
           bottomRightOffset.toOffset(),
           img,
         );
-        debugPrint(
-            'BARCODE $topLeftOffset $bottomRightOffset, $topLeftOff, $bottomRightOff');
-        debugPrint('SCAN AREA ${widget.preview.rect.top}');
 
         _barcodeRect = Rect.fromLTRB(
           topLeftOff.dx,

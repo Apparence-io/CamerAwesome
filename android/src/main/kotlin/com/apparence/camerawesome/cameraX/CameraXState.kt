@@ -92,7 +92,6 @@ data class CameraXState(
     @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
     fun updateLifecycle(activity: Activity) {
         previews = mutableListOf()
-        Log.d("KOTLIN", "Aspect ratio: $aspectRatio")
         imageCaptures.clear()
         videoCaptures.clear()
         if (cameraProvider.isMultiCamSupported() && sensors.size > 1) {
@@ -295,20 +294,7 @@ data class CameraXState(
                 useCaseGroup,
             )
             previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
-            useCaseGroup.getUseCases()?.forEach{
-                Log.d("KOTLIN", "Use case ${it.javaClass.kotlin} surface resolution: ${it.attachedSurfaceResolution}")
-            }
             
-        }
-        val characteristics = CameraCharacteristicsCompat.toCameraCharacteristicsCompat(
-            Camera2CameraInfo.extractCameraCharacteristics(previewCamera!!.getCameraInfo()),
-            Camera2CameraInfo.from(previewCamera!!.getCameraInfo()).cameraId
-        )
-        val streamConfigMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-        val resolutions = streamConfigMap?.getOutputSizes(ImageFormat.YUV_420_888)
-        val previewSizesList = previewSizes()
-        resolutions?.forEach{
-            Log.d("KOTLIN", "Preview available size: $it")
         }
     }
 

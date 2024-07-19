@@ -241,8 +241,6 @@ class PreviewSizeCalculator {
 
     final nativeHeightProjection = constraints.maxHeight * 1 / zoom;
     final hDiff = nativePreviewSize.height - nativeHeightProjection;
-    debugPrint(
-        'COMPUTE PREVIEW SIZE: $nativeWidthProjection $nativeHeightProjection $nativePreviewSize, ZOOM: $zoom');
 
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
@@ -274,7 +272,6 @@ class PreviewSizeCalculator {
         );
         break;
     }
-    debugPrint('MAX PREVIEW SIZE $maxSize $_offset');
     return maxSize;
   }
 
