@@ -23,7 +23,6 @@ class BarcodePreviewOverlay extends StatefulWidget {
 }
 
 class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
-  late Size _screenSize;
   late Rect _scanArea;
 
   // The barcode that is currently in the scan area (one at a time)
@@ -74,8 +73,6 @@ class _BarcodePreviewOverlayState extends State<BarcodePreviewOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    _screenSize = MediaQuery.of(context).size;
-
     return IgnorePointer(
       ignoring: true,
       child: Stack(children: [
