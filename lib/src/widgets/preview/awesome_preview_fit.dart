@@ -155,6 +155,12 @@ class PreviewFitWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final transformController = TransformationController()
       ..value = (Matrix4.identity()..scale(scale));
+    final wDiff =
+        max(previewSize.width * scale - constraints.maxWidth, 0) / scale;
+    final hDiff =
+        max(previewSize.height * scale - constraints.maxHeight, 0) / scale;
+    transformController.value.translate(
+        wDiff * -((alignment.x + 1) / 2), hDiff * -((alignment.y + 1) / 2));
     return Align(
       alignment: alignment,
       child: SizedBox(
@@ -236,11 +242,6 @@ class PreviewSizeCalculator {
   Size _computeMaxSize() {
     var nativePreviewSize = previewSize.toSize();
     Size maxSize;
-    final nativeWidthProjection = constraints.maxWidth * 1 / zoom;
-    final wDiff = nativePreviewSize.width - nativeWidthProjection;
-
-    final nativeHeightProjection = constraints.maxHeight * 1 / zoom;
-    final hDiff = nativePreviewSize.height - nativeHeightProjection;
 
     switch (previewFit) {
       case CameraPreviewFit.fitWidth:
@@ -252,14 +253,14 @@ class PreviewSizeCalculator {
         _offset = _computeOffset(constraints.maxWidth - maxSize.width, 0);
         break;
       case CameraPreviewFit.cover:
-        maxSize = Size(constraints.maxWidth, constraints.maxHeight);
-
         if (constraints.maxWidth / constraints.maxHeight >
             previewSize.width / previewSize.height) {
-          _offset = _computeOffset((hDiff * zoom) * 2, 0);
+          maxSize = Size(constraints.maxWidth, nativePreviewSize.height * zoom);
+          _offset = _computeOffset(0, constraints.maxHeight - maxSize.height);
           // _offset = Offset(0, constraints.maxHeight - maxSize.height);
         } else {
-          _offset = _computeOffset(0, (wDiff * zoom));
+          maxSize = Size(nativePreviewSize.width * zoom, constraints.maxHeight);
+          _offset = _computeOffset(constraints.maxWidth - maxSize.width, 0);
           // _offset = Offset(constraints.maxWidth - maxSize.width, 0);
         }
         break;
