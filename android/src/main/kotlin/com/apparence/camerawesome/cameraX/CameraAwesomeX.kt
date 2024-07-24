@@ -190,7 +190,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
         cameraState.apply {
             try {
                 imageAnalysisBuilder = ImageAnalysisBuilder.configure(
-                    aspectRatio ?: aspectRatio!!,
+                    aspectRatio ?: AspectRatio.RATIO_4_3,
                     when (format.uppercase()) {
                         "YUV_420" -> OutputImageFormat.YUV_420_888
                         "NV21" -> OutputImageFormat.NV21
