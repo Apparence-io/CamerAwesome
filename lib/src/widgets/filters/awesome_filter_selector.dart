@@ -1,5 +1,5 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider_plus/carousel_slider_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -24,7 +24,7 @@ class AwesomeFilterSelector extends StatefulWidget {
 }
 
 class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
-  final CarouselController _controller = CarouselController();
+  final CarouselControllerPlus _controller = CarouselControllerPlus();
   int? _textureId;
   int _selected = 0;
 
@@ -70,7 +70,7 @@ class _AwesomeFilterSelectorState extends State<AwesomeFilterSelector> {
                 enableInfiniteScroll: false,
                 viewportFraction: 0.165,
               ),
-              carouselController: _controller,
+              controller: _controller,
               items: awesomePresetFiltersList.map((filter) {
                 return Builder(
                   builder: (BuildContext context) {
