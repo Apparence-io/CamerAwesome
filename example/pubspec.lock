@@ -52,10 +52,10 @@ packages:
     dependency: transitive
     description:
       name: carousel_slider_plus
-      sha256: e02b2818a2e6a2a983772470d68629cab39fa8760bb46f57b6087bafe5668762
+      sha256: c3104d287c4aea3e83bbe87fe40ad29909ee5815bc75f2499585941392d0c11a
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.0"
+    version: "6.0.0+1"
   characters:
     dependency: transitive
     description:
