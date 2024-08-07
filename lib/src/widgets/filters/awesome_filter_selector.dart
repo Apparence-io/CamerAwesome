@@ -124,6 +124,7 @@ class _FilterPreview extends StatelessWidget {
   final int? textureId;
 
   const _FilterPreview({
+    super.key,
     required this.filter,
     required this.textureId,
   });
