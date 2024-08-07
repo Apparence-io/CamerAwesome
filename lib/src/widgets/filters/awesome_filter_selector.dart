@@ -124,10 +124,10 @@ class _FilterPreview extends StatelessWidget {
   final int? textureId;
 
   const _FilterPreview({
-    Key? key,
+    super.key,
     required this.filter,
     required this.textureId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
