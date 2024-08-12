@@ -12,7 +12,7 @@ environment:
   flutter: ">=1.10.0"
 
 dependencies:
-  carousel_slider_plus: ^6.0.0
+  carousel_slider: ^5.0.0
   collection: ^1.17.2
   colorfilter_generator: ^0.0.8
   cross_file: ^0.3.3+6
