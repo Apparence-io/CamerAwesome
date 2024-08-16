@@ -11,9 +11,7 @@ mixin ImageSubFilter on SubFilter {
 class ImageFilter extends Filter {
   final List<ImageSubFilter> subFilters;
 
-  ImageFilter({required String name})
-      : subFilters = [],
-        super(name: name);
+  ImageFilter({required super.name}) : subFilters = [];
 
   ///Apply the [SubFilter] to an Image.
   @override

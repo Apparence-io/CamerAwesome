@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:camerawesome/src/orchestrator/exceptions/camera_states_exceptions.dart';
 import 'package:camerawesome/src/orchestrator/models/camera_physical_button.dart';
 
@@ -16,10 +15,10 @@ class PreparingCameraState extends CameraState {
   final OnPermissionsResult? onPermissionsResult;
 
   PreparingCameraState(
-    CameraContext cameraContext,
+    super.cameraContext,
     this.nextCaptureMode, {
     this.onPermissionsResult,
-  }) : super(cameraContext);
+  });
 
   @override
   CaptureMode? get captureMode => null;

@@ -8,11 +8,11 @@ homepage: https://Apparence.io
 repository: https://github.com/Apparence-io/camera_awesome
 
 environment:
-  sdk: ">=3.1.0 <4.0.0"
+  sdk: '>=3.2.6 <4.0.0'
   flutter: ">=1.10.0"
 
 dependencies:
-  carousel_slider: ^4.2.1
+  carousel_slider: ^5.0.0
   collection: ^1.17.2
   colorfilter_generator: ^0.0.8
   cross_file: ^0.3.3+6
@@ -22,10 +22,10 @@ dependencies:
   path_provider: ^2.1.1
   rxdart: ^0.27.7
 dev_dependencies:
-  flutter_lints: ^2.0.1
+  flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
-  pigeon: ^9.2.5
+  pigeon: ^21.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

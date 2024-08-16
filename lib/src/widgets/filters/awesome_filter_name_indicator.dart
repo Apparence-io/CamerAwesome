@@ -5,9 +5,9 @@ class AwesomeFilterNameIndicator extends StatelessWidget {
   final CameraState state;
 
   const AwesomeFilterNameIndicator({
-    Key? key,
+    super.key,
     required this.state,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

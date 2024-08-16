@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 
 class AwesomeBouncingWidget extends StatefulWidget {
   const AwesomeBouncingWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.onTap,
     this.disabledOpacity = 0.3,
     this.vibrationEnabled = true,
     this.duration = const Duration(milliseconds: 100),
-  }) : super(key: key);
+  });
 
   final Widget child;
   final VoidCallback? onTap;
