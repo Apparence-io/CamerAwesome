@@ -1,3 +1,7 @@
+# 2.1.O
+- Update for flutter 3.24.0
+- Update dependencies (Thank you @tonistayhungrystayfoolish / @bytemaster / @millerf for the PR) 
+
 # 2.0.1
 
 - 🐛 Fix preview orientation on tablets for iOS and Android
