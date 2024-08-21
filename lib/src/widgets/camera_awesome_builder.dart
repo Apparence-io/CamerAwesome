@@ -63,6 +63,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// Enable physical button (volume +/-) to take photo or record video
   final bool enablePhysicalButton;
 
+  /// Enable or disable device rotation
+  final bool enableRotation;
+
   /// Path builders when taking photos or recording videos
   final SaveConfig? saveConfig;
 
@@ -121,6 +124,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   const CameraAwesomeBuilder._({
     required this.sensorConfig,
     required this.enablePhysicalButton,
+    required this.enableRotation,
     required this.progressIndicator,
     required this.saveConfig,
     required this.onMediaTap,
@@ -165,6 +169,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   CameraAwesomeBuilder.awesome(
       {SensorConfig? sensorConfig,
       bool enablePhysicalButton = false,
+      bool enableRotation = true,
       Widget? progressIndicator,
       required SaveConfig saveConfig,
       Function(MediaCapture)? onMediaTap,
@@ -190,6 +195,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
                 sensor: Sensor.position(SensorPosition.back),
               ),
           enablePhysicalButton: enablePhysicalButton,
+          enableRotation: enableRotation,
           progressIndicator: progressIndicator,
           builder: (cameraModeState, preview) {
             return AwesomeCameraLayout(
@@ -224,6 +230,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     SensorConfig? sensorConfig,
     bool mirrorFrontCamera = false,
     bool enablePhysicalButton = false,
+    bool enableRotation = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
     required SaveConfig saveConfig,
@@ -245,6 +252,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
                 sensor: Sensor.position(SensorPosition.back),
               ),
           enablePhysicalButton: enablePhysicalButton,
+          enableRotation: enableRotation,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: saveConfig,
@@ -269,6 +277,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   CameraAwesomeBuilder.previewOnly({
     SensorConfig? sensorConfig,
     Widget? progressIndicator,
+    bool enableRotation = true,
     required CameraLayoutBuilder builder,
     AwesomeFilter? filter,
     OnImageForAnalysis? onImageForAnalysis,
@@ -283,6 +292,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
+          enableRotation: enableRotation,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: null,
@@ -310,6 +320,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   CameraAwesomeBuilder.analysisOnly({
     SensorConfig? sensorConfig,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+    bool enableRotation = true,
     Widget? progressIndicator,
     required CameraLayoutBuilder builder,
     required OnImageForAnalysis onImageForAnalysis,
@@ -318,6 +329,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           sensorConfig: sensorConfig ??
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
+          enableRotation: enableRotation,
           progressIndicator: progressIndicator,
           builder: builder,
           saveConfig: null,
@@ -393,6 +405,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
     _cameraContext = CameraContext.create(
       widget.sensorConfig,
       enablePhysicalButton: widget.enablePhysicalButton,
+      enableRotation: widget.enableRotation,
       filter: widget.defaultFilter ?? AwesomeFilter.None,
       initialCaptureMode: widget.saveConfig?.initialCaptureMode ??
           (widget.showPreview

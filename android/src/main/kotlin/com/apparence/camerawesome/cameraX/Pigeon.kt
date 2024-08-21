@@ -759,7 +759,7 @@ private object CameraInterfaceCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface CameraInterface {
-  fun setupCamera(sensors: List<PigeonSensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, videoOptions: VideoOptions?, callback: (Result<Boolean>) -> Unit)
+  fun setupCamera(sensors: List<PigeonSensor>, aspectRatio: String, zoom: Double, mirrorFrontCamera: Boolean, enablePhysicalButton: Boolean, enableRotation: Boolean, flashMode: String, captureMode: String, enableImageStream: Boolean, exifPreferences: ExifPreferences, videoOptions: VideoOptions?, callback: (Result<Boolean>) -> Unit)
   fun checkPermissions(permissions: List<String>): List<String>
   /**
    * Returns given [CamerAwesomePermission] list (as String). Location permission might be
@@ -826,12 +826,13 @@ interface CameraInterface {
             val zoomArg = args[2] as Double
             val mirrorFrontCameraArg = args[3] as Boolean
             val enablePhysicalButtonArg = args[4] as Boolean
-            val flashModeArg = args[5] as String
-            val captureModeArg = args[6] as String
-            val enableImageStreamArg = args[7] as Boolean
-            val exifPreferencesArg = args[8] as ExifPreferences
-            val videoOptionsArg = args[9] as VideoOptions?
-            api.setupCamera(sensorsArg, aspectRatioArg, zoomArg, mirrorFrontCameraArg, enablePhysicalButtonArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg, videoOptionsArg) { result: Result<Boolean> ->
+            val enableRotationArg = args[5] as Boolean
+            val flashModeArg = args[6] as String
+            val captureModeArg = args[7] as String
+            val enableImageStreamArg = args[8] as Boolean
+            val exifPreferencesArg = args[9] as ExifPreferences
+            val videoOptionsArg = args[10] as VideoOptions?
+            api.setupCamera(sensorsArg, aspectRatioArg, zoomArg, mirrorFrontCameraArg, enablePhysicalButtonArg, enableRotationArg, flashModeArg, captureModeArg, enableImageStreamArg, exifPreferencesArg, videoOptionsArg) { result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(wrapError(error))

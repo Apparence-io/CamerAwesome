@@ -35,6 +35,8 @@ class CameraContext {
 
   final bool enablePhysicalButton;
 
+  final bool enableRotation;
+
   /// allows to create dynamic analysis using the current preview
   /// Image analysis controller. You may use it to start or stop image analysis.
   final AnalysisController? analysisController;
@@ -69,6 +71,7 @@ class CameraContext {
     required this.exifPreferences,
     required this.filterController,
     required this.enablePhysicalButton,
+    required this.enableRotation,
     required this.availableFilters,
     this.onPermissionsResult,
   }) {
@@ -91,12 +94,14 @@ class CameraContext {
     required ExifPreferences exifPreferences,
     required AwesomeFilter filter,
     required bool enablePhysicalButton,
+    required bool enableRotation,
     List<AwesomeFilter>? availableFilters,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
           filterController: BehaviorSubject.seeded(filter),
           enablePhysicalButton: enablePhysicalButton,
+          enableRotation: enableRotation,
           onPermissionsResult: onPermissionsResult,
           saveConfig: saveConfig,
           analysisController: onImageForAnalysis != null

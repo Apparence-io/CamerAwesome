@@ -17,6 +17,7 @@
                         streamImages:(BOOL)streamImages
                    mirrorFrontCamera:(BOOL)mirrorFrontCamera
                 enablePhysicalButton:(BOOL)enablePhysicalButton
+                      enableRotation:(BOOL)enableRotation
                      aspectRatioMode:(AspectRatio)aspectRatioMode
                          captureMode:(CaptureModes)captureMode
                           completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
@@ -33,6 +34,7 @@
   _mirrorFrontCamera = mirrorFrontCamera;
   _videoOptions = videoOptions;
   _recordingQuality = recordingQuality;
+  _enableRotation = enableRotation;
   
   // Creating capture session
   _captureSession = [[AVCaptureSession alloc] init];
@@ -61,11 +63,15 @@
   // Controllers init
   _videoController = [[VideoController alloc] init];
   _imageStreamController = [[ImageStreamController alloc] initWithStreamImages:streamImages];
-  _motionController = [[MotionController alloc] init];
+  if (_enableRotation) {
+    _motionController = [[MotionController alloc] init];
+  }
   _locationController = [[LocationController alloc] init];
   _physicalButtonController = [[PhysicalButtonController alloc] init];
   
-  [_motionController startMotionDetection];
+  if (_motionController != nil) {
+    [_motionController startMotionDetection];
+  }
   
   if (enablePhysicalButton) {
     [_physicalButtonController startListening];
@@ -434,7 +440,7 @@
 - (void)takePictureAtPath:(NSString *)path completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
   // Instanciate camera picture obj
   CameraPictureController *cameraPicture = [[CameraPictureController alloc] initWithPath:path
-                                                                             orientation:_motionController.deviceOrientation
+                                                                             orientation:_enableRotation ? _motionController.deviceOrientation : UIDeviceOrientationPortrait
                                                                           sensorPosition:_cameraSensorPosition
                                                                          saveGPSLocation:_saveGPSLocation
                                                                        mirrorFrontCamera:_mirrorFrontCamera
