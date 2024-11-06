@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'utils/file_utils.dart';
 
@@ -55,6 +56,7 @@ class CameraPage extends StatelessWidget {
                 event.captureRequest.when(
                   single: (single) {
                     debugPrint('Video saved: ${single.file?.path}');
+                    ImageGallerySaver.saveFile(single.file!.path);
                   },
                   multiple: (multiple) {
                     multiple.fileBySensor.forEach((key, value) {
