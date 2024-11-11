@@ -132,6 +132,19 @@ abstract class CameraState {
     cameraContext.setSensorConfig(next);
   }
 
+  /// New method added to update camera sensor directly
+  Future<Sensor> updateCameraSensor(Sensor newSensor) async {
+    final newConfig = SensorConfig.single(
+      sensor: newSensor,
+      aspectRatio: this.sensorConfig.aspectRatio,
+      zoom: this.sensorConfig.zoom,
+      flashMode: this.sensorConfig.flashMode,
+    );
+
+    await cameraContext.setSensorConfig(newConfig);
+    return newSensor;
+  }
+
   // PigeonSensorType? _sensorTypeFromPigeon(SensorType type) {
   //   switch (type) {
   //     case SensorType.wideAngle:

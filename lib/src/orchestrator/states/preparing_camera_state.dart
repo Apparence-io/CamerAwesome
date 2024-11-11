@@ -23,8 +23,11 @@ class PreparingCameraState extends CameraState {
   @override
   CaptureMode? get captureMode => null;
 
-  Future<void> start() async {
+  Future<void> start(
+      {FutureOr<void> Function(CameraState)?
+          cameraInitializationCallback}) async {
     final filter = cameraContext.filterController.valueOrNull;
+
     if (filter != null) {
       await setFilter(filter);
     }
@@ -47,10 +50,10 @@ class PreparingCameraState extends CameraState {
       // Analysis controller needs to be setup before going to AnalysisCameraState
       cameraContext.changeState(AnalysisCameraState.from(cameraContext));
     }
-
     if (cameraContext.enablePhysicalButton) {
       initPhysicalButton();
     }
+    await cameraInitializationCallback?.call(cameraContext.state);
   }
 
   /// subscription for permissions

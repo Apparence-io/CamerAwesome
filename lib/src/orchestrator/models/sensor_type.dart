@@ -14,10 +14,9 @@ enum SensorType {
   ///
   /// iOS only
   trueDepth,
-
   unknown;
 
-  SensorType get defaultSensorType => SensorType.telephoto;
+  SensorType get defaultSensorType => SensorType.wideAngle;
 }
 
 class SensorTypeDevice {
