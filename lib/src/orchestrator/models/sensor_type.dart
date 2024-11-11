@@ -17,7 +17,7 @@ enum SensorType {
 
   unknown;
 
-  SensorType get defaultSensorType => SensorType.wideAngle;
+  SensorType get defaultSensorType => SensorType.telephoto;
 }
 
 class SensorTypeDevice {
