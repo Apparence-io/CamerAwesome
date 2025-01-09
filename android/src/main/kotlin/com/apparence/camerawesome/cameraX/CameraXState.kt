@@ -27,8 +27,8 @@ import java.util.concurrent.Executor
 /// call updateLifecycle() to refresh the state
 data class CameraXState(
     private var cameraProvider: ProcessCameraProvider,
+    private val flutterEngine: FlutterEngine,
     val textureEntries: Map<String, TextureRegistry.SurfaceTextureEntry>,
-//    var cameraSelector: CameraSelector,
     var sensors: List<PigeonSensor>,
     var imageCaptures: MutableList<ImageCapture> = mutableListOf(),
     var videoCaptures: MutableMap<PigeonSensor, VideoCapture<Recorder>> = mutableMapOf(),
@@ -302,15 +302,13 @@ data class CameraXState(
 
     @SuppressLint("RestrictedApi")
     private fun surfaceProvider(executor: Executor, cameraId: String): Preview.SurfaceProvider {
-//        Log.d("SurfaceProviderCamX", "Creating surface provider for $cameraId")
         return Preview.SurfaceProvider { request: SurfaceRequest ->
             val resolution = request.resolution
-            val texture = textureEntries[cameraId]!!.surfaceTexture()
-            texture.setDefaultBufferSize(resolution.width, resolution.height)
-            val surface = Surface(texture)
+            val surfaceProducer = flutterEngine.renderer.createSurfaceProducer()
+            surfaceProducer.setSize(resolution.width, resolution.height)
+            val surface = surfaceProducer.getSurface()
             request.provideSurface(surface, executor) {
-//                Log.d("CameraX", "Surface request result: ${it.resultCode}")
-                surface.release()
+                surfaceProducer.release()
             }
         }
     }
