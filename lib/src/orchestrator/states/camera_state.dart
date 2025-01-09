@@ -1,7 +1,6 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
@@ -80,7 +79,7 @@ abstract class CameraState {
       // switch all camera position in array by one like this:
       // old: [front, telephoto, wide]
       // new : [wide, front, telephoto]
-      final newSensorsCopy = [...previous.sensors.whereNotNull()];
+      final newSensorsCopy = [...previous.sensors.nonNulls];
       next = SensorConfig.multiple(
         sensors: newSensorsCopy
           ..insert(0, newSensorsCopy.removeAt(newSensorsCopy.length - 1)),
@@ -124,7 +123,7 @@ abstract class CameraState {
             sensorIndex++;
             return sensor;
           })
-          .whereNotNull()
+          .nonNulls
           .toList(),
       aspectRatio: previous.aspectRatio,
       flashMode: previous.flashMode,
