@@ -7,6 +7,8 @@
 
 build/
 test/out/
+android_new/
+example/android_old/
 
 test_lab.sh
 firebase_key.txt
