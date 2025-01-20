@@ -359,7 +359,7 @@ SPEC CHECKSUMS:
   GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
   GTMSessionFetcher: 3a63d75eecd6aa32c2fc79f578064e1214dfdec2
-  integration_test: 13825b8a9334a850581300559b8839134b124670
+  integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   JPSVolumeButtonHandler: 53110330c9168ed325def93eabff39f0fe3e8082
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   MLImage: 7bb7c4264164ade9bf64f679b40fb29c8f33ee9b
@@ -370,7 +370,7 @@ SPEC CHECKSUMS:
   MLKitTextRecognitionCommon: 0d48930fee25cce9d52d0ba217490d4797061aa2
   MLKitVision: 8baa5f46ee3352614169b85250574fde38c36f49
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
-  path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   patrol: a7622350c42b3a944962fbfe052d07e3691789e5
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
   SwiftNIO: 829958aab300642625091f82fc2f49cb7cf4ef24
@@ -387,8 +387,8 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: 69f02cd54fb03201c5e6bf8b76f687c5ef7541a3
-  video_player_avfoundation: 02011213dab73ae3687df27ce441fbbcc82b5579
+  video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
 
 PODFILE CHECKSUM: a8b143db2d88d9458665bb11a320e286001a8119
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.16.2
