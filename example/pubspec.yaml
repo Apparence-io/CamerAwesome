@@ -32,6 +32,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  disable-swift-package-manager: true
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
