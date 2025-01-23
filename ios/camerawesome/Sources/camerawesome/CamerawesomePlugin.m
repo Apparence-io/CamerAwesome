@@ -1,5 +1,5 @@
 #import "CamerawesomePlugin.h"
-#import "Pigeon/Pigeon.h"
+#import "Pigeon.h"
 #import "Permissions.h"
 #import "SensorsController.h"
 #import "SingleCameraPreview.h"

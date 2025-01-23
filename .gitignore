@@ -8,6 +8,7 @@
 build/
 test/out/
 android_new/
+example2/
 example/android_old/
 
 test_lab.sh

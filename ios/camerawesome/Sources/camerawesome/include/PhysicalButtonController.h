@@ -6,7 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <JPSVolumeButtonHandler/JPSVolumeButtonHandler.h>
 #import <Flutter/Flutter.h>
 #import "PhysicalButton.h"
 
@@ -17,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 @property(nonatomic) FlutterEventSink physicalButtonEventSink;
-@property(nonatomic) JPSVolumeButtonHandler *volumeButtonHandler;
+// @property(nonatomic) JPSVolumeButtonHandler *volumeButtonHandler;
 
 - (instancetype)init;
 - (void)stopListening;

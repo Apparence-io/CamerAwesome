@@ -7,7 +7,8 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "MultiCameraPreview.h"
+
+// #import "MultiCameraPreview.h"
 #import "CameraPreviewTexture.h"
 #import "CameraQualities.h"
 #import "CameraDeviceInfo.h"

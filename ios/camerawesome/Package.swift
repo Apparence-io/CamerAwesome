@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,27 +6,24 @@ import PackageDescription
 let package = Package(
     name: "camerawesome",
     platforms: [
-        .iOS("12.0")
+        .iOS(.v12)
     ],
     products: [
         .library(name: "camerawesome", targets: ["camerawesome"])
     ],
-    dependencies: [],
+    dependencies: [
+
+    ],
     targets: [
         .target(
             name: "camerawesome",
             dependencies: [],
-            resources: [
-                // If your plugin requires a privacy manifest, for example if it uses any required
-                // reason APIs, update the PrivacyInfo.xcprivacy file to describe your plugin's
-                // privacy impact, and then uncomment these lines. For more information, see
-                // https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
-                // .process("PrivacyInfo.xcprivacy"),
-
-                // If you have other resources that need to be bundled with your plugin, refer to
-                // the following instructions to add them:
-                // https://developer.apple.com/documentation/xcode/bundling-resources-with-a-swift-package
+            resources: [],
+            publicHeadersPath: "",
+            cSettings: [
+                .headerSearchPath("include")
             ]
         )
     ]
 )
+
