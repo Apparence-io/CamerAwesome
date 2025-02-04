@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 /// Tap to take a photo example, with almost no UI
 class CustomUiExample2 extends StatelessWidget {
@@ -14,7 +12,7 @@ class CustomUiExample2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
-        builder: (cameraState, previewSize, previewRect) {
+        builder: (cameraState, preview) {
           return Stack(
             children: [
               const Positioned.fill(
@@ -55,14 +53,7 @@ class CustomUiExample2 extends StatelessWidget {
             ],
           );
         },
-        saveConfig: SaveConfig.photo(
-          pathBuilder: () async {
-            final Directory extDir = await getTemporaryDirectory();
-            final testDir =
-                await Directory('${extDir.path}/test').create(recursive: true);
-            return '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-          },
-        ),
+        saveConfig: SaveConfig.photo(),
         onPreviewTapBuilder: (state) => OnPreviewTap(
           onTap: (Offset position, PreviewSize flutterPreviewSize,
               PreviewSize pixelPreviewSize) {

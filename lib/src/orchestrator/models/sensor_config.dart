@@ -3,17 +3,15 @@
 import 'dart:async';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
+// TODO find a way to explain that this sensorconfig is not bound anymore (user changed sensor for example)
 class SensorConfig {
   late BehaviorSubject<FlashMode> _flashModeController;
 
   late BehaviorSubject<SensorType> _sensorTypeController;
 
   late Stream<FlashMode> flashMode$;
-
-  late Stream<AwesomeFilter> filter$;
 
   late Stream<SensorType> sensorType$;
 
@@ -25,9 +23,7 @@ class SensorConfig {
   late Stream<double> zoom$;
 
   /// [back] or [front] camera
-  final Sensors sensor;
-
-  final String? captureDeviceId;
+  final List<Sensor> sensors;
 
   // /// choose your photo size from the [selectDefaultSize] method
   // late Stream<Size?> previewSize;
@@ -42,11 +38,33 @@ class SensorConfig {
       BehaviorSubject<double>();
   StreamSubscription? _brightnessSubscription;
 
-  SensorConfig({
-    required this.sensor,
+  SensorConfig.single({
+    Sensor? sensor,
+    FlashMode flashMode = FlashMode.none,
+    double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+  }) : this._(
+          sensors: [sensor ?? Sensor.position(SensorPosition.back)],
+          flash: flashMode,
+          currentZoom: zoom,
+          aspectRatio: aspectRatio,
+        );
+
+  SensorConfig.multiple({
+    required List<Sensor> sensors,
+    FlashMode flashMode = FlashMode.none,
+    double zoom = 0.0,
+    CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
+  }) : this._(
+          sensors: sensors,
+          flash: flashMode,
+          currentZoom: zoom,
+          aspectRatio: aspectRatio,
+        );
+
+  SensorConfig._({
+    required this.sensors,
     FlashMode flash = FlashMode.none,
-    SensorType type = SensorType.wideAngle,
-    this.captureDeviceId,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
 
     /// Zoom must be between 0.0 (no zoom) and 1.0 (max zoom)
@@ -55,7 +73,8 @@ class SensorConfig {
     _flashModeController = BehaviorSubject<FlashMode>.seeded(flash);
     flashMode$ = _flashModeController.stream;
 
-    _sensorTypeController = BehaviorSubject<SensorType>.seeded(type);
+    _sensorTypeController = BehaviorSubject<SensorType>.seeded(
+        sensors.first.type ?? SensorType.wideAngle);
     sensorType$ = _sensorTypeController.stream;
 
     _zoomController = BehaviorSubject<double>.seeded(currentZoom);
@@ -74,16 +93,18 @@ class SensorConfig {
       throw "Zoom value must be between 0 and 1";
     }
     await CamerawesomePlugin.setZoom(zoom);
-    _zoomController.sink.add(zoom);
+    if (!_zoomController.isClosed) {
+      _zoomController.sink.add(zoom);
+    }
   }
 
   /// Returns the current zoom without stream
   double get zoom => _zoomController.value;
 
-  /// Set manually the CameraFlashes between
+  /// Set manually the [FlashMode] between
   /// [FlashMode.none] no flash
   /// [FlashMode.on] always flashing when taking photo
-  /// [FlashMode.auto] let the decide wether or not using the flash
+  /// [FlashMode.auto] let the camera decide if it should use flash or not
   /// [FlashMode.always] flash light stays open
   Future<void> setFlashMode(FlashMode flashMode) async {
     await CamerawesomePlugin.setFlashMode(flashMode);
@@ -150,10 +171,6 @@ class SensorConfig {
 
   /// Returns the current brightness without stream
   double get brightness => _brightnessController.value;
-
-  /// Only available on Android
-  Stream<SensorData>? get luminosityLevelStream =>
-      CamerawesomePlugin.listenLuminosityLevel();
 
   void dispose() {
     _brightnessSubscription?.cancel();

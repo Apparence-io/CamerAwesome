@@ -1,17 +1,14 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
-import 'package:camerawesome/pigeon.dart';
 import 'package:flutter/material.dart';
 
 class DrivableCamera extends StatelessWidget {
   final SaveConfig saveConfig;
-  final Sensors sensor;
-  final ExifPreferences? exifPreferences;
+  final List<Sensor> sensors;
 
   const DrivableCamera({
     super.key,
     required this.saveConfig,
-    required this.sensor,
-    this.exifPreferences,
+    required this.sensors,
   });
 
   @override
@@ -21,8 +18,9 @@ class DrivableCamera extends StatelessWidget {
         body: CameraAwesomeBuilder.awesome(
           saveConfig: saveConfig,
           onMediaTap: (media) {},
-          sensor: sensor,
-          exifPreferences: exifPreferences,
+          sensorConfig: sensors.length == 1
+              ? SensorConfig.single(sensor: sensors.first)
+              : SensorConfig.multiple(sensors: sensors),
         ),
       ),
     );

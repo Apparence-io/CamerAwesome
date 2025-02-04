@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera_app/widgets/mini_video_player.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class CustomMediaPreview extends StatelessWidget {
@@ -52,24 +53,67 @@ class CustomMediaPreview extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Platform.isIOS
-                ? const CupertinoActivityIndicator()
-                : const CircularProgressIndicator(),
+                ? const CupertinoActivityIndicator(color: Colors.white)
+                : const CircularProgressIndicator(color: Colors.white),
           ),
         );
       case MediaCaptureStatus.success:
         if (mediaCapture!.isPicture) {
-          return Ink.image(
-            fit: BoxFit.cover,
-            image: ResizeImage(
-              FileImage(
-                File(mediaCapture.filePath),
+          if (kIsWeb) {
+            // TODO Check if that works
+            return FutureBuilder<Uint8List>(
+                future: mediaCapture.captureRequest.when(
+                  single: (single) => single.file!.readAsBytes(),
+                  multiple: (multiple) =>
+                      multiple.fileBySensor.values.first!.readAsBytes(),
+                ),
+                builder: (_, snapshot) {
+                  if (snapshot.hasData) {
+                    return Image.memory(
+                      snapshot.requireData,
+                      fit: BoxFit.cover,
+                      width: 300,
+                    );
+                  } else {
+                    return Platform.isIOS
+                        ? const CupertinoActivityIndicator(
+                            color: Colors.white,
+                          )
+                        : const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.0,
+                            ),
+                          );
+                  }
+                });
+          } else {
+            return Image(
+              fit: BoxFit.cover,
+              image: ResizeImage(
+                FileImage(
+                  File(
+                    mediaCapture.captureRequest.when(
+                      single: (single) => single.file!.path,
+                      multiple: (multiple) =>
+                          multiple.fileBySensor.values.first!.path,
+                    ),
+                  ),
+                ),
+                width: 300,
               ),
-              width: 300,
-            ),
-          );
+            );
+          }
         } else {
           return Ink(
-            child: MiniVideoPlayer(filePath: mediaCapture.filePath),
+            child: MiniVideoPlayer(
+              filePath: mediaCapture.captureRequest.when(
+                single: (single) => single.file!.path,
+                multiple: (multiple) =>
+                    multiple.fileBySensor.values.first!.path,
+              ),
+            ),
           );
         }
       case MediaCaptureStatus.failure:

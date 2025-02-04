@@ -92,7 +92,7 @@
   for(int i = 0; i < formats.count; i++) {
     AVCaptureDeviceFormat *format = formats[i];
     [qualities addObject:
-       [PreviewSize makeWithWidth:[NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width] height:[NSNumber numberWithInt:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height]]
+       [PreviewSize makeWithWidth:[NSNumber numberWithDouble:CMVideoFormatDescriptionGetDimensions(format.formatDescription).width] height:[NSNumber numberWithDouble:CMVideoFormatDescriptionGetDimensions(format.formatDescription).height]]
     ];
   }
   return qualities;

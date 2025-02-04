@@ -1,9 +1,8 @@
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-
-import '../camera_context.dart';
 
 typedef OnVideoMode = Function(VideoCameraState);
 
@@ -12,6 +11,10 @@ typedef OnPhotoMode = Function(PhotoCameraState);
 typedef OnPreparingCamera = Function(PreparingCameraState);
 
 typedef OnVideoRecordingMode = Function(VideoRecordingCameraState);
+
+typedef OnPreviewMode = Function(PreviewCameraState);
+
+typedef OnAnalysisOnlyMode = Function(AnalysisCameraState);
 
 abstract class CameraState {
   // TODO Make private
@@ -27,19 +30,18 @@ abstract class CameraState {
     OnPhotoMode? onPhotoMode,
     OnPreparingCamera? onPreparingCamera,
     OnVideoRecordingMode? onVideoRecordingMode,
+    OnPreviewMode? onPreviewMode,
+    OnAnalysisOnlyMode? onAnalysisOnlyMode,
   }) {
-    if (this is VideoCameraState && onVideoMode != null) {
-      return onVideoMode(this as VideoCameraState);
-    }
-    if (this is PhotoCameraState && onPhotoMode != null) {
-      return onPhotoMode(this as PhotoCameraState);
-    }
-    if (this is PreparingCameraState && onPreparingCamera != null) {
-      return onPreparingCamera(this as PreparingCameraState);
-    }
-    if (this is VideoRecordingCameraState && onVideoRecordingMode != null) {
-      return onVideoRecordingMode(this as VideoRecordingCameraState);
-    }
+    return switch (this) {
+      (VideoCameraState state) => onVideoMode?.call(state),
+      (PhotoCameraState state) => onPhotoMode?.call(state),
+      (PreparingCameraState state) => onPreparingCamera?.call(state),
+      (VideoRecordingCameraState state) => onVideoRecordingMode?.call(state),
+      (PreviewCameraState state) => onPreviewMode?.call(state),
+      (AnalysisCameraState state) => onAnalysisOnlyMode?.call(state),
+      CameraState() => null,
+    };
   }
 
   /// Closes streams depending on the current state
@@ -51,24 +53,100 @@ abstract class CameraState {
   /// Accessible from all states
   Stream<MediaCapture?> get captureState$ => cameraContext.captureState$;
 
+  MediaCapture? get captureState => cameraContext.captureState;
+
   /// Switch camera from [Sensors.BACK] [Sensors.front]
   /// All states can switch this
-  void switchCameraSensor() {
+  Future<void> switchCameraSensor({
+    CameraAspectRatios? aspectRatio,
+    double? zoom,
+    FlashMode? flash,
+    SensorType? type,
+  }) async {
     final previous = cameraContext.sensorConfig;
-    final next = SensorConfig(
-      sensor: previous.sensor == Sensors.back ? Sensors.front : Sensors.back,
+
+    SensorConfig next;
+    if (previous.sensors.length <= 1) {
+      next = SensorConfig.single(
+        sensor: previous.sensors.first.position == SensorPosition.back
+            ? Sensor.position(SensorPosition.front)
+            : Sensor.position(SensorPosition.back),
+        // TODO Initial values are not set in native when set like this
+        aspectRatio: aspectRatio ?? CameraAspectRatios.ratio_4_3,
+        zoom: zoom ?? 0.0,
+        flashMode: flash ?? FlashMode.none,
+      );
+    } else {
+      // switch all camera position in array by one like this:
+      // old: [front, telephoto, wide]
+      // new : [wide, front, telephoto]
+      final newSensorsCopy = [...previous.sensors.whereNotNull()];
+      next = SensorConfig.multiple(
+        sensors: newSensorsCopy
+          ..insert(0, newSensorsCopy.removeAt(newSensorsCopy.length - 1)),
+        // TODO Initial values are not set in native when set like this
+        aspectRatio: aspectRatio ?? CameraAspectRatios.ratio_4_3,
+        zoom: zoom ?? 0.0,
+        flashMode: flash ?? FlashMode.none,
+      );
+    }
+    await cameraContext.setSensorConfig(next);
+
+    // TODO Once initial sensorConfig is correctly handled, we can remove below lines
+    if (aspectRatio != null) {
+      await next.setAspectRatio(aspectRatio);
+    }
+    if (zoom != null) {
+      await next.setZoom(zoom);
+    }
+    if (flash != null) {
+      await next.setFlashMode(flash);
+    }
+  }
+
+  void setSensorType(int cameraPosition, SensorType type, String deviceId) {
+    final previous = cameraContext.sensorConfig;
+    int sensorIndex = 0;
+    final next = SensorConfig.multiple(
+      sensors: previous.sensors
+          .map((sensor) {
+            if (sensorIndex == cameraPosition) {
+              if (sensor.type == SensorType.trueDepth) {
+                sensor.position = SensorPosition.front;
+              } else {
+                sensor.position = SensorPosition.back;
+              }
+
+              sensor.deviceId = deviceId;
+              sensor.type = type;
+            }
+
+            sensorIndex++;
+            return sensor;
+          })
+          .whereNotNull()
+          .toList(),
+      aspectRatio: previous.aspectRatio,
+      flashMode: previous.flashMode,
+      zoom: previous.zoom,
     );
     cameraContext.setSensorConfig(next);
   }
 
-  void setSensorType(SensorType type, String deviceId) {
-    final next = SensorConfig(
-      captureDeviceId: deviceId,
-      sensor: type == SensorType.trueDepth ? Sensors.front : Sensors.back,
-      type: type,
-    );
-    cameraContext.setSensorConfig(next);
-  }
+  // PigeonSensorType? _sensorTypeFromPigeon(SensorType type) {
+  //   switch (type) {
+  //     case SensorType.wideAngle:
+  //       return PigeonSensorType.wideAngle;
+  //     case SensorType.telephoto:
+  //       return PigeonSensorType.telephoto;
+  //     case SensorType.trueDepth:
+  //       return PigeonSensorType.trueDepth;
+  //     case SensorType.ultraWideAngle:
+  //       return PigeonSensorType.ultraWideAngle;
+  //     default:
+  //       return null;
+  //   }
+  // }
 
   void toggleFilterSelector() {
     cameraContext.toggleFilterSelector();
@@ -99,18 +177,18 @@ abstract class CameraState {
   /// - [CaptureMode.ANALYSIS]
   void setState(CaptureMode captureMode);
 
-  SaveConfig get saveConfig => cameraContext.saveConfig;
+  SaveConfig? get saveConfig => cameraContext.saveConfig;
 
-  Future<PreviewSize> previewSize() {
-    return cameraContext.previewSize();
+  Future<PreviewSize> previewSize(int index) {
+    return cameraContext.previewSize(index);
   }
 
   Future<SensorDeviceData> getSensors() {
     return cameraContext.getSensors();
   }
 
-  Future<int?> textureId() {
-    return cameraContext.textureId();
+  Future<int?> previewTextureId(int cameraPosition) {
+    return cameraContext.previewTextureId(cameraPosition);
   }
 
   AnalysisController? get analysisController =>

@@ -1,0 +1,332 @@
+## Detecting faces
+
+![Read barcodes](/img/face_ai.gif)
+
+With MLKit, detecting faces is very similar to scanning barcodes.
+Instead of a ```BarcodeScanner```, you need to use a ```FaceDetector```.
+However, if you want to draw a mask on top of the face for example, things get more complicated.
+Let's see how it can be done with CamerAwesome in ```ai_analysis_faces.dart```.
+
+First, you need to use MLKit's face detection library:
+``` dart
+google_mlkit_face_detection: ^0.5.5
+```
+
+Next you'll need a `FaceDetector`:
+``` dart
+final options = FaceDetectorOptions(
+  enableContours: true,
+  enableClassification: true,
+  enableLandmarks: true,
+);
+late final faceDetector = FaceDetector(options: options);
+```
+
+MLKit is now ready, let's setup CamerAwesome.
+
+### CamerAwesome setup
+
+``` dart
+// 1.
+CameraAwesomeBuilder.previewOnly(
+  // 2.
+  previewFit: CameraPreviewFit.contain,
+  sensorConfig: SensorConfig.single(
+    sensor: Sensor.position(SensorPosition.front),
+    aspectRatio: CameraAspectRatios.ratio_1_1,
+  ),
+  // 3.
+  onImageForAnalysis: (img) => _analyzeImage(img),
+  // 4.
+  imageAnalysisConfig: AnalysisConfig(
+    androidOptions: const AndroidAnalysisOptions.nv21(
+      width: 250,
+    ),
+    maxFramesPerSecond: 5, // depending on your phone performances
+  ),
+  // 5.
+  builder: (state, previewSize, previewRect) {
+    return _MyPreviewDecoratorWidget(
+      cameraState: state,
+      faceDetectionStream: _faceDetectionController,
+      previewSize: previewSize,
+      previewRect: previewRect,
+    );
+  },
+)
+```
+
+1. In this example, we just want to draw face contours above the preview. There is no need for other elements in the UI, so we use the `previewOnly()` constructor.
+2. (Optional) Next arguments determine that we want an aspect ratio of 1:1 that is contained in the screen (CameraPreviewFit.contain) and that the starting sensor is the front one.
+3. ```onImageForAnalysis``` is called whenever a new `AnalysisImage` is available. That's where you might want to try to detect faces.
+4. Provide your ```AnalysisConfig```. You don't need an high resolution to detect faces and it will be much faster with a low resolution. For good performances, we also set maxFramesPerSecond to 20.
+7. Draw your UI in the `builder`. If you want to draw above the preview, `previewSize` and `previewRect` will be useful.
+
+Now let's see how the face detection is done.
+
+
+### Detecting faces in an AnalysisImage
+
+Most complicated part of the detection is to convert an `AnalysisImage` to an `InputImage`.
+To do that, we've created an extension function in the example project:
+```dart
+import 'package:camerawesome/camerawesome_plugin.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+
+extension MLKitUtils on AnalysisImage {
+  InputImage toInputImage() {
+    // 1.
+    final planeData =
+        when(nv21: (img) => img.planes, bgra8888: (img) => img.planes)?.map(
+      (plane) {
+        return InputImagePlaneMetadata(
+          bytesPerRow: plane.bytesPerRow,
+          height: height,
+          width: width,
+        );
+      },
+    ).toList();
+
+    // 2.
+    return when(nv21: (image) {
+      // 3.
+      return InputImage.fromBytes(
+          bytes: image.bytes,
+          metadata: InputImageMetadata(
+            rotation: inputImageRotation,
+            format: InputImageFormat.nv21,
+            size: image.size,
+            bytesPerRow: image.planes.first.bytesPerRow,
+          ),
+        );
+    }, bgra8888: (image) {
+      // 4. 
+      final inputImageData = InputImageData(
+        size: size,
+        imageRotation: inputImageRotation,
+        inputImageFormat: inputImageFormat,
+        planeData: planeData,
+      );
+
+      // 5.
+      return InputImage.fromBytes(
+        bytes: image.bytes,
+        inputImageData: inputImageData,
+      );
+    })!;
+  }
+
+  InputImageRotation get inputImageRotation =>
+      InputImageRotation.values.byName(rotation.name);
+
+  InputImageFormat get inputImageFormat {
+    switch (format) {
+      case InputAnalysisImageFormat.bgra8888:
+        return InputImageFormat.bgra8888;
+      case InputAnalysisImageFormat.nv21:
+        return InputImageFormat.nv21;
+      default:
+        return InputImageFormat.yuv420;
+    }
+  }
+}
+```
+
+Let's break down the above code:
+1. Get the planes from the `AnalysisImage` and map them to `InputImagePlaneMetadata`.
+2. Use the `when()` function to handle both Android and iOS cases.
+3. Convert the `Nv21Image` to MLKit's `InputImage`
+4. Define the `InputImageData` for the `InputImage` on iOS.
+5. Convert the `Bgra8888Image` to MLKit's `InputImage` thanks to `InputImageData`.
+
+
+Thanks to this extension function, we can now easily convert an `AnalysisImage` to an `InputImage` and use it to detect faces:
+``` dart
+Future _analyzeImage(AnalysisImage img) async {
+  // 1.
+  final inputImage = img.toInputImage();
+
+  try {
+    // 2.
+    _faceDetectionController.add(
+      FaceDetectionModel(
+        faces: await faceDetector.processImage(inputImage),
+        absoluteImageSize: inputImage.inputImageData!.size,
+        rotation: 0,
+        imageRotation: img.inputImageRotation,
+        croppedSize: img.croppedSize,
+      ),
+    );
+  } catch (error) {
+    debugPrint("...sending image resulted error $error");
+  }
+}
+```
+
+This code snippet is quite short:
+1. Use our extension function to convert `AnalysisImage` to `InputImage`.
+2. Give the `InputImage` to MLKit's `FaceDetector` to eventually detect faces. Next, wrap these in a model that is added to a stream.
+
+The result of the face detection will be handled by a `StreamBuilder`: each time a new result is emitted, the UI will be updated with this result.
+
+
+### Drawing face contours
+
+Now that our model is ready, we can focus on the UI code.
+
+First, take a look at `_MyPreviewDecoratorWidget`:
+
+``` dart
+class _MyPreviewDecoratorWidget extends StatelessWidget {
+  final CameraState cameraState;
+  final Stream<FaceDetectionModel> faceDetectionStream;
+  final Preview preview;
+
+  const _MyPreviewDecoratorWidget({
+    required this.cameraState,
+    required this.faceDetectionStream,
+    required this.preview,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: StreamBuilder(
+        // 1.
+        stream: cameraState.sensorConfig$,
+        builder: (_, snapshot) {
+          if (!snapshot.hasData) {
+            return const SizedBox();
+          } else {
+            return StreamBuilder<FaceDetectionModel>(
+              // 2.
+              stream: faceDetectionStream,
+              builder: (_, faceModelSnapshot) {
+                if (!faceModelSnapshot.hasData) return const SizedBox();
+                // this is the transformation needed to convert the image to the preview
+                // Android mirrors the preview but the analysis image is not
+                final canvasTransformation = faceModelSnapshot.data!.img
+                    ?.getCanvasTransformation(preview);
+                // 3.
+                return CustomPaint(
+                  painter: FaceDetectorPainter(
+                    model: faceModelSnapshot.requireData,
+                    canvasTransformation: canvasTransformation,
+                    preview: preview,
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+```
+Here is a break through of the above code:
+1. Listen to the `sensorConfig$` stream. This will be used to determine if it's the front or back camera.
+Indeed, image analysis on Android is not mirrored but the preview is. In this case, we will need to make adjustments.
+2. Listen to `faceDetectionStream`. Results of the face detection are emitted to this stream and we want to rebuild the UI each time there is a new result.
+3. Widgets are not sufficient enough to be able to draw contours out of the box. A CustomPainter is the way to go here.
+
+Now let's see how our `FaceDetectorPainter` works by looking at its `paint()` method.
+
+``` dart
+@override
+void paint(Canvas canvas, Size size) {
+  if (preview == null || model.img == null) {
+      return;
+    }
+    // 1
+    // We apply the canvas transformation to the canvas so that the barcode
+    // rect is drawn in the correct orientation. (Android only)
+    if (canvasTransformation != null) {
+      canvas.save();
+      canvas.applyTransformation(canvasTransformation!, size);
+    }
+    // 2
+    for (final Face face in model.faces) {
+      // 3  
+      Map<FaceContourType, Path> paths = {
+        for (var fct in FaceContourType.values) fct: Path()
+      };
+      // 4
+      face.contours.forEach((contourType, faceContour) {
+        if (faceContour != null) {
+          // 5
+          paths[contourType]!.addPolygon(
+              faceContour.points
+                  .map(
+                    (element) => preview!.convertFromImage(
+                      Offset(element.x.toDouble(), element.y.toDouble()),
+                      model.img!,
+                    ),
+                  )
+                  .toList(),
+              true);
+          // 6
+          for (var element in faceContour.points) {
+            var position = preview!.convertFromImage(
+              Offset(element.x.toDouble(), element.y.toDouble()),
+              model.img!,
+            );
+            canvas.drawCircle(
+              position,
+              4,
+              Paint()..color = Colors.blue,
+            );
+          }
+        }
+      });
+      // 7
+      paths.removeWhere((key, value) => value.getBounds().isEmpty);
+      // 8
+      for (var p in paths.entries) {
+        canvas.drawPath(
+            p.value,
+            Paint()
+              ..color = Colors.orange
+              ..strokeWidth = 2
+              ..style = PaintingStyle.stroke);
+      }
+    }
+    // if you want to draw again without canvas transformation, use this:
+    if (canvasTransformation != null) {
+      canvas.restore();
+    }
+}
+```
+Here is a short break through of the above code:
+1. On Android, image rotation and the fact that the image is not mirrored on the front camera implies to make some calculations on the canvas to position properly the elements.
+2. Handle each face detected
+3. Initialize a map of each contourType to an empty Path that will be eventually filled later.
+4. Iterate over the contours of the face.
+5. Add points of the contour to a Path as a polygon. In a real world scenario, you might want to proceed differently.
+6. Draw a circle at each contour's points coordinates in blue.
+7. Filter the contours not found.
+8. Draw the contours that we found in orange.
+
+
+## Canvas applyTransformation
+
+```dart
+canvas applyTransformation(canvasTransformation!, size);
+```
+
+Here what it does
+
+Let's explain what's going on:
+1. The image from image analysis might not reflect what is seen on the camera preview due to a difference between their aspect ratio.
+For instance, image analysis could return a picture in 600x800 (ratio 3:4) while the camera preview could be at 1000x1000.
+The croppedSize is the part of the imageAnalysis that is visible in the cameraPreview. It would be 600x600 for the above example.
+`imageDiffX` and `imageDiffY` are here to transpose MLKit's points coordinates in the part of the image analysis that is visible in the camera preview.
+2. absoluteImageSize width and height are inverted on Android.
+3. Transposition of the point coordinates in the image analysis to its cropped equivalent.
+4. Ratio between the preview and the cropped image size. Example: a point at (300, 300) of the image analysis which size is 600x600 would become (500, 500) for a preview size of 1000x1000.
+5. The painter size might be taller or wider than the preview size (or its equivalent, croppedSize * ratio). In these cases, the preview is centered. The position should be translated accordingly.
+
+
+Drawing on top of the preview is definitively the more complicated part here, but as you saw it is still doable ✌️
+
+See the [complete example](https://github.com/Apparence-io/camera_awesome/blob/master/example/lib/ai_analysis_faces.dart) if you need more details.

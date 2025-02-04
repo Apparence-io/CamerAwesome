@@ -2,7 +2,8 @@
 #dart pub global activate patrol_cli
 
 # Run all tests
-patrol drive --target integration_test/bundled_test.dart
+#patrol drive --target integration_test/bundled_test.dart
+patrol test --target integration_test/bundled_test.dart
 
 # Or only run specific tests
 #patrol drive \

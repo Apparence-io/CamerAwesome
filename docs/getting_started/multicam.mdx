@@ -1,0 +1,188 @@
+# 📷 📷 Multiple cameras at once (🚧 BETA)
+
+To enable concurrent cameras feature, you need to give `CameraAwesomeBuilder` a `SensorConfig` with multiple sensors:
+
+```dart
+CameraAwesomeBuilder.awesome(
+    // 1.
+    sensorConfig: SensorConfig.multiple(
+        // 2.
+        sensors: [
+            Sensor.position(SensorPosition.back),
+            Sensor.position(SensorPosition.front),
+        ],
+        // 3.
+        flashMode: FlashMode.auto,
+        aspectRatio: CameraAspectRatios.ratio_16_9,
+    ),
+    // Other params
+)
+```
+
+The main points of interest are the following:
+
+1. Instead of using the `SensorConfig.single` constructor, use `SensorConfig.multiple`.
+2. This constructor lets you define a list of sensors instead of a single one.
+3. Then, you can set regular sensor parameters like `flashMode` or `aspectRatio`.
+
+## Feature support
+
+Not all devices support the concurrent cameras feature. Keep in mind that it can be resource intensive.
+
+Check the following method to determine if the feature is supported on the current device:
+
+```dart
+final isSupported = await CamerawesomePlugin.isMultiCamSupported()
+```
+
+## Customizing the picture-in-picture preview
+
+The `pictureInPictureConfigBuilder` parameter lets you customize the preview of the additional sensors.
+
+A `PictureInPictureConfigBuilder` is a function that is called with the index of the sensor and the sensor itself as parameters and returns a `PictureInPictureConfig` object.
+
+Here is a sample code taken from the `multi_camera.dart` example:
+
+```dart
+CameraAwesomeBuilder.awesome(
+ pictureInPictureConfigBuilder: (index, sensor) {
+      const width = 200.0;
+      return PictureInPictureConfig(
+        // 1.
+        isDraggable: false,
+        // 2.
+        startingPosition: Offset(
+          screenSize.width - width - 20.0 * index,
+          screenSize.height - 356,
+        ),
+        // 3.
+        sensor: sensor,
+        // 4.
+        onTap: (){
+          print('on preview tap');
+        },
+        // 5.
+        pictureInPictureBuilder: (preview, aspectRatio) {
+          return SizedBox(
+            width: width,
+            height: width,
+            child: ClipPath(
+              clipper: _MyCustomPipClipper(
+                width: width,
+                height: width * aspectRatio,
+                shape: shape,
+              ),
+              child: SizedBox(
+                width: width,
+                // 6.
+                child: preview,
+              ),
+            ),
+          );
+        },
+      );
+    },
+)
+```
+
+Let's break it down:
+
+1. Define if you want the preview to be draggable or not using the `isDraggable` parameter.
+2. Choose the `startingPosition` of the preview. You may adjust it depending on the index of the sensor.
+3. Set for which `sensor` this preview is.
+4. Add an `onTap` callback.
+5. Customize how you want the preview to be displayed using the `pictureInPictureBuilder`. This builder must display the `preview` widget. You may also use the `aspectRatio` of the preview to adjust the size of the widget.
+
+## Get the list of sensors
+
+You can get the list of all the sensors available on iOS with:
+
+```dart
+final sensorDeviceData = await CamerawesomePlugin.getSensors();
+```
+
+## Maximum number of concurrent cameras
+
+Although the code lets you define any number of sensors, each platform has its limits regarding the number of cameras you can open simultaneously.
+
+| Platform | Max number of cameras |
+| -------- | --------------------- |
+| Android  | 2                     |
+| iOS      | 3                     |
+
+Providing more cameras may result in unexpected behaviour.
+
+
+## Capturing multiple pictures
+
+You can capture multiple pictures at once with the regular `takePhoto()` method:
+
+```dart
+await photoCameraState.takePhoto();
+```
+
+Then, listen to `cameraState.captureState$` in order to retrieve the last medias captured.
+
+A `MediaCapture` object contains a `CaptureRequest` which might be either a `SingleCaptureRequest` or a `MultipleCaptureRequest`, depending on the number of sensors used.
+
+You can use the `when` operator to deal with this or directly cast it to one of the mentionned classes.
+
+Here is an example which handles the preview tap:
+
+```dart
+CameraAwesomeBuilder.awesome(
+    ...
+    onMediaTap: (mediaCapture) {
+        mediaCapture.captureRequest.when(
+        // 1.
+        single: (single) => OpenFile.open(single.file?.path),
+        // 2.
+        multiple: (multiple) => Navigator.of(context).pushNamed(
+                '/gallery',
+                arguments: multiple,
+            ),
+        );
+    },
+)
+```
+In this example, we use the `when` operator to handle each case:
+1. If it's a `SingleCaptureRequest`, we open the file directly.
+2. If it's a `MultipleCaptureRequest`, we navigate to a new page and pass the `MultipleCaptureRequest` object as an argument. This page could be used to display all the pictures taken for instance.
+
+
+
+## Capturing multiple videos
+
+Concurrent camera video recording support is not ready yet.
+
+
+## Limitations
+
+### Sensor settings
+
+Sensor settinigs like `flashMode` or `aspectRatio` are only applied to the first sensor in the list (let's call it the main sensor).
+
+### Sensors used on Android
+
+The sensors used are not necessarly the ones given in the list of sensors.
+
+There is a concept of pairs of concurrent cameras on this platform which implies that only some specific pairs will be compatible with each other.
+
+For now, the sensors used are always one from the front and one from the back of the device.
+
+### Analysis mode with concurrent cameras
+
+This feature is not ready yet and might not be as good as you would expect: it would require even more resources.
+
+### Differences between pictures taken and Preview
+
+The preview shows the additional sensors as picture-in-picture.
+
+This is not what is captured by CamerAwesome: instead, a picture for each sensor is individually captured.
+
+For now, you are responsible to merge them into one picture (or use a `Widget` to position each image as you want).
+
+
+## 🗣️ Feedback
+
+If you are using this feature or have any feedback regarding it, please share it with us in a [new issue](https://github.com/Apparence-io/CamerAwesome/issues/new/choose).

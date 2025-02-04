@@ -14,21 +14,23 @@
 }
 
 - (instancetype)initWithPath:(NSString *)path
-                 orientation:(NSInteger)orientation
-                      sensor:(CameraSensor)sensor
-             saveGPSLocation:(bool)saveGPSLocation
-                 aspectRatio:(AspectRatio)aspectRatio
-                  completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
-                    callback:(OnPictureTaken)callback {
+                     orientation:(NSInteger)orientation
+                  sensorPosition:(PigeonSensorPosition)sensorPosition
+                 saveGPSLocation:(bool)saveGPSLocation
+               mirrorFrontCamera:(bool)mirrorFrontCamera
+                     aspectRatio:(AspectRatio)aspectRatio
+                      completion:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion
+                        callback:(OnPictureTaken)callback {
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
   _path = path;
   _completion = completion;
   _orientation = orientation;
   _completionBlock = callback;
-  _sensor = sensor;
+  _sensorPosition = sensorPosition;
   _saveGPSLocation = saveGPSLocation;
   _aspectRatioType = aspectRatio;
+  _mirrorFrontCamera = mirrorFrontCamera;
   
   if (aspectRatio == Ratio4_3) {
     _aspectRatio = 4.0/3.0;
@@ -153,19 +155,25 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
     newCropWidth = (newCropHeight * size.width)/size.height;
   }
   
-  double x = image.size.width/2.0 - newCropWidth/2.0;
-  double y = image.size.height/2.0 - newCropHeight/2.0;
+  double imageHeightDivided = image.size.height/2.0;
+  double imageWidthDivided = image.size.width/2.0;
+  
+  double x = imageWidthDivided - newCropWidth/2.0;
+  double y = imageHeightDivided - newCropHeight/2.0;
   
   CGRect cropRect;
   if (UIDeviceOrientationIsLandscape(_orientation)) {
     cropRect = CGRectMake(x, y, newCropWidth, newCropHeight);
   } else {
-    
     if (_aspectRatioType == Ratio16_9) {
       cropRect = CGRectMake(0, 0, image.size.height, image.size.width);
     } else {
-      // TODO: crop on 4:3 portrait mode not working
-      cropRect = CGRectMake(y, x, newCropWidth, newCropHeight);
+      if (_aspectRatioType == Ratio4_3) {
+        double localX = imageHeightDivided - (imageHeightDivided / _aspectRatio);
+        cropRect = CGRectMake(localX, 0, image.size.height / _aspectRatio, image.size.width);
+      } else {
+        cropRect = CGRectMake(y, x, newCropWidth, newCropHeight);
+      }
     }
   }
   
@@ -180,17 +188,17 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
 - (UIImageOrientation)getJpegOrientation {
   switch (_orientation) {
     case UIDeviceOrientationPortrait:
-      return (_sensor == Back) ? UIImageOrientationRight : UIImageOrientationLeftMirrored;
-      break;
+      if (self.sensorPosition == PigeonSensorPositionFront && _mirrorFrontCamera) {
+        return UIImageOrientationLeftMirrored;
+      } else {
+        return UIImageOrientationRight;
+      }
     case UIDeviceOrientationLandscapeRight:
-      return (_sensor == Back) ? UIImageOrientationUp : UIImageOrientationDown;
-      break;
+      return (self.sensorPosition == PigeonSensorPositionBack) ? UIImageOrientationUp : UIImageOrientationDown;
     case UIDeviceOrientationLandscapeLeft:
-      return (_sensor == Back) ? UIImageOrientationDown : UIImageOrientationUp;
-      break;
+      return (self.sensorPosition == PigeonSensorPositionBack) ? UIImageOrientationDown : UIImageOrientationUp;
     default:
       return UIImageOrientationLeft;
-      break;
   }
 }
 

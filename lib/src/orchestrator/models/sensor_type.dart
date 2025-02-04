@@ -75,6 +75,15 @@ class SensorDeviceData {
     this.trueDepth,
   });
 
+  List<SensorTypeDevice> get availableSensors {
+    return [
+      wideAngle,
+      ultraWideAngle,
+      telephoto,
+      trueDepth,
+    ].where((element) => element != null).cast<SensorTypeDevice>().toList();
+  }
+
   int get availableBackSensors => [
         wideAngle,
         ultraWideAngle,

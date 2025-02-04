@@ -10,10 +10,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface PermissionsController : NSObject
+@interface CameraPermissionsController : NSObject
 
-+ (BOOL)checkCameraPermission;
-+ (BOOL)checkMicrophonePermission;
++ (BOOL)checkPermission;
++ (BOOL)checkAndRequestPermission;
+
+@end
+
+@interface MicrophonePermissionsController : NSObject
+
++ (BOOL)checkPermission;
++ (BOOL)checkAndRequestPermission;
 
 @end
 

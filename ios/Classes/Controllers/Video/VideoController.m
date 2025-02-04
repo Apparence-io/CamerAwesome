@@ -23,7 +23,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - User video interactions
 
 /// Start recording video at given path
-- (void)recordVideoAtPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options quality:(VideoRecordingQuality)quality completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+  _options = options;
+  _recordingQuality = quality;
+  
   // Create audio & video writer
   if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
     completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video at path" details:path]);
@@ -37,10 +40,22 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _audioTimeOffset = CMTimeMake(0, 1);
   _videoIsDisconnected = NO;
   _audioIsDisconnected = NO;
+  _orientation = orientation;
+  _captureDevice = device;
+  
+  // Change video FPS if provided
+  if (_options && _options.fps != nil && _options.fps > 0) {
+    [self adjustCameraFPS:_options.fps];
+  }
 }
 
 /// Stop recording video
 - (void)stopRecordingVideo:(nonnull void (^)(NSNumber * _Nullable, FlutterError * _Nullable))completion {
+  if (_options && _options.fps != nil && _options.fps > 0) {
+    // Reset camera FPS
+    [self adjustCameraFPS:@(30)];
+  }
+  
   if (_isRecording) {
     _isRecording = NO;
     if (_videoWriter.status != AVAssetWriterStatusUnknown) {
@@ -68,7 +83,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 # pragma mark - Audio & Video writers
 
 /// Setup video channel & write file on path
-- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(VideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
+- (BOOL)setupWriterForPath:(NSString *)path audioSetupCallback:(OnAudioSetup)audioSetupCallback options:(CupertinoVideoOptions *)options completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   NSError *error = nil;
   NSURL *outputURL;
   if (path != nil) {
@@ -83,12 +98,16 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   // Read from options if available
   AVVideoCodecType codecType = [self getBestCodecTypeAccordingOptions:options];
   AVFileType fileType = [self getBestFileTypeAccordingOptions:options];
+  CGSize videoSize = [self getBestVideoSizeAccordingQuality: _recordingQuality];
+    
+  NSDictionary *videoSettings = @{
+    AVVideoCodecKey   : codecType,
+    AVVideoWidthKey   : @(videoSize.height),
+    AVVideoHeightKey  : @(videoSize.width),
+  };
   
-  NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:codecType, AVVideoCodecKey,[NSNumber numberWithInt:_previewSize.height], AVVideoWidthKey,
-                                 [NSNumber numberWithInt:_previewSize.width], AVVideoHeightKey,
-                                 nil];
-  _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo
-                                                         outputSettings:videoSettings];
+  _videoWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+  [_videoWriterInput setTransform:[self getVideoOrientation]];
   
   _videoAdaptor = [AVAssetWriterInputPixelBufferAdaptor
                    assetWriterInputPixelBufferAdaptorWithAssetWriterInput:_videoWriterInput
@@ -132,17 +151,38 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   return YES;
 }
 
+- (CGAffineTransform)getVideoOrientation {
+  CGAffineTransform transform;
+  
+  switch ([[UIDevice currentDevice] orientation]) {
+    case UIDeviceOrientationLandscapeLeft:
+      transform = CGAffineTransformMakeRotation(-M_PI_2);
+      break;
+    case UIDeviceOrientationLandscapeRight:
+      transform = CGAffineTransformMakeRotation(M_PI_2);
+      break;
+    case UIDeviceOrientationPortraitUpsideDown:
+      transform = CGAffineTransformMakeRotation(M_PI);
+      break;
+    default:
+      transform = CGAffineTransformIdentity;
+      break;
+  }
+  
+  return transform;
+}
+
 /// Append audio data
 - (void)newAudioSample:(CMSampleBufferRef)sampleBuffer {
   if (_videoWriter.status != AVAssetWriterStatusWriting) {
     if (_videoWriter.status == AVAssetWriterStatusFailed) {
-//      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error];
+      //      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"writing video failed" details:_videoWriter.error];
     }
     return;
   }
   if (_audioWriterInput.readyForMoreMediaData) {
     if (![_audioWriterInput appendSampleBuffer:sampleBuffer]) {
-//      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error];
+      //      *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"adding audio channel failed" details:_videoWriter.error];
     }
   }
 }
@@ -163,6 +203,24 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   return sout;
 }
 
+/// Adjust video preview & recording to specified FPS
+- (void)adjustCameraFPS:(NSNumber *)fps {
+  NSArray *frameRateRanges = _captureDevice.activeFormat.videoSupportedFrameRateRanges;
+  
+  if (frameRateRanges.count > 0) {
+    AVFrameRateRange *frameRateRange = frameRateRanges.firstObject;
+    NSError *error = nil;
+    
+    if ([_captureDevice lockForConfiguration:&error]) {
+      CMTime frameDuration = CMTimeMake(1, [fps intValue]);
+      if (CMTIME_COMPARE_INLINE(frameDuration, <=, frameRateRange.maxFrameDuration) && CMTIME_COMPARE_INLINE(frameDuration, >=, frameRateRange.minFrameDuration)) {
+        _captureDevice.activeVideoMinFrameDuration = frameDuration;
+      }
+      [_captureDevice unlockForConfiguration];
+    }
+  }
+}
+
 # pragma mark - Camera Delegates
 - (void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection captureVideoOutput:(AVCaptureVideoDataOutput *)captureVideoOutput {
   
@@ -171,7 +229,7 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   }
   
   if (_videoWriter.status == AVAssetWriterStatusFailed) {
-//    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
+    //    _result([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"impossible to write video " details:_videoWriter.error]);
     return;
   }
   
@@ -236,52 +294,107 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
 # pragma mark - Settings converters
 
-- (AVFileType)getBestFileTypeAccordingOptions:(VideoOptions *)options {
+- (AVFileType)getBestFileTypeAccordingOptions:(CupertinoVideoOptions *)options {
   AVFileType fileType = AVFileTypeQuickTimeMovie;
   
   if (options && options != (id)[NSNull null]) {
-    NSString *type = options.fileType;
-    if ([type isEqualToString:@"quickTimeMovie"]) {
-      fileType = AVFileTypeQuickTimeMovie;
-    } else if ([type isEqualToString:@"mpeg4"]) {
-      fileType = AVFileTypeMPEG4;
-    } else if ([type isEqualToString:@"appleM4V"]) {
-      fileType = AVFileTypeAppleM4V;
-    } else if ([type isEqualToString:@"type3GPP"]) {
-      fileType = AVFileType3GPP;
-    } else if ([type isEqualToString:@"type3GPP2"]) {
-      fileType = AVFileType3GPP2;
+    CupertinoFileType type = options.fileType;
+    switch (type) {
+      case CupertinoFileTypeQuickTimeMovie:
+        fileType = AVFileTypeQuickTimeMovie;
+        break;
+      case CupertinoFileTypeMpeg4:
+        fileType = AVFileTypeMPEG4;
+        break;
+      case CupertinoFileTypeAppleM4V:
+        fileType = AVFileTypeAppleM4V;
+        break;
+      case CupertinoFileTypeType3GPP:
+        fileType = AVFileType3GPP;
+        break;
+      case CupertinoFileTypeType3GPP2:
+        fileType = AVFileType3GPP2;
+        break;
+      default:
+        break;
     }
   }
   
   return fileType;
 }
 
-- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(VideoOptions *)options {
+- (AVVideoCodecType)getBestCodecTypeAccordingOptions:(CupertinoVideoOptions *)options {
   AVVideoCodecType codecType = AVVideoCodecTypeH264;
   if (options && options != (id)[NSNull null]) {
-    NSString *codec = options.codec;
-    if ([codec isEqualToString:@"h264"]) {
-      codecType = AVVideoCodecTypeH264;
-    } else if ([codec isEqualToString:@"hevc"]) {
-      codecType = AVVideoCodecTypeHEVC;
-    } else if ([codec isEqualToString:@"hevcWithAlpha"]) {
-      codecType = AVVideoCodecTypeHEVCWithAlpha;
-    } else if ([codec isEqualToString:@"jpeg"]) {
-      codecType = AVVideoCodecTypeJPEG;
-    } else if ([codec isEqualToString:@"appleProRes4444"]) {
-      codecType = AVVideoCodecTypeAppleProRes4444;
-    } else if ([codec isEqualToString:@"appleProRes422"]) {
-      codecType = AVVideoCodecTypeAppleProRes422;
-    } else if ([codec isEqualToString:@"appleProRes422HQ"]) {
-      codecType = AVVideoCodecTypeAppleProRes422HQ;
-    } else if ([codec isEqualToString:@"appleProRes422LT"]) {
-      codecType = AVVideoCodecTypeAppleProRes422LT;
-    } else if ([codec isEqualToString:@"appleProRes422Proxy"]) {
-      codecType = AVVideoCodecTypeAppleProRes422Proxy;
+    CupertinoCodecType codec = options.codec;
+    switch (codec) {
+      case CupertinoCodecTypeH264:
+        codecType = AVVideoCodecTypeH264;
+        break;
+      case CupertinoCodecTypeHevc:
+        codecType = AVVideoCodecTypeHEVC;
+        break;
+      case CupertinoCodecTypeHevcWithAlpha:
+        codecType = AVVideoCodecTypeHEVCWithAlpha;
+        break;
+      case CupertinoCodecTypeJpeg:
+        codecType = AVVideoCodecTypeJPEG;
+        break;
+      case CupertinoCodecTypeAppleProRes4444:
+        codecType = AVVideoCodecTypeAppleProRes4444;
+        break;
+      case CupertinoCodecTypeAppleProRes422:
+        codecType = AVVideoCodecTypeAppleProRes422;
+        break;
+      case CupertinoCodecTypeAppleProRes422HQ:
+        codecType = AVVideoCodecTypeAppleProRes422HQ;
+        break;
+      case CupertinoCodecTypeAppleProRes422LT:
+        codecType = AVVideoCodecTypeAppleProRes422LT;
+        break;
+      case CupertinoCodecTypeAppleProRes422Proxy:
+        codecType = AVVideoCodecTypeAppleProRes422Proxy;
+        break;
+      default:
+        break;
     }
   }
   return codecType;
+}
+
+- (CGSize)getBestVideoSizeAccordingQuality:(VideoRecordingQuality)quality {
+  CGSize size;
+  switch (quality) {
+    case VideoRecordingQualityUhd:
+    case VideoRecordingQualityHighest:
+      if (@available(iOS 9.0, *)) {
+        if ([_captureDevice supportsAVCaptureSessionPreset:AVCaptureSessionPreset3840x2160]) {
+          size = CGSizeMake(3840, 2160);
+        } else {
+          size = CGSizeMake(1920, 1080);
+        }
+      } else {
+        return CGSizeMake(1920, 1080);
+      }
+      break;
+    case VideoRecordingQualityFhd:
+      size = CGSizeMake(1920, 1080);
+      break;
+    case VideoRecordingQualityHd:
+      size = CGSizeMake(1280, 720);
+      break;
+    case VideoRecordingQualitySd:
+    case VideoRecordingQualityLowest:
+      size = CGSizeMake(960, 540);
+      break;
+  }
+    
+  // ensure video output size does not exceed capture session size
+  if (size.width > _previewSize.width) {
+    size = _previewSize;
+  }
+  
+  return size;
 }
 
 # pragma mark - Setter

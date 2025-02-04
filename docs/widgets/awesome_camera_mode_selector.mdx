@@ -4,9 +4,11 @@
 
 Switch between PHOTO and VIDEO mode easily with this widget.
 
-If you are using `CameraAwesomeBuilder.awesome()` builder, you are already using it behind the scene.
+If you are using `CameraAwesomeBuilder.awesome()` builder with no customization on the UI, you are already using it behind the scene.
 
-However, if you made your own custom UI using `CameraAwesomeBuilder.custom()`, this is how you might want to use it:
+However, if you made your own custom UI using `CameraAwesomeBuilder.custom()` or you've set up a different `middleContentBuilder` in `CameraAwesomeBuiilder.awesome()`, you may want to use it.
+
+Here is an example:
 
 ``` dart
 CameraAwesomeBuilder.custom(

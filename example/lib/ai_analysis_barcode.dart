@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:camera_app/utils/mlkit_utils.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 
 void main() {
@@ -51,17 +49,16 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CameraAwesomeBuilder.custom(
-        saveConfig:
-            SaveConfig.photo(pathBuilder: () => _path(CaptureMode.photo)),
+      body: CameraAwesomeBuilder.previewOnly(
         onImageForAnalysis: (img) => _processImageBarcode(img),
         imageAnalysisConfig: AnalysisConfig(
-          outputFormat: InputAnalysisImageFormat.nv21,
-          width: 1024,
+          androidOptions: const AndroidAnalysisOptions.nv21(
+            width: 1024,
+          ),
           maxFramesPerSecond: 5,
           autoStart: false,
         ),
-        builder: (cameraModeState, previewSize, previewRect) {
+        builder: (cameraModeState, preview) {
           return _BarcodeDisplayWidget(
             barcodesStream: _barcodesStream,
             scrollController: _scrollController,
@@ -73,49 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _processImageBarcode(AnalysisImage img) async {
-    final Size imageSize = Size(img.width.toDouble(), img.height.toDouble());
-
-    final InputImageRotation imageRotation =
-        InputImageRotation.values.byName(img.rotation.name);
-
-    final planeData = img.planes.map(
-      (plane) {
-        return InputImagePlaneMetadata(
-          bytesPerRow: plane.bytesPerRow,
-          height: img.height,
-          width: img.width,
-        );
-      },
-    ).toList();
-
-    final InputImage inputImage;
-    if (Platform.isIOS) {
-      final inputImageData = InputImageData(
-        size: imageSize,
-        imageRotation: imageRotation, // FIXME: seems to be ignored on iOS...
-        inputImageFormat: _inputImageFormat(img.format),
-        planeData: planeData,
-      );
-
-      final WriteBuffer allBytes = WriteBuffer();
-      for (final ImagePlane plane in img.planes) {
-        allBytes.putUint8List(plane.bytes);
-      }
-      final bytes = allBytes.done().buffer.asUint8List();
-
-      inputImage =
-          InputImage.fromBytes(bytes: bytes, inputImageData: inputImageData);
-    } else {
-      inputImage = InputImage.fromBytes(
-        bytes: img.nv21Image!,
-        inputImageData: InputImageData(
-          imageRotation: imageRotation,
-          inputImageFormat: InputImageFormat.nv21,
-          planeData: planeData,
-          size: Size(img.width.toDouble(), img.height.toDouble()),
-        ),
-      );
-    }
+    final inputImage = img.toInputImage();
 
     try {
       var recognizedBarCodes = await _barcodeScanner.processImage(inputImage);
@@ -144,28 +99,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     } catch (err) {
       debugPrint("...logging error $err");
-    }
-  }
-
-  Future<String> _path(CaptureMode captureMode) async {
-    final Directory extDir = await getTemporaryDirectory();
-    final testDir =
-        await Directory('${extDir.path}/test').create(recursive: true);
-    final String fileExtension =
-        captureMode == CaptureMode.photo ? 'jpg' : 'mp4';
-    final String filePath =
-        '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
-    return filePath;
-  }
-
-  InputImageFormat _inputImageFormat(InputAnalysisImageFormat format) {
-    switch (format) {
-      case InputAnalysisImageFormat.bgra8888:
-        return InputImageFormat.bgra8888;
-      case InputAnalysisImageFormat.nv21:
-        return InputImageFormat.nv21;
-      default:
-        return InputImageFormat.yuv420;
     }
   }
 }

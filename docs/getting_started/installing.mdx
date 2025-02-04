@@ -1,10 +1,10 @@
 ## 📖 Installation
 
-### Add the package in your pubspec.yaml 
+### Add the package in your pubspec.yaml
 
 ```yaml
 dependencies:
-    camerawesome: ^1.0.0-rc3
+    camerawesome: ^2.0.0
     ...
 ```
 
@@ -14,7 +14,7 @@ dependencies:
 
 #### iOS Setup
 
-Add these permissions on ```ios/Runner/Info.plist``` file:
+Add these permissions on `ios/Runner/Info.plist` file:
 
 ```xml
 <key>NSCameraUsageDescription</key>
@@ -27,17 +27,22 @@ Add these permissions on ```ios/Runner/Info.plist``` file:
 <string>To enable GPS location access for Exif data</string>
 ```
 
-
 #### Android Setup
 
-Change the minimum SDK version to 21 (or higher) in ```android/app/build.gradle```
+Change the minimum SDK version to 21 (or higher) in `android/app/build.gradle`
 
 ```
 minSdkVersion 21
 ```
 
-ìf you want to record videos with audio, add this permission to your `AndroidManifest.xml`:
-``` xml
+In order to be able to take pictures or record videos, you may need additional permissions depending on the Android version and where you want to save them.
+Read more about it in the [official documentation](https://developer.android.com/training/data-storage).
+
+> `WRITE_EXTERNAL_STORAGE` is not included in the plugin starting with version 1.4.0.
+
+To record videos with audio, add this permission to your `AndroidManifest.xml`:
+
+```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.yourpackage">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -47,7 +52,8 @@ minSdkVersion 21
 ```
 
 You may also want to save location of your pictures in exif metadata. In this case, add below permissions:
-``` xml
+
+```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.yourpackage">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -63,7 +69,7 @@ You may also want to save location of your pictures in exif metadata. In this ca
 Some of the dependencies used by CamerAwesome can be overriden if you have a conflict.
 Change these variables to define which version you want to use:
 
-``` gradle
+```gradle
 buildscript {
     ext.kotlin_version = '1.7.10'
     ext {
@@ -76,6 +82,7 @@ buildscript {
     // ...
 }
 ```
+
 Only change these variables if you are sure of what you are doing.
 
 For example, setting the Play Services Location version might help you when you have conflicts with other plugins.
@@ -87,11 +94,10 @@ java.lang.IncompatibleClassChangeError: Found interface com.google.android.gms.l
 
 </details>
 
-
 ### Import the package in your Flutter app
+
 ```dart
 import 'package:camerawesome/camerawesome_plugin.dart';
 ```
-
 
 You are now ready to use CamerAwesome 👌

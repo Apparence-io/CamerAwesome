@@ -1,27 +1,27 @@
-import 'dart:io';
-import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:image/image.dart' as img;
-import 'package:photofilters/photofilters.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
+import 'package:camerawesome/src/orchestrator/states/handlers/filter_handler.dart';
+import 'package:camerawesome/src/photofilters/filters/filters.dart';
+import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../camera_context.dart';
-
 class PhotoFilterModel {
-  PhotoFilterModel(this.path, this.imageFile, this.filter);
+  PhotoFilterModel(this.captureRequest, this.filter);
 
-  final String path;
-  final File imageFile;
+  final CaptureRequest captureRequest;
   final Filter filter;
 }
 
+/// Callback to get the CaptureRequest after the photo has been taken
+typedef OnPhotoCallback = Function(CaptureRequest request);
+
+typedef OnPhotoFailedCallback = Function(Exception exception);
+
 /// When Camera is in Image mode
 class PhotoCameraState extends CameraState {
-  Isolate? photoFilterIsolate;
-
   PhotoCameraState({
     required CameraContext cameraContext,
     required this.filePathBuilder,
@@ -34,11 +34,11 @@ class PhotoCameraState extends CameraState {
 
   factory PhotoCameraState.from(CameraContext orchestrator) => PhotoCameraState(
         cameraContext: orchestrator,
-        filePathBuilder: orchestrator.saveConfig.photoPathBuilder!,
+        filePathBuilder: orchestrator.saveConfig!.photoPathBuilder!,
         exifPreferences: orchestrator.exifPreferences,
       );
 
-  final FilePathBuilder filePathBuilder;
+  final CaptureRequestBuilder filePathBuilder;
 
   final ExifPreferences exifPreferences;
 
@@ -67,39 +67,47 @@ class PhotoCameraState extends CameraState {
   ///
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> takePhoto() async {
-    String path = await filePathBuilder();
-    if (!path.endsWith(".jpg")) {
-      throw ("You can only capture .jpg files with CamerAwesome");
+  Future<CaptureRequest> takePhoto({
+    OnPhotoCallback? onPhoto,
+    OnPhotoFailedCallback? onPhotoFailed,
+  }) async {
+    CaptureRequest captureRequest =
+        await filePathBuilder(sensorConfig.sensors.whereNotNull().toList());
+    final mediaCapture = MediaCapture.capturing(captureRequest: captureRequest);
+    if (!mediaCapture.isPicture) {
+      throw ("CaptureRequest must be a picture. ${captureRequest.when(
+        single: (single) => single.file!.path,
+        multiple: (multiple) => multiple.fileBySensor.values.first!.path,
+      )}");
     }
-    _mediaCapture = MediaCapture.capturing(filePath: path);
+    _mediaCapture = mediaCapture;
     try {
-      final succeeded = await CamerawesomePlugin.takePhoto(path);
+      final succeeded = await CamerawesomePlugin.takePhoto(captureRequest);
       if (succeeded) {
-        // TODO if iOS can do it on native side, we could remove both photofilters and image packages dependencies
-        if (Platform.isIOS && filter.id != AwesomeFilter.None.id) {
-          photoFilterIsolate?.kill(priority: Isolate.immediate);
+        await FilterHandler().apply(
+          captureRequest: captureRequest,
+          filter: filter,
+        );
 
-          ReceivePort port = ReceivePort();
-          photoFilterIsolate = await Isolate.spawn<PhotoFilterModel>(
-            applyFilter,
-            PhotoFilterModel(path, File(path), filter.output),
-            onExit: port.sendPort,
-          );
-          await port.first;
-
-          photoFilterIsolate?.kill(priority: Isolate.immediate);
-        }
-
-        _mediaCapture = MediaCapture.success(filePath: path);
+        _mediaCapture = MediaCapture.success(captureRequest: captureRequest);
+        onPhoto?.call(captureRequest);
       } else {
-        _mediaCapture = MediaCapture.failure(filePath: path);
+        _mediaCapture = MediaCapture.failure(captureRequest: captureRequest);
+        onPhotoFailed?.call(Exception("Failed to take photo"));
       }
     } on Exception catch (e) {
-      _mediaCapture = MediaCapture.failure(filePath: path, exception: e);
+      _mediaCapture = MediaCapture.failure(
+        captureRequest: captureRequest,
+        exception: e,
+      );
     }
-    return path;
+    return captureRequest;
   }
+
+  bool get hasFilters => cameraContext.availableFilters?.isNotEmpty ?? false;
+
+  List<AwesomeFilter>? get availableFilters =>
+      cameraContext.availableFilters?.toList();
 
   /// PRIVATES
 
@@ -130,40 +138,13 @@ class PhotoCameraState extends CameraState {
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
+    AndroidFocusSettings? androidFocusSettings,
   }) {
     return cameraContext.focusOnPoint(
       flutterPosition: flutterPosition,
       pixelPreviewSize: pixelPreviewSize,
       flutterPreviewSize: flutterPreviewSize,
+      androidFocusSettings: androidFocusSettings,
     );
   }
-}
-
-Future<File> applyFilter(PhotoFilterModel model) async {
-  final img.Image? image = img.decodeJpg(model.imageFile.readAsBytesSync());
-  if (image == null) {
-    throw MediaCapture.failure(
-      exception: Exception("could not decode image"),
-      filePath: model.path,
-    );
-  }
-
-  final pixels = image.getBytes();
-  model.filter.apply(pixels, image.width, image.height);
-  final img.Image out = img.Image.fromBytes(
-    width: image.width,
-    height: image.height,
-    bytes: pixels.buffer,
-  );
-
-  final List<int>? encodedImage = img.encodeNamedImage(model.path, out);
-  if (encodedImage == null) {
-    throw MediaCapture.failure(
-      exception: Exception("could not encode image"),
-      filePath: model.path,
-    );
-  }
-
-  model.imageFile.writeAsBytesSync(encodedImage);
-  return model.imageFile;
 }

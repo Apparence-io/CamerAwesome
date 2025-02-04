@@ -2,7 +2,6 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
-import android.util.Log
 import android.util.Size
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageAnalysis
@@ -67,22 +66,24 @@ class ImageAnalysisBuilder private constructor(
         val imageAnalysis = ImageAnalysis.Builder().setTargetResolution(Size(width, height))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888).build()
-        Log.d("AnalysisAZER", "maxFps: $maxFramesPerSecond")
         imageAnalysis.setAnalyzer(Dispatchers.IO.asExecutor()) { imageProxy ->
             if (previewStreamSink == null) {
                 return@setAnalyzer
             }
-            Log.d("WXCVBN", "image analysis image...")
             when (format) {
                 OutputImageFormat.JPEG -> {
                     val jpegImage = ImageUtil.yuvImageToJpegByteArray(
-                        imageProxy, Rect(0, 0, imageProxy.width, imageProxy.height), 80
+                        imageProxy,
+                        Rect(0, 0, imageProxy.width, imageProxy.height),
+                        80,
+                        imageProxy.imageInfo.rotationDegrees
                     )
                     val imageMap = imageProxyBaseAdapter(imageProxy)
                     imageMap["jpegImage"] = jpegImage
                     imageMap["cropRect"] = cropRect(imageProxy)
                     executor.execute { previewStreamSink?.success(imageMap) }
                 }
+
                 OutputImageFormat.YUV_420_888 -> {
                     val planes = imagePlanesAdapter(imageProxy)
                     val imageMap = imageProxyBaseAdapter(imageProxy)
@@ -90,6 +91,7 @@ class ImageAnalysisBuilder private constructor(
                     imageMap["cropRect"] = cropRect(imageProxy)
                     executor.execute { previewStreamSink?.success(imageMap) }
                 }
+
                 OutputImageFormat.NV21 -> {
                     val nv21Image = ImageUtil.yuv_420_888toNv21(imageProxy)
                     val planes = imagePlanesAdapter(imageProxy)

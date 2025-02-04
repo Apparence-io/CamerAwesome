@@ -1,6 +1,5 @@
 package com.example.camera_app;
 
-
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import pl.leancode.patrol.PatrolTestRule;

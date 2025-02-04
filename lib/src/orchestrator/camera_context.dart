@@ -6,7 +6,6 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-import 'package:camerawesome/src/orchestrator/models/sensor_type.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// This class handle the current state of the camera
@@ -30,11 +29,18 @@ class CameraContext {
 
   final CaptureMode initialCaptureMode;
 
-  /// this is where we are going to store any photo
-  final SaveConfig saveConfig;
+  /// Configuration holding path builders for taking pictures and recording
+  /// videos. May be null if in [CaptureMode.analysisOnly] or [CaptureMode.preview].
+  final SaveConfig? saveConfig;
+
+  final bool enablePhysicalButton;
 
   /// allows to create dynamic analysis using the current preview
+  /// Image analysis controller. You may use it to start or stop image analysis.
   final AnalysisController? analysisController;
+
+  /// List of available filters
+  final List<AwesomeFilter>? availableFilters;
 
   /// Preferences concerning Exif (photos metadata)
   ExifPreferences exifPreferences;
@@ -46,6 +52,8 @@ class CameraContext {
   Stream<CameraState> get state$ => stateController.stream;
 
   Stream<MediaCapture?> get captureState$ => mediaCaptureController.stream;
+
+  MediaCapture? get captureState => mediaCaptureController.stream.value;
 
   CameraState get state => stateController.value;
 
@@ -60,6 +68,8 @@ class CameraContext {
     required this.saveConfig,
     required this.exifPreferences,
     required this.filterController,
+    required this.enablePhysicalButton,
+    required this.availableFilters,
     this.onPermissionsResult,
   }) {
     var preparingState = PreparingCameraState(
@@ -75,15 +85,18 @@ class CameraContext {
     SensorConfig sensorConfig, {
     required CaptureMode initialCaptureMode,
     OnPermissionsResult? onPermissionsResult,
-    required SaveConfig saveConfig,
+    required SaveConfig? saveConfig,
     OnImageForAnalysis? onImageForAnalysis,
     AnalysisConfig? analysisConfig,
     required ExifPreferences exifPreferences,
     required AwesomeFilter filter,
+    required bool enablePhysicalButton,
+    List<AwesomeFilter>? availableFilters,
   }) : this._(
           initialCaptureMode: initialCaptureMode,
           sensorConfigController: BehaviorSubject.seeded(sensorConfig),
           filterController: BehaviorSubject.seeded(filter),
+          enablePhysicalButton: enablePhysicalButton,
           onPermissionsResult: onPermissionsResult,
           saveConfig: saveConfig,
           analysisController: onImageForAnalysis != null
@@ -93,10 +106,13 @@ class CameraContext {
                 )
               : null,
           exifPreferences: exifPreferences,
+          availableFilters: availableFilters,
         );
 
   changeState(CameraState newState) async {
+    final currentZoom = state.sensorConfig.zoom;
     state.dispose();
+
     if (state.captureMode != newState.captureMode) {
       // This should not be done multiple times for the same CaptureMode or it
       // generates problems (especially when recording a video)
@@ -112,6 +128,7 @@ class CameraContext {
       filterController.add(AwesomeFilter.None);
       filterSelectorOpened.add(false);
     }
+    newState.sensorConfig.setZoom(currentZoom);
   }
 
   Future<void> toggleFilterSelector() async {
@@ -129,8 +146,9 @@ class CameraContext {
         !identical(newConfig, sensorConfigController.value)) {
       sensorConfigController.value.dispose();
     }
-    await CamerawesomePlugin.setSensor(newConfig.sensor,
-        deviceId: newConfig.captureDeviceId);
+    await CamerawesomePlugin.setSensor(
+      newConfig.sensors,
+    );
   }
 
   SensorConfig get sensorConfig {
@@ -144,7 +162,7 @@ class CameraContext {
     sensorConfigController.close();
     mediaCaptureController.close();
     stateController.close();
-    analysisController?.close();
+    analysisController?.stop();
     state.dispose();
     CamerawesomePlugin.stop();
   }
@@ -154,10 +172,18 @@ class CameraContext {
     CamerawesomePlugin.startAutoFocus();
   }
 
+  /// Start auto focus on a specific [flutterPosition].
+  /// [pixelPreviewSize] can be retrieved from [CameraState.previewSize].
+  /// [flutterPreviewSize] is the size of the preview widget. You can retrieve
+  /// it from the builders of [CameraAwesomeBuilder].
+  ///
+  /// Use [androidFocusSettings] for additional Android focus settings (auto
+  /// focus timeout before going back to passive mode).
   Future<void> focusOnPoint({
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
+    AndroidFocusSettings? androidFocusSettings,
   }) async {
     if (Platform.isIOS) {
       final xPercentage = flutterPosition.dx / flutterPreviewSize.width;
@@ -166,26 +192,31 @@ class CameraContext {
       return CamerawesomePlugin.focusOnPoint(
         position: Offset(xPercentage, yPercentage),
         previewSize: pixelPreviewSize,
+        androidFocusSettings: null,
       );
     } else {
       final ratio = pixelPreviewSize.height / flutterPreviewSize.height;
       // Transform flutter position to pixel position
       Offset pixelPosition = flutterPosition.scale(ratio, ratio);
       return CamerawesomePlugin.focusOnPoint(
-          position: pixelPosition, previewSize: pixelPreviewSize);
+        position: pixelPosition,
+        previewSize: pixelPreviewSize,
+        androidFocusSettings: androidFocusSettings ??
+            AndroidFocusSettings(autoCancelDurationInMillis: 5000),
+      );
     }
   }
 
-  Future<PreviewSize> previewSize() {
-    return CamerawesomePlugin.getEffectivPreviewSize();
+  Future<PreviewSize> previewSize(int index) {
+    return CamerawesomePlugin.getEffectivPreviewSize(index);
   }
 
   Future<SensorDeviceData> getSensors() {
     return CamerawesomePlugin.getSensors();
   }
 
-  Future<int?> textureId() {
-    return CamerawesomePlugin.getPreviewTexture()
+  Future<int?> previewTextureId(int cameraPosition) {
+    return CamerawesomePlugin.getPreviewTexture(cameraPosition)
         .then(((value) => value?.toInt()));
   }
 }

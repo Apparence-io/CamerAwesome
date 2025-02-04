@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
-
-import '../camera_context.dart';
+import 'package:camerawesome/src/orchestrator/camera_context.dart';
+import 'package:collection/collection.dart';
 
 /// When Camera is in Video mode
 class VideoCameraState extends CameraState {
@@ -15,10 +15,10 @@ class VideoCameraState extends CameraState {
   factory VideoCameraState.from(CameraContext cameraContext) =>
       VideoCameraState(
         cameraContext: cameraContext,
-        filePathBuilder: cameraContext.saveConfig.videoPathBuilder!,
+        filePathBuilder: cameraContext.saveConfig!.videoPathBuilder!,
       );
 
-  final FilePathBuilder filePathBuilder;
+  final CaptureRequestBuilder filePathBuilder;
 
   @override
   void setState(CaptureMode captureMode) {
@@ -33,20 +33,22 @@ class VideoCameraState extends CameraState {
 
   /// You can listen to [cameraSetup.mediaCaptureStream] to get updates
   /// of the photo capture (capturing, success/failure)
-  Future<String> startRecording() async {
-    String filePath = await filePathBuilder();
+  Future<CaptureRequest> startRecording() async {
+    CaptureRequest captureRequest =
+        await filePathBuilder(sensorConfig.sensors.whereNotNull().toList());
     _mediaCapture = MediaCapture.capturing(
-        filePath: filePath, videoState: VideoState.started);
+        captureRequest: captureRequest, videoState: VideoState.started);
     try {
-      await CamerawesomePlugin.recordVideo(filePath);
+      await CamerawesomePlugin.recordVideo(captureRequest);
     } on Exception catch (e) {
-      _mediaCapture = MediaCapture.failure(filePath: filePath, exception: e);
+      _mediaCapture =
+          MediaCapture.failure(captureRequest: captureRequest, exception: e);
     }
     cameraContext.changeState(VideoRecordingCameraState.from(cameraContext));
-    return filePath;
+    return captureRequest;
   }
 
-  /// Wether the video recording should [enableAudio].
+  /// If the video recording should [enableAudio].
   /// This method applies to the next recording. If a recording is ongoing, it will not be affected.
   // TODO Add ability to mute temporarly a video recording
   Future<void> enableAudio(bool enableAudio) {
@@ -74,11 +76,13 @@ class VideoCameraState extends CameraState {
     required Offset flutterPosition,
     required PreviewSize pixelPreviewSize,
     required PreviewSize flutterPreviewSize,
+    AndroidFocusSettings? androidFocusSettings,
   }) {
     return cameraContext.focusOnPoint(
       flutterPosition: flutterPosition,
       pixelPreviewSize: pixelPreviewSize,
       flutterPreviewSize: flutterPreviewSize,
+      androidFocusSettings: androidFocusSettings,
     );
   }
 }

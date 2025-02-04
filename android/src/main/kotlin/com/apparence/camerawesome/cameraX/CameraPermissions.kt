@@ -150,7 +150,6 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
             }
         }
         return declaredPermissions
-
     }
 
     fun hasPermission(activity: Activity, permissions: List<String>): Boolean {

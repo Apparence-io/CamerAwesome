@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="detect_faces" type="FlutterRunConfigurationType"
+        factoryName="Flutter">
+        <option name="filePath" value="$PROJECT_DIR$/example/lib/ai_analysis_faces.dart" />
+        <method v="2" />
+    </configuration>
+</component>

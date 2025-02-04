@@ -1,0 +1,67 @@
+# 🎨 Theming
+
+You can customize the look and feel of CamerAwesome's built-in widgets by setting your own theme.
+
+It can be used both in `CameraAwesomeBuilder.awesome()` and `CameraAwesomeBuilder.custom()` constructors.
+
+Included buttons (Flash button, aspect ratio...) are black with a white icon and they bounce when you tap them.
+
+You can completely change them if you set a new `AwesomeTheme`:
+
+Example:
+
+```dart
+CameraAwesomeBuilder.awesome(
+  theme: AwesomeTheme(
+    // Background color of the bottom actions
+    bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+    // Buttons theme
+    buttonTheme: AwesomeButtonTheme(
+      // Background color of the button
+      backgroundColor: Colors.deepPurple.withOpacity(0.5),
+      // Size of the icon
+      iconSize: 32,
+      // Padding around the icon
+      padding: const EdgeInsets.all(18),
+      // Color of the icon
+      foregroundColor: Colors.lightBlue,
+      // Tap visual feedback (ripple, bounce...)
+      buttonBuilder: (child, onTap) {
+        return ClipOval(
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              splashColor: Colors.deepPurple,
+              highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
+              onTap: onTap,
+              child: child,
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+);
+```
+
+![Custom theme](/img/custom_theme.gif)
+
+Let's see what happens in the above animation:
+- In the first part, the default theme of CamerAwesome is used. Note that the Flash button bounces when tapped.
+- Then, the code is changed to show the custom theme above with a hot reload.
+- Finally, the UI is updated with the new purple theme and you can see that even the Flash button has a different tap effect: it is now a ripple.
+
+If you are using the built-in widgets - even partially, it is recommended to use `AwesomeTheme` in the rest of your Camera UI to stay consistent.
+
+You can access the current `AwesomeTheme` by using `AwesomeThemeProvider`:
+
+```dart
+final myTheme = AwesomeThemeProvider.of(context).theme
+```
+
+**Tips:**
+- If you don't have a `BuildContext` to access the parent's `AwesomeTheme`, wrap your widget within a `Builder` widget.
+- Use `AwesomeTheme.copyWith()` to make a copy of an `AwesomeTheme` and change only the properties you want to change. The same goes for `AwesomeButtonTheme`.
+
+See `custom_theme.dart` for an example with a custom theme.

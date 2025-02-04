@@ -8,7 +8,7 @@ class CustomUiExample1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: CameraAwesomeBuilder.custom(
-        builder: (cameraState, previewSize, previewRect) {
+        builder: (cameraState, preview) {
           return cameraState.when(
             onPreparingCamera: (state) =>
                 const Center(child: CircularProgressIndicator()),
@@ -18,14 +18,7 @@ class CustomUiExample1 extends StatelessWidget {
                 RecordVideoUI(state, recording: true),
           );
         },
-        saveConfig: SaveConfig.photoAndVideo(
-          photoPathBuilder: () async {
-            return "some/path.jpg";
-          },
-          videoPathBuilder: () async {
-            return "some/path.mp4";
-          },
-        ),
+        saveConfig: SaveConfig.photoAndVideo(),
       ),
     );
   }
