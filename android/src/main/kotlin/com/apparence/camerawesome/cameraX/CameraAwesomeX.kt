@@ -195,6 +195,7 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
                         "YUV_420" -> OutputImageFormat.YUV_420_888
                         "NV21" -> OutputImageFormat.NV21
                         "JPEG" -> OutputImageFormat.JPEG
+                        "BGRA8888" -> OutputImageFormat.RGBA_8888
                         else -> OutputImageFormat.NV21
                     },
                     executor(activity!!), width,
