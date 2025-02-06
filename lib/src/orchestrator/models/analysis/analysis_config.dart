@@ -57,6 +57,13 @@ class AndroidAnalysisOptions {
           outputFormat: InputAnalysisImageFormat.yuv_420,
         );
 
+  const AndroidAnalysisOptions.bgra8888({
+    required int width,
+  }) : this._(
+          width: width,
+          outputFormat: InputAnalysisImageFormat.bgra8888,
+        );
+
   const AndroidAnalysisOptions.jpeg({
     required int width,
   }) : this._(width: width, outputFormat: InputAnalysisImageFormat.jpeg);

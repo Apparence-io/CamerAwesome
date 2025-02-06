@@ -192,6 +192,45 @@ class AnalysisImageConverter : AnalysisImageUtils {
         jpegQuality: Long,
         callback: (Result<AnalysisImageWrapper>) -> Unit
     ) {
-        callback(Result.failure(Exception("BGRA 8888 conversion not implemented on Android")))
+        try {
+            val width = bgra8888image.width.toInt()
+            val height = bgra8888image.height.toInt()
+            
+            // Create a bitmap with ARGB_8888 config (Android's internal format)
+            val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+            
+            // Convert BGRA to ARGB by swapping B and R channels
+            val bgraBuffer = ByteBuffer.wrap(bgra8888image.bytes)
+            val pixels = IntArray(width * height)
+            for (i in 0 until width * height) {
+                val b = bgraBuffer.get().toInt() and 0xFF
+                val g = bgraBuffer.get().toInt() and 0xFF
+                val r = bgraBuffer.get().toInt() and 0xFF
+                val a = bgraBuffer.get().toInt() and 0xFF
+                pixels[i] = (a shl 24) or (r shl 16) or (g shl 8) or b
+            }
+            bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
+            
+            // Compress to JPEG
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, jpegQuality.toInt(), outputStream)
+            
+            // Clean up
+            bitmap.recycle()
+            
+            // Create new AnalysisImageWrapper with JPEG data
+            val jpegImage = AnalysisImageWrapper(
+                bytes = outputStream.toByteArray(),
+                width = bgra8888image.width,
+                height = bgra8888image.height,
+                rotation = bgra8888image.rotation,
+                format = AnalysisImageFormat.JPEG,
+                cropRect = bgra8888image.cropRect
+            )
+            
+            callback(Result.success(jpegImage))
+        } catch (e: Exception) {
+            callback(Result.failure(e))
+        }
     }
 }

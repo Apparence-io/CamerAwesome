@@ -18,6 +18,9 @@ InputAnalysisImageFormat inputAnalysisImageFormatParser(String value) {
       return InputAnalysisImageFormat.jpeg;
     case 'nv21': // android.graphics.ImageFormat.nv21
       return InputAnalysisImageFormat.nv21;
+    case 'rgba_8888':
+      return InputAnalysisImageFormat.bgra8888;
+    
   }
   return InputAnalysisImageFormat.unknown;
 }

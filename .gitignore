@@ -11,3 +11,7 @@ test/out/
 test_lab.sh
 firebase_key.txt
 google-services.json
+
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
