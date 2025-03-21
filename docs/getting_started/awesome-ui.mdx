@@ -159,11 +159,11 @@ Example:
 CameraAwesomeBuilder.awesome(
   theme: AwesomeTheme(
     // Background color of the bottom actions
-    bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+    bottomActionsBackgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
     // Buttons theme
     buttonTheme: AwesomeButtonTheme(
       // Background color of the button
-      backgroundColor: Colors.deepPurple.withOpacity(0.5),
+      backgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
       // Size of the icon
       iconSize: 32,
       // Padding around the icon
@@ -178,7 +178,7 @@ CameraAwesomeBuilder.awesome(
             shape: const CircleBorder(),
             child: InkWell(
               splashColor: Colors.deepPurple,
-              highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
+              highlightColor: Colors.deepPurpleAccent.withValues(alpha: 0.5),
               onTap: onTap,
               child: child,
             ),
@@ -231,9 +231,9 @@ CameraAwesomeBuilder.awesome(
   ...
   // Set an AwesomeTheme that you might reuse in your UI
   theme: AwesomeTheme(
-    bottomActionsBackgroundColor: Colors.cyan.withOpacity(0.5),
+    bottomActionsBackgroundColor: Colors.cyan.withValues(alpha: 0.5),
     buttonTheme: AwesomeButtonTheme(
-      backgroundColor: Colors.cyan.withOpacity(0.5),
+      backgroundColor: Colors.cyan.withValues(alpha: 0.5),
       iconSize: 20,
       foregroundColor: Colors.white,
       padding: const EdgeInsets.all(16),
@@ -245,7 +245,7 @@ CameraAwesomeBuilder.awesome(
             shape: const CircleBorder(),
             child: InkWell(
               splashColor: Colors.cyan,
-              highlightColor: Colors.cyan.withOpacity(0.5),
+              highlightColor: Colors.cyan.withValues(alpha: 0.5),
               onTap: onTap,
               child: child,
             ),
@@ -494,11 +494,11 @@ CameraAwesomeBuilder.awesome(
   // CamerAwesome theme used to customize the built-in UI
   theme: AwesomeTheme(
     // Background color of the bottom actions
-    bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+    bottomActionsBackgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
     // Buttons theme
     buttonTheme: AwesomeButtonTheme(
       // Background color of the buttons
-      backgroundColor: Colors.deepPurple.withOpacity(0.5),
+      backgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
       // Buttons icon size
       iconSize: 32,
       // Padding around icons
@@ -513,7 +513,7 @@ CameraAwesomeBuilder.awesome(
             shape: const CircleBorder(),
             child: InkWell(
               splashColor: Colors.deepPurple,
-              highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
+              highlightColor: Colors.deepPurpleAccent.withValues(alpha: 0.5),
               onTap: onTap,
               child: child,
             ),

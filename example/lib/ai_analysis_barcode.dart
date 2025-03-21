@@ -110,7 +110,7 @@ class _BarcodeDisplayWidget extends StatefulWidget {
   final AnalysisController analysisController;
 
   const _BarcodeDisplayWidget({
-    // ignore: unused_element
+    // ignore: unused_element, unused_element_parameter
     super.key,
     required this.barcodesStream,
     required this.scrollController,
@@ -128,7 +128,7 @@ class _BarcodeDisplayWidgetState extends State<_BarcodeDisplayWidget> {
       alignment: Alignment.bottomCenter,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.tealAccent.withOpacity(0.7),
+          color: Colors.tealAccent.withValues(alpha: 0.7),
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Material(

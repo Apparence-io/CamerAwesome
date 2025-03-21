@@ -20,7 +20,6 @@ InputAnalysisImageFormat inputAnalysisImageFormatParser(String value) {
       return InputAnalysisImageFormat.nv21;
     case 'rgba_8888':
       return InputAnalysisImageFormat.bgra8888;
-    
   }
   return InputAnalysisImageFormat.unknown;
 }

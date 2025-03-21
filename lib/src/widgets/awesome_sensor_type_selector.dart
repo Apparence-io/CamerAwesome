@@ -71,7 +71,7 @@ class _AwesomeSensorTypeSelectorState extends State<AwesomeSensorTypeSelector> {
           decoration: BoxDecoration(
             color: _sensorDeviceData != null &&
                     _sensorDeviceData!.availableBackSensors > 1
-                ? Colors.black.withOpacity(0.2)
+                ? Colors.black.withValues(alpha: 0.2)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(30),
           ),
@@ -141,7 +141,7 @@ class _SensorTypeButton extends StatelessWidget {
           width: isSelected ? 40 : 30,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
           ),
           child: Center(
             child: Text(

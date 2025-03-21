@@ -14,11 +14,11 @@ Example:
 CameraAwesomeBuilder.awesome(
   theme: AwesomeTheme(
     // Background color of the bottom actions
-    bottomActionsBackgroundColor: Colors.deepPurple.withOpacity(0.5),
+    bottomActionsBackgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
     // Buttons theme
     buttonTheme: AwesomeButtonTheme(
       // Background color of the button
-      backgroundColor: Colors.deepPurple.withOpacity(0.5),
+      backgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
       // Size of the icon
       iconSize: 32,
       // Padding around the icon
@@ -33,7 +33,7 @@ CameraAwesomeBuilder.awesome(
             shape: const CircleBorder(),
             child: InkWell(
               splashColor: Colors.deepPurple,
-              highlightColor: Colors.deepPurpleAccent.withOpacity(0.5),
+              highlightColor: Colors.deepPurpleAccent.withValues(alpha: 0.5),
               onTap: onTap,
               child: child,
             ),

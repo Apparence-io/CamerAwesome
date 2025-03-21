@@ -1,3 +1,8 @@
+# 2.2.O
+- migrate to swift package manager
+- upgrade cameraX to 1.3.4
+- upgrade android to namespace
+
 # 2.1.O
 - Update for flutter 3.24.0
 - Update dependencies (Thank you @tonistayhungrystayfoolish / @bytemaster / @millerf for the PR) 
