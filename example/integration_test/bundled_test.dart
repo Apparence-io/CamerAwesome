@@ -1,13 +1,15 @@
-import 'package:flutter_test/flutter_test.dart';
+// FIXME -> Patrol 1.1.0 -> 3.X
 
-import 'photo_test.dart' as photo_test;
-import 'ui_test.dart' as ui_test;
-import 'video_test.dart' as video_test;
+// import 'package:flutter_test/flutter_test.dart';
 
-void main() {
-  group("Bundled tests > ", () {
-    ui_test.main();
-    video_test.main();
-    photo_test.main();
-  });
-}
+// import 'photo_test.dart' as photo_test;
+// import 'ui_test.dart' as ui_test;
+// import 'video_test.dart' as video_test;
+
+// void main() {
+//   group("Bundled tests > ", () {
+//     ui_test.main();
+//     video_test.main();
+//     photo_test.main();
+//   });
+// }

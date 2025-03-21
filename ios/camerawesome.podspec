@@ -9,17 +9,17 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 An open source camera plugin by the community for the community
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'http://apparencekit.dev'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Apparence.io' => 'hello@apparence.io' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'camerawesome/Sources/camerawesome/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
+  s.ios.deployment_target = '12.0'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  #   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
   s.swift_version = '5.0'
-
-  s.dependency 'JPSVolumeButtonHandler'
 end
