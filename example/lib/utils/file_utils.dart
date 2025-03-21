@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:cross_file/cross_file.dart';
-import 'package:better_open_file/better_open_file.dart';
+import 'package:open_filex/open_filex.dart';
 
 Future<String> path(CaptureMode captureMode) async {
   final Directory extDir = await getTemporaryDirectory();
@@ -18,6 +18,6 @@ Future<String> path(CaptureMode captureMode) async {
 extension XfileOpen on XFile {
   Future<void> open() async {
     final spath = this.path;
-    await OpenFile.open(spath);
+    await OpenFilex.open(spath);
   }
 }

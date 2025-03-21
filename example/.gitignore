@@ -41,6 +41,7 @@
 version
 analysis_benchmark.json
 
+
 # packages file containing multi-root paths
 .packages.generated
 
@@ -69,6 +70,8 @@ unlinked_spec.ds
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
 *.jks
+/app/.cxx/** 
+
 
 # iOS/XCode related
 **/ios/**/*.mode1v3

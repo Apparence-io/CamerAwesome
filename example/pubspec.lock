@@ -25,14 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.12.0"
-  better_open_file:
-    dependency: "direct main"
-    description:
-      name: better_open_file
-      sha256: "975d700240a1529105b32fb5ff3fe127719e6d980ad8bbf07a43fdc326d71413"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.6.5"
   boolean_selector:
     dependency: transitive
     description:
@@ -319,6 +311,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.16.0"
+  open_filex:
+    dependency: "direct main"
+    description:
+      name: open_filex
+      sha256: "9976da61b6a72302cf3b1efbce259200cd40232643a467aac7370addf94d6900"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.7.0"
   path:
     dependency: transitive
     description:
