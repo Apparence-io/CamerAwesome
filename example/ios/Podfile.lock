@@ -3,21 +3,20 @@ PODS:
     - Flutter
   - camerawesome (0.0.1):
     - Flutter
-    - JPSVolumeButtonHandler
   - CocoaAsyncSocket (7.6.5)
   - Flutter (1.0.0)
-  - google_mlkit_barcode_scanning (0.13.0):
+  - google_mlkit_barcode_scanning (0.14.1):
     - Flutter
     - google_mlkit_commons
     - GoogleMLKit/BarcodeScanning (~> 7.0.0)
-  - google_mlkit_commons (0.9.0):
+  - google_mlkit_commons (0.11.0):
     - Flutter
     - MLKitVision
-  - google_mlkit_face_detection (0.12.0):
+  - google_mlkit_face_detection (0.13.1):
     - Flutter
     - google_mlkit_commons
     - GoogleMLKit/FaceDetection (~> 7.0.0)
-  - google_mlkit_text_recognition (0.14.0):
+  - google_mlkit_text_recognition (0.15.0):
     - Flutter
     - google_mlkit_commons
     - GoogleMLKit/TextRecognition (~> 7.0.0)
@@ -50,7 +49,6 @@ PODS:
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
   - GTMSessionFetcher/Core (3.5.0)
-  - JPSVolumeButtonHandler (1.0.5)
   - MLImage (1.0.0-beta6)
   - MLKitBarcodeScanning (6.0.0):
     - MLKitCommon (~> 12.0)
@@ -115,7 +113,6 @@ SPEC REPOS:
     - GoogleToolboxForMac
     - GoogleUtilities
     - GTMSessionFetcher
-    - JPSVolumeButtonHandler
     - MLImage
     - MLKitBarcodeScanning
     - MLKitCommon
@@ -149,20 +146,19 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  better_open_file: 03cf320415d4d3f46b6e00adc4a567d76c1a399d
-  camerawesome: 385141b578dbc90974af4b89fec30c0e41a1ed46
+  better_open_file: 1b4512d5c323999178c1cfe6427352cd582f351b
+  camerawesome: a961fa32dafc00d2f093d824311c84f849586b58
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  google_mlkit_barcode_scanning: 1a409f86a4c7df45e6dee9ba06e520357b2c7110
-  google_mlkit_commons: 384e4e206e122b6dad430d3158205e0b2fac6789
-  google_mlkit_face_detection: ff627695d8eba051db7e0f13f7b20d802df1f84c
-  google_mlkit_text_recognition: e540f2aff997f2b0daaa1b4fd5ead3b0b7030adc
+  google_mlkit_barcode_scanning: 8f5987f244a43fe1167689c548342a5174108159
+  google_mlkit_commons: 2abe6a70e1824e431d16a51085cb475b672c8aab
+  google_mlkit_face_detection: 754da2113a1952f063c7c5dc347ac6ae8934fb77
+  google_mlkit_text_recognition: ec2122ec89bfe0d7200763336a6e4ef44810674c
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleMLKit: eff9e23ec1d90ea4157a1ee2e32a4f610c5b3318
   GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  JPSVolumeButtonHandler: 53110330c9168ed325def93eabff39f0fe3e8082
   MLImage: 0ad1c5f50edd027672d8b26b0fee78a8b4a0fc56
   MLKitBarcodeScanning: 0a3064da0a7f49ac24ceb3cb46a5bc67496facd2
   MLKitCommon: 07c2c33ae5640e5380beaaa6e4b9c249a205542d
@@ -171,10 +167,10 @@ SPEC CHECKSUMS:
   MLKitTextRecognitionCommon: cd44577a8c506fc6bba065096de03bec0d01a213
   MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  patrol: 0564cee315ff6c86fb802b3647db05cc2d3d0624
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  patrol: dd82ffedfee3aba87c1d0ed2daad0b77bfb8ee1f
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
+  video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
 
 PODFILE CHECKSUM: dabefdfdd2f64e884a9feb5996b51b7bfc7404d3
 
