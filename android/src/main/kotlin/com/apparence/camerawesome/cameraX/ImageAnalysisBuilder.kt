@@ -3,10 +3,15 @@ package com.apparence.camerawesome.cameraX
 import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.util.Size
+import android.util.Log
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.core.internal.utils.ImageUtil
+import android.hardware.camera2.params.StreamConfigurationMap
 import com.apparence.camerawesome.utils.ResettableCountDownLatch
 import io.flutter.plugin.common.EventChannel
 import kotlinx.coroutines.*
@@ -21,7 +26,8 @@ enum class OutputImageFormat {
 class ImageAnalysisBuilder private constructor(
     private val format: OutputImageFormat,
     private val width: Int,
-    private val height: Int,
+    private var height: Int,
+    private var aspectRatio: Int,
     private val executor: Executor,
     var previewStreamSink: EventChannel.EventSink? = null,
     private val maxFramesPerSecond: Double?,
@@ -54,6 +60,7 @@ class ImageAnalysisBuilder private constructor(
                 format,
                 widthOrDefault,
                 height.toInt(),
+                aspectRatio,
                 executor,
                 maxFramesPerSecond = maxFps,
             )
@@ -64,7 +71,15 @@ class ImageAnalysisBuilder private constructor(
     fun build(): ImageAnalysis {
         val outputImageFormat = if (format == OutputImageFormat.RGBA_8888) ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888 else ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888
         countDownLatch.reset()
-        val imageAnalysis = ImageAnalysis.Builder().setTargetResolution(Size(width, height))
+        val imageAnalysisResolutionSelector = ResolutionSelector.Builder()
+            .setAspectRatioStrategy(
+                AspectRatioStrategy(aspectRatio, AspectRatioStrategy.FALLBACK_RULE_AUTO)
+            )
+            .setResolutionStrategy(
+                ResolutionStrategy(Size(width, height), ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER)
+                )
+            .build()
+        val imageAnalysis = ImageAnalysis.Builder().setResolutionSelector(imageAnalysisResolutionSelector)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(outputImageFormat).build()
         imageAnalysis.setAnalyzer(Dispatchers.IO.asExecutor()) { imageProxy ->
@@ -125,6 +140,15 @@ class ImageAnalysisBuilder private constructor(
             lastImageEmittedTimeStamp = System.currentTimeMillis()
         }
         return imageAnalysis
+    }
+
+    fun updateAspectRatio(newAspectRatio: String){
+        aspectRatio = if (newAspectRatio == "RATIO_16_9") 1 else 0
+        val analysisAspectRatio = when (aspectRatio) {
+                AspectRatio.RATIO_4_3 -> 4f / 3
+                else -> 16f / 9
+            }
+        height = (width * (1 / analysisAspectRatio)).toInt()
     }
 
     private fun cropRect(imageProxy: ImageProxy): Map<String, Any> {

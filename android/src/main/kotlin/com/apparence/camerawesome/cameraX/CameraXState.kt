@@ -2,6 +2,7 @@ package com.apparence.camerawesome.cameraX
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.util.Log
 import android.util.Rational
@@ -11,6 +12,8 @@ import androidx.camera.camera2.internal.compat.CameraCharacteristicsCompat
 import androidx.camera.camera2.internal.compat.quirk.CamcorderProfileResolutionQuirk
 import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.*
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.core.content.ContextCompat
@@ -125,13 +128,20 @@ data class CameraXState(
 //                    })
 //                    .build()
 
-
-                val preview = if (aspectRatio != null) {
-                    Preview.Builder().setTargetAspectRatio(aspectRatio!!)
-                        .setCameraSelector(cameraSelector).build()
+                val resolutionSelector = if (aspectRatio != null){
+                    ResolutionSelector.Builder()
+                    .setAspectRatioStrategy(
+                        AspectRatioStrategy(aspectRatio!!, AspectRatioStrategy.FALLBACK_RULE_AUTO)
+                    )
+                    .build()
                 } else {
-                    Preview.Builder().setCameraSelector(cameraSelector).build()
+                    ResolutionSelector.Builder()
+                    .setAllowedResolutionMode(ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
+                    .build()
                 }
+                val preview = Preview.Builder()
+                    .setResolutionSelector(resolutionSelector)
+                    .setCameraSelector(cameraSelector).build()
                 preview.setSurfaceProvider(
                     surfaceProvider(executor(activity), sensor.deviceId ?: "$index")
                 )
@@ -144,7 +154,12 @@ data class CameraXState(
                         .apply {
                             //photoSize?.let { setTargetResolution(it) }
                             if (rational.denominator != rational.numerator) {
-                                setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
+                                val resolutionSelector = ResolutionSelector.Builder().
+                                    setAspectRatioStrategy(
+                                        AspectRatioStrategy(aspectRatio ?: AspectRatio.RATIO_4_3, AspectRatioStrategy.FALLBACK_RULE_AUTO)
+                                    )
+                                    .build()
+                                setResolutionSelector(resolutionSelector)
                             }
 
                             setFlashMode(
@@ -196,13 +211,20 @@ data class CameraXState(
                 if (sensors.first().position == PigeonSensorPosition.FRONT) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
             // Preview
             if (currentCaptureMode != CaptureModes.ANALYSIS_ONLY) {
+                val resolutionSelector = if (aspectRatio != null){
+                    ResolutionSelector.Builder()
+                    .setAspectRatioStrategy(
+                        AspectRatioStrategy(aspectRatio!!, AspectRatioStrategy.FALLBACK_RULE_AUTO)
+                    )
+                    .build()
+                } else {
+                    ResolutionSelector.Builder()
+                    .setAllowedResolutionMode(ResolutionSelector.PREFER_CAPTURE_RATE_OVER_HIGHER_RESOLUTION)
+                    .build()
+                }
                 previews!!.add(
-                    if (aspectRatio != null) {
-                        Preview.Builder().setTargetAspectRatio(aspectRatio!!)
-                            .setCameraSelector(cameraSelector).build()
-                    } else {
-                        Preview.Builder().setCameraSelector(cameraSelector).build()
-                    }
+                    Preview.Builder().setResolutionSelector(resolutionSelector)
+                        .setCameraSelector(cameraSelector).build()
                 )
 
                 previews!!.first().setSurfaceProvider(
@@ -217,7 +239,12 @@ data class CameraXState(
                     .apply {
                         //photoSize?.let { setTargetResolution(it) }
                         if (rational.denominator != rational.numerator) {
-                            setTargetAspectRatio(aspectRatio ?: AspectRatio.RATIO_4_3)
+                            val resolutionSelector = ResolutionSelector.Builder().
+                                setAspectRatioStrategy(
+                                    AspectRatioStrategy(aspectRatio ?: AspectRatio.RATIO_4_3, AspectRatioStrategy.FALLBACK_RULE_AUTO)
+                                )
+                                .build()
+                            setResolutionSelector(resolutionSelector)
                         }
                         setFlashMode(
                             when (flashMode) {
@@ -260,12 +287,14 @@ data class CameraXState(
                 .build()
 
             concurrentCamera = null
+            val useCaseGroup : UseCaseGroup = useCaseGroupBuilder.build()
             previewCamera = cameraProvider.bindToLifecycle(
                 activity as LifecycleOwner,
                 cameraSelector,
-                useCaseGroupBuilder.build(),
+                useCaseGroup,
             )
             previewCamera!!.cameraControl.enableTorch(flashMode == FlashMode.ALWAYS)
+            
         }
     }
 
@@ -441,6 +470,9 @@ data class CameraXState(
             "RATIO_16_9" -> Rational(9, 16)
             "RATIO_1_1" -> Rational(1, 1)
             else -> Rational(3, 4)
+        }
+        if (imageAnalysisBuilder != null){
+            imageAnalysisBuilder!!.updateAspectRatio(newAspectRatio)
         }
     }
 }
