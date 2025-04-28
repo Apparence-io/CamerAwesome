@@ -226,17 +226,17 @@
       }
 
       [_captureSession setSessionPreset:presetSelected];
-      _currentPreset = presetSelected; // Corrected spelling
+      _currentPreset = presetSelected;
 
       if (sessionIsRunning) {
           [_captureSession startRunning];
       }
   } else {
-      _currentPreset = _captureSession.sessionPreset; // Corrected spelling
+      _currentPreset = _captureSession.sessionPreset;
   }
 
-  // Get preview size according to preset selected
-  _currentPreviewSize = [CameraQualities getSizeForPreset:_currentPreset]; // Corrected spelling
+  // Use the corrected method name
+  _currentPreviewSize = [CameraQualities getSizeForPreset:_currentPreset];
 
   [_videoController setPreviewSize:_currentPreviewSize];
 }
