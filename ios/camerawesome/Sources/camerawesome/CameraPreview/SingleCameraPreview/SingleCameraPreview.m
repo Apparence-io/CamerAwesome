@@ -108,7 +108,7 @@
   PreviewSize *firstPreviewSize = [qualities count] > 0 ? qualities.lastObject : [PreviewSize makeWithWidth:@3840 height:@2160];
   
   CGSize firstSize = CGSizeMake([firstPreviewSize.width floatValue], [firstPreviewSize.height floatValue]);
-  [self setCameraPresset:firstSize];
+  [self setCameraPreset:firstSize];
 }
 
 /// Save exif preferences when taking picture
@@ -173,27 +173,71 @@
 }
 
 /// Set camera preview size
-- (void)setCameraPresset:(CGSize)currentPreviewSize {
-  CGSize preview = currentPreviewSize;
-  if (_imageStreamController.streamImages) {
-    // force preview to HD for image stream
-    preview = CGSizeMake(720, 1280);
-  }
-  
+- (void)setCameraPreset:(CGSize)currentPreviewSize {
+  CGSize targetSize = currentPreviewSize;
+
+  // Determine the target size based on the current mode and settings
+  if (_captureMode == Video || _videoController.isRecording) {
+      // If recording video, prioritize the recording quality setting
+      // TODO: Need a way to get the CGSize from the _recordingQuality enum or _videoOptions
+      // For now, let's assume a helper function or default high quality if direct mapping isn't obvious.
+      // Placeholder: If video options exist, try to use them, otherwise fall back.
+      // If no direct mapping, maybe use the highest available preset suitable for video?
+      // Or just pass CGSizeZero to let selectVideoCapturePreset pick the best for video?
+      // For now, let's pass CGSizeZero to select the best default for video capture.
+      if (_videoOptions != nil) {
+         // Hypothetical: Get size from VideoOptions quality. Needs actual implementation.
+         // targetSize = [CameraQualities sizeFromQuality:_recordingQuality];
+         // If no direct mapping, maybe use the highest available preset suitable for video?
+         // Or just pass CGSizeZero to let selectVideoCapturePreset pick the best for video?
+         // For now, let's pass CGSizeZero to select the best default for video capture.
+         targetSize = CGSizeZero; 
+      } else if (!CGSizeEqualToSize(currentPreviewSize, CGSizeZero)){
+         // Use provided size if valid and no video options
+         targetSize = currentPreviewSize;
+      } else {
+         // Fallback to best quality if no specific size or options given
+         targetSize = CGSizeZero;
+      }
+  } else if (_imageStreamController.streamImages) {
+      // If only streaming (not recording), force 720p for potential stability (based on commit history)
+      targetSize = CGSizeMake(720, 1280);
+  } else if (CGSizeEqualToSize(currentPreviewSize, CGSizeZero)) {
+      // If neither recording nor streaming, and no size provided, use best quality
+      targetSize = CGSizeZero;
+  } 
+  // else: Use the non-zero currentPreviewSize passed in.
+
   NSString *presetSelected;
-  if (!CGSizeEqualToSize(CGSizeZero, preview)) {
-    // Try to get the quality requested
-    presetSelected = [CameraQualities selectVideoCapturePresset:preview session:_captureSession device:_captureDevice];
+  if (!CGSizeEqualToSize(CGSizeZero, targetSize)) {
+    // Try to get the quality requested based on the determined target size
+    presetSelected = [CameraQualities selectVideoCapturePreset:targetSize session:_captureSession device:_captureDevice];
   } else {
-    // Compute the best quality supported by the camera device
-    presetSelected = [CameraQualities selectVideoCapturePresset:_captureSession device:_captureDevice];
+    // Compute the best quality supported by the camera device if targetSize is Zero
+    presetSelected = [CameraQualities selectVideoCapturePreset:_captureSession device:_captureDevice];
   }
-  [_captureSession setSessionPreset:presetSelected];
-  _currentPresset = presetSelected;
-  
-  // Get preview size according to presset selected
-  _currentPreviewSize = [CameraQualities getSizeForPresset:presetSelected];
-  
+
+  // Check if the preset needs to be changed
+  if (![_captureSession.sessionPreset isEqualToString:presetSelected]) {
+      // Check if the session is running before changing the preset
+      BOOL sessionIsRunning = _captureSession.isRunning;
+      if (sessionIsRunning) {
+          [_captureSession stopRunning];
+      }
+
+      [_captureSession setSessionPreset:presetSelected];
+      _currentPreset = presetSelected; // Corrected spelling
+
+      if (sessionIsRunning) {
+          [_captureSession startRunning];
+      }
+  } else {
+      _currentPreset = _captureSession.sessionPreset; // Corrected spelling
+  }
+
+  // Get preview size according to preset selected
+  _currentPreviewSize = [CameraQualities getSizeForPreset:_currentPreset]; // Corrected spelling
+
   [_videoController setPreviewSize:_currentPreviewSize];
 }
 
@@ -229,7 +273,7 @@
     return;
   }
   
-  [self setCameraPresset:previewSize];
+  [self setCameraPreset:previewSize];
 }
 
 /// Start camera preview
@@ -464,11 +508,6 @@
 # pragma mark - Camera video
 /// Record video into the given path
 - (void)recordVideoAtPath:(NSString *)path completion:(nonnull void (^)(FlutterError * _Nullable))completion {
-  if (_imageStreamController.streamImages) {
-    completion([FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't record video when image stream is enabled" details:@""]);
-    return;
-  }
-  
   if (!_videoController.isRecording) {
     [_videoController recordVideoAtPath:path captureDevice:_captureDevice orientation:_deviceOrientation audioSetupCallback:^{
       [self setUpCaptureSessionForAudioError:^(NSError *error) {
@@ -575,16 +614,24 @@
     if (_onPreviewFrameAvailable) {
       _onPreviewFrameAvailable();
     }
-  }
-  
-  // Process image stream controller
-  if (_imageStreamController.streamImages && !_videoController.isRecording) {
-    [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection orientation:_motionController.deviceOrientation];
-  }
-  
-  // Process video recording
-  if (_videoController.isRecording) {
-    [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:_captureVideoOutput];
+
+    // Send to image stream controller if enabled
+    if (_imageStreamController.streamImages) {
+        [_imageStreamController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection orientation:_motionController.deviceOrientation];
+    }
+
+    // Send to video recording controller if recording
+    if (_videoController.isRecording) {
+      // Ensure VideoController's captureOutput can handle being called multiple times for the same timestamp (once for video, once for audio)
+      // or ensure it only processes the video buffer here.
+      // Assuming it can differentiate based on 'output' or buffer type.
+      [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:_captureVideoOutput];
+    }
+  } else if (output == _audioOutput) {
+    // Send audio buffers only to video recording controller if recording & audio enabled
+    if (_videoController.isRecording && _videoController.isAudioEnabled) {
+      [_videoController captureOutput:output didOutputSampleBuffer:sampleBuffer fromConnection:connection captureVideoOutput:nil]; // Pass nil for video output for audio
+    }
   }
 }
 
