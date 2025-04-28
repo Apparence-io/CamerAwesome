@@ -532,7 +532,7 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  [self.camera setCameraPresset:CGSizeMake([size.width floatValue], [size.height floatValue])];
+  [self.camera setCameraPreset:CGSizeMake([size.width floatValue], [size.height floatValue])];
 }
 
 - (void)setAspectRatioAspectRatio:(nonnull NSString *)aspectRatio error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
@@ -678,14 +678,8 @@ FlutterEventSink physicalButtonEventSink;
     return;
   }
   
-  if (self.camera.videoController.isRecording) {
-    *error = [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"can't start image stream because video is recording" details:@""];
-    return;
-  }
-  
   [self.camera.imageStreamController setStreamImages:true];
 }
-
 
 - (void)stopAnalysisWithError:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   if (self.camera == nil && self.multiCamera == nil) {
@@ -702,7 +696,7 @@ FlutterEventSink physicalButtonEventSink;
 }
 
 - (void)isVideoRecordingAndImageAnalysisSupportedSensor:(PigeonSensorPosition)sensor completion:(void (^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
-  completion(@(NO), nil);
+  completion(@(YES), nil);
 }
 
 #pragma mark - Sensors methods

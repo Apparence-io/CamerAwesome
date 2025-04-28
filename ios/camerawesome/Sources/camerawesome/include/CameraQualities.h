@@ -12,9 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CameraQualities : NSObject
 
-+ (AVCaptureSessionPreset)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session device:(AVCaptureDevice *)device;
-+ (AVCaptureSessionPreset)selectVideoCapturePresset:(AVCaptureSession *)session device:(AVCaptureDevice *)device;
-+ (CGSize)getSizeForPresset:(NSString *)presset;
++ (AVCaptureSessionPreset)selectVideoCapturePreset:(CGSize)size session:(AVCaptureSession *)session device:(AVCaptureDevice *)device;
++ (AVCaptureSessionPreset)selectVideoCapturePreset:(AVCaptureSession *)session device:(AVCaptureDevice *)device;
++ (CGSize)getSizeForPreset:(NSString *)preset;
 + (NSArray *)captureFormatsForDevice:(AVCaptureDevice *)device;
 
 @end

@@ -50,7 +50,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 @property(readonly, nonatomic) PigeonSensorPosition cameraSensorPosition;
 @property(readonly, nonatomic) NSString *captureDeviceId;
 @property(readonly, nonatomic) CaptureModes captureMode;
-@property(readonly, nonatomic) NSString *currentPresset;
+@property(readonly, nonatomic) NSString *currentPreset;
 @property(readonly, nonatomic) AspectRatio aspectRatio;
 @property(readonly, nonatomic) CupertinoVideoOptions *videoOptions;
 @property(readonly, nonatomic) VideoRecordingQuality recordingQuality;
@@ -82,7 +82,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate>
 - (void)setPreviewSize:(CGSize)previewSize error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setFlashMode:(CameraFlashMode)flashMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
 - (void)setCaptureMode:(CaptureModes)captureMode error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error;
-- (void)setCameraPresset:(CGSize)currentPreviewSize;
+- (void)setCameraPreset:(CGSize)currentPreviewSize;
 - (void)setRecordingAudioMode:(bool)enableAudio completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion;
 - (void)pauseVideoRecording;
 - (void)resumeVideoRecording;

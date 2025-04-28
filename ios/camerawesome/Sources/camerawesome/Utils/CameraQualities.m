@@ -10,31 +10,31 @@
 // TODO: rework how qualities are working to be more easy
 @implementation CameraQualities
 
-+ (AVCaptureSessionPreset)selectVideoCapturePresset:(CGSize)size session:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
++ (AVCaptureSessionPreset)selectVideoCapturePreset:(CGSize)size session:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
   if (!CGSizeEqualToSize(CGSizeZero, size)) {
-    AVCaptureSessionPreset bestPresset = [CameraQualities selectPresetForSize:size session:session];
-    if ([session canSetSessionPreset:bestPresset]) {
-      return bestPresset;
+    AVCaptureSessionPreset bestPreset = [CameraQualities selectPresetForSize:size session:session];
+    if ([session canSetSessionPreset:bestPreset]) {
+      return bestPreset;
     }
   }
   
-  return [self computeBestPressetWithSession:session device:device];
+  return [self computeBestPresetWithSession:session device:device];
 }
 
-+ (NSString *)selectVideoCapturePresset:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
-  return [self computeBestPressetWithSession:session device:device];
++ (NSString *)selectVideoCapturePreset:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
+  return [self computeBestPresetWithSession:session device:device];
 }
 
-+ (CGSize)getSizeForPresset:(NSString *)presset {
-  if (presset == AVCaptureSessionPreset3840x2160) {
++ (CGSize)getSizeForPreset:(NSString *)preset {
+  if (preset == AVCaptureSessionPreset3840x2160) {
     return CGSizeMake(3840, 2160);
-  } else if (presset == AVCaptureSessionPreset1920x1080) {
+  } else if (preset == AVCaptureSessionPreset1920x1080) {
     return CGSizeMake(1920, 1080);
-  } else if (presset == AVCaptureSessionPreset1280x720) {
+  } else if (preset == AVCaptureSessionPreset1280x720) {
     return CGSizeMake(1280, 720);
-  } else if (presset == AVCaptureSessionPreset640x480) {
+  } else if (preset == AVCaptureSessionPreset640x480) {
     return CGSizeMake(640, 480);
-  } else if (presset == AVCaptureSessionPreset352x288) {
+  } else if (preset == AVCaptureSessionPreset352x288) {
     return CGSizeMake(352, 288);
   } else {
     // Default to HD
@@ -42,15 +42,15 @@
   }
 }
 
-+ (AVCaptureSessionPreset)computeBestPressetWithSession:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
++ (AVCaptureSessionPreset)computeBestPresetWithSession:(AVCaptureSession *)session device:(AVCaptureDevice *)device {
   NSArray *qualities = [CameraQualities captureFormatsForDevice:device];
   
   for (NSDictionary *quality in qualities) {
     CGSize qualitySize = CGSizeMake([quality[@"width"] floatValue], [quality[@"height"] floatValue]);
-    AVCaptureSessionPreset currentPresset = [CameraQualities selectPresetForSize:qualitySize session:session];
+    AVCaptureSessionPreset currentPreset = [CameraQualities selectPresetForSize:qualitySize session:session];
     
-    if ([session canSetSessionPreset:currentPresset]) {
-      return currentPresset;
+    if ([session canSetSessionPreset:currentPreset]) {
+      return currentPreset;
     }
   }
   
