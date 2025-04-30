@@ -7,7 +7,7 @@ The camera preview will be visible behind what you will provide to this builder.
 ```dart
 CameraAwesomeBuilder.custom(
   saveConfig: SaveConfig.photoAndVideo(),
-  builder: (cameraState, previewSize, previewRect) {
+  builder: (cameraState, preview) {
     // Return your UI (a Widget)
     return cameraState.when(
       onPreparingCamera: (state) => const Center(child: CircularProgressIndicator()),
