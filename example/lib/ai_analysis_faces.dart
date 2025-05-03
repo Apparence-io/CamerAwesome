@@ -40,7 +40,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   final _faceDetectionController = BehaviorSubject<FaceDetectionModel>();
-  Preview? _preview;
+  AnalysisPreview? _preview;
 
   final options = FaceDetectorOptions(
     enableContours: true,
@@ -111,7 +111,7 @@ class _CameraPageState extends State<CameraPage> {
 class _MyPreviewDecoratorWidget extends StatelessWidget {
   final CameraState cameraState;
   final Stream<FaceDetectionModel> faceDetectionStream;
-  final Preview preview;
+  final AnalysisPreview preview;
 
   const _MyPreviewDecoratorWidget({
     required this.cameraState,
@@ -155,7 +155,7 @@ class _MyPreviewDecoratorWidget extends StatelessWidget {
 class FaceDetectorPainter extends CustomPainter {
   final FaceDetectionModel model;
   final CanvasTransformation? canvasTransformation;
-  final Preview? preview;
+  final AnalysisPreview? preview;
 
   FaceDetectorPainter({
     required this.model,
