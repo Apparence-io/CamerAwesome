@@ -212,7 +212,18 @@ experience within your app.
 CameraAwesomeBuilder.awesome(
   saveConfig: SaveConfig.photoAndVideo(),
   onMediaTap: (mediaCapture) {
-    OpenFile.open(mediaCapture.filePath);
+    mediaCapture.captureRequest.when(
+      single: (single) {
+        debugPrint('single: ${single.file?.path}');
+        single.file?.open();
+      },
+      multiple: (multiple) {
+        multiple.fileBySensor.forEach((key, value) {
+          debugPrint('multiple files taken: $key ${value?.path}');
+          value?.open();
+        });
+      },
+    );
   },
 ),
 ```
