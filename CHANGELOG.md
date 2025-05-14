@@ -1,6 +1,6 @@
 # 2.4.0
 
-- upgrade cameraX to 1.3.4 (thanks @fabricio-sisplan)
+- upgrade cameraX to 1.4.2 (thanks @fabricio-sisplan)
 - upgrade dependencies
 - preview fit is now contain by default
 - Allow simultaneous video recording and image analysis (thanks @haf Henrik Feldt)
