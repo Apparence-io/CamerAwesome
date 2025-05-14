@@ -60,7 +60,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   StreamSubscription? _aspectRatioSubscription;
   CameraAspectRatios? _aspectRatio;
   double? _aspectRatioValue;
-  Preview? _preview;
+  AnalysisPreview? _preview;
 
   // TODO: fetch this value from the native side
   final int kMaximumSupportedFloatingPreview = 3;

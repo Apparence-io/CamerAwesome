@@ -25,7 +25,7 @@ typedef CameraLayoutBuilder = Widget Function(
   /// relative to the preview (inside or outside for instance)
   //Rect previewRect,
 
-  Preview preview,
+  AnalysisPreview preview,
 );
 
 /// Callback when a video or photo has been saved and user click on thumbnail
@@ -438,7 +438,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                 child: !widget.showPreview
                     ? widget.builder(
                         snapshot.requireData,
-                        Preview.hidden(),
+                        AnalysisPreview.hidden(),
                       )
                     : AwesomeCameraPreview(
                         key: _cameraPreviewKey,
