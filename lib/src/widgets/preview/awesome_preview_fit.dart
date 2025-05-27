@@ -158,12 +158,10 @@ class PreviewFitWidget extends StatelessWidget {
         width: constraints.maxWidth,
         height: constraints.maxHeight,
         child: InteractiveViewer(
-          // key: previewWidgetKey,
           transformationController: transformController,
           scaleEnabled: false,
           constrained: false,
           panEnabled: false,
-          alignment: FractionalOffset.topLeft,
           clipBehavior: Clip.antiAlias,
           child: Align(
             alignment: Alignment.topLeft,
@@ -233,33 +231,33 @@ class PreviewSizeCalculator {
 
     maxSize = Size(constraints.maxWidth, constraints.maxHeight);
     _offset = Offset(0, constraints.maxHeight - maxSize.height);
-    // switch (previewFit) {
-    //   case CameraPreviewFit.fitWidth:
-    //     maxSize = Size(constraints.maxWidth, nativePreviewSize.height * zoom);
-    //     _offset = Offset(0, constraints.maxHeight - maxSize.height);
-    //     break;
-    //   case CameraPreviewFit.fitHeight:
-    //     maxSize = Size(nativePreviewSize.width * zoom, constraints.maxHeight);
-    //     _offset = Offset(constraints.maxWidth - maxSize.width, 0);
-    //     break;
-    //   case CameraPreviewFit.cover:
-    //     maxSize = Size(constraints.maxWidth, constraints.maxHeight);
+    switch (previewFit) {
+      case CameraPreviewFit.fitWidth:
+        maxSize = Size(constraints.maxWidth, nativePreviewSize.height * zoom);
+        _offset = Offset(0, constraints.maxHeight - maxSize.height);
+        break;
+      case CameraPreviewFit.fitHeight:
+        maxSize = Size(nativePreviewSize.width * zoom, constraints.maxHeight);
+        _offset = Offset(constraints.maxWidth - maxSize.width, 0);
+        break;
+      case CameraPreviewFit.cover:
+        maxSize = Size(constraints.maxWidth, constraints.maxHeight);
 
-    //     if (constraints.maxWidth / constraints.maxHeight >
-    //         previewSize.width / previewSize.height) {
-    //       _offset = Offset((hDiff * zoom) * 2, 0);
-    //     } else {
-    //       _offset = Offset(0, (wDiff * zoom));
-    //     }
-    //     break;
-    //   case CameraPreviewFit.contain:
-    //     maxSize = Size(constraints.maxWidth, constraints.maxHeight);
-    //     _offset = Offset(
-    //       constraints.maxWidth - maxSize.width,
-    //       constraints.maxHeight - maxSize.height,
-    //     );
-    //     break;
-    // }
+        if (constraints.maxWidth / constraints.maxHeight >
+            previewSize.width / previewSize.height) {
+          _offset = Offset((hDiff * zoom) * 2, 0);
+        } else {
+          _offset = Offset(0, (wDiff * zoom));
+        }
+        break;
+      case CameraPreviewFit.contain:
+        maxSize = Size(constraints.maxWidth, constraints.maxHeight);
+        _offset = Offset(
+          constraints.maxWidth - maxSize.width,
+          constraints.maxHeight - maxSize.height,
+        );
+        break;
+    }
 
     return maxSize;
   }

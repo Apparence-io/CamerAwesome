@@ -1,6 +1,4 @@
 PODS:
-  - better_open_file (0.0.1):
-    - Flutter
   - camerawesome (0.0.1):
     - Flutter
   - CocoaAsyncSocket (7.6.5)
@@ -81,6 +79,8 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - open_filex (0.0.2):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -94,13 +94,13 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
-  - better_open_file (from `.symlinks/plugins/better_open_file/ios`)
   - camerawesome (from `.symlinks/plugins/camerawesome/ios`)
   - Flutter (from `Flutter`)
   - google_mlkit_barcode_scanning (from `.symlinks/plugins/google_mlkit_barcode_scanning/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - google_mlkit_face_detection (from `.symlinks/plugins/google_mlkit_face_detection/ios`)
   - google_mlkit_text_recognition (from `.symlinks/plugins/google_mlkit_text_recognition/ios`)
+  - open_filex (from `.symlinks/plugins/open_filex/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - patrol (from `.symlinks/plugins/patrol/darwin`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
@@ -124,8 +124,6 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
-  better_open_file:
-    :path: ".symlinks/plugins/better_open_file/ios"
   camerawesome:
     :path: ".symlinks/plugins/camerawesome/ios"
   Flutter:
@@ -138,6 +136,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_mlkit_face_detection/ios"
   google_mlkit_text_recognition:
     :path: ".symlinks/plugins/google_mlkit_text_recognition/ios"
+  open_filex:
+    :path: ".symlinks/plugins/open_filex/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   patrol:
@@ -146,7 +146,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  better_open_file: 1b4512d5c323999178c1cfe6427352cd582f351b
   camerawesome: a961fa32dafc00d2f093d824311c84f849586b58
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
@@ -167,6 +166,7 @@ SPEC CHECKSUMS:
   MLKitTextRecognitionCommon: cd44577a8c506fc6bba065096de03bec0d01a213
   MLKitVision: 45e79d68845a2de77e2dd4d7f07947f0ed157b0e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  open_filex: 432f3cd11432da3e39f47fcc0df2b1603854eff1
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   patrol: dd82ffedfee3aba87c1d0ed2daad0b77bfb8ee1f
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47

@@ -326,7 +326,7 @@ data class CameraXState(
 //        Log.d("SurfaceProviderCamX", "Creating surface provider for $cameraId")
         return Preview.SurfaceProvider { request: SurfaceRequest ->
             val resolution = request.resolution
-            Log.d("CameraX", "surfaceProvider -> Preview size: width=${resolution.width}, height=${resolution.height}")
+            //Log.d("CameraX", "surfaceProvider -> Preview size: width=${resolution.width}, height=${resolution.height}")
             val texture = textureEntries[cameraId]!!.surfaceTexture()
             texture.setDefaultBufferSize(resolution.width, resolution.height)
             val surface = Surface(texture)
