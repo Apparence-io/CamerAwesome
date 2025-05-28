@@ -64,6 +64,12 @@
       "request": "launch",
       "type": "dart",
       "program": "example/lib/custom_awesome_ui.dart"
+    },
+    {
+      "name": "Fix preview",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/fix_preview.dart"
     }
   ]
 }
