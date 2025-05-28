@@ -164,6 +164,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   alignment: widget.alignment,
                   previewFit: widget.previewFit,
                   previewSize: _previewSize!,
+                  previewPadding: widget.padding,
                   constraints: constraints,
                   sensor: widget.state.sensorConfig.sensors.first,
                   onPreviewCalculated: (preview) {

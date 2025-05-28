@@ -109,8 +109,9 @@ class CameraPage extends StatelessWidget {
           ),
           enablePhysicalButton: true,
           // filter: AwesomeFilter.AddictiveRed,
-          previewAlignment: Alignment.topLeft,
+          previewAlignment: Alignment.center,
           previewFit: CameraPreviewFit.contain,
+          previewPadding: const EdgeInsets.all(0),
           onMediaTap: (mediaCapture) {
             mediaCapture.captureRequest.when(
               single: (single) {
@@ -125,7 +126,7 @@ class CameraPage extends StatelessWidget {
               },
             );
           },
-          previewPadding: const EdgeInsets.only(bottom: 100),
+          // previewPadding: const EdgeInsets.only(bottom: 100),
           availableFilters: awesomePresetFiltersList,
         ),
       ),

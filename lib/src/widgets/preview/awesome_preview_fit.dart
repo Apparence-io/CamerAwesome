@@ -13,6 +13,7 @@ class AnimatedPreviewFit extends StatefulWidget {
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final BoxConstraints constraints;
+  final EdgeInsets? previewPadding;
   final Widget child;
   final OnPreviewCalculated? onPreviewCalculated;
   final Sensor sensor;
@@ -26,6 +27,7 @@ class AnimatedPreviewFit extends StatefulWidget {
     required this.sensor,
     required this.child,
     this.onPreviewCalculated,
+    this.previewPadding,
   });
 
   @override
@@ -117,6 +119,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
           previewSize: widget.previewSize,
           scale: ratio,
           maxSize: maxSize!,
+          previewPadding: widget.previewPadding,
           child: child!,
         );
       },
@@ -128,6 +131,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   }
 }
 
+
 class PreviewFitWidget extends StatelessWidget {
   final Alignment alignment;
   final BoxConstraints constraints;
@@ -136,6 +140,7 @@ class PreviewFitWidget extends StatelessWidget {
   final Widget child;
   final double scale;
   final Size maxSize;
+  final EdgeInsets? previewPadding;
 
   const PreviewFitWidget({
     super.key,
@@ -146,25 +151,34 @@ class PreviewFitWidget extends StatelessWidget {
     required this.child,
     required this.scale,
     required this.maxSize,
+    this.previewPadding,
   });
 
   @override
   Widget build(BuildContext context) {
     final transformController = TransformationController()
       ..value = (Matrix4.identity()..scale(scale));
+
     return Align(
       alignment: alignment,
       child: SizedBox(
-        width: constraints.maxWidth,
-        height: constraints.maxHeight,
-        child: InteractiveViewer(
-          transformationController: transformController,
-          scaleEnabled: false,
-          constrained: false,
-          panEnabled: false,
-          clipBehavior: Clip.antiAlias,
-          child: Align(
-            alignment: Alignment.topLeft,
+        height: previewSize.height * scale,
+        child: Padding(
+          padding: previewPadding ?? EdgeInsets.zero,
+          child: InteractiveViewer(
+            key: previewWidgetKey,
+            transformationController: transformController,
+            scaleEnabled: false,
+            constrained: false,
+            panEnabled: false,
+            clipBehavior: Clip.antiAlias,
+            // child: Container(
+            //   width: 1600,
+            //   height: 1600,
+            //   decoration: BoxDecoration(
+            //     color: Colors.red,
+            //   ),
+            // ),
             child: SizedBox(
               width: previewSize.width,
               height: previewSize.height,
