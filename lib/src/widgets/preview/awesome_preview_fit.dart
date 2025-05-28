@@ -100,15 +100,6 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    // final RenderBox renderBox =
-    //     previewWidgetKey.currentContext?.findRenderObject() as RenderBox;
-    // final position = renderBox.localToGlobal(Offset.zero);
-    // this contains the translations from the top left corner of the screen
-    // debugPrint(
-    //     "==> position ${position.dx}, ${position.dy} | ${renderBox.size}");
-    // });
-
     return TweenAnimationBuilder<Size>(
       builder: (context, currentSize, child) {
         final ratio = sizeCalculator!.zoom;
@@ -172,13 +163,6 @@ class PreviewFitWidget extends StatelessWidget {
             constrained: false,
             panEnabled: false,
             clipBehavior: Clip.antiAlias,
-            // child: Container(
-            //   width: 1600,
-            //   height: 1600,
-            //   decoration: BoxDecoration(
-            //     color: Colors.red,
-            //   ),
-            // ),
             child: SizedBox(
               width: previewSize.width,
               height: previewSize.height,
