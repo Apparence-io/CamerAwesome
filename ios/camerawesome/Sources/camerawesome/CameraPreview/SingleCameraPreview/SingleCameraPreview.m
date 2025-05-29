@@ -219,18 +219,8 @@
 
   // Check if the preset needs to be changed
   if (![_captureSession.sessionPreset isEqualToString:presetSelected]) {
-      // Check if the session is running before changing the preset
-      BOOL sessionIsRunning = _captureSession.isRunning;
-      if (sessionIsRunning) {
-          [_captureSession stopRunning];
-      }
-
       [_captureSession setSessionPreset:presetSelected];
       _currentPreset = presetSelected;
-
-      if (sessionIsRunning) {
-          [_captureSession startRunning];
-      }
   } else {
       _currentPreset = _captureSession.sessionPreset;
   }
@@ -272,13 +262,23 @@
     *error = [FlutterError errorWithCode:@"PREVIEW_SIZE" message:@"impossible to change preview size, video already recording" details:@""];
     return;
   }
-  
+  BOOL sessionIsRunning = _captureSession.isRunning;
+  if (sessionIsRunning) {
+      [_captureSession stopRunning];
+  }
   [self setCameraPreset:previewSize];
+  if (sessionIsRunning) {
+    dispatch_async(_dispatchQueue, ^{
+      [self->_captureSession startRunning];
+    });
+  }
 }
 
 /// Start camera preview
 - (void)start {
-  [_captureSession startRunning];
+  dispatch_async(_dispatchQueue, ^{
+    [self->_captureSession startRunning];
+  });
 }
 
 /// Stop camera preview
@@ -288,6 +288,11 @@
 
 /// Set sensor between Front & Rear camera
 - (void)setSensor:(PigeonSensor *)sensor {
+  // Check if the session is running before changing the preset
+  BOOL sessionIsRunning = _captureSession.isRunning;
+  if (sessionIsRunning) {
+      [_captureSession stopRunning];
+  }
   // First remove all input & output
   [_captureSession beginConfiguration];
   
@@ -314,6 +319,11 @@
   [self setBestPreviewQuality];
   
   [_captureSession commitConfiguration];
+  if (sessionIsRunning) {
+    dispatch_async(_dispatchQueue, ^{
+      [self->_captureSession startRunning];
+    });
+  }
 }
 
 /// Set zoom level
