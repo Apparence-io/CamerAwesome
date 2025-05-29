@@ -208,7 +208,9 @@
   if ([self.cameraSession isRunning]) {
     [self.cameraSession stopRunning];
   }
-  [self.cameraSession startRunning];
+  dispatch_async(_dispatchQueue, ^{
+    [self.cameraSession startRunning];
+  });
 }
 
 - (void)configInitialSession:(NSArray<PigeonSensor *> *)sensors {  
@@ -238,7 +240,9 @@
 }
 
 - (void)start {
-  [self.cameraSession startRunning];
+  dispatch_async(_dispatchQueue, ^{
+    [self.cameraSession startRunning];
+  });
 }
 
 - (CGSize)getEffectivPreviewSize {
