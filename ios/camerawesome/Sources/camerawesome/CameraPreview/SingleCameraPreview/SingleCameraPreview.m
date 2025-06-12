@@ -314,11 +314,10 @@
 /// Set zoom level
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   CGFloat maxZoom = [self getMaxZoom];
-  CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
   
   NSError *zoomError;
   if ([_captureDevice lockForConfiguration:&zoomError]) {
-    _captureDevice.videoZoomFactor = scaledZoom;
+    _captureDevice.videoZoomFactor = MAX(1.0, MIN(value, maxZoom));
     [_captureDevice unlockForConfiguration];
   } else {
     *error = [FlutterError errorWithCode:@"ZOOM_NOT_SET" message:@"can't set the zoom value" details:[zoomError localizedDescription]];
