@@ -219,18 +219,13 @@
 
   // Check if the preset needs to be changed
   if (![_captureSession.sessionPreset isEqualToString:presetSelected]) {
-      // Check if the session is running before changing the preset
-      BOOL sessionIsRunning = _captureSession.isRunning;
-      if (sessionIsRunning) {
-          [_captureSession stopRunning];
-      }
-
+    // It is safe to set the preset on a running session, and since this method
+    // can be called inside a begin/commit configuration block, we must not stop
+    // the session here.
+    if ([_captureSession canSetSessionPreset:presetSelected]) {
       [_captureSession setSessionPreset:presetSelected];
       _currentPreset = presetSelected;
-
-      if (sessionIsRunning) {
-          [_captureSession startRunning];
-      }
+    }
   } else {
       _currentPreset = _captureSession.sessionPreset;
   }
