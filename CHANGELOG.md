@@ -1,3 +1,7 @@
+# 2.5.0
+- Fix iOS camera zoom change crash (thanks @haf and @chaosue) 
+- Fix camera preview not accurate with the result photo
+
 # 2.4.0
 
 - upgrade cameraX to 1.4.2 (thanks @fabricio-sisplan)

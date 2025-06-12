@@ -122,7 +122,6 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   }
 }
 
-
 class PreviewFitWidget extends StatelessWidget {
   final Alignment alignment;
   final BoxConstraints constraints;
