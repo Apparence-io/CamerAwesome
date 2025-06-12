@@ -39,7 +39,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.2.0"
+    version: "2.4.0"
   carousel_slider:
     dependency: transitive
     description:

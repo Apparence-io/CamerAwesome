@@ -206,7 +206,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           imageAnalysisConfig: imageAnalysisConfig,
           onPreviewTapBuilder: onPreviewTapBuilder,
           onPreviewScaleBuilder: onPreviewScaleBuilder,
-          previewFit: previewFit ?? CameraPreviewFit.cover,
+          previewFit: previewFit ?? CameraPreviewFit.contain,
           previewDecoratorBuilder: previewDecoratorBuilder,
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,

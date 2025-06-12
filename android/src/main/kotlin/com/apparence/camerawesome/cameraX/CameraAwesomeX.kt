@@ -750,22 +750,18 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
 
     @SuppressLint("RestrictedApi")
     override fun getEffectivPreviewSize(index: Long): PreviewSize {
-        val res = cameraState.previews!![index.toInt()].resolutionInfo?.resolution
-        return if (res != null) {
-            val rota90 = 90
-            val rota270 = 270
-            when (cameraState.previews!![index.toInt()].resolutionInfo?.rotationDegrees) {
-                rota90, rota270 -> {
-                    PreviewSize(res.height.toDouble(), res.width.toDouble())
-                }
+        val preview = cameraState.previews?.getOrNull(index.toInt()) ?: return PreviewSize(0.0, 0.0)
+        val resolutionInfo = preview.resolutionInfo ?: return PreviewSize(0.0, 0.0)
+        val res = resolutionInfo.resolution
 
-                else -> {
-                    PreviewSize(res.width.toDouble(), res.height.toDouble())
-                }
-            }
-        } else {
-            PreviewSize(0.0, 0.0)
+        val rotation = resolutionInfo.rotationDegrees
+        val previewSize = when (rotation) {
+            90, 270 -> PreviewSize(res.height.toDouble(), res.width.toDouble())
+            else -> PreviewSize(res.width.toDouble(), res.height.toDouble())
         }
+
+        Log.d("CameraX", "Preview size: width=${previewSize.width}, height=${previewSize.height}, rotation=$rotation")
+        return previewSize
     }
 
     @SuppressLint("RestrictedApi")
