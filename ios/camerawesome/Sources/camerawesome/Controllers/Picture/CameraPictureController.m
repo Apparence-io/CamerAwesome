@@ -185,21 +185,66 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   return cropped;
 }
 
+// Helper #1: map a “known” UIDeviceOrientation → UIImageOrientation
+- (UIImageOrientation)imageOrientationFromDeviceOrientation:(UIDeviceOrientation)devOrient {
+    switch (devOrient) {
+        case UIDeviceOrientationPortrait:
+            return (self.sensorPosition == PigeonSensorPositionFront && _mirrorFrontCamera)
+                ? UIImageOrientationLeftMirrored
+                : UIImageOrientationRight;
+        case UIDeviceOrientationPortraitUpsideDown:
+            return UIImageOrientationLeft;
+        case UIDeviceOrientationLandscapeLeft:
+            return (self.sensorPosition == PigeonSensorPositionBack)
+                ? UIImageOrientationDown
+                : UIImageOrientationUp;
+        case UIDeviceOrientationLandscapeRight:
+            return (self.sensorPosition == PigeonSensorPositionBack)
+                ? UIImageOrientationUp
+                : UIImageOrientationDown;
+        default:
+            return UIImageOrientationUp;
+    }
+}
+
+// Helper #2: map a UIInterfaceOrientation → UIImageOrientation
+- (UIImageOrientation)imageOrientationFromInterfaceOrientation:(UIInterfaceOrientation)uiOrient {
+    switch (uiOrient) {
+        case UIInterfaceOrientationPortrait:
+            return (self.sensorPosition == PigeonSensorPositionFront && _mirrorFrontCamera)
+                ? UIImageOrientationLeftMirrored
+                : UIImageOrientationRight;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            return UIImageOrientationLeft;
+        case UIInterfaceOrientationLandscapeLeft:
+            return (self.sensorPosition == PigeonSensorPositionBack)
+                ? UIImageOrientationDown
+                : UIImageOrientationUp;
+        case UIInterfaceOrientationLandscapeRight:
+            return (self.sensorPosition == PigeonSensorPositionBack)
+                ? UIImageOrientationUp
+                : UIImageOrientationDown;
+        default:
+            return UIImageOrientationUp;
+    }
+}
+
 - (UIImageOrientation)getJpegOrientation {
-  switch (_orientation) {
-    case UIDeviceOrientationPortrait:
-      if (self.sensorPosition == PigeonSensorPositionFront && _mirrorFrontCamera) {
-        return UIImageOrientationLeftMirrored;
-      } else {
-        return UIImageOrientationRight;
-      }
-    case UIDeviceOrientationLandscapeRight:
-      return (self.sensorPosition == PigeonSensorPositionBack) ? UIImageOrientationUp : UIImageOrientationDown;
-    case UIDeviceOrientationLandscapeLeft:
-      return (self.sensorPosition == PigeonSensorPositionBack) ? UIImageOrientationDown : UIImageOrientationUp;
-    default:
-      return UIImageOrientationLeft;
-  }
+    UIDeviceOrientation devOrient = _orientation;
+    // Check if _orientation is one of the ones we handle directly
+    if (devOrient != UIDeviceOrientationUnknown) {
+        return [self imageOrientationFromDeviceOrientation:devOrient];
+    }
+
+    // Fallback: pull the UI orientation
+    UIInterfaceOrientation uiOrient;
+    if (@available(iOS 13.0, *)) {
+        uiOrient = UIApplication.sharedApplication
+                        .windows.firstObject.windowScene.interfaceOrientation;
+    } else {
+        uiOrient = UIApplication.sharedApplication.statusBarOrientation;
+    }
+    return [self imageOrientationFromInterfaceOrientation:uiOrient];
 }
 
 @end
