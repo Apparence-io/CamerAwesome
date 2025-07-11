@@ -494,6 +494,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                         previewDecoratorBuilder: widget.previewDecoratorBuilder,
                         pictureInPictureConfigBuilder:
                             widget.pictureInPictureConfigBuilder,
+                        loadingWidget: widget.progressIndicator,
                       ),
               ),
             ],
