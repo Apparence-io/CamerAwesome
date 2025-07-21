@@ -26,6 +26,8 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 - (void)recordVideoAtPath:(NSString *)path captureDevice:(AVCaptureDevice *)device orientation:(NSInteger)orientation audioSetupCallback:(OnAudioSetup)audioSetupCallback videoWriterCallback:(OnVideoWriterSetup)videoWriterCallback options:(CupertinoVideoOptions *)options quality:(VideoRecordingQuality)quality completion:(nonnull void (^)(FlutterError * _Nullable))completion {
   _options = options;
   _recordingQuality = quality;
+  _orientation = orientation;
+  _captureDevice = device;
   
   // Create audio & video writer
   if (![self setupWriterForPath:path audioSetupCallback:audioSetupCallback options:options completion:completion]) {
@@ -40,8 +42,6 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _audioTimeOffset = CMTimeMake(0, 1);
   _videoIsDisconnected = NO;
   _audioIsDisconnected = NO;
-  _orientation = orientation;
-  _captureDevice = device;
   
   // Change video FPS if provided
   if (_options && _options.fps != nil && _options.fps > 0) {
@@ -154,12 +154,12 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 - (CGAffineTransform)getVideoOrientation {
   CGAffineTransform transform;
   
-  switch ([[UIDevice currentDevice] orientation]) {
+  switch (_orientation) {
     case UIDeviceOrientationLandscapeLeft:
-      transform = CGAffineTransformMakeRotation(-M_PI_2);
+      transform = CGAffineTransformMakeRotation(M_PI_2);
       break;
     case UIDeviceOrientationLandscapeRight:
-      transform = CGAffineTransformMakeRotation(M_PI_2);
+      transform = CGAffineTransformMakeRotation(-M_PI_2);
       break;
     case UIDeviceOrientationPortraitUpsideDown:
       transform = CGAffineTransformMakeRotation(M_PI);
