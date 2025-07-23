@@ -172,7 +172,7 @@ class _CameraPageState extends State<CameraPage> {
                               });
                             },
                             child: Container(
-                              color: Colors.red.withValues(alpha: 0.5),
+                              color: Colors.red.withAlpha(128),
                               margin: const EdgeInsets.all(8.0),
                               child: Center(
                                 child: Text(

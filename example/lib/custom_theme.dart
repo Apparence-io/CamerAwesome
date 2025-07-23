@@ -36,9 +36,9 @@ class CameraPage extends StatelessWidget {
         // Buttons of CamerAwesome UI will use this theme
         theme: AwesomeTheme(
           bottomActionsBackgroundColor:
-              Colors.deepPurple.withValues(alpha: 0.5),
+              Colors.deepPurple.withAlpha(128),
           buttonTheme: AwesomeButtonTheme(
-            backgroundColor: Colors.deepPurple.withValues(alpha: 0.5),
+            backgroundColor: Colors.deepPurple.withAlpha(withAlpha),
             iconSize: 32,
             padding: const EdgeInsets.all(18),
             foregroundColor: Colors.lightBlue,
@@ -51,7 +51,7 @@ class CameraPage extends StatelessWidget {
                   child: InkWell(
                     splashColor: Colors.deepPurple,
                     highlightColor:
-                        Colors.deepPurpleAccent.withValues(alpha: 0.5),
+                        Colors.deepPurpleAccent.withAlpha(128),
                     onTap: onTap,
                     child: child,
                   ),
