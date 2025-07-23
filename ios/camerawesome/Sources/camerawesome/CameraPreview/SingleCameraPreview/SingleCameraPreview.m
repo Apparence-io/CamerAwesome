@@ -586,6 +586,7 @@
   }
   
   [_captureSession commitConfiguration];
+  completion(@(YES), nil);
 }
 
 # pragma mark - Audio
