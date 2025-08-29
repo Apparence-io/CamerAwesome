@@ -11,8 +11,17 @@
 
 + (void)bgra8888toJpegBgra8888image:(nonnull AnalysisImageWrapper *)bgra8888image jpegQuality:(nonnull NSNumber *)jpegQuality completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
   NSData *bgra8888Data = bgra8888image.bytes.data;
-  CFDataRef cfData = (__bridge CFDataRef)bgra8888Data;
+  NSMutableData *mutableData = [bgra8888Data mutableCopy];
+  uint8_t *pixels = (uint8_t *)mutableData.mutableBytes;
   
+// Swap red and blue channels
+for (NSUInteger i = 0; i < mutableData.length; i += 4) {
+  uint8_t temp = pixels[i]; // Blue
+  pixels[i] = pixels[i + 2]; // Red
+  pixels[i + 2] = temp; // Blue
+}
+
+  CFDataRef cfData = (__bridge CFDataRef)mutableData;
   CGDataProviderRef dataProvider = CGDataProviderCreateWithCFData(cfData);
   
   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -32,9 +41,7 @@
   UIImage *image = [UIImage imageWithCGImage:cgImage];
   NSData *jpegData = UIImageJPEGRepresentation(image, [jpegQuality floatValue]);
   
-  
   FlutterStandardTypedData *dataFlutter = [FlutterStandardTypedData typedDataWithBytes:jpegData];
-  
   
   AnalysisImageWrapper *jpegImage = [AnalysisImageWrapper makeWithFormat:AnalysisImageFormatJpeg
                                                                    bytes:dataFlutter
@@ -50,7 +57,6 @@
   CGImageRelease(cgImage);
   CGDataProviderRelease(dataProvider);
 }
-
 + (void)nv21toJpegNv21Image:(nonnull AnalysisImageWrapper *)nv21Image jpegQuality:(nonnull NSNumber *)jpegQuality completion:(nonnull void (^)(AnalysisImageWrapper * _Nullable, FlutterError * _Nullable))completion {
   completion(nil, [FlutterError errorWithCode:@"NOT_SUPPORTED" message:@"this format is currently not supported on iOS" details:nil]);
 }
