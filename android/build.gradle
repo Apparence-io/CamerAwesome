@@ -29,7 +29,7 @@ def DEFAULT_PLAY_SERVICES_LOCATION_VERSION = "21.3.0"
 def DEFAULT_EXIF_INTERFACE_VERSION = "1.4.0"
 def DEFAULT_COMPILE_SDK_VERSION = 33
 def DEFAULT_MIN_SDK_VERSION = 21
-def DEFAULT_MEDIA_VERSION = "1.7.0"
+def DEFAULT_MEDIA_VERSION = "1.7.1"
 
 def getMajor(versionTab) {
     versionTab == null ? null : versionTab[0].split("\\-")[0]
@@ -144,7 +144,7 @@ dependencies {
     testImplementation "org.mockito.kotlin:mockito-kotlin:4.0.0"
     
 
-    def camerax_version = "1.4.2"
+    def camerax_version = "1.5.1"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
     implementation "androidx.camera:camera-lifecycle:${camerax_version}"
@@ -156,6 +156,6 @@ dependencies {
     // implementation "androidx.media:media:${compatMediaVersion}"
     implementation "androidx.media:media:$DEFAULT_MEDIA_VERSION"
 
-    implementation 'com.google.guava:guava:33.4.0-android'
+    implementation 'com.google.guava:guava:33.5.0-android'
 
 }
