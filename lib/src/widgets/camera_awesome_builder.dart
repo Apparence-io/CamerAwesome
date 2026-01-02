@@ -72,6 +72,9 @@ class CameraAwesomeBuilder extends StatefulWidget {
   // Widgets
   final Widget? progressIndicator;
 
+  /// Widget to display while the camera preview is loading
+  final Widget? loadingWidget;
+
   /// UI Builder
   final CameraLayoutBuilder builder;
 
@@ -127,6 +130,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.builder,
     required this.previewFit,
     required this.defaultFilter,
+    this.loadingWidget,
     this.onImageForAnalysis,
     this.imageAnalysisConfig,
     this.onPreviewTapBuilder,
@@ -166,6 +170,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
       {SensorConfig? sensorConfig,
       bool enablePhysicalButton = false,
       Widget? progressIndicator,
+      Widget? loadingWidget,
       required SaveConfig saveConfig,
       Function(MediaCapture)? onMediaTap,
       OnImageForAnalysis? onImageForAnalysis,
@@ -191,6 +196,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               ),
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
+          loadingWidget: loadingWidget,
           builder: (cameraModeState, preview) {
             return AwesomeCameraLayout(
               state: cameraModeState,
@@ -225,6 +231,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     bool mirrorFrontCamera = false,
     bool enablePhysicalButton = false,
     Widget? progressIndicator,
+    Widget? loadingWidget,
     required CameraLayoutBuilder builder,
     required SaveConfig saveConfig,
     AwesomeFilter? filter,
@@ -246,6 +253,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               ),
           enablePhysicalButton: enablePhysicalButton,
           progressIndicator: progressIndicator,
+          loadingWidget: loadingWidget,
           builder: builder,
           saveConfig: saveConfig,
           onMediaTap: null,
@@ -269,6 +277,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   CameraAwesomeBuilder.previewOnly({
     SensorConfig? sensorConfig,
     Widget? progressIndicator,
+    Widget? loadingWidget,
     required CameraLayoutBuilder builder,
     AwesomeFilter? filter,
     OnImageForAnalysis? onImageForAnalysis,
@@ -284,6 +293,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
           progressIndicator: progressIndicator,
+          loadingWidget: loadingWidget,
           builder: builder,
           saveConfig: null,
           onMediaTap: null,
@@ -311,6 +321,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     SensorConfig? sensorConfig,
     CameraAspectRatios aspectRatio = CameraAspectRatios.ratio_4_3,
     Widget? progressIndicator,
+    Widget? loadingWidget,
     required CameraLayoutBuilder builder,
     required OnImageForAnalysis onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
@@ -319,6 +330,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
               SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
           progressIndicator: progressIndicator,
+          loadingWidget: loadingWidget,
           builder: builder,
           saveConfig: null,
           onMediaTap: null,
@@ -446,6 +458,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                         state: snapshot.requireData,
                         padding: widget.previewPadding,
                         alignment: widget.previewAlignment,
+                        loadingWidget: widget.loadingWidget,
                         onPreviewTap: widget.onPreviewTapBuilder
                                 ?.call(snapshot.requireData) ??
                             OnPreviewTap(
