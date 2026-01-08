@@ -132,7 +132,6 @@ class PreparingCameraState extends CameraState {
   /////////////////////////////////////
 
   Future _startVideoMode() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
@@ -143,7 +142,6 @@ class PreparingCameraState extends CameraState {
   }
 
   Future _startPhotoMode() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
@@ -154,7 +152,6 @@ class PreparingCameraState extends CameraState {
   }
 
   Future _startPreviewMode() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,
@@ -165,7 +162,6 @@ class PreparingCameraState extends CameraState {
   }
 
   Future _startAnalysisMode() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     await _init(
       enableImageStream: cameraContext.imageAnalysisEnabled,
       enablePhysicalButton: cameraContext.enablePhysicalButton,

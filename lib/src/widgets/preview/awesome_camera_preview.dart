@@ -60,7 +60,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   StreamSubscription? _aspectRatioSubscription;
   CameraAspectRatios? _aspectRatio;
   double? _aspectRatioValue;
-  AnalysisPreview? _preview;
+  final ValueNotifier<AnalysisPreview?> _previewNotifier = ValueNotifier(null);
 
   // TODO: fetch this value from the native side
   final int kMaximumSupportedFloatingPreview = 3;
@@ -68,6 +68,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   @override
   void initState() {
     super.initState();
+    // Load preview size and textures in parallel, but set state only once
     Future.wait([
       widget.state.previewSize(0),
       _loadTextures(),
@@ -75,16 +76,34 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       if (mounted) {
         setState(() {
           _previewSize = data[0];
+          // Set aspect ratio immediately if available
+          _aspectRatio = widget.state.sensorConfig.aspectRatio;
+          switch (_aspectRatio) {
+            case CameraAspectRatios.ratio_16_9:
+              _aspectRatioValue = 16 / 9;
+              break;
+            case CameraAspectRatios.ratio_4_3:
+              _aspectRatioValue = 4 / 3;
+              break;
+            case CameraAspectRatios.ratio_1_1:
+              _aspectRatioValue = 1;
+              break;
+            default:
+              break;
+          }
         });
       }
     });
 
-    // refactor this
+    // Listen to sensor config changes
     _sensorConfigSubscription =
         widget.state.sensorConfig$.listen((sensorConfig) {
       _aspectRatioSubscription?.cancel();
       _aspectRatioSubscription =
           sensorConfig.aspectRatio$.listen((event) async {
+        // Only update if aspect ratio changed
+        if (_aspectRatio == event) return;
+
         final previewSize = await widget.state.previewSize(0);
         if ((_previewSize != previewSize || _aspectRatio != event) && mounted) {
           setState(() {
@@ -139,6 +158,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
   void dispose() {
     _sensorConfigSubscription?.cancel();
     _aspectRatioSubscription?.cancel();
+    _previewNotifier.dispose();
     super.dispose();
   }
 
@@ -168,13 +188,8 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   constraints: constraints,
                   sensor: widget.state.sensorConfig.sensors.first,
                   onPreviewCalculated: (preview) {
-                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                      if (mounted) {
-                        setState(() {
-                          _preview = preview;
-                        });
-                      }
-                    });
+                    // Direct update without frame delay
+                    _previewNotifier.value = preview;
                   },
                   child: AwesomeCameraGestureDetector(
                     onPreviewTapBuilder:
@@ -204,20 +219,29 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                   ),
                 ),
               ),
-              if (widget.previewDecoratorBuilder != null && _preview != null)
-                Positioned.fill(
-                  child: widget.previewDecoratorBuilder!(
-                    widget.state,
-                    _preview!,
-                  ),
-                ),
-              if (_preview != null)
-                Positioned.fill(
-                  child: widget.interfaceBuilder(
-                    widget.state,
-                    _preview!,
-                  ),
-                ),
+              ValueListenableBuilder<AnalysisPreview?>(
+                valueListenable: _previewNotifier,
+                builder: (context, preview, _) {
+                  if (preview == null) return const SizedBox.shrink();
+                  return Stack(
+                    children: [
+                      if (widget.previewDecoratorBuilder != null)
+                        Positioned.fill(
+                          child: widget.previewDecoratorBuilder!(
+                            widget.state,
+                            preview,
+                          ),
+                        ),
+                      Positioned.fill(
+                        child: widget.interfaceBuilder(
+                          widget.state,
+                          preview,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
               // TODO: be draggable
               // TODO: add shadow & border
               ..._buildPreviewTextures(),
