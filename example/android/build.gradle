@@ -3,6 +3,13 @@ allprojects {
         google()
         mavenCentral()
     }
+    // Disable treating warnings as errors for all subprojects
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+            options.compilerArgs.remove("-Werror")
+        }
+    }
 }
 
 rootProject.buildDir = "../build"
