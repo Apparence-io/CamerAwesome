@@ -48,6 +48,7 @@ typedef void(^OnVideoWriterSetup)(void);
 - (void)setVideoIsDisconnected:(bool)videoIsDisconnected;
 - (void)setAudioIsDisconnected:(bool)audioIsDisconnected;
 - (void)setPreviewSize:(CGSize)previewSize;
+- (void)updateCaptureDevice:(AVCaptureDevice *)device;
 
 @end
 
