@@ -276,6 +276,15 @@
 
 /// Start camera preview
 - (void)start {
+  // Create semaphore to wait for first frame
+  dispatch_semaphore_t firstFrameSemaphore = dispatch_semaphore_create(0);
+
+  // Set up one-shot callback to signal when first frame is received
+  self.onFirstFrameReceived = ^{
+    dispatch_semaphore_signal(firstFrameSemaphore);
+  };
+
+  // Start the capture session
   dispatch_async(_dispatchQueue, ^{
     [self->_captureSession startRunning];
 
@@ -288,6 +297,16 @@
       }];
     }
   });
+
+  // Wait for first frame with timeout (2 seconds max)
+  // This ensures camera is actually delivering frames before returning
+  dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC);
+  long result = dispatch_semaphore_wait(firstFrameSemaphore, timeout);
+  if (result != 0) {
+    NSLog(@"[CamerAwesome] Warning: Timeout waiting for first camera frame");
+    // Clear the callback since we're giving up waiting
+    self.onFirstFrameReceived = nil;
+  }
 }
 
 /// Stop camera preview
@@ -633,6 +652,13 @@
     [self.previewTexture updateBuffer:sampleBuffer];
     if (_onPreviewFrameAvailable) {
       _onPreviewFrameAvailable();
+    }
+
+    // Signal first frame received (one-shot callback)
+    if (_onFirstFrameReceived) {
+      void (^callback)(void) = _onFirstFrameReceived;
+      _onFirstFrameReceived = nil; // Clear to ensure one-shot behavior
+      callback();
     }
 
     // Send to image stream controller if enabled
