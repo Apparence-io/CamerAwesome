@@ -417,4 +417,16 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   _audioIsDisconnected = audioIsDisconnected;
 }
 
+/// Update capture device reference and re-apply FPS if recording with custom FPS
+/// This should be called after switching cameras during recording to ensure
+/// the new camera device uses the same FPS as the original recording settings.
+- (void)updateCaptureDevice:(AVCaptureDevice *)device {
+  _captureDevice = device;
+
+  // Re-apply custom FPS if recording is in progress and custom FPS was specified
+  if (_isRecording && _options && _options.fps != nil && _options.fps.intValue > 0) {
+    [self adjustCameraFPS:_options.fps];
+  }
+}
+
 @end

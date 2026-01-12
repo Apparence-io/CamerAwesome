@@ -315,7 +315,11 @@
   
   // Init the camera preview with the selected sensor
   [self initCameraPreview:sensor.position];
-  
+
+  // Update VideoController with new capture device to re-apply custom FPS if recording
+  // This fixes audio/video desync when switching cameras during recording with custom FPS
+  [_videoController updateCaptureDevice:_captureDevice];
+
   [self setBestPreviewQuality];
   
   [_captureSession commitConfiguration];
