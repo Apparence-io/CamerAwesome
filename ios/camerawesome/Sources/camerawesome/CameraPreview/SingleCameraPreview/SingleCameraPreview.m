@@ -278,6 +278,15 @@
 - (void)start {
   dispatch_async(_dispatchQueue, ^{
     [self->_captureSession startRunning];
+
+    // Pre-warm audio input/output to avoid cold-start sync issues on first recording
+    // Without this, first recording has audio delay because audio is set up on-demand
+    if (self->_videoController.isAudioEnabled && !self->_videoController.isAudioSetup) {
+      [self setUpCaptureSessionForAudioError:^(NSError *error) {
+        // Audio setup failed, but we can continue - it will be retried when recording starts
+        NSLog(@"[CamerAwesome] Audio pre-warm failed: %@", error.localizedDescription);
+      }];
+    }
   });
 }
 
