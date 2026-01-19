@@ -148,7 +148,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   camerawesome: a961fa32dafc00d2f093d824311c84f849586b58
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   google_mlkit_barcode_scanning: 8f5987f244a43fe1167689c548342a5174108159
   google_mlkit_commons: 2abe6a70e1824e431d16a51085cb475b672c8aab
   google_mlkit_face_detection: 754da2113a1952f063c7c5dc347ac6ae8934fb77

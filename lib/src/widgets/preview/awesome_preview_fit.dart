@@ -122,6 +122,8 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   }
 }
 
+typedef FuncTransformMatrix = Matrix4 Function(PreviewSize size, double scale);
+
 class PreviewFitWidget extends StatelessWidget {
   final Alignment alignment;
   final BoxConstraints constraints;
@@ -131,8 +133,25 @@ class PreviewFitWidget extends StatelessWidget {
   final double scale;
   final Size maxSize;
   final EdgeInsets? previewPadding;
+  // ignore: prefer_function_declarations_over_variables
+  final FuncTransformMatrix? transformMatrix =
+      (PreviewSize size, double scale) {
+    double h = (size.width * 4.0) / 3.0;
+    double diff = size.height - h;
+    if (diff <= 0) {
+      debugPrint('A diff w:${size.width} h:${size.height} diff:${diff} ');
+      return Matrix4.identity()..scale(scale);
+    }
+    double imageHeightDivided = size.height / 2.0;
+    double localX = imageHeightDivided - ((imageHeightDivided * 3.0) / 4.0);
+    //double diffTop = (diff * scale) / 2.0;
+    debugPrint('B w:${size.width} h:${size.height} localX:${localX}');
+    return Matrix4.identity()
+      ..scale(scale)
+      ..translate(0.0, -(localX));
+  };
 
-  const PreviewFitWidget({
+  PreviewFitWidget({
     super.key,
     required this.alignment,
     required this.constraints,
@@ -146,8 +165,11 @@ class PreviewFitWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final transformController = TransformationController()
-      ..value = (Matrix4.identity()..scale(scale));
+    var mx = Matrix4.identity()..scale(scale);
+    if (transformMatrix != null) {
+      mx = transformMatrix!(previewSize, scale);
+    }
+    final transformController = TransformationController()..value = (mx);
 
     return Align(
       alignment: alignment,
