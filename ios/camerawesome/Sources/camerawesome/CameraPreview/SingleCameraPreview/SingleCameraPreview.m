@@ -333,14 +333,8 @@
       }
     }
   }
-  // FIX: Changed from setAudioIsDisconnected to setVideoIsDisconnected.
-  // VIDEO is what's being switched (brief gap while new camera initializes),
-  // not audio. Setting the wrong flag caused audio timestamps to be offset
-  // while video timestamps weren't compensated for the gap, causing desync.
-  // The videoIsDisconnected flag triggers proper timestamp gap compensation
-  // in VideoController.m's captureOutput method.
-  [_videoController setVideoIsDisconnected:YES];
-
+  [_videoController setAudioIsDisconnected:YES];
+  
   [_captureSession removeOutput:_capturePhotoOutput];
   [_captureSession removeConnection:_captureConnection];
   
