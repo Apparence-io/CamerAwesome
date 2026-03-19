@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) FlutterEventSink orientationEventSink;
 @property(readonly, nonatomic) UIDeviceOrientation deviceOrientation;
 @property(readonly, nonatomic) CMMotionManager *motionManager;
+@property(nonatomic, copy, nullable) void (^onOrientationChanged)(UIDeviceOrientation newOrientation);
 
 - (instancetype)init;
 - (void)startMotionDetection;

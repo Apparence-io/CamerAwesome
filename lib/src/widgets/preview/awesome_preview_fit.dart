@@ -152,6 +152,7 @@ class PreviewFitWidget extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: SizedBox(
+        width: previewSize.width * scale,
         height: previewSize.height * scale,
         child: Padding(
           padding: previewPadding ?? EdgeInsets.zero,
