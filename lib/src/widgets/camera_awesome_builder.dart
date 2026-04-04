@@ -4,6 +4,7 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:camerawesome/pigeon.dart';
 import 'package:camerawesome/src/orchestrator/camera_context.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// This is the builder for your camera interface
 /// Using the [state] you can do anything you need without having to think about the camera flow
@@ -279,8 +280,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     Alignment previewAlignment = Alignment.center,
     PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
-          sensorConfig: sensorConfig ??
-              SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
+          sensorConfig: sensorConfig ?? SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
           progressIndicator: progressIndicator,
           builder: builder,
@@ -314,8 +314,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required OnImageForAnalysis onImageForAnalysis,
     AnalysisConfig? imageAnalysisConfig,
   }) : this._(
-          sensorConfig: sensorConfig ??
-              SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
+          sensorConfig: sensorConfig ?? SensorConfig.single(sensor: Sensor.position(SensorPosition.back)),
           enablePhysicalButton: false,
           progressIndicator: progressIndicator,
           builder: builder,
@@ -341,8 +340,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
   }
 }
 
-class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
-    with WidgetsBindingObserver {
+class _CameraWidgetBuilder extends State<CameraAwesomeBuilder> with WidgetsBindingObserver {
   late CameraContext _cameraContext;
   final _cameraPreviewKey = GlobalKey<AwesomeCameraPreviewState>();
   StreamSubscription<MediaCapture?>? _captureStateListener;
@@ -362,6 +360,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
 
   @override
   void didChangeDependencies() {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.didChangeDependencies();
   }
 
@@ -392,15 +391,11 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       widget.sensorConfig,
       enablePhysicalButton: widget.enablePhysicalButton,
       filter: widget.defaultFilter ?? AwesomeFilter.None,
-      initialCaptureMode: widget.saveConfig?.initialCaptureMode ??
-          (widget.showPreview
-              ? CaptureMode.preview
-              : CaptureMode.analysis_only),
+      initialCaptureMode: widget.saveConfig?.initialCaptureMode ?? (widget.showPreview ? CaptureMode.preview : CaptureMode.analysis_only),
       saveConfig: widget.saveConfig,
       onImageForAnalysis: widget.onImageForAnalysis,
       analysisConfig: widget.imageAnalysisConfig,
-      exifPreferences: widget.saveConfig?.exifPreferences ??
-          ExifPreferences(saveGPSLocation: false),
+      exifPreferences: widget.saveConfig?.exifPreferences ?? ExifPreferences(saveGPSLocation: false),
       availableFilters: widget.availableFilters,
     );
 
@@ -421,9 +416,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
       child: StreamBuilder<CameraState>(
         stream: _cameraContext.state$,
         builder: (context, snapshot) {
-          if (!snapshot.hasData ||
-              snapshot.data!.captureMode == null ||
-              snapshot.requireData is PreparingCameraState) {
+          if (!snapshot.hasData || snapshot.data!.captureMode == null || snapshot.requireData is PreparingCameraState) {
             return widget.progressIndicator ??
                 const Center(
                   child: CircularProgressIndicator.adaptive(),
@@ -444,8 +437,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                         state: snapshot.requireData,
                         padding: widget.previewPadding,
                         alignment: widget.previewAlignment,
-                        onPreviewTap: widget.onPreviewTapBuilder
-                                ?.call(snapshot.requireData) ??
+                        onPreviewTap: widget.onPreviewTapBuilder?.call(snapshot.requireData) ??
                             OnPreviewTap(
                               onTap: (
                                 position,
@@ -453,26 +445,22 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                                 pixelPreviewSize,
                               ) {
                                 snapshot.requireData.when(
-                                  onPhotoMode: (photoState) =>
-                                      photoState.focusOnPoint(
+                                  onPhotoMode: (photoState) => photoState.focusOnPoint(
                                     flutterPosition: position,
                                     pixelPreviewSize: pixelPreviewSize,
                                     flutterPreviewSize: flutterPreviewSize,
                                   ),
-                                  onVideoMode: (videoState) =>
-                                      videoState.focusOnPoint(
+                                  onVideoMode: (videoState) => videoState.focusOnPoint(
                                     flutterPosition: position,
                                     pixelPreviewSize: pixelPreviewSize,
                                     flutterPreviewSize: flutterPreviewSize,
                                   ),
-                                  onVideoRecordingMode: (videoRecState) =>
-                                      videoRecState.focusOnPoint(
+                                  onVideoRecordingMode: (videoRecState) => videoRecState.focusOnPoint(
                                     flutterPosition: position,
                                     pixelPreviewSize: pixelPreviewSize,
                                     flutterPreviewSize: flutterPreviewSize,
                                   ),
-                                  onPreviewMode: (previewState) =>
-                                      previewState.focusOnPoint(
+                                  onPreviewMode: (previewState) => previewState.focusOnPoint(
                                     flutterPosition: position,
                                     pixelPreviewSize: pixelPreviewSize,
                                     flutterPreviewSize: flutterPreviewSize,
@@ -480,18 +468,15 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                                 );
                               },
                             ),
-                        onPreviewScale: widget.onPreviewScaleBuilder
-                                ?.call(snapshot.requireData) ??
+                        onPreviewScale: widget.onPreviewScaleBuilder?.call(snapshot.requireData) ??
                             OnPreviewScale(
                               onScale: (scale) {
-                                snapshot.requireData.sensorConfig
-                                    .setZoom(scale);
+                                snapshot.requireData.sensorConfig.setZoom(scale);
                               },
                             ),
                         interfaceBuilder: widget.builder,
                         previewDecoratorBuilder: widget.previewDecoratorBuilder,
-                        pictureInPictureConfigBuilder:
-                            widget.pictureInPictureConfigBuilder,
+                        pictureInPictureConfigBuilder: widget.pictureInPictureConfigBuilder,
                       ),
               ),
             ],

@@ -58,11 +58,9 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   StreamSubscription? _sensorConfigSubscription;
   StreamSubscription? _aspectRatioSubscription;
-  StreamSubscription? _orientationSubscription;
   CameraAspectRatios? _aspectRatio;
   double? _aspectRatioValue;
   AnalysisPreview? _preview;
-  CameraOrientations _currentOrientation = CameraOrientations.portrait_up;
 
   // TODO: fetch this value from the native side
   final int kMaximumSupportedFloatingPreview = 3;
@@ -77,16 +75,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       if (mounted) {
         setState(() {
           _previewSize = data[0];
-        });
-      }
-    });
-
-    // Track device orientation for rotating the camera preview texture
-    _orientationSubscription =
-        CamerawesomePlugin.getNativeOrientation()?.listen((orientation) {
-      if (_currentOrientation != orientation && mounted) {
-        setState(() {
-          _currentOrientation = orientation;
         });
       }
     });
@@ -149,7 +137,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
 
   @override
   void dispose() {
-    _orientationSubscription?.cancel();
     _sensorConfigSubscription?.cancel();
     _aspectRatioSubscription?.cancel();
     super.dispose();
@@ -166,14 +153,10 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
           );
     }
 
-    // Determine rotation needed to compensate for device orientation.
-    // The camera buffer is always portrait; when the UI rotates to landscape
-    // we rotate the texture and swap the preview dimensions for correct layout.
-    final quarterTurns = _quarterTurnsForOrientation(_currentOrientation);
-    final isLandscape = quarterTurns == 1 || quarterTurns == 3;
-    final effectivePreviewSize = isLandscape
-        ? PreviewSize(width: _previewSize!.height, height: _previewSize!.width)
-        : _previewSize!;
+    // Don't rotate the camera preview texture when the device rotates —
+    // keep it stable like the native iOS Camera app.
+    const quarterTurns = 0;
+    final effectivePreviewSize = _previewSize!;
 
     return Container(
       color: Colors.black,
@@ -251,21 +234,6 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
         },
       ),
     );
-  }
-
-  /// Returns the number of clockwise 90° turns needed to rotate the portrait
-  /// camera buffer so it appears upright for the current device orientation.
-  int _quarterTurnsForOrientation(CameraOrientations orientation) {
-    switch (orientation) {
-      case CameraOrientations.portrait_up:
-        return 0;
-      case CameraOrientations.landscape_left:
-        return 1;
-      case CameraOrientations.portrait_down:
-        return 2;
-      case CameraOrientations.landscape_right:
-        return 3;
-    }
   }
 
   List<Widget> _buildPreviewTextures() {
