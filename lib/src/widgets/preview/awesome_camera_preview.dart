@@ -153,6 +153,11 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
           );
     }
 
+    // Don't rotate the camera preview texture when the device rotates —
+    // keep it stable like the native iOS Camera app.
+    const quarterTurns = 0;
+    final effectivePreviewSize = _previewSize!;
+
     return Container(
       color: Colors.black,
       child: LayoutBuilder(
@@ -163,7 +168,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                 child: AnimatedPreviewFit(
                   alignment: widget.alignment,
                   previewFit: widget.previewFit,
-                  previewSize: _previewSize!,
+                  previewSize: effectivePreviewSize,
                   previewPadding: widget.padding,
                   constraints: constraints,
                   sensor: widget.state.sensorConfig.sensors.first,
@@ -192,13 +197,16 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
                       //FIX performances
                       stream: widget.state.filter$,
                       builder: (context, snapshot) {
+                        final texture = quarterTurns != 0
+                            ? RotatedBox(quarterTurns: quarterTurns, child: _textures.first)
+                            : _textures.first;
                         return snapshot.hasData &&
                                 snapshot.data != AwesomeFilter.None
                             ? ColorFiltered(
                                 colorFilter: snapshot.data!.preview,
-                                child: _textures.first,
+                                child: texture,
                               )
-                            : _textures.first;
+                            : texture;
                       },
                     ),
                   ),
