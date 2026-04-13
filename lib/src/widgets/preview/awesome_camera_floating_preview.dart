@@ -10,6 +10,7 @@ class AwesomeCameraFloatingPreview extends StatefulWidget {
   final double aspectRatio;
   final Sensor sensor;
   final PictureInPictureConfig pictureInPictureConfig;
+  final FuncTransformMatrix? transformMatrix;
 
   AwesomeCameraFloatingPreview({
     super.key,
@@ -17,6 +18,7 @@ class AwesomeCameraFloatingPreview extends StatefulWidget {
     required this.sensor,
     required this.texture,
     required this.aspectRatio,
+    required this.transformMatrix,
     PictureInPictureConfig? pictureInPictureConfig,
   }) : pictureInPictureConfig =
             pictureInPictureConfig ?? PictureInPictureConfig(sensor: sensor);
@@ -58,6 +60,7 @@ class _AwesomeCameraFloatingPreviewState
               : null,
           child: widget.pictureInPictureConfig.pictureInPictureBuilder(
               AnimatedPreviewFit(
+                transformMatrix: widget.transformMatrix,
                 previewFit: CameraPreviewFit.cover,
                 previewSize: PreviewSize(
                   width: 1000,

@@ -17,6 +17,7 @@ class AnimatedPreviewFit extends StatefulWidget {
   final Widget child;
   final OnPreviewCalculated? onPreviewCalculated;
   final Sensor sensor;
+  final FuncTransformMatrix? transformMatrix;
 
   const AnimatedPreviewFit({
     super.key,
@@ -26,6 +27,7 @@ class AnimatedPreviewFit extends StatefulWidget {
     required this.constraints,
     required this.sensor,
     required this.child,
+    required this.transformMatrix,
     this.onPreviewCalculated,
     this.previewPadding,
   });
@@ -108,6 +110,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
           constraints: widget.constraints,
           previewFit: widget.previewFit,
           previewSize: widget.previewSize,
+          transformMatrix: widget.transformMatrix,
           scale: ratio,
           maxSize: maxSize!,
           previewPadding: widget.previewPadding,
@@ -122,6 +125,8 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
   }
 }
 
+typedef FuncTransformMatrix = Matrix4 Function(PreviewSize size, double scale);
+
 class PreviewFitWidget extends StatelessWidget {
   final Alignment alignment;
   final BoxConstraints constraints;
@@ -131,6 +136,7 @@ class PreviewFitWidget extends StatelessWidget {
   final double scale;
   final Size maxSize;
   final EdgeInsets? previewPadding;
+  final FuncTransformMatrix? transformMatrix;
 
   const PreviewFitWidget({
     super.key,
@@ -141,13 +147,17 @@ class PreviewFitWidget extends StatelessWidget {
     required this.child,
     required this.scale,
     required this.maxSize,
+    required this.transformMatrix,
     this.previewPadding,
   });
 
   @override
   Widget build(BuildContext context) {
-    final transformController = TransformationController()
-      ..value = (Matrix4.identity()..scale(scale));
+    var mx = Matrix4.identity()..scale(scale);
+    if (transformMatrix != null) {
+      mx = transformMatrix!(previewSize, scale);
+    }
+    final transformController = TransformationController()..value = (mx);
 
     return Align(
       alignment: alignment,
