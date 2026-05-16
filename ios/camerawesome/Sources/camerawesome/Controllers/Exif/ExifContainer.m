@@ -6,8 +6,10 @@
 //
 
 #import <ImageIO/ImageIO.h>
-#import <CoreLocation/CoreLocation.h>
 #import "ExifContainer.h"
+#if CAMERAWESOME_USE_LOCATION
+#import <CoreLocation/CoreLocation.h>
+#endif
 
 NSString const * kCGImagePropertyProjection = @"ProjectionType";
 
@@ -32,6 +34,7 @@ NSString const * kCGImagePropertyProjection = @"ProjectionType";
   return self;
 }
 
+#if CAMERAWESOME_USE_LOCATION
 - (void)addLocation:(CLLocation *)currentLocation {
   CLLocationDegrees latitude  = currentLocation.coordinate.latitude;
   CLLocationDegrees longitude = currentLocation.coordinate.longitude;
@@ -66,6 +69,7 @@ NSString const * kCGImagePropertyProjection = @"ProjectionType";
   self.gpsDictionary[(NSString*)kCGImagePropertyGPSDOP] = [NSNumber numberWithFloat:currentLocation.horizontalAccuracy];
   self.gpsDictionary[(NSString*)kCGImagePropertyGPSAltitude] = [NSNumber numberWithFloat:currentLocation.altitude];
 }
+#endif
 
 - (void)addUserComment:(NSString*)comment {
   NSString *key = (__bridge_transfer NSString *)kCGImagePropertyExifUserComment;

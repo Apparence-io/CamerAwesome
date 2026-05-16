@@ -89,12 +89,14 @@ previewPhotoSampleBuffer:(CMSampleBufferRef)previewPhotoSampleBuffer
   ExifContainer *container = [[ExifContainer alloc] init];
   [container addCreationDate:[NSDate date]];
   
-  // Save GPS location only if provided
+  // Save GPS location only if provided (and compiled with location support)
+#if CAMERAWESOME_USE_LOCATION
   if (_saveGPSLocation) {
     CLLocationManager *locationManager = [CLLocationManager new];
     CLLocation *location = [locationManager location];
     [container addLocation:location];
   }
+#endif
   
   // we ignore this error because plugin can only be installed on iOS 11+
 #pragma clang diagnostic push

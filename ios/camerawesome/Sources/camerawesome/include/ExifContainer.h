@@ -6,14 +6,19 @@
 //  Taken from: https://github.com/Nikita2k/SimpleExif
 
 #import <Foundation/Foundation.h>
+#import "CamerawesomeCompileOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
+#if CAMERAWESOME_USE_LOCATION
 @class CLLocation;
+#endif
 
 @interface ExifContainer : NSObject
 
+#if CAMERAWESOME_USE_LOCATION
 - (void)addLocation:(CLLocation *)currentLocation;
+#endif
 - (void)addUserComment:(NSString *)comment;
 - (void)addCreationDate:(NSDate *)date;
 - (void)addDescription:(NSString *)description;

@@ -7,12 +7,17 @@
 
 #import <Flutter/Flutter.h>
 #import <Foundation/Foundation.h>
+#import "CamerawesomeCompileOptions.h"
+#if CAMERAWESOME_USE_LOCATION
 #import <CoreLocation/CoreLocation.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
 typedef void(^OnAuthorizationDeclined)(void);
 typedef void(^OnAuthorizationGranted)(void);
+
+#if CAMERAWESOME_USE_LOCATION
 
 @interface LocationController : NSObject<CLLocationManagerDelegate>
 
@@ -24,5 +29,19 @@ typedef void(^OnAuthorizationGranted)(void);
 - (void)requestWhenInUseAuthorizationOnGranted:(OnAuthorizationGranted)granted declined:(OnAuthorizationDeclined)declined;
 
 @end
+
+#else
+
+// Stub interface when location support is compiled out. Keeps the public
+// surface so call sites in SingleCameraPreview / MultiCameraPreview /
+// CamerawesomePlugin still compile without further #ifdef churn.
+@interface LocationController : NSObject
+
+- (instancetype)init;
+- (void)requestWhenInUseAuthorizationOnGranted:(OnAuthorizationGranted)granted declined:(OnAuthorizationDeclined)declined;
+
+@end
+
+#endif
 
 NS_ASSUME_NONNULL_END

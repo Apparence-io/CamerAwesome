@@ -6,6 +6,7 @@
 //
 
 #import "VideoController.h"
+#import "CamerawesomeCompileOptions.h"
 
 FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 
@@ -14,7 +15,11 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 - (instancetype)init {
   self = [super init];
   _isRecording = NO;
+#if CAMERAWESOME_USE_MICROPHONE
   _isAudioEnabled = YES;
+#else
+  _isAudioEnabled = NO;
+#endif
   _isPaused = NO;
   
   return self;
@@ -129,12 +134,13 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
   
   [_videoWriter addInput:_videoWriterInput];
   
+#if CAMERAWESOME_USE_MICROPHONE
   if (_isAudioEnabled) {
     AudioChannelLayout acl;
     bzero(&acl, sizeof(acl));
     acl.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
     NSDictionary *audioOutputSettings = nil;
-    
+
     audioOutputSettings = [NSDictionary
                            dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:kAudioFormatMPEG4AAC], AVFormatIDKey,
                            [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
@@ -144,9 +150,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
     _audioWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio
                                                            outputSettings:audioOutputSettings];
     _audioWriterInput.expectsMediaDataInRealTime = YES;
-    
+
     [_videoWriter addInput:_audioWriterInput];
   }
+#endif
   
   return YES;
 }

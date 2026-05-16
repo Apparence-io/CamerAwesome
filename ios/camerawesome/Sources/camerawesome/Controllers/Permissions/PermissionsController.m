@@ -6,6 +6,7 @@
 //
 
 #import "PermissionsController.h"
+#import "CamerawesomeCompileOptions.h"
 
 @implementation CameraPermissionsController
 
@@ -38,15 +39,17 @@
 
 @implementation MicrophonePermissionsController
 
+#if CAMERAWESOME_USE_MICROPHONE
+
 + (BOOL)checkPermission {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
-  
+
   return (permissionStatus == AVAudioSessionRecordPermissionGranted);
 }
 
 + (BOOL)checkAndRequestPermission {
   AVAudioSessionRecordPermission permissionStatus = [[AVAudioSession sharedInstance] recordPermission];
-  
+
   __block BOOL permissionsGranted;
   if (permissionStatus == AVAudioSessionRecordPermissionUndetermined) {
     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
@@ -58,8 +61,22 @@
   } else {
     permissionsGranted = (permissionStatus == AVAudioSessionRecordPermissionGranted);
   }
-  
+
   return permissionsGranted;
 }
+
+#else
+
+// Stubs when CAMERAWESOME_DISABLE_MICROPHONE=1. The microphone permission is
+// reported as denied so callers fall back to audio-less recording paths.
++ (BOOL)checkPermission {
+  return NO;
+}
+
++ (BOOL)checkAndRequestPermission {
+  return NO;
+}
+
+#endif
 
 @end
