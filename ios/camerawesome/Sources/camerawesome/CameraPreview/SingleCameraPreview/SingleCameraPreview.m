@@ -6,6 +6,7 @@
 //
 
 #import "SingleCameraPreview.h"
+#import "CamerawesomeCompileOptions.h"
 
 @implementation SingleCameraPreview {
   dispatch_queue_t _dispatchQueue;
@@ -567,16 +568,17 @@
 
 /// Set audio recording mode
 - (void)setRecordingAudioMode:(bool)isAudioEnabled completion:(void(^)(NSNumber *_Nullable, FlutterError *_Nullable))completion {
+#if CAMERAWESOME_USE_MICROPHONE
   if (_videoController.isRecording) {
     completion(@(NO), [FlutterError errorWithCode:@"CHANGE_AUDIO_MODE" message:@"impossible to change audio mode, video already recording" details:@""]);
     return;
   }
-  
+
   [_captureSession beginConfiguration];
   [_videoController setIsAudioEnabled:isAudioEnabled];
   [_videoController setIsAudioSetup:NO];
   [_videoController setAudioIsDisconnected:YES];
-  
+
   // Only remove audio channel input but keep video
   for (AVCaptureInput *input in [_captureSession inputs]) {
     for (AVCaptureInputPort *port in input.ports) {
@@ -588,20 +590,26 @@
   }
   // Only remove audio channel output but keep video
   [_captureSession removeOutput:_audioOutput];
-  
+
   if (_videoController.isRecording) {
     [self setUpCaptureSessionForAudioError:^(NSError *error) {
       completion(@(NO), [FlutterError errorWithCode:@"VIDEO_ERROR" message:@"error when trying to setup audio" details:[error localizedDescription]]);
     }];
   }
-  
+
   [_captureSession commitConfiguration];
   completion(@(YES), nil);
+#else
+  // Microphone support compiled out; audio recording is permanently disabled.
+  [_videoController setIsAudioEnabled:NO];
+  completion(@(NO), nil);
+#endif
 }
 
 # pragma mark - Audio
 /// Setup audio channel to record audio
 - (void)setUpCaptureSessionForAudioError:(nonnull void (^)(NSError *))error {
+#if CAMERAWESOME_USE_MICROPHONE
   NSError *audioError = nil;
   // Create a device input with the device and add it to the session.
   // Setup the audio input.
@@ -611,13 +619,13 @@
   if (audioError) {
     error(audioError);
   }
-  
+
   // Setup the audio output.
   _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-  
+
   if ([_captureSession canAddInput:audioInput]) {
     [_captureSession addInput:audioInput];
-    
+
     if ([_captureSession canAddOutput:_audioOutput]) {
       [_captureSession addOutput:_audioOutput];
       [_videoController setIsAudioSetup:YES];
@@ -625,6 +633,10 @@
       [_videoController setIsAudioSetup:NO];
     }
   }
+#else
+  // Microphone support compiled out; no audio capture session is configured.
+  [_videoController setIsAudioSetup:NO];
+#endif
 }
 
 # pragma mark - Camera Delegates

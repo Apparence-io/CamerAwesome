@@ -9,7 +9,10 @@
 #import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 #import <CoreMotion/CoreMotion.h>
+#import "CamerawesomeCompileOptions.h"
+#if CAMERAWESOME_USE_LOCATION
 #import <CoreLocation/CoreLocation.h>
+#endif
 
 #import "CameraSensor.h"
 #import "AspectRatio.h"
