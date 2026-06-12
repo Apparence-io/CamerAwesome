@@ -87,8 +87,11 @@
   AVCaptureDevice *mainDevice = self.devices.firstObject.device;
   
   CGFloat maxZoom = [self getMaxZoom];
-  CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
-  
+  // Geometric mapping so equal finger travel gives equal *perceived* zoom
+  // change (see SingleCameraPreview.setZoom). minZoom is always 1.0 here.
+  CGFloat clampedValue = MAX(0.0f, MIN(1.0f, value));
+  CGFloat scaledZoom = pow(maxZoom, clampedValue);
+
   NSError *zoomError;
   if ([mainDevice lockForConfiguration:&zoomError]) {
     mainDevice.videoZoomFactor = scaledZoom;

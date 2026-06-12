@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:rxdart/rxdart.dart';
@@ -113,9 +114,13 @@ class SensorConfig {
     final minZoom = await CamerawesomePlugin.getMinZoom();
     final maxZoom = await CamerawesomePlugin.getMaxZoom();
     if (minZoom == null || maxZoom == null || maxZoom <= minZoom) return;
-    if (minZoom < 1.0 && maxZoom >= 1.0) {
-      final oneXLinearZoom =
-          ((1.0 - minZoom) / (maxZoom - minZoom)).clamp(0.0, 1.0).toDouble();
+    if (minZoom < 1.0 && maxZoom >= 1.0 && minZoom > 0.0) {
+      // Inverse of the geometric mapping used natively
+      // (ratio = minZoom * (maxZoom / minZoom) ^ normalized): solve for the
+      // normalized value that yields a 1.0x ratio.
+      final oneXLinearZoom = (-math.log(minZoom) / (math.log(maxZoom) - math.log(minZoom)))
+          .clamp(0.0, 1.0)
+          .toDouble();
       if (oneXLinearZoom > 0.0) {
         await setZoom(oneXLinearZoom);
       }

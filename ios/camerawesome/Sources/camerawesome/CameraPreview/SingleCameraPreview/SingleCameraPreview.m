@@ -339,8 +339,13 @@
 /// Set zoom level
 - (void)setZoom:(float)value error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   CGFloat maxZoom = [self getMaxZoom];
-  CGFloat scaledZoom = value * (maxZoom - 1.0f) + 1.0f;
-  
+  // Geometric mapping so equal finger travel gives equal *perceived* zoom
+  // change. A plain linear map (value * (maxZoom - 1) + 1) crams the whole
+  // useful low-zoom range into the first few percent of the gesture, which
+  // makes the zoom feel jumpy. minZoom is always 1.0 here.
+  CGFloat clampedValue = MAX(0.0f, MIN(1.0f, value));
+  CGFloat scaledZoom = pow(maxZoom, clampedValue);
+
   NSError *zoomError;
   if ([_captureDevice lockForConfiguration:&zoomError]) {
     _captureDevice.videoZoomFactor = scaledZoom;

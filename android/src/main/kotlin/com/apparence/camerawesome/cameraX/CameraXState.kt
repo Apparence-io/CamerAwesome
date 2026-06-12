@@ -342,7 +342,17 @@ data class CameraXState(
         val zoomState = mainCameraInfos.zoomState.value ?: return
         val minZoomRatio = zoomState.minZoomRatio
         val maxZoomRatio = zoomState.maxZoomRatio
-        val targetZoomRatio = minZoomRatio + (maxZoomRatio - minZoomRatio) * clampedZoom
+        // Geometric mapping so equal finger travel gives equal *perceived* zoom
+        // change. A plain linear map crams the whole useful low-zoom range into
+        // the first few percent of the gesture, making the zoom feel jumpy.
+        val targetZoomRatio = if (minZoomRatio > 0f) {
+            minZoomRatio * Math.pow(
+                (maxZoomRatio / minZoomRatio).toDouble(),
+                clampedZoom.toDouble()
+            ).toFloat()
+        } else {
+            minZoomRatio + (maxZoomRatio - minZoomRatio) * clampedZoom
+        }
         mainCameraControl.setZoomRatio(targetZoomRatio)
     }
 

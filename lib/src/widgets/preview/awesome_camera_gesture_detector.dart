@@ -67,8 +67,21 @@ class AwesomeCameraGestureDetector extends StatefulWidget {
 class _AwesomeCameraGestureDetector
     extends State<AwesomeCameraGestureDetector> {
   double _zoomScale = 0;
-  final double _accuracy = 0.01;
-  double? _lastScale;
+
+  /// Zoom level captured when a pinch gesture starts, used as the anchor so the
+  /// zoom maps proportionally to finger spread instead of stepping by a fixed
+  /// increment (which felt jerky).
+  double _baseZoom = 0;
+
+  /// Scale reported on the first genuine two-finger frame. We anchor to this
+  /// instead of assuming the gesture begins at 1.0: when the two fingers don't
+  /// land at the exact same instant the recognizer's first reported scale can
+  /// already be far from 1.0, which otherwise makes the zoom jump straight to
+  /// max.
+  double? _startScale;
+
+  /// How aggressively finger spread maps to zoom. Higher = faster zoom.
+  static const double _sensitivity = 0.6;
 
   Offset? _tapPosition;
   Timer? _timer;
@@ -88,22 +101,21 @@ class _AwesomeCameraGestureDetector
               GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
             () => ScaleGestureRecognizer()
               ..onStart = (_) {
-                _lastScale = null;
+                _baseZoom = _zoomScale;
+                _startScale = null;
               }
               ..onUpdate = (ScaleUpdateDetails details) {
-                _lastScale ??= details.scale;
-                if (details.scale < (_lastScale! + 0.01) &&
-                    details.scale > (_lastScale! - 0.01)) {
-                  return;
-                } else if (_lastScale! < details.scale) {
-                  _zoomScale += _accuracy;
-                } else {
-                  _zoomScale -= _accuracy;
-                }
-
-                _zoomScale = _zoomScale.clamp(0, 1);
+                // Ignore single-finger frames (scale is always 1.0 there and
+                // would seed a wrong anchor).
+                if (details.pointerCount < 2) return;
+                // Anchor to the first real two-finger frame so the zoom delta
+                // starts at 0 regardless of what absolute scale the recognizer
+                // reports first. details.scale > anchor => zoom in, < => out.
+                _startScale ??= details.scale;
+                _zoomScale =
+                    (_baseZoom + (details.scale - _startScale!) * _sensitivity)
+                        .clamp(0.0, 1.0);
                 widget.onPreviewScale!.onScale(_zoomScale);
-                _lastScale = details.scale;
               },
             (instance) {},
           ),
