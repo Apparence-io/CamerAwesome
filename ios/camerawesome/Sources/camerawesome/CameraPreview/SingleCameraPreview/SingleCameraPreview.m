@@ -602,6 +602,13 @@
 # pragma mark - Audio
 /// Setup audio channel to record audio
 - (void)setUpCaptureSessionForAudioError:(nonnull void (^)(NSError *))error {
+  // Keep the existing input and output when audio is already attached. Creating
+  // a new output here would replace _audioOutput without adding it to the
+  // capture session, so its delegate would never receive audio samples.
+  if (_videoController.isAudioSetup) {
+    return;
+  }
+
   NSError *audioError = nil;
   // Create a device input with the device and add it to the session.
   // Setup the audio input.
