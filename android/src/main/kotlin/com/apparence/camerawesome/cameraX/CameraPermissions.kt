@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -46,7 +48,11 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
     ): Boolean {
         val grantedPermissions = mutableListOf<String>()
         val deniedPermissions = mutableListOf<String>()
-        permissionGranted = true
+        // An EMPTY array is Android cancelling the request, not granting it —
+        // it arrives when a second request is made while one is outstanding.
+        // Starting from `true` and never entering the loop below reported that
+        // cancellation to Dart as success.
+        permissionGranted = permissions.isNotEmpty()
         for (i in permissions.indices) {
             if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
                 grantedPermissions.add(permissions[i])
@@ -56,12 +62,25 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
             }
         }
         val toRemove = mutableListOf<PermissionRequest>()
-        for (c in callbacks) {
-            if (c.permissionsAsked.containsAll(permissions.toList()) && permissions.toList()
-                    .containsAll(c.permissionsAsked)
-            ) {
-                c.callback(grantedPermissions, deniedPermissions)
+        if (permissions.isEmpty()) {
+            // A cancellation names no permissions, so it can never satisfy the
+            // set-equality rule below — emptyList().containsAll(asked) is false
+            // for any non-empty request. Left unmatched, the continuation
+            // waiting on it is never resumed and its caller hangs for the life
+            // of the process. So the pending requests are answered here
+            // instead: nothing granted, everything they asked for denied.
+            for (c in callbacks) {
+                c.callback(emptyList(), c.permissionsAsked)
                 toRemove.add(c)
+            }
+        } else {
+            for (c in callbacks) {
+                if (c.permissionsAsked.containsAll(permissions.toList()) && permissions.toList()
+                        .containsAll(c.permissionsAsked)
+                ) {
+                    c.callback(grantedPermissions, deniedPermissions)
+                    toRemove.add(c)
+                }
             }
         }
         callbacks.removeAll(toRemove)
@@ -71,7 +90,15 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
                 TAG,
                 "_onRequestPermissionsResult: granted " + java.lang.String.join(", ", *permissions)
             )
-            events!!.success(permissionGranted)
+            // POSTED, never called directly. This method is delivered on the
+            // main thread for the ordinary dialog, but NOT when the platform
+            // refuses a second concurrent request: Activity.requestPermissions
+            // then dispatches the result inline, on whatever thread called it,
+            // which for requestBasePermissions is a Dispatchers.IO worker.
+            // Answering an EventChannel from there fails FlutterJNI's @UiThread
+            // check and kills the process.
+            val sink = events
+            runOnMain { sink?.success(permissionGranted) }
         } else {
             Log.d(
                 TAG, "_onRequestPermissionsResult: received permissions but the EventSink is closed"
@@ -173,9 +200,10 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
         callback: (denied: List<String>) -> Unit
     ) {
         val result: List<String> = suspendCoroutine { continuation: Continuation<List<String>> ->
-            ActivityCompat.requestPermissions(
-                activity, permissions.toTypedArray(), requestCode
-            )
+            // Registered BEFORE the request is made. A result can arrive
+            // synchronously (see onRequestPermissionsResult above), and a
+            // callback added afterwards would not be there to receive it —
+            // leaving this coroutine suspended for the life of the process.
             callbacks.add(
                 PermissionRequest(UUID.randomUUID().toString(),
                     permissions,
@@ -183,8 +211,22 @@ class CameraPermissions : EventChannel.StreamHandler, RequestPermissionsResultLi
                         continuation.resume(granted)
                     })
             )
+            // Asked on the main thread, so that a synchronous result is
+            // delivered there too. requestBasePermissions calls this from
+            // Dispatchers.IO.
+            runOnMain {
+                ActivityCompat.requestPermissions(
+                    activity, permissions.toTypedArray(), requestCode
+                )
+            }
         }
         callback(result)
+    }
+
+    /** Runs [block] on the main thread, immediately if already there. */
+    private fun runOnMain(block: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) block()
+        else Handler(Looper.getMainLooper()).post(block)
     }
 
     companion object {
