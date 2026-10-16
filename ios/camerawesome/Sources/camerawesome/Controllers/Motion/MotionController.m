@@ -34,7 +34,12 @@
     }
     if (self->_deviceOrientation != newOrientation) {
       self->_deviceOrientation = newOrientation;
-      
+
+      // Notify camera controller to update capture connection orientation
+      if (self->_onOrientationChanged) {
+        self->_onOrientationChanged(newOrientation);
+      }
+
       NSString *orientationString;
       switch (newOrientation) {
         case UIDeviceOrientationLandscapeLeft:
