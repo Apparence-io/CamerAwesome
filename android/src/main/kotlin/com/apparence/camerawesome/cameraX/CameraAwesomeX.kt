@@ -600,6 +600,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
     }
 
     override fun setZoom(zoom: Double) {
+        if (!::cameraState.isInitialized) {
+            Log.w(CamerawesomePlugin.TAG, "Ignoring setZoom before cameraState initialization")
+            return
+        }
         cameraState.setZoom(zoom.toFloat())
     }
 
@@ -633,6 +637,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
      * @return the max zoom ratio
      */
     override fun getMaxZoom(): Double {
+        if (!::cameraState.isInitialized) {
+            Log.w(CamerawesomePlugin.TAG, "Ignoring getMaxZoom before cameraState initialization")
+            return 1.0
+        }
         return cameraState.maxZoomRatio
     }
 
@@ -642,6 +650,10 @@ class CameraAwesomeX : CameraInterface, FlutterPlugin, ActivityAware {
      * @return the min zoom ratio
      */
     override fun getMinZoom(): Double {
+        if (!::cameraState.isInitialized) {
+            Log.w(CamerawesomePlugin.TAG, "Ignoring getMinZoom before cameraState initialization")
+            return 1.0
+        }
         return cameraState.minZoomRatio
     }
 
