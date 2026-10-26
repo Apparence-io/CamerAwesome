@@ -66,7 +66,16 @@
   _physicalButtonController = [[PhysicalButtonController alloc] init];
   
   [_motionController startMotionDetection];
-  
+
+  // Keep the capture connection locked to portrait so the preview texture
+  // never rotates with the device — mimics the native iOS Camera app.
+  __weak typeof(self) weakSelf = self;
+  _motionController.onOrientationChanged = ^(UIDeviceOrientation newOrientation) {
+    if (weakSelf.captureConnection.isVideoOrientationSupported) {
+      [weakSelf.captureConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
+    }
+  };
+
   if (enablePhysicalButton) {
     [_physicalButtonController startListening];
   }
