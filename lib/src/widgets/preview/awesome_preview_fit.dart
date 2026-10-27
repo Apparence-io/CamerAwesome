@@ -10,6 +10,7 @@ typedef OnPreviewCalculated = void Function(AnalysisPreview preview);
 
 class AnimatedPreviewFit extends StatefulWidget {
   final Alignment alignment;
+  final Alignment fitAlignment;
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
   final BoxConstraints constraints;
@@ -21,6 +22,7 @@ class AnimatedPreviewFit extends StatefulWidget {
   const AnimatedPreviewFit({
     super.key,
     this.alignment = Alignment.center,
+    this.fitAlignment = Alignment.topLeft,
     required this.previewFit,
     required this.previewSize,
     required this.constraints,
@@ -105,6 +107,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
         final ratio = sizeCalculator!.zoom;
         return PreviewFitWidget(
           alignment: widget.alignment,
+          fitAlignment: widget.fitAlignment,
           constraints: widget.constraints,
           previewFit: widget.previewFit,
           previewSize: widget.previewSize,
@@ -124,6 +127,7 @@ class _AnimatedPreviewFitState extends State<AnimatedPreviewFit> {
 
 class PreviewFitWidget extends StatelessWidget {
   final Alignment alignment;
+  final Alignment fitAlignment;
   final BoxConstraints constraints;
   final CameraPreviewFit previewFit;
   final PreviewSize previewSize;
@@ -135,6 +139,7 @@ class PreviewFitWidget extends StatelessWidget {
   const PreviewFitWidget({
     super.key,
     required this.alignment,
+    this.fitAlignment = Alignment.topLeft,
     required this.constraints,
     required this.previewFit,
     required this.previewSize,
@@ -146,8 +151,18 @@ class PreviewFitWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final viewportSize = (previewPadding ?? EdgeInsets.zero).deflateSize(
+      Size(
+        constraints.maxWidth,
+        min(previewSize.height * scale, constraints.maxHeight),
+      ),
+    );
+    final fitOffset = fitAlignment.alongOffset(
+      (viewportSize - previewSize.toSize() * scale) as Offset,
+    );
     final transformController = TransformationController()
-      ..value = (Matrix4.identity()..scale(scale));
+      ..value = (Matrix4.translationValues(fitOffset.dx, fitOffset.dy, 0)
+        ..scale(scale));
 
     return Align(
       alignment: alignment,

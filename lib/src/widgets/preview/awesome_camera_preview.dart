@@ -27,6 +27,7 @@ class AwesomeCameraPreview extends StatefulWidget {
   final CameraLayoutBuilder? previewDecoratorBuilder;
   final EdgeInsets padding;
   final Alignment alignment;
+  final Alignment fitAlignment;
   final PictureInPictureConfigBuilder? pictureInPictureConfigBuilder;
 
   const AwesomeCameraPreview({
@@ -40,6 +41,7 @@ class AwesomeCameraPreview extends StatefulWidget {
     this.previewDecoratorBuilder,
     required this.padding,
     required this.alignment,
+    this.fitAlignment = Alignment.topLeft,
     this.pictureInPictureConfigBuilder,
   });
 
@@ -162,6 +164,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
               Positioned.fill(
                 child: AnimatedPreviewFit(
                   alignment: widget.alignment,
+                  fitAlignment: widget.fitAlignment,
                   previewFit: widget.previewFit,
                   previewSize: _previewSize!,
                   previewPadding: widget.padding,
