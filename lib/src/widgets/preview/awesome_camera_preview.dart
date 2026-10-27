@@ -28,6 +28,7 @@ class AwesomeCameraPreview extends StatefulWidget {
   final EdgeInsets padding;
   final Alignment alignment;
   final PictureInPictureConfigBuilder? pictureInPictureConfigBuilder;
+  final FuncTransformMatrix? transformMatrix;
 
   const AwesomeCameraPreview({
     super.key,
@@ -40,6 +41,7 @@ class AwesomeCameraPreview extends StatefulWidget {
     this.previewDecoratorBuilder,
     required this.padding,
     required this.alignment,
+    required this.transformMatrix,
     this.pictureInPictureConfigBuilder,
   });
 
@@ -161,6 +163,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
             children: [
               Positioned.fill(
                 child: AnimatedPreviewFit(
+                  transformMatrix: widget.transformMatrix,
                   alignment: widget.alignment,
                   previewFit: widget.previewFit,
                   previewSize: _previewSize!,
@@ -246,6 +249,7 @@ class AwesomeCameraPreviewState extends State<AwesomeCameraPreview> {
       final texture = _textures[i];
       final sensor = sensors[kDebugMode ? 0 : i];
       final frame = AwesomeCameraFloatingPreview(
+        transformMatrix: widget.transformMatrix,
         index: i,
         sensor: sensor,
         texture: texture,
