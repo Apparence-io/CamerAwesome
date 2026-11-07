@@ -100,6 +100,11 @@ class CameraAwesomeBuilder extends StatefulWidget {
   /// See also [previewPadding].
   final Alignment previewAlignment;
 
+  /// Set alignment of the camera image inside the preview when [previewFit]
+  /// crops it, e.g. [Alignment.center] to crop all sides evenly with
+  /// [CameraPreviewFit.cover].
+  final Alignment previewFitAlignment;
+
   /// Set it to true to show a Preview of the camera, false if you only want to
   /// do image analysis
   final bool showPreview;
@@ -135,6 +140,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     required this.theme,
     this.previewPadding = EdgeInsets.zero,
     this.previewAlignment = Alignment.center,
+    this.previewFitAlignment = Alignment.topLeft,
     this.showPreview = true,
     required this.pictureInPictureConfigBuilder,
     this.availableFilters,
@@ -180,6 +186,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
       Widget Function(CameraState state)? middleContentBuilder,
       EdgeInsets previewPadding = EdgeInsets.zero,
       Alignment previewAlignment = Alignment.center,
+      Alignment previewFitAlignment = Alignment.topLeft,
       PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
       AwesomeFilter? defaultFilter,
       List<AwesomeFilter>? availableFilters,
@@ -211,6 +218,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          previewFitAlignment: previewFitAlignment,
           pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
           defaultFilter: defaultFilter,
           availableFilters: availableFilters ?? awesomePresetFiltersList,
@@ -236,6 +244,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     AwesomeTheme? theme,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    Alignment previewFitAlignment = Alignment.topLeft,
     PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
     List<AwesomeFilter>? filters,
     OnMediaCaptureEvent? onMediaCaptureEvent,
@@ -259,6 +268,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: theme ?? AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          previewFitAlignment: previewFitAlignment,
           pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
           availableFilters: filters,
           onMediaCaptureEvent: onMediaCaptureEvent,
@@ -278,6 +288,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
     CameraPreviewFit? previewFit,
     EdgeInsets previewPadding = EdgeInsets.zero,
     Alignment previewAlignment = Alignment.center,
+    Alignment previewFitAlignment = Alignment.topLeft,
     PictureInPictureConfigBuilder? pictureInPictureConfigBuilder,
   }) : this._(
           sensorConfig: sensorConfig ??
@@ -297,6 +308,7 @@ class CameraAwesomeBuilder extends StatefulWidget {
           theme: AwesomeTheme(),
           previewPadding: previewPadding,
           previewAlignment: previewAlignment,
+          previewFitAlignment: previewFitAlignment,
           pictureInPictureConfigBuilder: pictureInPictureConfigBuilder,
         );
 
@@ -447,6 +459,7 @@ class _CameraWidgetBuilder extends State<CameraAwesomeBuilder>
                         state: snapshot.requireData,
                         padding: widget.previewPadding,
                         alignment: widget.previewAlignment,
+                        fitAlignment: widget.previewFitAlignment,
                         onPreviewTap: widget.onPreviewTapBuilder
                                 ?.call(snapshot.requireData) ??
                             OnPreviewTap(
